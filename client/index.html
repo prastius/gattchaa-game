@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta name="theme-color" content="#0b1d2a" />
+    <title>My World</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <div id="game"></div>
+
+    <div id="hud" hidden>
+      <div class="hud-box">
+        <span class="dot" id="conn-dot"></span>
+        <span id="online">0 online</span>
+        <span class="sep">·</span>
+        <span id="coords">0, 0</span>
+      </div>
+      <canvas id="minimap" width="168" height="168"></canvas>
+    </div>
+
+    <div id="chat" hidden>
+      <ul id="chat-log" aria-live="polite"></ul>
+      <form id="chat-form" autocomplete="off">
+        <input id="chat-input" maxlength="200" placeholder="Press Enter to chat" enterkeyhint="send" />
+      </form>
+    </div>
+
+    <div id="login" class="overlay">
+      <form id="login-form" class="panel" autocomplete="off">
+        <h1>My World</h1>
+        <p class="sub">An open world you share with everyone online.</p>
+        <label for="name-input">Your name</label>
+        <input id="name-input" maxlength="16" placeholder="Wanderer" required />
+        <button id="join-btn" type="submit">Enter world</button>
+        <p id="login-error" class="error" role="alert"></p>
+        <p class="hint">Move with WASD / arrow keys, or hold the screen. Enter to chat.</p>
+      </form>
+    </div>
+
+    <div id="disconnected" class="overlay" hidden>
+      <div class="panel">
+        <h2>Disconnected</h2>
+        <p class="sub" id="disconnected-reason">Lost connection to the server.</p>
+        <button type="button" onclick="location.reload()">Reconnect</button>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

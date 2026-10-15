@@ -1,0 +1,19 @@
+{
+  "name": "@my-world/client",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -p tsconfig.json && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@colyseus/sdk": "^0.18.5",
+    "phaser": "^4.2.1"
+  },
+  "devDependencies": {
+    "vite": "^8.3.4"
+  }
+}
