@@ -1,10 +1,10 @@
 # My World
 
-A browser-based multiplayer open world with live chat.
+A browser-based multiplayer open world with customizable characters and live chat.
 
 - **Client:** Phaser 4 + TypeScript + Vite
 - **Server:** Colyseus 0.18 + TypeScript on Node.js
-- **Look:** top-down 2D with depth sorting, shadows and tall props for a "2.5D" feel
+- **Art:** LPC (Liberated Pixel Cup) pixel art: 32 px tiles, ¾ top-down view, layered characters. See [CREDITS.md](CREDITS.md).
 
 ## Run locally
 
@@ -20,12 +20,13 @@ Open the page in two browser windows to see multiplayer and chat.
 | WASD / arrow keys | Move |
 | Hold mouse / finger | Walk toward the pointer |
 | Enter | Open chat, then Enter again to send. Esc cancels. |
+| 👕 Wardrobe | Change your outfit at any time; everyone sees it |
 
 ## Production
 
 ```bash
 npm run build      # builds client/dist and server/build
-npm start          # one port (2567) serves the game page and the WebSocket
+npm start          # one port (2567) serves the game page, assets and the WebSocket
 ```
 
 ### Deploying to a Linux VPS (terminal only)
@@ -43,39 +44,58 @@ Files in `deploy/`:
 - `setup-ubuntu.sh` does the one-time install.
 - `update.sh` redeploys.
 
-PM2 settings are in `ecosystem.config.cjs`. A 1 vCPU / 1 GB VPS comfortably runs a starter world.
+PM2 settings are in `ecosystem.config.cjs`.
+
+### Load testing
+
+```bash
+npm run bots -- http://localhost:2567 100     # or your VPS URL
+```
+
+This connects 100 bots that walk around (using the real collision code) and chat. It prints the server's CPU and memory every 5 seconds. Measured on a dev machine with 100 bots: 2–14 % of one CPU core, about 160 MB of RAM, and 0 rejected moves. A 1 vCPU / 1 GB VPS handles that.
 
 ## Layout
 
 ```
-shared/     Code used by both sides
-  world.ts      Seeded world generator, collision, movement
-  protocol.ts   Message types, name/chat sanitizing
-server/     Colyseus server
-  src/index.ts            HTTP + WebSocket server; serves client/dist in production
-  src/rooms/WorldRoom.ts  Joins, movement validation, chat (history, rate limit)
-  src/rooms/WorldState.ts Synced state (players)
-client/     Phaser game
-  src/main.ts             Login screen, then boots Phaser
-  src/net.ts              Connection, message handlers, reconnect handling
-  src/scenes/WorldScene.ts  Chunk streaming, input, interpolation
-  src/PlayerSprite.ts     Avatar, name tag, chat bubble
-  src/textures.ts         Procedural art (replace with real sprites any time)
-  src/ui/                 Chat panel, HUD and minimap (HTML overlay)
+shared/       Code used by both client and server
+  world.ts        Seeded island generator (corner-based terrain), decorations, collision
+  appearance.ts   Character look: encode/decode/validate, random looks
+  catalog.ts      Generated list of hair/clothes/colour options
+  protocol.ts     Message types, name/chat sanitizing
+server/       Colyseus server
+  src/rooms/WorldRoom.ts   Joins, interest management, movement validation, chat, wardrobe
+  src/rooms/WorldState.ts  Synced state
+client/       Phaser game
+  src/main.ts              Character creator, then boots Phaser; wardrobe panel
+  src/character.ts         Builds character sprite sheets from recolored LPC layers
+  src/PlayerSprite.ts      Avatar, walk animation, name tag, chat bubble
+  src/world/terrainTiles.ts  Corner autotiling + padded tile atlas
+  src/world/decorSprites.ts  Trees, rocks, plants
+  src/scenes/WorldScene.ts   Chunk streaming, input, camera, interpolation
+  src/ui/                  Creator, chat, HUD + minimap
+  public/assets/           Downloaded art + manifest (committed)
+scripts/
+  fetch-assets.mjs   Re-downloads the art from pinned commits and regenerates catalog + credits
+  bots.ts            Load-test bots
 ```
 
 ## How it works
 
-- **Same world on both sides.** Client and server generate the identical 512×512-tile island from one seed, so the map is never sent over the network. Change `WORLD_SEED` or the generator in `shared/world.ts` to get a new world.
-- **Responsive movement.** The client moves its own player immediately and sends its position 15 times per second. The server checks each move against a speed budget and the collision map. If a move is invalid (speed hack, walking through water), the server snaps the player back.
-- **Streaming.** The client only builds the ground and trees for chunks near the camera (32×32 tiles each), so a larger world costs no extra memory.
-- **Chat.** Messages are sanitized and rate-limited (5 per 5 seconds) on the server, and the last 50 are replayed to players who join. The client renders chat as text only, never as HTML. Messages also show as speech bubbles above the speaker's head.
-- **Reconnects.** A dropped connection keeps your character in the world for 20 seconds, and the SDK reconnects automatically.
+- **Same world on both sides.** Client and server generate the same 384×384-tile island from one seed, so the map is never sent over the network. Terrain is stored per tile *corner*, and each tile picks its art from its four corners. That gives smooth grassy banks, water and dirt edges.
+- **Crisp pixel art with no flicker.** The game renders at the screen's real pixel density with whole-number zoom, nearest-neighbor filtering and whole-pixel positions. Tiles come from an atlas with a 1 px padded border, so neighboring tiles can't bleed into each other while the camera moves.
+- **Characters.** Each look is a short string such as `0.3.1.5.12.0.4.2.7.1.22`. The client stacks the LPC layers (shadow, body, head, shoes, legs, top, hair) and swaps the palette colors to the chosen skin, hair, eye and cloth colors. It makes one sprite sheet per distinct look and frees it when nobody on screen wears it.
+- **Scales to 100+ players.** The server sends each client only the players within about one screen of them (Colyseus `StateView`), with positions as whole pixels.
+- **Responsive movement.** Your character moves instantly on your screen. The server checks every move against a speed budget and the collision map, and snaps cheaters back.
+- **Chat.** Your own messages appear instantly. The server cleans and rate-limits messages (5 per 5 s) and replays the last 50 to players who join. Chat is rendered as text, never HTML.
+- **Reconnects.** A dropped connection keeps your character in the world for 20 s while the SDK reconnects automatically.
 
-## Next steps
+## Changing the art
 
-1. **Art.** Load sprite sheets (for example from itch.io or Kenney) under the same texture keys used in `textures.ts`. Add autotiled coastlines.
-2. **Interest management.** Use Colyseus `StateView` so each client only receives players near it. This matters past roughly 100 players per room.
-3. **Accounts and persistence.** Use `@colyseus/auth` with Postgres or SQLite to save names, positions and inventory.
-4. **Scaling out.** Add `@colyseus/redis-presence` and `redis-driver`, then raise PM2 instances or add more VPSs.
-5. **Gameplay.** Add NPCs, a day/night cycle with Phaser 4 lighting, and interactable objects.
+`npm run fetch-assets` re-downloads everything listed in `scripts/fetch-assets.mjs` and regenerates the manifest, `shared/catalog.ts` and the credits.
+
+- **Add a hairstyle or clothing item:** add its `sheet_definitions` path to `ITEMS`. Browse the options at <https://liberatedpixelcup.github.io/Universal-LPC-Spritesheet-Character-Generator/>.
+- **Change the season:** swap `terrain_summer.png` / `trees_summer.png` for the spring, autumn or winter versions in the same repo.
+
+## License note
+
+The art is CC-BY-SA / OGA-BY / GPL licensed (see each entry in `CREDITS.md`). The credits must stay reachable from the game; the login screen links to them. Your own code is yours to license as you like.

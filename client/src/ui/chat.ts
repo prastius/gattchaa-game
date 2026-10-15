@@ -7,6 +7,7 @@ export class ChatUI {
   private log = document.getElementById("chat-log") as HTMLUListElement;
   private form = document.getElementById("chat-form") as HTMLFormElement;
   private input = document.getElementById("chat-input") as HTMLInputElement;
+  private enabled = true;
 
   constructor(private onSend: (text: string) => void) {
     this.form.addEventListener("submit", (e) => {
@@ -19,11 +20,11 @@ export class ChatUI {
 
     this.input.addEventListener("keydown", (e) => {
       if (e.key === "Escape") this.input.blur();
-      e.stopPropagation();
+      e.stopPropagation(); // typing must never reach the game controls
     });
 
     window.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && document.activeElement !== this.input) {
+      if (this.enabled && e.key === "Enter" && document.activeElement === document.body) {
         e.preventDefault();
         this.input.focus();
       }
@@ -34,8 +35,14 @@ export class ChatUI {
     this.root.hidden = false;
   }
 
+  /** Disabled while another panel (wardrobe) has focus. */
+  setEnabled(enabled: boolean) {
+    this.enabled = enabled;
+  }
+
   isFocused(): boolean {
-    return document.activeElement === this.input;
+    const el = document.activeElement;
+    return el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement;
   }
 
   blur() {

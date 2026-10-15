@@ -1,41 +1,58 @@
 // Deterministic world generation shared by client (rendering) and server (validation).
 // Both sides build the exact same map from the same seed, so the map itself never
 // has to be sent over the network.
+//
+// Terrain is stored per *vertex* (tile corner), not per tile. Each tile picks its
+// artwork from the terrain at its four corners ("corner autotiling"), which is what
+// produces smooth grass/water/dirt edges with the LPC tilesets.
 
 export const TILE_SIZE = 32;
-export const WORLD_TILES_W = 512;
-export const WORLD_TILES_H = 512;
+export const WORLD_TILES_W = 384;
+export const WORLD_TILES_H = 384;
 export const WORLD_PX_W = WORLD_TILES_W * TILE_SIZE;
 export const WORLD_PX_H = WORLD_TILES_H * TILE_SIZE;
-export const WORLD_SEED = 1337;
+export const WORLD_SEED = 20261015;
 
-export const PLAYER_SPEED = 180; // pixels per second
-export const CHUNK_TILES = 32; // client streams ground + decorations in chunks of this size
+export const PLAYER_SPEED = 160; // pixels per second
+export const CHUNK_TILES = 16; // client streams ground + decorations in chunks of this size
 
-export const Tile = {
-  DeepWater: 0,
+export const Terrain = {
+  Deep: 0,
   Water: 1,
-  Sand: 2,
-  Grass: 3,
-  Forest: 4,
-  Rock: 5,
-  Snow: 6,
+  Grass: 2,
+  Dirt: 3,
 } as const;
-export type Tile = (typeof Tile)[keyof typeof Tile];
-export const TILE_TYPE_COUNT = 7;
+export type Terrain = (typeof Terrain)[keyof typeof Terrain];
 
-export const Decor = {
-  None: 0,
-  Tree: 1,
-  Pine: 2,
-  Boulder: 3,
-} as const;
-export const TILE_VARIANTS = 4;
+export const isWet = (t: number) => t === Terrain.Deep || t === Terrain.Water;
 
-const BLOCKING_TILES = new Set<number>([Tile.DeepWater, Tile.Water]);
+/**
+ * Decorations placed on tiles. `block` makes the tile unwalkable (tree trunks,
+ * boulders). The client maps each id to a sprite.
+ */
+export const DECOR = [
+  { id: "none", block: false },
+  { id: "oak", block: true },
+  { id: "oakRoots", block: true },
+  { id: "oakTall", block: true },
+  { id: "bushTree", block: true },
+  { id: "pine", block: true },
+  { id: "pineTall", block: true },
+  { id: "boulder", block: true },
+  { id: "rock", block: true },
+  { id: "stone", block: false },
+  { id: "bush", block: true },
+  { id: "fern", block: false },
+  { id: "tallGrass", block: false },
+  { id: "flowers", block: false },
+  { id: "cypress", block: true },
+] as const;
+export type DecorId = (typeof DECOR)[number]["id"];
+export const Decor = Object.fromEntries(DECOR.map((d, i) => [d.id, i])) as Record<DecorId, number>;
+const DECOR_BLOCKS: boolean[] = DECOR.map((d) => d.block);
 
 // Feet hitbox, relative to the player's (x, y) which sits at the feet.
-const FOOT_HALF_W = 9;
+const FOOT_HALF_W = 8;
 const FOOT_H = 6;
 
 export function hash2(x: number, y: number, seed: number): number {
@@ -80,76 +97,196 @@ function fbm(x: number, y: number, seed: number, octaves: number): number {
 export class World {
   readonly width = WORLD_TILES_W;
   readonly height = WORLD_TILES_H;
-  readonly tiles: Uint8Array;
-  readonly decor: Uint8Array; // Blocking decoration per tile, see Decor
+  /** Vertex grid, (width + 1) x (height + 1). */
+  readonly vw = WORLD_TILES_W + 1;
+  readonly vh = WORLD_TILES_H + 1;
+  readonly verts: Uint8Array;
+  /** Decoration per tile, see DECOR. */
+  readonly decor: Uint8Array;
   readonly seed: number;
 
   constructor(seed = WORLD_SEED) {
     this.seed = seed;
-    this.tiles = new Uint8Array(this.width * this.height);
+    this.verts = new Uint8Array(this.vw * this.vh);
     this.decor = new Uint8Array(this.width * this.height);
-    this.generate();
+    this.generateTerrain();
+    this.cleanTerrain();
+    this.placeDecor();
   }
 
-  private generate(): void {
-    const { width, height, seed } = this;
-    const cx = width / 2;
-    const cy = height / 2;
+  // ------------------------------------------------------------ generation
+
+  private elevation(vx: number, vy: number): number {
+    const cx = this.width / 2;
+    const cy = this.height / 2;
     const maxR = Math.min(cx, cy);
+    const dx = (vx - cx) / maxR;
+    const dy = (vy - cy) / maxR;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const e = fbm(vx / 70, vy / 70, this.seed, 5);
+    return e * 1.2 - Math.pow(dist, 3.5) * 0.85 + 0.14;
+  }
 
-    for (let ty = 0; ty < height; ty++) {
-      for (let tx = 0; tx < width; tx++) {
-        // Island shape: noise elevation pulled down toward the edges, so the
-        // world is naturally bounded by ocean.
-        const dx = (tx - cx) / maxR;
-        const dy = (ty - cy) / maxR;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        let e = fbm(tx / 90, ty / 90, seed, 5);
-        e = e * 1.2 - Math.pow(dist, 4) * 0.8 + 0.12;
-        const m = fbm(tx / 60, ty / 60, seed + 999, 4);
-
-        let tile: Tile;
-        if (e < 0.3) tile = Tile.DeepWater;
-        else if (e < 0.36) tile = Tile.Water;
-        else if (e < 0.4) tile = Tile.Sand;
-        else if (e < 0.7) tile = m > 0.53 ? Tile.Forest : Tile.Grass;
-        else if (e < 0.78) tile = Tile.Rock;
-        else tile = Tile.Snow;
-
-        const i = ty * width + tx;
-        this.tiles[i] = tile;
-
-        const r = hash2(tx, ty, seed + 7);
-        if (tile === Tile.Forest && r < 0.38) this.decor[i] = e > 0.6 ? Decor.Pine : Decor.Tree;
-        else if (tile === Tile.Grass && r < 0.025) this.decor[i] = Decor.Tree;
-        else if (tile === Tile.Rock && r < 0.18) this.decor[i] = Decor.Boulder;
-        else if (tile === Tile.Snow && r < 0.05) this.decor[i] = Decor.Pine;
+  private generateTerrain() {
+    const { vw, vh, seed } = this;
+    for (let vy = 0; vy < vh; vy++) {
+      for (let vx = 0; vx < vw; vx++) {
+        const e = this.elevation(vx, vy);
+        const rough = fbm(vx / 40, vy / 40, seed + 555, 3);
+        let t: Terrain;
+        if (e < 0.31) t = Terrain.Deep;
+        else if (e < 0.37) t = Terrain.Water;
+        else if (e > 0.74 || (rough < 0.27 && e > 0.5)) t = Terrain.Dirt;
+        else t = Terrain.Grass;
+        this.verts[vy * vw + vx] = t;
       }
     }
+  }
+
+  /** Enforces the layering rules the tileset can draw, then removes diagonal-only corners. */
+  private cleanTerrain() {
+    const { vw, vh, verts } = this;
+    const at = (x: number, y: number): number =>
+      x < 0 || y < 0 || x >= vw || y >= vh ? Terrain.Deep : verts[y * vw + x];
+
+    for (let pass = 0; pass < 8; pass++) {
+      let changed = 0;
+      const set = (x: number, y: number, t: Terrain) => {
+        if (verts[y * vw + x] !== t) {
+          verts[y * vw + x] = t;
+          changed++;
+        }
+      };
+
+      for (let y = 0; y < vh; y++) {
+        for (let x = 0; x < vw; x++) {
+          const t = at(x, y);
+          let nearWet = false;
+          let nearLand = false;
+          for (let oy = -1; oy <= 1; oy++) {
+            for (let ox = -1; ox <= 1; ox++) {
+              if (!ox && !oy) continue;
+              if (isWet(at(x + ox, y + oy))) nearWet = true;
+              else nearLand = true;
+            }
+          }
+          // Banks are grass: shore tiles only exist as water-in-grass art.
+          if (t === Terrain.Dirt && nearWet) set(x, y, Terrain.Grass);
+          // Deep water never touches land directly.
+          if (t === Terrain.Deep && nearLand) set(x, y, Terrain.Water);
+          // Single-vertex islands look like noise; drop them.
+          if (!isWet(t) && !nearLand) set(x, y, Terrain.Water);
+        }
+      }
+
+      // Diagonal-only corners (TL+BR vs TR+BL) have no tile art: fill one side.
+      for (let y = 0; y < vh - 1; y++) {
+        for (let x = 0; x < vw - 1; x++) {
+          const fix = (p: (t: number) => boolean, to: Terrain) => {
+            const a = p(at(x, y));
+            const b = p(at(x + 1, y));
+            const c = p(at(x, y + 1));
+            const d = p(at(x + 1, y + 1));
+            if (a && d && !b && !c) {
+              set(x + 1, y, to);
+              set(x, y + 1, to);
+            } else if (b && c && !a && !d) {
+              set(x, y, to);
+              set(x + 1, y + 1, to);
+            }
+          };
+          fix(isWet, Terrain.Water);
+          fix((t) => t === Terrain.Deep, Terrain.Deep);
+          fix((t) => t === Terrain.Grass, Terrain.Grass);
+        }
+      }
+      if (!changed) break;
+    }
+  }
+
+  private placeDecor() {
+    const { width, height, seed } = this;
+    const big = new Uint8Array(width * height); // tiles holding a blocking prop
+
+    for (let ty = 2; ty < height - 1; ty++) {
+      for (let tx = 2; tx < width - 2; tx++) {
+        const c = this.corners(tx, ty);
+        if (c.some(isWet)) continue;
+        const allGrass = c.every((t) => t === Terrain.Grass);
+        const allDirt = c.every((t) => t === Terrain.Dirt);
+        const r = hash2(tx, ty, seed + 7);
+        const r2 = hash2(tx, ty, seed + 8);
+        const forest = fbm(tx / 28, ty / 28, seed + 999, 3);
+        const e = this.elevation(tx, ty);
+
+        // Blocking props keep a gap (checked against tiles already visited) so
+        // canopies overlap a little but players can still walk between trunks.
+        let free = true;
+        for (let oy = -2; oy <= 0 && free; oy++) {
+          for (let ox = -2; ox <= 2; ox++) {
+            if (oy === 0 && ox >= 0) break;
+            if (big[(ty + oy) * width + (tx + ox)]) {
+              free = false;
+              break;
+            }
+          }
+        }
+
+        let d: number = Decor.none;
+        if (allGrass) {
+          if (free && forest > 0.56 && r < 0.6) {
+            d =
+              e > 0.58
+                ? r2 < 0.5
+                  ? Decor.pine
+                  : Decor.pineTall
+                : [Decor.oak, Decor.oakRoots, Decor.oakTall, Decor.bushTree][Math.floor(r2 * 4)];
+          } else if (free && r < 0.014) {
+            d = [Decor.oak, Decor.oakTall, Decor.cypress, Decor.bush][Math.floor(r2 * 4)];
+          } else if (r < 0.06) {
+            d = r2 < 0.55 ? Decor.tallGrass : Decor.fern;
+          } else if (r < 0.1 && forest < 0.45) {
+            d = Decor.flowers;
+          }
+        } else if (allDirt) {
+          if (free && r < 0.035) d = r2 < 0.5 ? Decor.boulder : Decor.rock;
+          else if (free && r < 0.07 && e > 0.6) d = Decor.pine;
+          else if (r < 0.12) d = Decor.stone;
+        }
+
+        this.decor[ty * width + tx] = d;
+        if (DECOR_BLOCKS[d]) big[ty * width + tx] = 1;
+      }
+    }
+  }
+
+  // ------------------------------------------------------------ queries
+
+  vertexAt(vx: number, vy: number): number {
+    if (vx < 0 || vy < 0 || vx >= this.vw || vy >= this.vh) return Terrain.Deep;
+    return this.verts[vy * this.vw + vx];
+  }
+
+  /** Terrain at a tile's corners: [top-left, top-right, bottom-left, bottom-right]. */
+  corners(tx: number, ty: number): [number, number, number, number] {
+    return [this.vertexAt(tx, ty), this.vertexAt(tx + 1, ty), this.vertexAt(tx, ty + 1), this.vertexAt(tx + 1, ty + 1)];
   }
 
   inBounds(tx: number, ty: number): boolean {
     return tx >= 0 && ty >= 0 && tx < this.width && ty < this.height;
   }
 
-  tileAt(tx: number, ty: number): Tile {
-    return this.tiles[ty * this.width + tx] as Tile;
-  }
-
-  /** Tile index into the generated tileset (type * variants + variant). */
-  tileIndexAt(tx: number, ty: number): number {
-    const variant = Math.floor(hash2(tx, ty, this.seed + 3) * TILE_VARIANTS);
-    return this.tileAt(tx, ty) * TILE_VARIANTS + variant;
-  }
-
-  isBlockedTile(tx: number, ty: number): boolean {
-    if (!this.inBounds(tx, ty)) return true;
-    const i = ty * this.width + tx;
-    return BLOCKING_TILES.has(this.tiles[i]) || this.decor[i] !== 0;
+  decorAt(tx: number, ty: number): number {
+    return this.inBounds(tx, ty) ? this.decor[ty * this.width + tx] : Decor.none;
   }
 
   isBlockedAt(px: number, py: number): boolean {
-    return this.isBlockedTile(Math.floor(px / TILE_SIZE), Math.floor(py / TILE_SIZE));
+    const tx = Math.floor(px / TILE_SIZE);
+    const ty = Math.floor(py / TILE_SIZE);
+    if (!this.inBounds(tx, ty)) return true;
+    // Water: the nearest vertex decides, which matches where the shoreline is drawn.
+    if (isWet(this.vertexAt(Math.round(px / TILE_SIZE), Math.round(py / TILE_SIZE)))) return true;
+    return DECOR_BLOCKS[this.decor[ty * this.width + tx]];
   }
 
   /** Whether a player's feet can occupy pixel position (x, y). */
@@ -172,7 +309,7 @@ export class World {
   /** True if every point sampled along the segment is standable (anti-teleport check). */
   canTravel(x0: number, y0: number, x1: number, y1: number): boolean {
     const dist = Math.hypot(x1 - x0, y1 - y0);
-    const steps = Math.max(1, Math.ceil(dist / 8));
+    const steps = Math.max(1, Math.ceil(dist / 6));
     for (let s = 1; s <= steps; s++) {
       const t = s / steps;
       if (!this.canStand(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t)) return false;
@@ -180,17 +317,30 @@ export class World {
     return true;
   }
 
-  /** Finds a standable spawn point near the island centre. */
+  /** No water or props within `r` tiles (and the tiles just below, where tall sprites stand). */
+  private isOpenArea(tx: number, ty: number, r: number): boolean {
+    for (let y = ty - r; y <= ty + r + 2; y++) {
+      for (let x = tx - r; x <= tx + r; x++) {
+        if (!this.inBounds(x, y) || this.decorAt(x, y) !== Decor.none) return false;
+        if (this.corners(x, y).some(isWet)) return false;
+      }
+    }
+    return true;
+  }
+
+  /** Finds an open, standable spawn point near the island centre. */
   findSpawn(rand: () => number = Math.random): { x: number; y: number } {
     const cx = this.width / 2;
     const cy = this.height / 2;
     for (let radius = 2; radius < this.width / 2; radius += 2) {
-      for (let attempt = 0; attempt < 24; attempt++) {
+      for (let attempt = 0; attempt < 32; attempt++) {
         const a = rand() * Math.PI * 2;
         const r = rand() * radius;
-        const x = (cx + Math.cos(a) * r) * TILE_SIZE + TILE_SIZE / 2;
-        const y = (cy + Math.sin(a) * r) * TILE_SIZE + TILE_SIZE / 2;
-        if (this.canStand(x, y)) return { x, y };
+        const tx = Math.floor(cx + Math.cos(a) * r);
+        const ty = Math.floor(cy + Math.sin(a) * r);
+        const x = tx * TILE_SIZE + TILE_SIZE / 2;
+        const y = ty * TILE_SIZE + TILE_SIZE / 2;
+        if (this.canStand(x, y) && this.isOpenArea(tx, ty, 2)) return { x, y };
       }
     }
     return { x: cx * TILE_SIZE, y: cy * TILE_SIZE };

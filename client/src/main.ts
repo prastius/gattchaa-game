@@ -1,42 +1,65 @@
 import Phaser from "phaser";
-import "./style.css";
 import { World } from "../../shared/world";
 import { sanitizeName } from "../../shared/protocol";
+import { LOOK_KEYS, decodeLook, encodeLook, randomLook } from "../../shared/appearance";
 import { joinWorld, Net } from "./net";
+import { preloadCharacterArt } from "./character";
 import { WorldScene, type WorldSceneData } from "./scenes/WorldScene";
+import { CharacterCreator } from "./ui/creator";
 import { ChatUI } from "./ui/chat";
 import { HUD } from "./ui/hud";
+import { Diagnostics } from "./ui/diagnostics";
 
 const NAME_KEY = "my-world:name";
+const LOOK_KEY = "my-world:look";
 
-const loginEl = document.getElementById("login")!;
-const form = document.getElementById("login-form") as HTMLFormElement;
-const nameInput = document.getElementById("name-input") as HTMLInputElement;
-const joinBtn = document.getElementById("join-btn") as HTMLButtonElement;
-const errorEl = document.getElementById("login-error")!;
+const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
-try {
-  nameInput.value = localStorage.getItem(NAME_KEY) ?? "";
-} catch {
-  /* storage unavailable (private mode) */
+function stored(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null; // storage unavailable (private mode)
+  }
 }
-nameInput.focus();
+function store(key: string, value: string) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    /* ignore */
+  }
+}
 
-form.addEventListener("submit", async (e) => {
+// ---------------------------------------------------------------- login + character creation
+
+const nameInput = $<HTMLInputElement>("name-input");
+const joinBtn = $<HTMLButtonElement>("join-btn");
+const errorEl = $("login-error");
+
+nameInput.value = stored(NAME_KEY) ?? "";
+// Looks saved by an older version (different field count) are discarded.
+const savedLook = stored(LOOK_KEY)?.split(".").length === LOOK_KEYS.length ? stored(LOOK_KEY) : null;
+const creator = new CharacterCreator($("creator"), savedLook ? decodeLook(savedLook) : randomLook());
+preloadCharacterArt();
+
+// Generate the world while the player picks their outfit (~0.3 s of CPU).
+let world: World | undefined;
+setTimeout(() => (world ??= new World()), 50);
+
+$("login-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const name = sanitizeName(nameInput.value);
+  const look = creator.encoded;
   joinBtn.disabled = true;
   joinBtn.textContent = "Connecting…";
   errorEl.textContent = "";
 
   try {
-    const room = await joinWorld({ name });
-    try {
-      localStorage.setItem(NAME_KEY, name);
-    } catch {
-      /* ignore */
-    }
-    start(room);
+    const room = await joinWorld({ name, look });
+    store(NAME_KEY, name);
+    store(LOOK_KEY, look);
+    creator.destroy();
+    start(room, name);
   } catch (err) {
     console.error(err);
     errorEl.textContent = "Could not reach the game server. Is it running?";
@@ -45,29 +68,78 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
-function start(room: Awaited<ReturnType<typeof joinWorld>>) {
-  // Build the world now (deterministic, ~100 ms) so it's ready when Phaser boots.
-  const world = new World();
+// ---------------------------------------------------------------- game
+
+function start(room: Awaited<ReturnType<typeof joinWorld>>, name: string) {
+  world ??= new World();
   const hud = new HUD(world);
   const chat = new ChatUI((text) => net.sendChat(text));
-  const net = new Net(room, chat, hud, (reason) => {
-    document.getElementById("disconnected-reason")!.textContent = reason;
-    document.getElementById("disconnected")!.hidden = false;
+  const net = new Net(room, name, chat, hud, (reason) => {
+    $("disconnected-reason").textContent = reason;
+    $("disconnected").hidden = false;
   });
 
-  loginEl.hidden = true;
+  $("login").hidden = true;
   hud.show();
   chat.show();
+  setupWardrobe(net, chat);
 
+  // Render at the screen's real pixel density (then CSS-scale back down), so
+  // pixel art is never stretched by a fractional factor on HiDPI displays.
+  const dpr = Math.min(window.devicePixelRatio || 1, 3);
+  const deviceSize = () => [Math.round(window.innerWidth * dpr), Math.round(window.innerHeight * dpr)] as const;
+  const [w, h] = deviceSize();
   const game = new Phaser.Game({
     type: Phaser.AUTO,
     parent: "game",
-    backgroundColor: "#1c4a6b",
-    scale: { mode: Phaser.Scale.RESIZE, width: window.innerWidth, height: window.innerHeight },
+    backgroundColor: "#1f5f7a",
+    pixelArt: true,
+    scale: { mode: Phaser.Scale.NONE, width: w, height: h, zoom: 1 / dpr },
     input: { activePointers: 2 },
     audio: { noAudio: true },
     banner: false,
   });
+  window.addEventListener("resize", () => {
+    const [nw, nh] = deviceSize();
+    // Resizing clears the canvas; skip no-op resize events.
+    if (nw === game.scale.width && nh === game.scale.height) return;
+    game.scale.resize(nw, nh);
+    game.scale.setZoom(1 / dpr);
+  });
   const data: WorldSceneData = { world, room, net, chat, hud };
   game.scene.add("world", WorldScene, true, data);
+  game.events.once(Phaser.Core.Events.READY, () => new Diagnostics(game, room));
+  if (import.meta.env.DEV) Object.assign(window, { __game: game, __room: room });
+}
+
+function setupWardrobe(net: Net, chat: ChatUI) {
+  const panel = $("wardrobe");
+  let editor: CharacterCreator | undefined;
+  let before = "";
+
+  const close = (save: boolean) => {
+    if (!editor) return;
+    if (save && editor.encoded !== before) {
+      net.sendLook(editor.encoded);
+      store(LOOK_KEY, editor.encoded);
+    }
+    editor.destroy();
+    editor = undefined;
+    panel.hidden = true;
+    chat.setEnabled(true);
+  };
+
+  $("wardrobe-btn").hidden = false;
+  $("wardrobe-btn").addEventListener("click", () => {
+    if (editor) return close(false);
+    before = encodeLook(decodeLook(stored(LOOK_KEY)));
+    editor = new CharacterCreator($("wardrobe-creator"), decodeLook(before));
+    panel.hidden = false;
+    chat.setEnabled(false);
+  });
+  $("wardrobe-save").addEventListener("click", () => close(true));
+  $("wardrobe-cancel").addEventListener("click", () => close(false));
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && editor) close(false);
+  });
 }

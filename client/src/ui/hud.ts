@@ -1,10 +1,16 @@
-import { TILE_SIZE, type World } from "../../../shared/world";
-import { TILE_COLORS } from "../textures";
+import { DECOR, TILE_SIZE, Terrain, type World } from "../../../shared/world";
 
 export interface Dot {
   x: number;
   y: number;
 }
+
+const TERRAIN_RGB: Record<number, [number, number, number]> = {
+  [Terrain.Deep]: [38, 84, 112],
+  [Terrain.Water]: [58, 135, 153],
+  [Terrain.Grass]: [104, 160, 72],
+  [Terrain.Dirt]: [166, 124, 82],
+};
 
 export class HUD {
   private root = document.getElementById("hud")!;
@@ -22,19 +28,17 @@ export class HUD {
     this.terrain.height = world.height;
     const tctx = this.terrain.getContext("2d")!;
     const img = tctx.createImageData(world.width, world.height);
-    const rgb = Object.fromEntries(
-      Object.entries(TILE_COLORS).map(([k, hex]) => {
-        const n = parseInt(hex.slice(1), 16);
-        return [k, [(n >> 16) & 255, (n >> 8) & 255, n & 255]];
-      }),
-    );
-    for (let i = 0; i < world.tiles.length; i++) {
-      const [r, g, b] = rgb[world.tiles[i]];
-      const dark = world.decor[i] ? 0.75 : 1;
-      img.data[i * 4] = r * dark;
-      img.data[i * 4 + 1] = g * dark;
-      img.data[i * 4 + 2] = b * dark;
-      img.data[i * 4 + 3] = 255;
+    for (let ty = 0; ty < world.height; ty++) {
+      for (let tx = 0; tx < world.width; tx++) {
+        const [r, g, b] = TERRAIN_RGB[world.vertexAt(tx, ty)] ?? [0, 0, 0];
+        const d = DECOR[world.decorAt(tx, ty)];
+        const k = d.block ? 0.62 : 1;
+        const o = (ty * world.width + tx) * 4;
+        img.data[o] = r * k;
+        img.data[o + 1] = g * k;
+        img.data[o + 2] = b * k;
+        img.data[o + 3] = 255;
+      }
     }
     tctx.putImageData(img, 0, 0);
   }
@@ -59,9 +63,7 @@ export class HUD {
     ctx.drawImage(this.terrain, 0, 0, minimap.width, minimap.height);
 
     ctx.fillStyle = "#ff5fa2";
-    for (const o of others) {
-      ctx.fillRect(o.x * scale - 1.5, o.y * scale - 1.5, 3, 3);
-    }
+    for (const o of others) ctx.fillRect(o.x * scale - 1.5, o.y * scale - 1.5, 3, 3);
     if (self) {
       ctx.fillStyle = "#ffffff";
       ctx.strokeStyle = "#000000";

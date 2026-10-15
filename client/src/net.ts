@@ -1,10 +1,12 @@
 import { Client, type Room } from "@colyseus/sdk";
 import {
   ROOM_NAME,
+  sanitizeChat,
   type ChatMessage,
   type ChatSend,
   type CorrectMessage,
   type JoinOptions,
+  type LookMessage,
 } from "../../shared/protocol";
 import type { ChatUI } from "./ui/chat";
 import type { HUD } from "./ui/hud";
@@ -32,7 +34,8 @@ export class Net {
 
   constructor(
     readonly room: Room,
-    chat: ChatUI,
+    private myName: string,
+    private chat: ChatUI,
     hud: HUD,
     onClosed: (reason: string) => void,
   ) {
@@ -40,6 +43,8 @@ export class Net {
       for (const msg of history) chat.add(msg);
     });
     room.onMessage("chat", (msg: ChatMessage) => {
+      // Our own messages were already shown the moment we sent them.
+      if (msg.from === room.sessionId) return;
       chat.add(msg);
       if (msg.from) this.onBubble?.(msg.from, msg.text);
     });
@@ -60,7 +65,16 @@ export class Net {
     });
   }
 
-  sendChat(text: string) {
+  sendChat(raw: string) {
+    const text = sanitizeChat(raw);
+    if (!text) return;
     this.room.send("chat", { text } satisfies ChatSend);
+    // Local echo: no waiting for the server round trip.
+    this.chat.add({ id: 0, from: this.room.sessionId, name: this.myName, text, ts: Date.now() });
+    this.onBubble?.(this.room.sessionId, text);
+  }
+
+  sendLook(look: string) {
+    this.room.send("look", { look } satisfies LookMessage);
   }
 }

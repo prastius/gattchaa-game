@@ -16,8 +16,21 @@ const server = defineServer({
   },
 
   express: (app) => {
+    let lastCpu = process.cpuUsage();
+    let lastAt = Date.now();
     app.get("/health", (_req, res) => {
-      res.json({ ok: true, uptime: process.uptime() });
+      // CPU % of one core since the previous call; handy when load testing.
+      const cpu = process.cpuUsage(lastCpu);
+      const now = Date.now();
+      const cpuPct = ((cpu.user + cpu.system) / 1000 / Math.max(1, now - lastAt)) * 100;
+      lastCpu = process.cpuUsage();
+      lastAt = now;
+      res.json({
+        ok: true,
+        uptime: Math.round(process.uptime()),
+        rssMB: Math.round(process.memoryUsage().rss / 1e6),
+        cpuPct: Math.round(cpuPct),
+      });
     });
 
     // In production the server also hosts the built client, so one port serves everything.

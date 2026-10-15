@@ -1,13 +1,15 @@
 :root {
-  --ink: #eef4f7;
-  --ink-dim: #9fb3bf;
-  --panel: rgba(9, 22, 32, 0.78);
-  --panel-solid: #0f2433;
-  --line: rgba(255, 255, 255, 0.12);
-  --accent: #6cc070;
-  --accent-ink: #0b1d12;
+  --ink: #f3efe6;
+  --ink-dim: #b9b2a2;
+  --panel: rgba(24, 20, 16, 0.82);
+  --panel-solid: #221d18;
+  --panel-raised: #2e2720;
+  --line: rgba(255, 236, 200, 0.14);
+  --accent: #e8b04a;
+  --accent-ink: #2a1c06;
   --danger: #ff8a80;
-  --system: #ffd166;
+  --system: #ffd27a;
+  --name: #9fd3ff;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color: var(--ink);
 }
@@ -21,7 +23,7 @@ body {
   margin: 0;
   height: 100%;
   overflow: hidden;
-  background: #0b1d2a;
+  background: #14202b;
   overscroll-behavior: none;
   -webkit-user-select: none;
   user-select: none;
@@ -33,8 +35,17 @@ body {
   touch-action: none;
 }
 
+#game canvas {
+  image-rendering: pixelated;
+}
+
 [hidden] {
   display: none !important;
+}
+
+button {
+  font: inherit;
+  color: inherit;
 }
 
 /* ---------- HUD ---------- */
@@ -70,7 +81,7 @@ body {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--accent);
+  background: #7bd389;
 }
 
 .dot.off {
@@ -81,9 +92,37 @@ body {
   width: 168px;
   height: 168px;
   border-radius: 10px;
+  border: 2px solid rgba(255, 236, 200, 0.25);
+  background: #265470;
+}
+
+#online {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+#diag {
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--panel);
   border: 1px solid var(--line);
-  background: #0b2a3d;
-  image-rendering: pixelated;
+  font: 12px/1.5 ui-monospace, Consolas, monospace;
+  white-space: pre;
+}
+
+.hud-button {
+  pointer-events: auto;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.hud-button:hover {
+  background: var(--panel-raised);
 }
 
 /* ---------- Chat ---------- */
@@ -102,13 +141,13 @@ body {
   list-style: none;
   margin: 0;
   padding: 8px 10px;
-  max-height: 220px;
+  max-height: 200px;
   overflow-y: auto;
   border-radius: 10px;
   background: var(--panel);
   border: 1px solid var(--line);
   font-size: 14px;
-  line-height: 1.35;
+  line-height: 1.4;
   -webkit-user-select: text;
   user-select: text;
   scrollbar-width: thin;
@@ -124,6 +163,7 @@ body {
 
 #chat-log .name {
   font-weight: 600;
+  color: var(--name);
   margin-right: 6px;
 }
 
@@ -149,7 +189,7 @@ body {
   background: var(--panel-solid);
 }
 
-/* ---------- Overlays ---------- */
+/* ---------- Overlays + panels ---------- */
 
 .overlay {
   position: fixed;
@@ -157,20 +197,32 @@ body {
   display: grid;
   place-items: center;
   padding: 16px;
-  background: radial-gradient(circle at 50% 30%, rgba(20, 60, 80, 0.85), rgba(5, 12, 18, 0.95));
+  overflow-y: auto;
+  background:
+    radial-gradient(circle at 50% 20%, rgba(70, 110, 60, 0.55), transparent 60%),
+    radial-gradient(circle at 50% 100%, rgba(30, 70, 90, 0.6), transparent 60%),
+    #121a14;
   z-index: 10;
+}
+
+.overlay-light {
+  background: rgba(10, 14, 12, 0.55);
 }
 
 .panel {
   width: min(360px, 100%);
-  padding: 28px 24px;
+  padding: 24px;
   border-radius: 16px;
   background: var(--panel-solid);
   border: 1px solid var(--line);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+}
+
+.panel-wide {
+  width: min(620px, 100%);
 }
 
 .panel h1,
@@ -180,12 +232,7 @@ body {
 }
 
 .panel .sub {
-  margin: 0 0 8px;
-  color: var(--ink-dim);
-}
-
-.panel label {
-  font-size: 13px;
+  margin: 0;
   color: var(--ink-dim);
 }
 
@@ -193,31 +240,50 @@ body {
   padding: 12px;
   border-radius: 10px;
   border: 1px solid var(--line);
-  background: #0a1a25;
+  background: #17130f;
   color: var(--ink);
   font: inherit;
   font-size: 16px;
   outline: none;
+  min-width: 0;
 }
 
 .panel input:focus {
   border-color: var(--accent);
 }
 
-.panel button {
-  padding: 12px;
+.panel > button,
+.join-row > button {
+  padding: 12px 18px;
   border: 0;
   border-radius: 10px;
   background: var(--accent);
   color: var(--accent-ink);
-  font: inherit;
   font-weight: 700;
   cursor: pointer;
+}
+
+.join-row > button.secondary {
+  background: var(--panel-raised);
+  color: var(--ink);
 }
 
 .panel button:disabled {
   opacity: 0.6;
   cursor: progress;
+}
+
+.join-row {
+  display: flex;
+  gap: 8px;
+}
+
+.join-row input {
+  flex: 1;
+}
+
+.join-row > button.secondary {
+  margin-left: auto;
 }
 
 .error {
@@ -227,10 +293,188 @@ body {
   font-size: 14px;
 }
 
+.error:empty {
+  display: none;
+}
+
 .hint {
-  margin: 4px 0 0;
+  margin: 0;
   color: var(--ink-dim);
   font-size: 12px;
+}
+
+.hint a {
+  color: var(--ink-dim);
+}
+
+/* ---------- Character creator ---------- */
+
+#creator {
+  min-height: 300px; /* reserve space before the creator renders */
+}
+
+.creator {
+  display: grid;
+  grid-template-columns: 148px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.creator-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: sticky;
+  top: 0;
+}
+
+.creator-preview canvas {
+  width: 148px;
+  height: 148px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background:
+    radial-gradient(ellipse at 50% 85%, rgba(0, 0, 0, 0.25), transparent 45%),
+    linear-gradient(#6aa84f, #4f8a3a);
+  image-rendering: pixelated;
+  cursor: pointer;
+}
+
+.creator-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.creator-actions button,
+.creator-stepper button {
+  flex: 1;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--panel-raised);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.creator-actions button:hover,
+.creator-stepper button:hover {
+  border-color: var(--accent);
+}
+
+.creator-right {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.creator-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 10px;
+  background: #17130f;
+  border: 1px solid var(--line);
+}
+
+.creator-tabs button {
+  flex: 1;
+  padding: 7px 6px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-dim);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.creator-tabs button.active {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.creator-note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+
+.creator-row.muted .creator-stepper {
+  opacity: 0.5;
+}
+
+.creator-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 250px;
+  max-height: min(48vh, 400px);
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+}
+
+.creator-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.creator-row-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.creator-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.creator-stepper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 190px;
+}
+
+.creator-stepper button {
+  flex: 0 0 32px;
+  font-size: 18px;
+  line-height: 1;
+  padding: 3px 0 5px;
+}
+
+.creator-value {
+  flex: 1;
+  text-align: center;
+  font-size: 14px;
+}
+
+.creator-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 0, 0, 0.35);
+  padding: 0;
+  cursor: pointer;
+  background: #777;
+}
+
+.swatch.selected {
+  border-color: #fff;
+  box-shadow: 0 0 0 2px var(--accent);
 }
 
 @media (max-width: 600px) {
@@ -239,7 +483,38 @@ body {
     height: 112px;
   }
   #chat-log {
-    max-height: 140px;
+    max-height: 92px;
     font-size: 13px;
+    padding: 6px 8px;
+  }
+  #chat-input {
+    padding: 8px 10px;
+  }
+  .panel {
+    padding: 18px 14px;
+  }
+  .creator {
+    grid-template-columns: 1fr;
+  }
+  .creator-preview {
+    position: static;
+    flex-direction: row;
+    align-items: center;
+  }
+  .creator-preview canvas {
+    width: 112px;
+    height: 112px;
+  }
+  .creator-actions {
+    flex-direction: column;
+    flex: 1;
+  }
+  .creator-options {
+    max-height: 38vh;
+  }
+  .creator-stepper {
+    min-width: 0;
+    flex: 1;
+    max-width: 220px;
   }
 }

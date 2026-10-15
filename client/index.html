@@ -3,9 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-    <meta name="theme-color" content="#0b1d2a" />
+    <meta name="theme-color" content="#14202b" />
     <title>My World</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!-- Linked (not imported from JS) so the page is styled from the first paint. -->
+    <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
     <div id="game"></div>
@@ -18,6 +20,8 @@
         <span id="coords">0, 0</span>
       </div>
       <canvas id="minimap" width="168" height="168"></canvas>
+      <button id="wardrobe-btn" class="hud-button" type="button" hidden>👕 Wardrobe</button>
+      <pre id="diag" hidden></pre>
     </div>
 
     <div id="chat" hidden>
@@ -28,15 +32,31 @@
     </div>
 
     <div id="login" class="overlay">
-      <form id="login-form" class="panel" autocomplete="off">
+      <form id="login-form" class="panel panel-wide" autocomplete="off">
         <h1>My World</h1>
-        <p class="sub">An open world you share with everyone online.</p>
-        <label for="name-input">Your name</label>
-        <input id="name-input" maxlength="16" placeholder="Wanderer" required />
-        <button id="join-btn" type="submit">Enter world</button>
+        <p class="sub">Create your character, then step into a world shared with everyone online.</p>
+        <div id="creator"></div>
+        <div class="join-row">
+          <input id="name-input" maxlength="16" placeholder="Your name" aria-label="Your name" required />
+          <button id="join-btn" type="submit">Enter world</button>
+        </div>
         <p id="login-error" class="error" role="alert"></p>
-        <p class="hint">Move with WASD / arrow keys, or hold the screen. Enter to chat.</p>
+        <p class="hint">
+          Move with WASD / arrow keys, or hold the screen. Enter to chat.
+          <a href="/assets/CREDITS.txt" target="_blank" rel="noopener">Art credits</a>
+        </p>
       </form>
+    </div>
+
+    <div id="wardrobe" class="overlay overlay-light" hidden>
+      <div class="panel panel-wide">
+        <h2>Wardrobe</h2>
+        <div id="wardrobe-creator"></div>
+        <div class="join-row">
+          <button id="wardrobe-cancel" type="button" class="secondary">Cancel</button>
+          <button id="wardrobe-save" type="button">Save look</button>
+        </div>
+      </div>
     </div>
 
     <div id="disconnected" class="overlay" hidden>

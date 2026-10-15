@@ -1,18 +1,55 @@
 import Phaser from "phaser";
-import { TEX } from "./textures";
+import { PLAYER_SPEED } from "../../shared/world";
+import { Dir } from "../../shared/protocol";
+import { FRAME, SHEET_H, SHEET_W, WALK_COLS, composeCharacter } from "./character";
 
 const BUBBLE_MS = 6000;
-const TEXT_RES = Math.min(2, window.devicePixelRatio || 1);
+const STRIDE_PX = 15; // distance walked per animation frame
+const FEET_Y = 58; // feet line inside the 64px LPC frame
 
-function hueToTint(hue: number): number {
-  // HSV(h, 0.55, 0.95) -> 0xRRGGBB
-  const s = 0.55;
-  const v = 0.95;
-  const f = (n: number) => {
-    const k = (n + hue / 60) % 6;
-    return Math.round((v - v * s * Math.max(0, Math.min(k, 4 - k, 1))) * 255);
-  };
-  return (f(5) << 16) | (f(3) << 8) | f(1);
+/** Ref-counted Phaser textures, one per distinct look; unused ones are freed. */
+export class CharacterTextures {
+  private refs = new Map<string, number>();
+  private loading = new Map<string, Promise<string>>();
+
+  constructor(private scene: Phaser.Scene) {}
+
+  acquire(look: string): Promise<string> {
+    this.refs.set(look, (this.refs.get(look) ?? 0) + 1);
+    const key = `char:${look}`;
+    if (this.scene.textures.exists(key)) return Promise.resolve(key);
+    let p = this.loading.get(look);
+    if (!p) {
+      p = composeCharacter(look).then((canvas) => {
+        this.loading.delete(look);
+        if (!this.scene.textures.exists(key)) {
+          const tex = this.scene.textures.addCanvas(key, canvas)!;
+          for (let row = 0; row < SHEET_H / FRAME; row++) {
+            for (let col = 0; col < SHEET_W / FRAME; col++) {
+              tex.add(row * WALK_COLS + col, 0, col * FRAME, row * FRAME, FRAME, FRAME);
+            }
+          }
+        }
+        return key;
+      });
+      this.loading.set(look, p);
+    }
+    return p;
+  }
+
+  release(look: string) {
+    const n = (this.refs.get(look) ?? 1) - 1;
+    if (n > 0) {
+      this.refs.set(look, n);
+      return;
+    }
+    this.refs.delete(look);
+    // Free GPU memory a little later in case the look comes straight back.
+    this.scene.time.delayedCall(15000, () => {
+      const key = `char:${look}`;
+      if (!this.refs.has(look) && this.scene.textures.exists(key)) this.scene.textures.remove(key);
+    });
+  }
 }
 
 /**
@@ -21,47 +58,47 @@ function hueToTint(hue: number): number {
  */
 export class PlayerSprite {
   readonly container: Phaser.GameObjects.Container;
-  private body: Phaser.GameObjects.Image;
-  private head: Phaser.GameObjects.Image;
+  private sprite: Phaser.GameObjects.Sprite;
   private label: Phaser.GameObjects.Text;
   private bubble?: Phaser.GameObjects.Text;
   private bubbleTimer?: Phaser.Time.TimerEvent;
-  private walkTime = 0;
+  private look = "";
+  private walked = 0;
+  private destroyed = false;
 
-  /** Network target for remote players; ignored for the local player. */
   targetX: number;
   targetY: number;
   moving = false;
-  facing = 1;
+  dir: number = Dir.Down;
 
   constructor(
     private scene: Phaser.Scene,
+    private textures: CharacterTextures,
     x: number,
     y: number,
     name: string,
-    hue: number,
+    look: string,
     isSelf: boolean,
+    private textRes: number,
   ) {
     this.targetX = x;
     this.targetY = y;
 
-    const shadow = scene.add.image(0, 0, TEX.shadow);
-    this.body = scene.add.image(0, -12, TEX.body).setTint(hueToTint(hue));
-    this.head = scene.add.image(0, -30, TEX.head);
+    this.sprite = scene.add.sprite(0, 0, "__DEFAULT").setOrigin(0.5, FEET_Y / FRAME).setVisible(false);
     this.label = scene.add
-      .text(0, -46, name, {
-        fontFamily: "system-ui, sans-serif",
-        fontSize: "12px",
+      .text(0, -54, name, {
+        fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
+        fontSize: "11px",
         fontStyle: "bold",
         color: isSelf ? "#ffe680" : "#ffffff",
-        stroke: "#0b1d2a",
+        stroke: "#10202b",
         strokeThickness: 3,
       })
       .setOrigin(0.5, 1)
-      .setResolution(TEXT_RES);
+      .setResolution(textRes);
 
-    this.container = scene.add.container(x, y, [shadow, this.body, this.head, this.label]);
-    this.container.setDepth(y);
+    this.container = scene.add.container(x, y, [this.sprite, this.label]).setDepth(y);
+    this.setLook(look);
   }
 
   get x() {
@@ -72,7 +109,20 @@ export class PlayerSprite {
     return this.container.y;
   }
 
+  setLook(look: string) {
+    if (look === this.look) return;
+    const previous = this.look;
+    this.look = look;
+    this.textures.acquire(look).then((key) => {
+      if (this.destroyed || this.look !== look) return;
+      this.sprite.setTexture(key, this.frameIndex()).setVisible(true);
+    });
+    if (previous) this.textures.release(previous);
+  }
+
   setPosition(x: number, y: number) {
+    const moved = Math.hypot(x - this.container.x, y - this.container.y);
+    this.walked += moved;
     this.container.setPosition(x, y);
     this.container.setDepth(y);
   }
@@ -81,17 +131,17 @@ export class PlayerSprite {
     this.bubble?.destroy();
     this.bubbleTimer?.remove();
     this.bubble = this.scene.add
-      .text(0, -64, text, {
-        fontFamily: "system-ui, sans-serif",
-        fontSize: "13px",
-        color: "#10202b",
-        backgroundColor: "#ffffffee",
-        padding: { x: 8, y: 5 },
-        wordWrap: { width: 200, useAdvancedWrap: true },
+      .text(0, -70, text, {
+        fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
+        fontSize: "12px",
+        color: "#1b2733",
+        backgroundColor: "#fffdf5",
+        padding: { x: 7, y: 4 },
+        wordWrap: { width: 190, useAdvancedWrap: true },
         align: "center",
       })
       .setOrigin(0.5, 1)
-      .setResolution(TEXT_RES);
+      .setResolution(this.textRes);
     this.container.add(this.bubble);
     this.bubbleTimer = this.scene.time.delayedCall(BUBBLE_MS, () => {
       this.bubble?.destroy();
@@ -99,35 +149,37 @@ export class PlayerSprite {
     });
   }
 
-  /** Per-frame animation: walk bob + facing. */
-  animate(deltaMs: number) {
-    if (this.moving) {
-      this.walkTime += deltaMs;
-      const bob = Math.abs(Math.sin(this.walkTime / 90)) * 3;
-      this.body.y = -12 - bob;
-      this.head.y = -30 - bob;
-    } else {
-      this.walkTime = 0;
-      this.body.y = -12;
-      this.head.y = -30;
-    }
-    this.head.setFlipX(this.facing < 0);
+  private frameIndex(): number {
+    const col = this.moving ? 1 + (Math.floor(this.walked / STRIDE_PX) % (WALK_COLS - 1)) : 0;
+    return this.dir * WALK_COLS + col;
   }
 
-  /** Smoothly approach the last network position (remote players). */
+  /** Per-frame: pick the walk frame from distance travelled (so feet match speed). */
+  animate() {
+    if (!this.moving) this.walked = 0;
+    if (this.sprite.visible) this.sprite.setFrame(this.frameIndex());
+  }
+
+  /** Remote players: walk toward the last network position at (about) walking speed. */
   interpolate(deltaMs: number) {
     const dx = this.targetX - this.x;
     const dy = this.targetY - this.y;
-    if (dx * dx + dy * dy > 400 * 400) {
-      this.setPosition(this.targetX, this.targetY); // teleport / respawn
+    const dist = Math.hypot(dx, dy);
+    if (dist < 0.5) return;
+    if (dist > 400) {
+      this.container.setPosition(this.targetX, this.targetY).setDepth(this.targetY); // teleport/respawn
       return;
     }
-    const t = 1 - Math.exp(-deltaMs / 80);
-    this.setPosition(this.x + dx * t, this.y + dy * t);
+    // Catch up faster when we fall behind, so remote players never drift far.
+    const speed = PLAYER_SPEED * (dist > 48 ? 2 : 1.15);
+    const step = Math.min(dist, (speed * deltaMs) / 1000);
+    this.setPosition(this.x + (dx / dist) * step, this.y + (dy / dist) * step);
   }
 
   destroy() {
+    this.destroyed = true;
     this.bubbleTimer?.remove();
+    if (this.look) this.textures.release(this.look);
     this.container.destroy();
   }
 }

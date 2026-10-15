@@ -1,13 +1,17 @@
 import { Room, type Client } from "colyseus";
+import { StateView } from "@colyseus/schema";
 import { PLAYER_SPEED, World } from "../../../shared/world";
+import { normalizeLook } from "../../../shared/appearance";
 import {
   CHAT_HISTORY,
+  VIEW_RADIUS,
   sanitizeChat,
   sanitizeName,
   type ChatMessage,
   type ChatSend,
   type CorrectMessage,
   type JoinOptions,
+  type LookMessage,
   type MoveMessage,
 } from "../../../shared/protocol";
 import { Player, WorldState } from "./WorldState";
@@ -17,17 +21,28 @@ const world = new World();
 
 const CHAT_WINDOW_MS = 5000;
 const CHAT_MAX_PER_WINDOW = 5;
+const LOOK_COOLDOWN_MS = 1000;
+const MIN_MOVE_INTERVAL_MS = 25; // ignore move floods above ~40 msg/s
 const RECONNECT_SECONDS = 20;
+const VIEW_UPDATE_MS = 200;
+// Hysteresis so players near the edge of view don't flicker in and out.
+const VIEW_ENTER_X = VIEW_RADIUS;
+const VIEW_ENTER_Y = VIEW_RADIUS * 0.75;
+const VIEW_EXIT_PAD = 200;
 
 interface PlayerMeta {
+  /** Exact position; the synced schema only carries whole pixels. */
+  x: number;
+  y: number;
   /** Movement budget in pixels; refills at slightly above PLAYER_SPEED. */
   allowance: number;
   lastMoveAt: number;
+  lastLookAt: number;
   chatTimes: number[];
 }
 
 export class WorldRoom extends Room<{ state: WorldState }> {
-  maxClients = 100;
+  maxClients = 150;
   state = new WorldState();
 
   private meta = new Map<string, PlayerMeta>();
@@ -36,19 +51,29 @@ export class WorldRoom extends Room<{ state: WorldState }> {
 
   messages = {
     move: (client: Client, msg: MoveMessage) => this.handleMove(client, msg),
+    look: (client: Client, msg: LookMessage) => this.handleLook(client, msg),
     chat: (client: Client, msg: ChatSend) => this.handleChat(client, msg),
   };
+
+  onCreate() {
+    this.clock.setInterval(() => this.updateViews(), VIEW_UPDATE_MS);
+  }
 
   onJoin(client: Client, options: JoinOptions) {
     const spawn = world.findSpawn();
     const player = new Player({
       name: sanitizeName(options?.name),
+      look: normalizeLook(options?.look),
       x: spawn.x,
       y: spawn.y,
-      hue: Math.floor(Math.random() * 360),
     });
     this.state.players.set(client.sessionId, player);
-    this.meta.set(client.sessionId, { allowance: 0, lastMoveAt: Date.now(), chatTimes: [] });
+    this.meta.set(client.sessionId, { x: spawn.x, y: spawn.y, allowance: 0, lastMoveAt: Date.now(), lastLookAt: 0, chatTimes: [] });
+    this.state.online = this.clients.length;
+
+    client.view = new StateView();
+    client.view.add(player);
+    this.updateViews();
 
     client.send("chat:history", this.history);
     this.system(`${player.name} joined the world`);
@@ -59,14 +84,36 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     // flaky mobile connection can resume the same session.
     const player = this.state.players.get(client.sessionId);
     if (player) player.moving = false;
-    await this.allowReconnection(client, RECONNECT_SECONDS);
+    const view = client.view;
+    const resumed = await this.allowReconnection(client, RECONNECT_SECONDS);
+    // Keep the interest-management view on the resumed connection.
+    if (resumed && !resumed.view) resumed.view = view;
   }
 
   onLeave(client: Client) {
     const player = this.state.players.get(client.sessionId);
     this.state.players.delete(client.sessionId);
     this.meta.delete(client.sessionId);
+    this.state.online = this.clients.length;
     if (player) this.system(`${player.name} left`);
+  }
+
+  /** Interest management: each client's view holds only the players near it. */
+  private updateViews() {
+    const players = [...this.state.players.entries()];
+    for (const client of this.clients) {
+      const view = client.view;
+      const me = this.state.players.get(client.sessionId);
+      if (!view || !me) continue;
+      for (const [id, other] of players) {
+        if (id === client.sessionId) continue;
+        const dx = Math.abs(other.x - me.x);
+        const dy = Math.abs(other.y - me.y);
+        const visible = view.has(other);
+        if (!visible && dx <= VIEW_ENTER_X && dy <= VIEW_ENTER_Y) view.add(other);
+        else if (visible && (dx > VIEW_ENTER_X + VIEW_EXIT_PAD || dy > VIEW_ENTER_Y + VIEW_EXIT_PAD)) view.remove(other);
+      }
+    }
   }
 
   private handleMove(client: Client, msg: MoveMessage) {
@@ -75,13 +122,17 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     if (!player || !meta || !msg || !Number.isFinite(msg.x) || !Number.isFinite(msg.y)) return;
 
     const now = Date.now();
+    if (now - meta.lastMoveAt < MIN_MOVE_INTERVAL_MS) return;
     const dt = Math.min(1000, now - meta.lastMoveAt) / 1000;
     meta.lastMoveAt = now;
     // Budget-based speed check tolerates bursty packets without allowing speed hacks.
     meta.allowance = Math.min(PLAYER_SPEED, meta.allowance + PLAYER_SPEED * dt * 1.25);
 
-    const { x: x0, y: y0 } = player;
-    const { x: x1, y: y1 } = msg;
+    // Validate against exact positions so sliding along a wall never rounds into it.
+    const x0 = meta.x;
+    const y0 = meta.y;
+    const x1 = msg.x;
+    const y1 = msg.y;
     const dist = Math.hypot(x1 - x0, y1 - y0);
     const pathOk =
       world.canTravel(x0, y0, x1, y1) ||
@@ -95,10 +146,22 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     }
 
     meta.allowance -= dist;
-    player.x = x1;
-    player.y = y1;
-    player.facing = msg.facing < 0 ? -1 : 1;
+    meta.x = x1;
+    meta.y = y1;
+    player.x = Math.round(x1);
+    player.y = Math.round(y1);
+    player.dir = Number.isInteger(msg.dir) && msg.dir >= 0 && msg.dir <= 3 ? msg.dir : player.dir;
     player.moving = Boolean(msg.moving);
+  }
+
+  private handleLook(client: Client, msg: LookMessage) {
+    const player = this.state.players.get(client.sessionId);
+    const meta = this.meta.get(client.sessionId);
+    if (!player || !meta) return;
+    const now = Date.now();
+    if (now - meta.lastLookAt < LOOK_COOLDOWN_MS) return;
+    meta.lastLookAt = now;
+    player.look = normalizeLook(msg?.look);
   }
 
   private handleChat(client: Client, msg: ChatSend) {
