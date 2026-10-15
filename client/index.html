@@ -3,9 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-    <meta name="theme-color" content="#14202b" />
-    <title>My World</title>
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#131313" />
+    <meta name="description" content="Gattchaa Town: hang out with fellow collectors, chat, and open TCG packs on Gattchaa Oripa." />
+    <title>Gattchaa Town</title>
+    <link rel="icon" href="/favicon-32.png" type="image/png" />
     <!-- Linked (not imported from JS) so the page is styled from the first paint. -->
     <link rel="stylesheet" href="/src/style.css" />
   </head>
@@ -15,7 +16,7 @@
     <div id="hud" hidden>
       <div class="hud-box">
         <span class="dot" id="conn-dot"></span>
-        <span id="online">0 online</span>
+        <span id="online">0 in town</span>
         <span class="sep">·</span>
         <span id="coords">0, 0</span>
       </div>
@@ -24,6 +25,8 @@
       <pre id="diag" hidden></pre>
     </div>
 
+    <div id="announce" hidden aria-live="polite"></div>
+
     <div id="chat" hidden>
       <ul id="chat-log" aria-live="polite"></ul>
       <form id="chat-form" autocomplete="off">
@@ -31,18 +34,37 @@
       </form>
     </div>
 
+    <section id="dialog" class="dialog" hidden aria-live="polite">
+      <header class="dialog-head">
+        <canvas id="dialog-portrait" width="64" height="64"></canvas>
+        <div>
+          <div id="dialog-name" class="dialog-name"></div>
+          <div id="dialog-title" class="dialog-title"></div>
+        </div>
+        <button id="dialog-close" class="dialog-close" type="button" aria-label="Close">×</button>
+      </header>
+      <p id="dialog-text" class="dialog-text"></p>
+      <div id="dialog-body" class="dialog-body"></div>
+      <div id="dialog-actions" class="dialog-actions"></div>
+    </section>
+
     <div id="login" class="overlay">
       <form id="login-form" class="panel panel-wide" autocomplete="off">
-        <h1>My World</h1>
-        <p class="sub">Create your character, then step into a world shared with everyone online.</p>
+        <div class="brand">
+          <img src="/assets/gattchaa/logo-64.png" alt="" width="52" height="48" />
+          <div>
+            <h1>Gattchaa Town</h1>
+            <p class="sub">Hang out with fellow collectors, then open packs on Gattchaa Oripa.</p>
+          </div>
+        </div>
         <div id="creator"></div>
         <div class="join-row">
           <input id="name-input" maxlength="16" placeholder="Your name" aria-label="Your name" required />
-          <button id="join-btn" type="submit">Enter world</button>
+          <button id="join-btn" type="submit">Enter town</button>
         </div>
         <p id="login-error" class="error" role="alert"></p>
         <p class="hint">
-          Move with WASD / arrow keys, or hold the screen. Enter to chat.
+          Move with WASD / arrow keys, or hold the screen. E or tap to talk. Enter to chat.
           <a href="/assets/CREDITS.txt" target="_blank" rel="noopener">Art credits</a>
         </p>
       </form>

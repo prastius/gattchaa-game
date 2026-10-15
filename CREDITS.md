@@ -91,6 +91,543 @@ Wildflowers
   DETAILS: Original wildflowers by Lanea Zimmerman, as part of the grass. Original winter stems by Demetrius. Reconfigured and recolored by Eliza Wyatt.
 ```
 
+## Town buildings, furniture and floors
+
+Also from **LPC Revised** (same commit), licensed **OGA-BY 3.0**. Credits for each folder used:
+
+```
+== Structure/Structures ==
+Brick House A
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  LICENSE: OGA-BY 3.0
+  ASSETS USED: 
+	- Walls: Brick Wall Block Edging
+	- Door: Doorframe A (32x48px)
+	- Window: Stone Windows A
+	- Steps: Short Steps A
+	- Chimney: Brick Chimney A
+	- Roof: Hipped Shingle Roof A, Flat Shingle Roof A
+
+
+Brick House B
+-------------------
+  ARTIST(S): Lanea Zimmerman, Eliza Wyatt (DeathsDarling)
+  LICENSE: OGA-BY 3.0
+  NOTE: Some details hand-painted by Eliza Wyatt
+  ASSETS USED: 
+	- Walls: Brick Wall A
+	- Door: Doorframe A (32x64px)
+	- Window: Ornamental Windows A
+	- Roof: Gable Shingle Roof A
+
+
+Paneled House A
+-------------------
+  ARTIST(S): Lanea Zimmerman, Eliza Wyatt (DeathsDarling)
+  LICENSE: OGA-BY 3.0
+  NOTE: Some details hand-painted by Eliza Wyatt
+  ASSETS USED: 
+	- Walls: Siding, Plain
+	- Door: Doorframe A (32x48px)
+	- Window: Ornamental Windows A (resized)
+	- Roof: Gable Shingle Roof A
+	- Steps: Short Steps A
+
+== Structure/Misc ==
+Drain A
+--------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Recolors by Eliza Wyatt.
+
+Fountain A
+--------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-arabic-elements
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Recolors by Eliza Wyatt.
+
+Pool A
+--------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-arabic-elements
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Recolors by Eliza Wyatt.
+
+Prison A
+--------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-dungeon-elements
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original design by Lanea Zimmerman. Expanded and recolored by Eliza Wyatt.
+
+Trellis A
+--------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-modified-base-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original design by Lanea Zimmerman. Expanded and recolored by Eliza Wyatt.
+
+== Structure/Floor ==
+Diamond Tile A
+-------------------
+  ARTIST(S): Eliza Wyatt (DeathsDarling)
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Eliza Wyatt
+
+Diamond Tile B
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-dungeon-elements
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Recolors by Eliza Wyatt.
+
+Diamond Tile C
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-dungeon-elements
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Recolors by Eliza Wyatt.
+
+Floral Carpet A
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-dungeon-elements
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Recolors by Eliza Wyatt.
+
+Floral Carpet B
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-dungeon-elements
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Recolors by Eliza Wyatt.
+
+Geometric Carpet A
+-------------------
+  ARTIST(S): Eliza Wyatt (DeathsDarling)
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Eliza Wyatt
+
+Geometric Carpet B
+-------------------
+  ARTIST(S): Eliza Wyatt (DeathsDarling)
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Eliza Wyatt
+
+Gritty Dirt
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-dungeon-elements
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Recolors by Eliza Wyatt.
+
+Herringbone
+-------------------
+  ARTIST(S): Eliza Wyatt (DeathsDarling)
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Eliza Wyatt
+
+Subfloor
+-------------------
+  ARTIST(S): Eliza Wyatt (DeathsDarling)
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Eliza Wyatt
+
+Tile A
+-------------------
+  ARTIST(S): Eliza Wyatt (DeathsDarling)
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Eliza Wyatt
+
+Tile B
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-modified-base-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Recolors by Eliza Wyatt.
+
+Tile C
+-------------------
+  ARTIST(S): Eliza Wyatt (DeathsDarling)
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Eliza Wyatt
+
+Wood Floor A
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-modified-base-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Edits and recolors by Eliza Wyatt.
+
+Wood Floor B
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-modified-base-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Edits and recolors by Eliza Wyatt.
+
+== Objects/Furniture ==
+Barrel
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Recolors by Eliza Wyatt.
+
+Bin
+-------------------
+  ARTIST(S): Eliza Wyatt (DeathsDarling)
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Eliza Wyatt.
+
+Cabinet
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-modified-base-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Recolors by Eliza Wyatt.
+
+Cauldron
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm)
+  SOURCE: https://opengameart.org/content/lpc-dungeon-elements
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Adjustments and recolors by Eliza Wyatt.
+
+Chest
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original large chests by Lanea Zimmerman. Smaller chests and recolors by Eliza Wyatt.
+
+Christmas Tree
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original tree by Lanea Zimmerman. Recolors, animation, and festive cheer by Eliza Wyatt.
+
+Clock, Grandfather
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm)
+  SOURCE: https://opengameart.org/content/lpc-interior-castle-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Recolors and animation by Eliza Wyatt.
+
+Copy Machine
+-------------------
+  ARTIST(S): Eliza Wyatt (DeathsDarling)
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Eliza Wyatt.
+
+Countertop
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-modified-base-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Adjustments and recolors by Eliza Wyatt.
+
+Crate
+-------------------
+  ARTIST(S): Eliza Wyatt (DeathsDarling)
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Eliza Wyatt.
+
+Desk, Office
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-modified-base-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: 
+	Row 1: Desk made by Eliza Wyatt, using elements from Lanea Zimmerman's cabinets and countertops.
+	Row 2+: Original by Eliza Wyatt
+
+Desk, Vanity
+-------------------
+  ARTIST(S): Eliza Wyatt (DeathsDarling)
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Eliza Wyatt.
+
+Dresser
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-modified-base-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Dresser made by Eliza Wyatt, using elements from Lanea Zimmerman's cabinets.
+
+End Table
+-------------------
+  ARTIST(S): Eliza Wyatt (DeathsDarling)
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Eliza Wyatt.
+
+Fireplace, Cast Iron
+-------------------
+  ARTIST(S): Lanea Zimmerman (aka Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-modified-base-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original design and fire animation by Lanea Zimmerman. Fire reflections and recolors by Eliza Wyatt. Stovetop burners by Eliza Wyatt.
+
+Fireplace
+-------------------
+  ARTIST(S): Lanea Zimmerman (aka Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-modified-base-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: 
+	Row 1: Original by Lanea Zimmerman. Recolors by Eliza Wyatt.
+	Row 2: Original by Eliza Wyatt.
+
+Fridge
+-------------------
+  ARTIST(S): Eliza Wyatt (DeathsDarling)
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Eliza Wyatt.
+
+Ladder
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-modified-base-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Recolors by Eliza Wyatt.
+
+Lighting, Floor
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-modified-base-tiles
+  SOURCE: https://opengameart.org/content/lpc-interior-castle-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: 
+	Top Row: Original by Lanea Zimmerman. Adjustments and recolors by Eliza Wyatt.
+	Row 2+: Original by Eliza Wyatt.
+
+Lighting, Outdoors
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-modified-base-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Recolors by Eliza Wyatt. Inactive version added by Eliza Wyatt.
+
+Mirror, Standing
+-------------------
+  ARTIST(S): Eliza Wyatt (DeathsDarling)
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Eliza Wyatt.
+
+Oven, Modern
+-------------------
+  ARTIST(S): Eliza Wyatt (DeathsDarling)
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Eliza Wyatt.
+
+Planter
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm)
+  SOURCE: https://opengameart.org/content/lpc-interior-castle-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Recolored by Eliza Wyatt.
+
+Sawhorse
+-------------------
+  ARTIST(S): BlueCarrot16
+  SOURCE: https://opengameart.org/content/lpc-woodshop
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by BlueCarrot16. Shading edits and recolors by Eliza Wyatt.
+
+Shavehorse
+-------------------
+  ARTIST(S): BlueCarrot16, Eliza Wyatt
+  SOURCE: https://opengameart.org/content/lpc-woodshop
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by BlueCarrot16. Structural edits and recolors by Eliza Wyatt.
+
+Shelf
+-------------------
+  ARTIST(S): Eliza Wyatt (DeathsDarling)
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Eliza Wyatt.
+
+Sink, Countertop
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-modified-base-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: 
+	Top Row: Original by Lanea Zimmerman. Adjustments and recolors by Eliza Wyatt.
+	Row 2: Made by Eliza Wyatt, using elements of Lanea Zimmerman's sink.
+
+Sink, Pedestal
+-------------------
+  ARTIST(S): Eliza Wyatt (DeathsDarling)
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Eliza Wyatt.
+
+Standing Screen
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), BlueCarrot16, Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-upholstery
+  LICENSE: OGA-BY 3.0
+  DETAILS: 
+	Top Row: Original by Lanea Zimmerman and BlueCarrot16. Recolors by Eliza Wyatt.
+	Second Row: Original by Eliza Wyatt.
+
+Stone Slabs
+-------------------
+  ARTIST(S): BlueCarrot16
+  SOURCE: https://opengameart.org/content/lpc-blacksmith
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by BlueCarrot. Recolored by Eliza Wyatt.
+
+Tables, Card
+-------------------
+  ARTIST(S): Eliza Wyatt (DeathsDarling)
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Eliza Wyatt.
+
+Tables, Ornate Wood
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-interior-castle-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Adjustments and recolors by Eliza Wyatt.
+
+Tables, Rough Wood
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-dungeon-elements
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Adjustments and recolors by Eliza Wyatt.
+
+Tables, Workshop
+-------------------
+  ARTIST(S): BlueCarrot16
+  SOURCE: https://opengameart.org/content/lpc-woodshop
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by BlueCarrot16. Recolors by Eliza Wyatt.
+
+Trough
+-------------------
+  ARTIST(S): BlueCarrot16, Eliza Wyatt (DeathsDarling), YuriNikolai
+  SOURCE: https://opengameart.org/content/lpc-blacksmith
+  SOURCE: https://opengameart.org/content/lpc-troughs-expanded
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by BlueCarrot. Edited and recolored by Eliza Wyatt. Empty trough added by YuriNikolai.
+
+Tv, Widescreen; Tv, Widescreen - No Service display
+-------------------
+  ARTIST(S): Eliza Wyatt (DeathsDarling)
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Eliza Wyatt.
+
+Vase Studies
+-------------------
+  ARTIST(S): Eliza Wyatt (DeathsDarling)
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Eliza Wyatt.
+
+Vending Machine
+-------------------
+  ARTIST(S): Eliza Wyatt (DeathsDarling)
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Eliza Wyatt.
+
+Water Cooler
+-------------------
+  ARTIST(S): Eliza Wyatt (DeathsDarling)
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Eliza Wyatt.
+
+Wolf Stone
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-modified-base-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Recolors by Eliza Wyatt.
+
+Workbench, Carpentry
+-------------------
+  ARTIST(S): BlueCarrot16
+  SOURCE: https://opengameart.org/content/lpc-woodshop
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by BlueCarrot16. Recolors by Eliza Wyatt.
+
+Workbench, Wire Drawing
+-------------------
+  ARTIST(S): BlueCarrot16
+  SOURCE: https://opengameart.org/content/lpc-blacksmith
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by BlueCarrot. Recolored by Eliza Wyatt.
+
+== Objects/Furniture/Seating ==
+Bar Stools
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), BlueCarrot16, Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-upholstery
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman and BlueCarrot16. Adjustments and recolors by Eliza Wyatt.
+
+Chair, Dining (all)
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), BlueCarrot16, Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-upholstery
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman and BlueCarrot16. Recolors by Eliza Wyatt. Altered to accomodate sitting LPC character by Eliza Wyatt.
+
+Chair, Office
+-------------------
+  ARTIST(S): Eliza Wyatt (DeathsDarling)
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Eliza Wyatt.
+
+Chair, Sofa (all)
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), BlueCarrot16, Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-upholstery
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman and BlueCarrot16. Recolors by Eliza Wyatt. Altered to accomodate sitting LPC character by Eliza Wyatt.
+
+Loveseat, Casual (all)
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), BlueCarrot16, Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-upholstery
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman and BlueCarrot16. Side and back views by Eliza Wyatt. Recolors by Eliza Wyatt.
+
+Loveseat, Formal (all)
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), BlueCarrot16, Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-upholstery
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman and BlueCarrot16. Sofa with arms added by Eliza Wyatt. Recolors by Eliza Wyatt.
+
+Ottoman (all)
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), BlueCarrot16, Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-upholstery
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman and BlueCarrot16. Wide ottoman side view by Eliza Wyatt. Recolors by Eliza Wyatt.
+
+Sofa Set, Casual
+-------------------
+  ARTIST(S): Eliza Wyatt (DeathsDarling)
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Eliza Wyatt.
+
+Thrones
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-interior-castle-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original front view by Lanea Zimmerman. Side and back views by Eliza Wyatt. Recolors by Eliza Wyatt.
+```
+
+## Gattchaa logo
+
+The Gattchaa logo and product images are property of Gattchaa Hobby Store and are not covered by the licenses above.
+
 ## Characters
 
 From the **Universal LPC Spritesheet Character Generator**: <https://github.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator> (commit `9bf06be`).

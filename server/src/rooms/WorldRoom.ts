@@ -15,6 +15,9 @@ import {
   type MoveMessage,
 } from "../../../shared/protocol";
 import { Player, WorldState } from "./WorldState";
+import { NpcBrain } from "./NpcBrain";
+import { feed } from "../gattchaa";
+import type { Announcement, NpcSay } from "../../../shared/gattchaa";
 
 // Generated once per process; every room instance shares the same map.
 const world = new World();
@@ -29,6 +32,7 @@ const VIEW_UPDATE_MS = 200;
 const VIEW_ENTER_X = VIEW_RADIUS;
 const VIEW_ENTER_Y = VIEW_RADIUS * 0.75;
 const VIEW_EXIT_PAD = 200;
+const NPC_TICK_MS = 100;
 
 interface PlayerMeta {
   /** Exact position; the synced schema only carries whole pixels. */
@@ -48,6 +52,12 @@ export class WorldRoom extends Room<{ state: WorldState }> {
   private meta = new Map<string, PlayerMeta>();
   private history: ChatMessage[] = [];
   private nextChatId = 1;
+  private startedAt = Date.now();
+  private brain!: NpcBrain;
+  private stopAnnouncements?: () => void;
+
+  /** Room clock for interpolation timestamps (fits uint32 for ~49 days). */
+  private now = () => Date.now() - this.startedAt;
 
   messages = {
     move: (client: Client, msg: MoveMessage) => this.handleMove(client, msg),
@@ -57,6 +67,23 @@ export class WorldRoom extends Room<{ state: WorldState }> {
 
   onCreate() {
     this.clock.setInterval(() => this.updateViews(), VIEW_UPDATE_MS);
+
+    this.brain = new NpcBrain(world, feed, this.now, (msg: NpcSay) => this.broadcast("npc:say", msg));
+    for (const [id, npc] of this.brain.npcs) this.state.npcs.set(id, npc);
+    this.clock.setInterval(() => {
+      this.brain.tick(NPC_TICK_MS);
+      this.state.siteOnline = feed.online;
+    }, NPC_TICK_MS);
+
+    this.stopAnnouncements = feed.onAnnouncement((a: Announcement) => {
+      this.broadcast("announce", a);
+      this.brain.shout(a.title ? `Wow! ${a.message}` : a.message);
+      this.publish(this.makeMessage("", a.label || "Gattchaa", a.message, true));
+    });
+  }
+
+  onDispose() {
+    this.stopAnnouncements?.();
   }
 
   onJoin(client: Client, options: JoinOptions) {
@@ -66,6 +93,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       look: normalizeLook(options?.look),
       x: spawn.x,
       y: spawn.y,
+      ts: this.now(),
     });
     this.state.players.set(client.sessionId, player);
     this.meta.set(client.sessionId, { x: spawn.x, y: spawn.y, allowance: 0, lastMoveAt: Date.now(), lastLookAt: 0, chatTimes: [] });
@@ -150,6 +178,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     meta.y = y1;
     player.x = Math.round(x1);
     player.y = Math.round(y1);
+    player.ts = this.now();
     player.dir = Number.isInteger(msg.dir) && msg.dir >= 0 && msg.dir <= 3 ? msg.dir : player.dir;
     player.moving = Boolean(msg.moving);
   }

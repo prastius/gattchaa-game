@@ -14,7 +14,11 @@ export class Diagnostics {
   private worstFrame = 0;
   private lastFrameAt = performance.now();
 
-  constructor(game: Phaser.Game, room: Room) {
+  constructor(
+    game: Phaser.Game,
+    room: Room,
+    private extra?: () => string,
+  ) {
     room.onDrop(() => this.drops++);
     setInterval(() => room.ping((ms) => (this.ping = Math.round(ms))), 2000);
 
@@ -46,6 +50,7 @@ export class Diagnostics {
         `FPS ${fps}   worst frame ${worst} ms`,
         `ping ${this.ping < 0 ? "…" : `${this.ping} ms`}   reconnects ${this.drops}`,
         `GPU resets ${this.contextLosses}   ${game.renderer.type === 2 ? "WebGL" : "Canvas"} @${window.devicePixelRatio}x`,
+        ...(this.extra ? [this.extra()] : []),
       ].join("\n");
     }, 500);
   }

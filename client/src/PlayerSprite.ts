@@ -1,5 +1,4 @@
 import Phaser from "phaser";
-import { PLAYER_SPEED } from "../../shared/world";
 import { Dir } from "../../shared/protocol";
 import { FRAME, SHEET_H, SHEET_W, WALK_COLS, composeCharacter } from "./character";
 
@@ -52,22 +51,33 @@ export class CharacterTextures {
   }
 }
 
+export interface SpriteOptions {
+  isSelf?: boolean;
+  /** NPCs: role shown under the name ("Pokémon Packs"). */
+  title?: string;
+  npc?: boolean;
+  textRes: number;
+}
+
+const FONT = "system-ui, -apple-system, Segoe UI, sans-serif";
+
 /**
- * A player avatar. The container's (x, y) is the player's feet, and its depth
+ * A player (or NPC) avatar. The container's (x, y) is the player's feet, and its depth
  * equals y so everything in the world is drawn back-to-front ("2.5D" overlap).
  */
 export class PlayerSprite {
   readonly container: Phaser.GameObjects.Container;
   private sprite: Phaser.GameObjects.Sprite;
   private label: Phaser.GameObjects.Text;
+  private titleLabel?: Phaser.GameObjects.Text;
   private bubble?: Phaser.GameObjects.Text;
+  private bubbleY: number;
+  private textRes: number;
   private bubbleTimer?: Phaser.Time.TimerEvent;
   private look = "";
   private walked = 0;
   private destroyed = false;
 
-  targetX: number;
-  targetY: number;
   moving = false;
   dir: number = Dir.Down;
 
@@ -78,26 +88,40 @@ export class PlayerSprite {
     y: number,
     name: string,
     look: string,
-    isSelf: boolean,
-    private textRes: number,
+    opts: SpriteOptions,
   ) {
-    this.targetX = x;
-    this.targetY = y;
+    this.textRes = opts.textRes;
+    const hasTitle = !!opts.title;
+    this.bubbleY = hasTitle ? -80 : -70;
 
     this.sprite = scene.add.sprite(0, 0, "__DEFAULT").setOrigin(0.5, FEET_Y / FRAME).setVisible(false);
     this.label = scene.add
-      .text(0, -54, name, {
-        fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
+      .text(0, hasTitle ? -62 : -54, name, {
+        fontFamily: FONT,
         fontSize: "11px",
         fontStyle: "bold",
-        color: isSelf ? "#ffe680" : "#ffffff",
+        color: opts.isSelf ? "#ffe680" : opts.npc ? "#ffb35c" : "#ffffff",
         stroke: "#10202b",
         strokeThickness: 3,
       })
       .setOrigin(0.5, 1)
-      .setResolution(textRes);
+      .setResolution(this.textRes);
+    const parts: Phaser.GameObjects.GameObject[] = [this.sprite, this.label];
+    if (hasTitle) {
+      this.titleLabel = scene.add
+        .text(0, -51, opts.title!, {
+          fontFamily: FONT,
+          fontSize: "9px",
+          color: "#ffe2b8",
+          stroke: "#10202b",
+          strokeThickness: 3,
+        })
+        .setOrigin(0.5, 1)
+        .setResolution(this.textRes);
+      parts.push(this.titleLabel);
+    }
 
-    this.container = scene.add.container(x, y, [this.sprite, this.label]).setDepth(y);
+    this.container = scene.add.container(x, y, parts).setDepth(y);
     this.setLook(look);
   }
 
@@ -131,8 +155,8 @@ export class PlayerSprite {
     this.bubble?.destroy();
     this.bubbleTimer?.remove();
     this.bubble = this.scene.add
-      .text(0, -70, text, {
-        fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
+      .text(0, this.bubbleY, text, {
+        fontFamily: FONT,
         fontSize: "12px",
         color: "#1b2733",
         backgroundColor: "#fffdf5",
@@ -160,20 +184,9 @@ export class PlayerSprite {
     if (this.sprite.visible) this.sprite.setFrame(this.frameIndex());
   }
 
-  /** Remote players: walk toward the last network position at (about) walking speed. */
-  interpolate(deltaMs: number) {
-    const dx = this.targetX - this.x;
-    const dy = this.targetY - this.y;
-    const dist = Math.hypot(dx, dy);
-    if (dist < 0.5) return;
-    if (dist > 400) {
-      this.container.setPosition(this.targetX, this.targetY).setDepth(this.targetY); // teleport/respawn
-      return;
-    }
-    // Catch up faster when we fall behind, so remote players never drift far.
-    const speed = PLAYER_SPEED * (dist > 48 ? 2 : 1.15);
-    const step = Math.min(dist, (speed * deltaMs) / 1000);
-    this.setPosition(this.x + (dx / dist) * step, this.y + (dy / dist) * step);
+  /** Big jumps (respawn, reconnect) shouldn't count as walking distance. */
+  teleport(x: number, y: number) {
+    this.container.setPosition(x, y).setDepth(y);
   }
 
   destroy() {

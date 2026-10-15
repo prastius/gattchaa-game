@@ -1,4 +1,5 @@
 import { DECOR, TILE_SIZE, Terrain, type World } from "../../../shared/world";
+import { Floor } from "../../../shared/town";
 
 export interface Dot {
   x: number;
@@ -10,6 +11,13 @@ const TERRAIN_RGB: Record<number, [number, number, number]> = {
   [Terrain.Water]: [58, 135, 153],
   [Terrain.Grass]: [104, 160, 72],
   [Terrain.Dirt]: [166, 124, 82],
+};
+
+const FLOOR_RGB: Record<number, [number, number, number]> = {
+  [Floor.Stone]: [214, 218, 222],
+  [Floor.StoneEdge]: [170, 178, 186],
+  [Floor.Brand]: [235, 130, 36],
+  [Floor.Wood]: [176, 128, 80],
 };
 
 export class HUD {
@@ -30,7 +38,12 @@ export class HUD {
     const img = tctx.createImageData(world.width, world.height);
     for (let ty = 0; ty < world.height; ty++) {
       for (let tx = 0; tx < world.width; tx++) {
-        const [r, g, b] = TERRAIN_RGB[world.vertexAt(tx, ty)] ?? [0, 0, 0];
+        const floor = world.floorAt(tx, ty);
+        const [r, g, b] = world.solidAt(tx, ty)
+          ? [120, 52, 30]
+          : floor
+            ? (FLOOR_RGB[floor] ?? [200, 200, 200])
+            : (TERRAIN_RGB[world.vertexAt(tx, ty)] ?? [0, 0, 0]);
         const d = DECOR[world.decorAt(tx, ty)];
         const k = d.block ? 0.62 : 1;
         const o = (ty * world.width + tx) * 4;
@@ -51,8 +64,8 @@ export class HUD {
     this.connDot.classList.toggle("off", !connected);
   }
 
-  update(self: Dot | undefined, others: Iterable<Dot>, onlineCount: number) {
-    this.online.textContent = `${onlineCount} online`;
+  update(self: Dot | undefined, others: Iterable<Dot>, onlineCount: number, siteOnline = 0) {
+    this.online.textContent = siteOnline > 0 ? `${onlineCount} in town · ${siteOnline} on Gattchaa` : `${onlineCount} in town`;
     if (self) {
       this.coords.textContent = `${Math.floor(self.x / TILE_SIZE)}, ${Math.floor(self.y / TILE_SIZE)}`;
     }

@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { Terrain, TILE_SIZE, hash2, isWet, type World } from "../../../shared/world";
+import { Floor } from "../../../shared/town";
 
 // Corner-based autotiling for Eliza Wyatt's LPC Revised terrain sheet.
 //
@@ -8,6 +9,25 @@ import { Terrain, TILE_SIZE, hash2, isWet, type World } from "../../../shared/wo
 // of the tile's four corners contain the terrain: a 4-bit mask TL=1 TR=2 BL=4 BR=8.
 
 type Cell = readonly [col: number, row: number];
+/** A cell in another sheet (town floors). */
+export interface SheetCell {
+  tex: string;
+  cell: Cell;
+}
+
+export const FLOOR_TEX = { herringbone: "floor-herringbone", diamond: "floor-diamond" } as const;
+
+const FLOOR_CELLS: Record<number, SheetCell> = {
+  [Floor.Stone]: { tex: FLOOR_TEX.herringbone, cell: [0, 0] },
+  [Floor.StoneEdge]: { tex: FLOOR_TEX.herringbone, cell: [0, 1] },
+  [Floor.Brand]: { tex: FLOOR_TEX.diamond, cell: [6, 2] },
+  [Floor.Wood]: { tex: FLOOR_TEX.herringbone, cell: [2, 0] },
+};
+
+/** Floor tile for a town tile, if it is paved. */
+export function floorCell(world: World, tx: number, ty: number): SheetCell | null {
+  return FLOOR_CELLS[world.floorAt(tx, ty)] ?? null;
+}
 interface AutoSet {
   outer: Cell;
   inner: Cell;
@@ -70,19 +90,27 @@ const ATLAS_COLS = 16;
 const PAD = 1; // 1px extruded border around every tile: prevents seams/flicker
 const STRIDE = TILE_SIZE + PAD * 2;
 
+export interface TerrainAtlas {
+  terrain(cell: Cell): number;
+  sheet(c: SheetCell): number;
+}
+
 /**
- * Copies every tile the autotiler can produce into a padded atlas texture and
- * returns a lookup from source cell to atlas tile index.
+ * Copies every tile the autotiler can produce (plus the town floors) into one
+ * padded atlas texture and returns lookups from source cell to atlas index.
  */
-export function buildTerrainAtlas(scene: Phaser.Scene, sourceKey: string, atlasKey: string): (cell: Cell) => number {
+export function buildTerrainAtlas(scene: Phaser.Scene, sourceKey: string, atlasKey: string): TerrainAtlas {
   const cells: Cell[] = [...GRASS_FULL, ...DIRT_FULL, ...WATER_FULL];
   for (const set of [GRASS, WATER, DEEP]) {
     for (let m = 1; m <= 15; m++) if (m !== 6 && m !== 9) cells.push(autotile(m, set));
   }
-  const unique = [...new Map(cells.map((c) => [`${c[0]},${c[1]}`, c])).values()];
+  const entries: SheetCell[] = [
+    ...new Map(cells.map((c) => [`${c[0]},${c[1]}`, { tex: sourceKey, cell: c }])).values(),
+    ...Object.values(FLOOR_CELLS),
+  ];
+  const keyOf = (e: SheetCell) => `${e.tex}:${e.cell[0]},${e.cell[1]}`;
 
-  const src = scene.textures.get(sourceKey).getSourceImage() as HTMLImageElement;
-  const rows = Math.ceil(unique.length / ATLAS_COLS);
+  const rows = Math.ceil(entries.length / ATLAS_COLS);
   const canvas = document.createElement("canvas");
   canvas.width = ATLAS_COLS * STRIDE;
   canvas.height = rows * STRIDE;
@@ -90,11 +118,12 @@ export function buildTerrainAtlas(scene: Phaser.Scene, sourceKey: string, atlasK
   ctx.imageSmoothingEnabled = false;
 
   const index = new Map<string, number>();
-  unique.forEach((cell, i) => {
+  entries.forEach((entry, i) => {
+    const src = scene.textures.get(entry.tex).getSourceImage() as HTMLImageElement;
     const ax = (i % ATLAS_COLS) * STRIDE + PAD;
     const ay = Math.floor(i / ATLAS_COLS) * STRIDE + PAD;
-    const sx = cell[0] * TILE_SIZE;
-    const sy = cell[1] * TILE_SIZE;
+    const sx = entry.cell[0] * TILE_SIZE;
+    const sy = entry.cell[1] * TILE_SIZE;
     const S = TILE_SIZE;
     ctx.drawImage(src, sx, sy, S, S, ax, ay, S, S);
     // Extrude edges by one pixel.
@@ -106,11 +135,14 @@ export function buildTerrainAtlas(scene: Phaser.Scene, sourceKey: string, atlasK
     ctx.drawImage(src, sx + S - 1, sy, 1, 1, ax + S, ay - 1, 1, 1);
     ctx.drawImage(src, sx, sy + S - 1, 1, 1, ax - 1, ay + S, 1, 1);
     ctx.drawImage(src, sx + S - 1, sy + S - 1, 1, 1, ax + S, ay + S, 1, 1);
-    index.set(`${cell[0]},${cell[1]}`, i);
+    index.set(keyOf(entry), i);
   });
 
   scene.textures.addCanvas(atlasKey, canvas);
-  return (cell) => index.get(`${cell[0]},${cell[1]}`) ?? 0;
+  return {
+    terrain: (cell) => index.get(keyOf({ tex: sourceKey, cell })) ?? 0,
+    sheet: (c) => index.get(keyOf(c)) ?? 0,
+  };
 }
 
 export const ATLAS_MARGIN = PAD;

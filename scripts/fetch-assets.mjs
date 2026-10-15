@@ -166,6 +166,27 @@ const WORLD_FILES = {
   "rocks.png": "Terrain/Rocks, Grasslands.png",
 };
 
+/** Town buildings, furniture and floors, also from LPC Revised (OGA-BY 3.0). */
+const TOWN_FILES = {
+  "house-a.png": "Structure/Structures/Brick House A.png",
+  "house-b.png": "Structure/Structures/Brick House B.png",
+  "house-c.png": "Structure/Structures/Paneled House A.png",
+  "fountain.png": "Structure/Misc/Fountain A.png",
+  "floor-herringbone.png": "Structure/Floor/Herringbone A.png",
+  "floor-diamond.png": "Structure/Floor/Diamond Tile A.png",
+  "vending.png": "Objects/Furniture/Vending Machine.png",
+  "counter.png": "Objects/Furniture/Countertop.png",
+  "card-table.png": "Objects/Furniture/Table, Card.png",
+  "lamps.png": "Objects/Furniture/Lighting, Outdoors.png",
+  "planter.png": "Objects/Furniture/Planter.png",
+  "barrel.png": "Objects/Furniture/Barrel.png",
+  "crate.png": "Objects/Furniture/Crate.png",
+  "stools.png": "Objects/Furniture/Seating/Bar Stools.png",
+};
+const TOWN_CREDIT_DIRS = ["Structure/Structures", "Structure/Misc", "Structure/Floor", "Objects/Furniture", "Objects/Furniture/Seating"];
+
+const elizaUrl = (src) => `${ELIZA}/${src.split("/").map(encodeURIComponent).join("/")}`;
+
 async function get(url, kind = "text") {
   for (let attempt = 1; ; attempt++) {
     const res = await fetch(url);
@@ -275,13 +296,20 @@ async function main() {
   }
 
   for (const [name, src] of Object.entries(WORLD_FILES)) {
-    await save(`world/${name}`, await get(`${ELIZA}/${src.split("/").map(encodeURIComponent).join("/")}`, "bin"));
+    await save(`world/${name}`, await get(elizaUrl(src), "bin"));
   }
   const terrainCredits = await get(`${ELIZA}/Terrain/Credits.txt`);
+  for (const [name, src] of Object.entries(TOWN_FILES)) {
+    await save(`town/${name}`, await get(elizaUrl(src), "bin"));
+  }
+  const townCredits = [];
+  for (const dir of TOWN_CREDIT_DIRS) {
+    townCredits.push(`== ${dir} ==\n${(await get(elizaUrl(`${dir}/Credits.txt`))).trim()}`);
+  }
 
   await save("lpc/manifest.json", JSON.stringify(manifest));
   await fs.writeFile(path.join(ROOT, "shared/catalog.ts"), renderCatalog(manifest));
-  const creditsText = renderCredits([...credits.values()], terrainCredits);
+  const creditsText = renderCredits([...credits.values()], terrainCredits, townCredits.join("\n\n"));
   await fs.writeFile(path.join(ROOT, "CREDITS.md"), creditsText);
   await save("CREDITS.txt", creditsText);
   console.log(`\nWrote ${manifest.items.length} items, ${credits.size} credit entries.`);
@@ -336,7 +364,7 @@ function renderCatalog(manifest) {
   ].join("\n");
 }
 
-function renderCredits(entries, terrainCredits) {
+function renderCredits(entries, terrainCredits, townCredits) {
   const lines = [
     "# Art credits",
     "",
@@ -350,6 +378,18 @@ function renderCredits(entries, terrainCredits) {
     "```",
     terrainCredits.trim(),
     "```",
+    "",
+    "## Town buildings, furniture and floors",
+    "",
+    `Also from **LPC Revised** (same commit), licensed **OGA-BY 3.0**. Credits for each folder used:`,
+    "",
+    "```",
+    townCredits,
+    "```",
+    "",
+    "## Gattchaa logo",
+    "",
+    "The Gattchaa logo and product images are property of Gattchaa Hobby Store and are not covered by the licenses above.",
     "",
     "## Characters",
     "",

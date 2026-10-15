@@ -54,7 +54,14 @@ export class ChatUI {
 
     // textContent only: chat text is user input and must never be parsed as HTML.
     const li = document.createElement("li");
-    if (msg.system) {
+    if (msg.system && msg.name && msg.name !== "System") {
+      // Live news from gattchaaoripa.com ("Big hit!", "New purchase"…)
+      li.className = "announce";
+      const tag = document.createElement("span");
+      tag.className = "name";
+      tag.textContent = `★ ${msg.name}:`;
+      li.append(tag, document.createTextNode(msg.text));
+    } else if (msg.system) {
       li.className = "system";
       li.textContent = msg.text;
     } else {

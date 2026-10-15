@@ -8,6 +8,7 @@ import {
   type JoinOptions,
   type LookMessage,
 } from "../../shared/protocol";
+import type { Announcement, NpcSay } from "../../shared/gattchaa";
 import type { ChatUI } from "./ui/chat";
 import type { HUD } from "./ui/hud";
 
@@ -31,6 +32,8 @@ export async function joinWorld(options: JoinOptions): Promise<Room> {
 export class Net {
   onBubble?: (sessionId: string, text: string) => void;
   onCorrect?: (pos: CorrectMessage) => void;
+  onNpcSay?: (msg: NpcSay) => void;
+  readonly onAnnounce = new Set<(a: Announcement) => void>();
 
   constructor(
     readonly room: Room,
@@ -49,6 +52,10 @@ export class Net {
       if (msg.from) this.onBubble?.(msg.from, msg.text);
     });
     room.onMessage("correct", (pos: CorrectMessage) => this.onCorrect?.(pos));
+    room.onMessage("npc:say", (msg: NpcSay) => this.onNpcSay?.(msg));
+    room.onMessage("announce", (a: Announcement) => {
+      for (const fn of this.onAnnounce) fn(a);
+    });
 
     room.onDrop((code, reason) => {
       console.warn("connection dropped", code, reason);

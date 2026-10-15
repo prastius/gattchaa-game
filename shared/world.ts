@@ -6,6 +6,8 @@
 // artwork from the terrain at its four corners ("corner autotiling"), which is what
 // produces smooth grass/water/dirt edges with the LPC tilesets.
 
+import { FLOORS, PROPS, PROP_TYPES, ROADS, SPAWN_AREA, TOWN_AREA, inRect, type Rect } from "./town";
+
 export const TILE_SIZE = 32;
 export const WORLD_TILES_W = 384;
 export const WORLD_TILES_H = 384;
@@ -103,15 +105,23 @@ export class World {
   readonly verts: Uint8Array;
   /** Decoration per tile, see DECOR. */
   readonly decor: Uint8Array;
+  /** Paved floor per tile (town), see Floor. */
+  readonly floor: Uint8Array;
+  /** 1 where a town building or prop blocks the tile. */
+  readonly solid: Uint8Array;
   readonly seed: number;
 
   constructor(seed = WORLD_SEED) {
     this.seed = seed;
     this.verts = new Uint8Array(this.vw * this.vh);
     this.decor = new Uint8Array(this.width * this.height);
+    this.floor = new Uint8Array(this.width * this.height);
+    this.solid = new Uint8Array(this.width * this.height);
     this.generateTerrain();
+    this.shapeTown();
     this.cleanTerrain();
     this.placeDecor();
+    this.stampTown();
   }
 
   // ------------------------------------------------------------ generation
@@ -141,6 +151,50 @@ export class World {
         this.verts[vy * vw + vx] = t;
       }
     }
+  }
+
+  /** Town ground is plain grass with dirt roads leading away (before cleaning, so edges get fixed up). */
+  private shapeTown() {
+    const { vw, vh, verts } = this;
+    const fill = (r: Rect, t: Terrain, pad: number) => {
+      for (let y = Math.max(0, r.y - pad); y <= Math.min(vh - 1, r.y + r.h + pad); y++) {
+        for (let x = Math.max(0, r.x - pad); x <= Math.min(vw - 1, r.x + r.w + pad); x++) verts[y * vw + x] = t;
+      }
+    };
+    fill(TOWN_AREA, Terrain.Grass, 2);
+    for (const road of ROADS) {
+      // Only carve roads over land; they simply end at the shore.
+      for (let y = road.y; y < road.y + road.h; y++) {
+        for (let x = road.x; x < road.x + road.w; x++) {
+          const i = y * vw + x;
+          // Inside the plaza the dirt is hidden under the paving, which is fine.
+          if (!isWet(verts[i])) verts[i] = Terrain.Dirt;
+        }
+      }
+    }
+  }
+
+  /** Paves the floors and marks building footprints solid. */
+  private stampTown() {
+    const { width } = this;
+    for (const { rect, floor } of FLOORS) {
+      for (let y = rect.y; y < rect.y + rect.h; y++) {
+        for (let x = rect.x; x < rect.x + rect.w; x++) this.floor[y * width + x] = floor;
+      }
+    }
+    for (const p of PROPS) {
+      const t: { w: number; h: number; walkable?: boolean } = PROP_TYPES[p.type];
+      if (t.walkable) continue;
+      for (let y = p.y; y < p.y + t.h; y++) {
+        for (let x = p.x; x < p.x + t.w; x++) this.solid[y * width + x] = 1;
+      }
+    }
+  }
+
+  /** Trees and rocks stay out of town and off the roads. */
+  private isReserved(tx: number, ty: number): boolean {
+    if (inRect(TOWN_AREA, tx, ty)) return true;
+    return ROADS.some((r) => tx >= r.x - 2 && ty >= r.y - 2 && tx < r.x + r.w + 1 && ty < r.y + r.h + 1);
   }
 
   /** Enforces the layering rules the tileset can draw, then removes diagonal-only corners. */
@@ -211,7 +265,7 @@ export class World {
     for (let ty = 2; ty < height - 1; ty++) {
       for (let tx = 2; tx < width - 2; tx++) {
         const c = this.corners(tx, ty);
-        if (c.some(isWet)) continue;
+        if (c.some(isWet) || this.isReserved(tx, ty)) continue;
         const allGrass = c.every((t) => t === Terrain.Grass);
         const allDirt = c.every((t) => t === Terrain.Dirt);
         const r = hash2(tx, ty, seed + 7);
@@ -280,13 +334,22 @@ export class World {
     return this.inBounds(tx, ty) ? this.decor[ty * this.width + tx] : Decor.none;
   }
 
+  floorAt(tx: number, ty: number): number {
+    return this.inBounds(tx, ty) ? this.floor[ty * this.width + tx] : 0;
+  }
+
+  solidAt(tx: number, ty: number): boolean {
+    return this.inBounds(tx, ty) && this.solid[ty * this.width + tx] === 1;
+  }
+
   isBlockedAt(px: number, py: number): boolean {
     const tx = Math.floor(px / TILE_SIZE);
     const ty = Math.floor(py / TILE_SIZE);
     if (!this.inBounds(tx, ty)) return true;
     // Water: the nearest vertex decides, which matches where the shoreline is drawn.
     if (isWet(this.vertexAt(Math.round(px / TILE_SIZE), Math.round(py / TILE_SIZE)))) return true;
-    return DECOR_BLOCKS[this.decor[ty * this.width + tx]];
+    const i = ty * this.width + tx;
+    return this.solid[i] === 1 || DECOR_BLOCKS[this.decor[i]];
   }
 
   /** Whether a player's feet can occupy pixel position (x, y). */
@@ -328,8 +391,17 @@ export class World {
     return true;
   }
 
-  /** Finds an open, standable spawn point near the island centre. */
+  /** A free spot on the town plaza (falls back to searching around the island centre). */
   findSpawn(rand: () => number = Math.random): { x: number; y: number } {
+    for (let attempt = 0; attempt < 64; attempt++) {
+      const x = (SPAWN_AREA.x + rand() * SPAWN_AREA.w) * TILE_SIZE;
+      const y = (SPAWN_AREA.y + rand() * SPAWN_AREA.h) * TILE_SIZE;
+      if (this.canStand(x, y)) return { x: Math.round(x), y: Math.round(y) };
+    }
+    return this.findWildSpawn(rand);
+  }
+
+  private findWildSpawn(rand: () => number): { x: number; y: number } {
     const cx = this.width / 2;
     const cy = this.height / 2;
     for (let radius = 2; radius < this.width / 2; radius += 2) {

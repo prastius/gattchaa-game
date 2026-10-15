@@ -9,6 +9,9 @@ import { CharacterCreator } from "./ui/creator";
 import { ChatUI } from "./ui/chat";
 import { HUD } from "./ui/hud";
 import { Diagnostics } from "./ui/diagnostics";
+import { TownDialog } from "./ui/dialog";
+import { Announcer } from "./ui/announce";
+import { Shop } from "./shop";
 
 const NAME_KEY = "my-world:name";
 const LOOK_KEY = "my-world:look";
@@ -42,7 +45,10 @@ const savedLook = stored(LOOK_KEY)?.split(".").length === LOOK_KEYS.length ? sto
 const creator = new CharacterCreator($("creator"), savedLook ? decodeLook(savedLook) : randomLook());
 preloadCharacterArt();
 
-// Generate the world while the player picks their outfit (~0.3 s of CPU).
+// Shop data (products, rooms) starts loading right away so the town is stocked on arrival.
+const shop = new Shop();
+
+// Generate the world while the player picks their outfit (~0.5 s of CPU).
 let world: World | undefined;
 setTimeout(() => (world ??= new World()), 50);
 
@@ -64,7 +70,7 @@ $("login-form").addEventListener("submit", async (e) => {
     console.error(err);
     errorEl.textContent = "Could not reach the game server. Is it running?";
     joinBtn.disabled = false;
-    joinBtn.textContent = "Enter world";
+    joinBtn.textContent = "Enter town";
   }
 });
 
@@ -78,6 +84,9 @@ function start(room: Awaited<ReturnType<typeof joinWorld>>, name: string) {
     $("disconnected-reason").textContent = reason;
     $("disconnected").hidden = false;
   });
+  const dialog = new TownDialog(shop);
+  const announcer = new Announcer(shop);
+  net.onAnnounce.add((a) => announcer.show(a));
 
   $("login").hidden = true;
   hud.show();
@@ -106,9 +115,12 @@ function start(room: Awaited<ReturnType<typeof joinWorld>>, name: string) {
     game.scale.resize(nw, nh);
     game.scale.setZoom(1 / dpr);
   });
-  const data: WorldSceneData = { world, room, net, chat, hud };
+  const data: WorldSceneData = { world, room, net, chat, hud, shop, dialog };
   game.scene.add("world", WorldScene, true, data);
-  game.events.once(Phaser.Core.Events.READY, () => new Diagnostics(game, room));
+  game.events.once(Phaser.Core.Events.READY, () => {
+    const scene = game.scene.getScene("world") as WorldScene;
+    new Diagnostics(game, room, () => scene.netStats());
+  });
   if (import.meta.env.DEV) Object.assign(window, { __game: game, __room: room });
 }
 
