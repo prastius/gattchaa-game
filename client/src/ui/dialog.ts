@@ -1,4 +1,4 @@
-import { NPCS, type NpcDef } from "../../../shared/npcs";
+import { NPCS, npcProducts, type NpcDef } from "../../../shared/npcs";
 import { MACHINES } from "../../../shared/town";
 import {
   ROOM_MODES,
@@ -10,6 +10,7 @@ import {
 } from "../../../shared/gattchaa";
 import { FRAME, composeCharacter } from "../character";
 import type { Shop } from "../shop";
+import { audio } from "../audio";
 
 // The panel that opens when you talk to someone or use a machine. Every
 // button is a real link into gattchaaoripa.com (new tab), so buying, logging
@@ -45,6 +46,12 @@ const LINKS: Record<string, LinkSpec[]> = {
     { label: "My gradings", path: "/grading/mine" },
   ],
   rooms: [{ label: "All rooms", path: "/rooms", hint: "Every open Sharing Pack & Packs Battle" }],
+  pickup: [
+    { label: "My inventory", path: "/inventory", hint: "Everything you've pulled" },
+    { label: "Shipping", path: "/shipping", hint: "Get your cards delivered" },
+    { label: "Store & pickup info", path: "/about", hint: "Gattchaa One, Batam Mall" },
+    { label: "Sign in", path: "/login" },
+  ],
 };
 
 const $ = (id: string) => document.getElementById(id)!;
@@ -98,6 +105,7 @@ export class TownDialog {
 
   open(target: string, at: { x: number; y: number }) {
     this.anchor = at;
+    audio.blip();
     this.render(target, true);
     this.root.hidden = false;
   }
@@ -146,7 +154,7 @@ export class TownDialog {
     switch (npc.kind) {
       case "shop":
       case "kuji":
-        this.products(this.shop.data.products.filter((p) => npc.sells!.test(p.category)), from);
+        this.products(npcProducts(npc, this.shop.data.products), from);
         break;
       case "rooms":
         this.rooms();
@@ -164,6 +172,7 @@ export class TownDialog {
         break;
       case "market":
       case "grading":
+      case "pickup":
         this.links(LINKS[npc.kind], from);
         break;
       default:
@@ -203,7 +212,7 @@ export class TownDialog {
 
   private products(list: ShopProduct[], from: string, sortSoldOutLast = true) {
     if (list.length === 0) {
-      this.body.append(el("p", "dialog-empty", this.shop.data.updatedAt ? "Nothing in stock here right now. Check back soon!" : "Loading the shop…"));
+      this.body.append(el("p", "dialog-empty", this.emptyText("Nothing in stock here right now. Check back soon!")));
       this.links([{ label: "See everything on Gattchaa", path: "/" }], from);
       return;
     }
@@ -228,10 +237,17 @@ export class TownDialog {
     this.body.append(grid);
   }
 
+  /** What to say when a list is empty: still loading, shop not connected, or really empty. */
+  private emptyText(reallyEmpty: string): string {
+    if (!this.shop.loaded) return "Loading…";
+    if (!this.shop.data.live) return "Live stock will show here soon. For now, have a look on Gattchaa Oripa!";
+    return this.shop.data.updatedAt ? reallyEmpty : "Loading…";
+  }
+
   private rooms(highlight?: number) {
     const rooms = this.shop.openRooms;
     if (rooms.length === 0) {
-      this.body.append(el("p", "dialog-empty", this.shop.data.updatedAt ? "No open rooms right now. Start one from any pack page!" : "Loading rooms…"));
+      this.body.append(el("p", "dialog-empty", this.emptyText("No open rooms right now. Start one from any pack page!")));
       return;
     }
     const ordered = highlight !== undefined && rooms[highlight] ? [rooms[highlight], ...rooms.filter((_, i) => i !== highlight)] : rooms;

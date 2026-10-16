@@ -55,7 +55,8 @@ export class NpcBrain {
     }
     if (wall >= this.nextCrierAt) {
       this.nextCrierAt = wall + CRIER_EVERY_MS;
-      const line = this.crierLine();
+      // Real shop news when there is some, otherwise his usual lines.
+      const line = this.crierLine() ?? pick(NPCS.find((n) => n.kind === "crier")?.chatter ?? []);
       if (line) this.say({ id: "crier", text: line });
     }
   }

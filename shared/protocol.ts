@@ -47,10 +47,17 @@ export interface ChatMessage {
   system?: boolean;
 }
 
-/** server -> client: the server rejected a move and snaps the player back */
+/** server -> client: the server moved you (rejected move, or you went through a door) */
 export interface CorrectMessage {
   x: number;
   y: number;
+  /** Set when this is a door teleport: face this way afterwards. */
+  dir?: number;
+}
+
+/** client -> server: walk through a door (see DOORS in town.ts) */
+export interface DoorMessage {
+  id: string;
 }
 
 /** Read-only shape of a synced player as seen by the client. */

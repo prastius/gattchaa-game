@@ -3,12 +3,14 @@ import { Callbacks, type Room } from "@colyseus/sdk";
 import { CHUNK_TILES, PLAYER_SPEED, TILE_SIZE, WORLD_PX_H, WORLD_PX_W, hash2, type World } from "../../../shared/world";
 import { Dir, NET_SEND_HZ, type MoveMessage, type PlayerView } from "../../../shared/protocol";
 import { NPCS, type NpcDef } from "../../../shared/npcs";
-import { PROPS } from "../../../shared/town";
+import { DOORS, INTERIOR_ZONE, PROPS, inRect } from "../../../shared/town";
 import { CharacterTextures, PlayerSprite } from "../PlayerSprite";
-import { ATLAS_MARGIN, ATLAS_SPACING, buildTerrainAtlas, floorCell, tileCells, type TerrainAtlas } from "../world/terrainTiles";
+import { ATLAS_MARGIN, ATLAS_SPACING, FLOOR_TEX, buildTerrainAtlas, floorCell, tileCells, type TerrainAtlas } from "../world/terrainTiles";
 import { WORLD_TEX, createDecor, registerDecorFrames, type DecorSprite } from "../world/decorSprites";
 import { Town, preloadTown, type Hotspot } from "../world/town";
 import { Interpolator, ServerClock } from "../interp";
+import { Daylight } from "../world/daylight";
+import { audio } from "../audio";
 import type { ChatUI } from "../ui/chat";
 import type { HUD } from "../ui/hud";
 import type { Net } from "../net";
@@ -50,6 +52,8 @@ const CLICK_RANGE = 360; // px: click/tap something this close to use it
 const DIALOG_LEAVE_RANGE = 200;
 const NPC_FACE_RANGE = 150;
 const SPARK = "spark";
+const DOOR_TIMEOUT_MS = 900;
+const OUTDOOR_BG = "#1f5f7a";
 
 /**
  * Integer zoom keeps every art pixel the same size (no shimmer when scrolling).
@@ -87,6 +91,10 @@ export class WorldScene extends Phaser.Scene {
   private focus?: { target: string; x: number; y: number };
   /** The current press opened something, so it must not also walk. */
   private pointerUsed = false;
+  private daylight!: Daylight;
+  /** Inside the Gattchaa store (the interior zone)? */
+  private indoors = false;
+  private doorPendingUntil = 0;
 
   constructor() {
     super("world");
@@ -108,16 +116,21 @@ export class WorldScene extends Phaser.Scene {
 
   create() {
     this.charTextures = new CharacterTextures(this);
+    const black = this.add.graphics();
+    black.fillStyle(0x000000, 1).fillRect(0, 0, TILE_SIZE, TILE_SIZE);
+    black.generateTexture(FLOOR_TEX.void, TILE_SIZE, TILE_SIZE);
+    black.destroy();
     this.atlas = buildTerrainAtlas(this, WORLD_TEX.terrain, ATLAS_KEY);
     registerDecorFrames(this);
 
     const cam = this.cameras.main;
     cam.setBounds(0, 0, WORLD_PX_W, WORLD_PX_H);
-    cam.setBackgroundColor("#1f5f7a");
+    cam.setBackgroundColor(OUTDOOR_BG);
     this.applyZoom();
     this.scale.on(Phaser.Scale.Events.RESIZE, () => this.applyZoom());
 
     this.town = new Town(this, this.textRes);
+    this.daylight = new Daylight(this, this.town.lights);
     this.shop.onChange((data) => this.town.update(data, this.shop.openRooms));
 
     const K = Phaser.Input.Keyboard.KeyCodes;
@@ -129,7 +142,7 @@ export class WorldScene extends Phaser.Scene {
     this.keys.e.on("down", () => {
       if (this.chat.isFocused()) return;
       if (this.dialog.isOpen) this.dialog.close();
-      else if (this.focus) this.dialog.open(this.focus.target, this.focus);
+      else if (this.focus) this.use(this.focus.target, this.focus);
     });
     this.input.on("pointerdown", (p: Phaser.Input.Pointer) => {
       this.chat.blur();
@@ -228,10 +241,18 @@ export class WorldScene extends Phaser.Scene {
     this.net.onBubble = (sessionId, text) => this.entities.get(sessionId)?.sprite.say(text);
     this.net.onNpcSay = ({ id, text }) => this.npcs.get(id)?.sprite.say(text);
     this.net.onAnnounce.add(() => this.celebrate());
-    this.net.onCorrect = ({ x, y }) => {
+    this.net.onCorrect = ({ x, y, dir }) => {
       if (!this.self) return;
       this.self.teleport(x, y);
       Object.assign(this.lastSent, { x, y });
+      if (dir !== undefined) {
+        // Came through a door.
+        this.self.dir = dir;
+        this.doorPendingUntil = 0;
+        this.dialog.close();
+        this.updateIndoors();
+        this.fade(false, 220);
+      }
     };
   }
 
@@ -276,6 +297,15 @@ export class WorldScene extends Phaser.Scene {
       this.faceVisitor(e);
     }
     this.clock.update(dt, starved);
+
+    this.updateIndoors();
+    this.daylight.update(time, this.indoors);
+    audio.calm = this.indoors || this.daylight.night;
+    if (this.doorPendingUntil && performance.now() > this.doorPendingUntil) {
+      // The server said no (or lag): don't leave the screen black.
+      this.doorPendingUntil = 0;
+      this.fade(false, 150);
+    }
 
     this.updateFocus();
     this.streamChunks();
@@ -340,6 +370,14 @@ export class WorldScene extends Phaser.Scene {
     }
     self.moving = moving;
     self.animate();
+
+    // Walking into a doorway (in the door's direction) goes through it.
+    if (len > 0) {
+      const wantDir = dy < 0 && Math.abs(dy) >= Math.abs(dx) ? Dir.Up : dy > 0 && Math.abs(dy) >= Math.abs(dx) ? Dir.Down : -1;
+      for (const d of DOORS) {
+        if (d.dir === wantDir && inRect(d.trigger, self.x, self.y)) this.useDoor(d.id);
+      }
+    }
 
     const last = this.lastSent;
     const rx = Math.round(self.x);
@@ -413,12 +451,76 @@ export class WorldScene extends Phaser.Scene {
       .sort((a, b) => Number(b.target.startsWith("npc:")) - Number(a.target.startsWith("npc:")) || b.y - a.y);
     const h = hits[0];
     if (!h) return false;
-    this.dialog.open(h.target, { x: h.x, y: h.y });
+    // Doors only from up close; otherwise the click just walks you there.
+    if (h.target.startsWith("door:") && Math.hypot(h.x - self.x, h.y - self.y) > TALK_RANGE) return false;
+    this.use(h.target, { x: h.x, y: h.y });
     return true;
+  }
+
+  /** Talk / use / go through, depending on what it is. */
+  private use(target: string, at: { x: number; y: number }) {
+    if (target.startsWith("door:")) this.useDoor(target.slice(5));
+    else this.dialog.open(target, at);
+  }
+
+  private useDoor(id: string) {
+    if (this.doorPendingUntil) return;
+    this.doorPendingUntil = performance.now() + DOOR_TIMEOUT_MS;
+    this.room.send("door", { id });
+    audio.door();
+    this.fade(true, 120);
+  }
+
+  /** Forced, so a fade-in can interrupt a fade-out that's still running. */
+  private fade(out: boolean, ms: number) {
+    this.cameras.main.fadeEffect.start(out, ms, 0, 0, 0, true);
+  }
+
+  /** Inside the store only the interior is drawn, on black; outside it's hidden. */
+  private updateIndoors() {
+    const self = this.self;
+    if (!self) return;
+    const inside = inRect(INTERIOR_ZONE, self.x / TILE_SIZE, self.y / TILE_SIZE);
+    if (inside === this.indoors) return;
+    this.indoors = inside;
+    const cam = this.cameras.main;
+    if (inside) {
+      const z = INTERIOR_ZONE;
+      cam.setBounds(z.x * TILE_SIZE, z.y * TILE_SIZE, z.w * TILE_SIZE, z.h * TILE_SIZE);
+      cam.setBackgroundColor("#000000");
+    } else {
+      cam.setBounds(0, 0, WORLD_PX_W, WORLD_PX_H);
+      cam.setBackgroundColor(OUTDOOR_BG);
+    }
+    this.hud.setIndoors(inside);
+    this.daylight.refresh();
+    // Drop chunks from the other side; streamChunks loads the right ones.
+    for (const [key, chunk] of this.chunks) {
+      const [cx, cy] = key.split(",").map(Number);
+      if (this.chunkAllowed(cx, cy)) continue;
+      this.unloadChunk(chunk);
+      this.chunks.delete(key);
+    }
+  }
+
+  private chunkAllowed(cx: number, cy: number): boolean {
+    const z = INTERIOR_ZONE;
+    const inZone = cx * CHUNK_TILES >= z.x && cy * CHUNK_TILES >= z.y && (cx + 1) * CHUNK_TILES <= z.x + z.w && (cy + 1) * CHUNK_TILES <= z.y + z.h;
+    return this.indoors === inZone;
+  }
+
+  private unloadChunk(chunk: Chunk) {
+    chunk.map.destroy();
+    for (const d of chunk.decor) {
+      d.image.destroy();
+      d.shadow?.destroy();
+    }
   }
 
   /** Fireworks over the fountain when someone pulls a hit on Gattchaa. */
   private celebrate() {
+    audio.fanfare();
+    if (this.indoors) return; // the fireworks are over the plaza
     const { x, y } = this.town.fountainPosition;
     const colors = [0xeb8224, 0xffd27a, 0xffffff, 0xff6b3d];
     for (let i = 0; i < 4; i++) {
@@ -487,7 +589,7 @@ export class WorldScene extends Phaser.Scene {
     for (let cy = y0; cy <= y1; cy++) {
       for (let cx = x0; cx <= x1; cx++) {
         const key = `${cx},${cy}`;
-        if (!this.chunks.has(key)) this.chunks.set(key, this.loadChunk(cx, cy));
+        if (!this.chunks.has(key) && this.chunkAllowed(cx, cy)) this.chunks.set(key, this.loadChunk(cx, cy));
       }
     }
 
@@ -495,11 +597,7 @@ export class WorldScene extends Phaser.Scene {
     for (const [key, chunk] of this.chunks) {
       const [cx, cy] = key.split(",").map(Number);
       if (cx < x0 - 1 || cx > x1 + 1 || cy < y0 - 1 || cy > y1 + 1) {
-        chunk.map.destroy();
-        for (const d of chunk.decor) {
-          d.image.destroy();
-          d.shadow?.destroy();
-        }
+        this.unloadChunk(chunk);
         this.chunks.delete(key);
       }
     }

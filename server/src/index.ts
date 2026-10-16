@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { monitorEventLoopDelay } from "node:perf_hooks";
 import { fileURLToPath } from "node:url";
 import express from "express";
 import { defineRoom, defineServer } from "colyseus";
@@ -19,6 +20,10 @@ const server = defineServer({
   express: (app) => {
     let lastCpu = process.cpuUsage();
     let lastAt = Date.now();
+    // How late the server runs its work. If this climbs into seconds, players
+    // rubber-band: the machine is overloaded (not the network).
+    const loopDelay = monitorEventLoopDelay({ resolution: 20 });
+    loopDelay.enable();
     app.get("/health", (_req, res) => {
       // CPU % of one core since the previous call; handy when load testing.
       const cpu = process.cpuUsage(lastCpu);
@@ -31,7 +36,9 @@ const server = defineServer({
         uptime: Math.round(process.uptime()),
         rssMB: Math.round(process.memoryUsage().rss / 1e6),
         cpuPct: Math.round(cpuPct),
+        loopLagMs: { p99: Math.round(loopDelay.percentile(99) / 1e6), max: Math.round(loopDelay.max / 1e6) },
       });
+      loopDelay.reset();
     });
 
     registerGattchaaRoutes(app);

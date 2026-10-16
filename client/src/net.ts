@@ -10,6 +10,7 @@ import {
 } from "../../shared/protocol";
 import type { Announcement, NpcSay } from "../../shared/gattchaa";
 import type { ChatUI } from "./ui/chat";
+import { audio } from "./audio";
 import type { HUD } from "./ui/hud";
 
 function serverUrl(): string {
@@ -49,7 +50,10 @@ export class Net {
       // Our own messages were already shown the moment we sent them.
       if (msg.from === room.sessionId) return;
       chat.add(msg);
-      if (msg.from) this.onBubble?.(msg.from, msg.text);
+      if (msg.from) {
+        this.onBubble?.(msg.from, msg.text);
+        audio.pop();
+      }
     });
     room.onMessage("correct", (pos: CorrectMessage) => this.onCorrect?.(pos));
     room.onMessage("npc:say", (msg: NpcSay) => this.onNpcSay?.(msg));

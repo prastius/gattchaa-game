@@ -4,10 +4,11 @@
 
 import { CATALOG, type CatalogItem } from "./catalog";
 import { COLOR_FIELDS, ITEM_FIELDS, defaultLook, encodeLook, type ColorField, type ItemField, type Look } from "./appearance";
-import { TILE, WANDER_AREA, type Rect } from "./town";
+import { STORE_WANDER, TILE, WANDER_AREA, type Rect } from "./town";
+import type { ShopProduct } from "./gattchaa";
 import { Dir } from "./protocol";
 
-export type NpcKind = "guide" | "shop" | "kuji" | "rooms" | "market" | "grading" | "crier" | "local";
+export type NpcKind = "guide" | "shop" | "kuji" | "rooms" | "market" | "grading" | "pickup" | "crier" | "local";
 
 export interface NpcDef {
   id: string;
@@ -24,6 +25,8 @@ export interface NpcDef {
   wander?: Rect;
   /** Live product categories this NPC sells (matched against category titles). */
   sells?: RegExp;
+  /** Sells whatever is new or hot right now, across all categories. */
+  featured?: boolean;
   /** First line when you talk to them. */
   greeting: string;
   /** Things they say out loud now and then (speech bubbles). */
@@ -166,6 +169,42 @@ export const NPCS: NpcDef[] = [
     greeting: "Got a card worth protecting? Send it for grading and track it here.",
     chatter: ["Protect your best pulls, get them graded.", "Check your grading status any time.", "Gem mint? Let's find out."],
   },
+  // ------------------------------------------------ inside the Gattchaa store
+  {
+    id: "pickup",
+    name: "Putri",
+    title: "Pickup & Orders",
+    kind: "pickup",
+    look: look({ body: "female", ...staff, hair: "bobSide", hairColor: "dark_brown", skin: "amber", bottom: "pants", glasses: "round" }),
+    ...behindCounter(12, 11),
+    dir: Dir.Down,
+    greeting: "Hi! Every card you pull on Gattchaa goes to your inventory. Pick it up at Gattchaa One, Batam Mall, have it shipped, or sell it back.",
+    chatter: ["Your pulls are waiting in your inventory!", "Pickup at Gattchaa One, Batam Mall.", "We can ship your cards too."],
+  },
+  {
+    id: "new",
+    name: "Yuki",
+    title: "New & Hot",
+    kind: "shop",
+    look: look({ body: "female", ...staff, hair: "pigtails", hairColor: "black", skin: "light", bottom: "skirt", hat: "cap", hatColor: "orange" }),
+    ...behindCounter(17, 11),
+    dir: Dir.Down,
+    featured: true,
+    greeting: "These are the newest and hottest packs on Gattchaa right now. Fresh off the truck!",
+    chatter: ["New releases just landed!", "Hot packs, right here!", "Looking for something new?"],
+  },
+  {
+    id: "sinta",
+    name: "Sinta",
+    title: "",
+    kind: "local",
+    look: look({ body: "female", hair: "halfUp", hairColor: "chestnut", skin: "bronze", top: "cardigan", topColor: "lavender", bottom: "straightSkirt", bottomColor: "charcoal", shoes: "shoes", shoesColor: "brown" }),
+    ...at(16, 17),
+    dir: Dir.Down,
+    wander: STORE_WANDER,
+    greeting: "I come here every week! The machines on the left and right cover every franchise, and the play tables show open rooms.",
+    chatter: ["This store is so cozy.", "I always check the New & Hot counter first.", "Which machine should I try?"],
+  },
   {
     id: "crier",
     name: "Toto",
@@ -200,3 +239,9 @@ export const NPCS: NpcDef[] = [
     }),
   ),
 ];
+
+/** What an NPC's stall offers right now (sold-out items last for featured stalls). */
+export function npcProducts(npc: NpcDef, products: readonly ShopProduct[]): ShopProduct[] {
+  if (npc.featured) return products.filter((p) => p.label || p.hot).slice(0, 18);
+  return npc.sells ? products.filter((p) => npc.sells!.test(p.category)) : [];
+}

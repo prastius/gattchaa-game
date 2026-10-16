@@ -15,13 +15,24 @@ export interface SheetCell {
   cell: Cell;
 }
 
-export const FLOOR_TEX = { herringbone: "floor-herringbone", diamond: "floor-diamond" } as const;
+export const FLOOR_TEX = {
+  herringbone: "floor-herringbone",
+  diamond: "floor-diamond",
+  wall: "wall-brick",
+  /** Plain black, generated at runtime (see WorldScene). */
+  void: "floor-void",
+} as const;
 
 const FLOOR_CELLS: Record<number, SheetCell> = {
   [Floor.Stone]: { tex: FLOOR_TEX.herringbone, cell: [0, 0] },
   [Floor.StoneEdge]: { tex: FLOOR_TEX.herringbone, cell: [0, 1] },
   [Floor.Brand]: { tex: FLOOR_TEX.diamond, cell: [6, 2] },
   [Floor.Wood]: { tex: FLOOR_TEX.herringbone, cell: [2, 0] },
+  [Floor.Void]: { tex: FLOOR_TEX.void, cell: [0, 0] },
+  // Charcoal brick (Brick Wall A, bottom-left block): cap, body, baseboard.
+  [Floor.WallTop]: { tex: FLOOR_TEX.wall, cell: [1, 6] },
+  [Floor.WallMid]: { tex: FLOOR_TEX.wall, cell: [1, 7] },
+  [Floor.WallBottom]: { tex: FLOOR_TEX.wall, cell: [1, 8] },
 };
 
 /** Floor tile for a town tile, if it is paved. */

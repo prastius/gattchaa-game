@@ -151,7 +151,7 @@ export class GattchaaFeed {
   }
 
   snapshot(): ShopSnapshot {
-    return { site: SITE, products: this.products, rooms: this.rooms, siteOnline: this.siteOnline, updatedAt: this.updatedAt };
+    return { live: this.enabled, site: SITE, products: this.products, rooms: this.rooms, siteOnline: this.siteOnline, updatedAt: this.updatedAt };
   }
 
   get online() {

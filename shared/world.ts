@@ -6,7 +6,7 @@
 // artwork from the terrain at its four corners ("corner autotiling"), which is what
 // produces smooth grass/water/dirt edges with the LPC tilesets.
 
-import { FLOORS, PROPS, PROP_TYPES, ROADS, SPAWN_AREA, TOWN_AREA, inRect, type Rect } from "./town";
+import { FLOORS, INTERIOR_ZONE, PROPS, PROP_TYPES, ROADS, SOLID_FLOORS, SPAWN_AREA, TOWN_AREA, inRect, type Rect } from "./town";
 
 export const TILE_SIZE = 32;
 export const WORLD_TILES_W = 384;
@@ -162,6 +162,7 @@ export class World {
       }
     };
     fill(TOWN_AREA, Terrain.Grass, 2);
+    fill(INTERIOR_ZONE, Terrain.Grass, 2); // dry ground under the store interior
     for (const road of ROADS) {
       // Only carve roads over land; they simply end at the shore.
       for (let y = road.y; y < road.y + road.h; y++) {
@@ -179,7 +180,10 @@ export class World {
     const { width } = this;
     for (const { rect, floor } of FLOORS) {
       for (let y = rect.y; y < rect.y + rect.h; y++) {
-        for (let x = rect.x; x < rect.x + rect.w; x++) this.floor[y * width + x] = floor;
+        for (let x = rect.x; x < rect.x + rect.w; x++) {
+          this.floor[y * width + x] = floor;
+          this.solid[y * width + x] = SOLID_FLOORS.includes(floor) ? 1 : 0;
+        }
       }
     }
     for (const p of PROPS) {
@@ -193,7 +197,7 @@ export class World {
 
   /** Trees and rocks stay out of town and off the roads. */
   private isReserved(tx: number, ty: number): boolean {
-    if (inRect(TOWN_AREA, tx, ty)) return true;
+    if (inRect(TOWN_AREA, tx, ty) || tx < INTERIOR_ZONE.x + INTERIOR_ZONE.w + 2 && ty < INTERIOR_ZONE.y + INTERIOR_ZONE.h + 2) return true;
     return ROADS.some((r) => tx >= r.x - 2 && ty >= r.y - 2 && tx < r.x + r.w + 1 && ty < r.y + r.h + 1);
   }
 

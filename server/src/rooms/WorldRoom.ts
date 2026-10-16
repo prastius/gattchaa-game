@@ -14,6 +14,8 @@ import {
   type LookMessage,
   type MoveMessage,
 } from "../../../shared/protocol";
+import { DOORS } from "../../../shared/town";
+import type { DoorMessage } from "../../../shared/protocol";
 import { Player, WorldState } from "./WorldState";
 import { NpcBrain } from "./NpcBrain";
 import { feed } from "../gattchaa";
@@ -25,7 +27,16 @@ const world = new World();
 const CHAT_WINDOW_MS = 5000;
 const CHAT_MAX_PER_WINDOW = 5;
 const LOOK_COOLDOWN_MS = 1000;
-const MIN_MOVE_INTERVAL_MS = 25; // ignore move floods above ~40 msg/s
+// Move messages: a token bucket, not a minimum gap. Networks (mobile, Wi-Fi)
+// and a busy server deliver messages in bursts; dropping "too close together"
+// messages made the server fall behind and rubber-band honest players.
+const MOVE_RATE = 30; // msgs/s sustained (clients send 12)
+const MOVE_BURST = 30; // ~2.5 s of normal sending can arrive at once
+// Speed budget in pixels: refills at 1.25x walking speed, holds 1.5 s, and may
+// go up to 1 s into debt so a delayed burst of honest moves is still accepted.
+// Over any longer window, average speed stays capped at 1.25x.
+const BUDGET_MAX = PLAYER_SPEED * 1.5;
+const BUDGET_DEBT = PLAYER_SPEED;
 const RECONNECT_SECONDS = 20;
 const VIEW_UPDATE_MS = 200;
 // Hysteresis so players near the edge of view don't flicker in and out.
@@ -33,6 +44,7 @@ const VIEW_ENTER_X = VIEW_RADIUS;
 const VIEW_ENTER_Y = VIEW_RADIUS * 0.75;
 const VIEW_EXIT_PAD = 200;
 const NPC_TICK_MS = 100;
+const PRESENCE_BATCH_MS = 3000;
 
 interface PlayerMeta {
   /** Exact position; the synced schema only carries whole pixels. */
@@ -41,6 +53,8 @@ interface PlayerMeta {
   /** Movement budget in pixels; refills at slightly above PLAYER_SPEED. */
   allowance: number;
   lastMoveAt: number;
+  /** Move-message rate limiter. */
+  tokens: number;
   lastLookAt: number;
   chatTimes: number[];
 }
@@ -63,6 +77,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     move: (client: Client, msg: MoveMessage) => this.handleMove(client, msg),
     look: (client: Client, msg: LookMessage) => this.handleLook(client, msg),
     chat: (client: Client, msg: ChatSend) => this.handleChat(client, msg),
+    door: (client: Client, msg: DoorMessage) => this.handleDoor(client, msg),
   };
 
   onCreate() {
@@ -96,7 +111,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       ts: this.now(),
     });
     this.state.players.set(client.sessionId, player);
-    this.meta.set(client.sessionId, { x: spawn.x, y: spawn.y, allowance: 0, lastMoveAt: Date.now(), lastLookAt: 0, chatTimes: [] });
+    this.meta.set(client.sessionId, { x: spawn.x, y: spawn.y, allowance: 0, lastMoveAt: Date.now(), tokens: MOVE_BURST, lastLookAt: 0, chatTimes: [] });
     this.state.online = this.clients.length;
 
     client.view = new StateView();
@@ -104,7 +119,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     this.updateViews();
 
     client.send("chat:history", this.history);
-    this.system(`${player.name} joined the world`);
+    this.queuePresence("joined", player.name);
   }
 
   async onDrop(client: Client) {
@@ -123,7 +138,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     this.state.players.delete(client.sessionId);
     this.meta.delete(client.sessionId);
     this.state.online = this.clients.length;
-    if (player) this.system(`${player.name} left`);
+    if (player) this.queuePresence("left", player.name);
   }
 
   /** Interest management: each client's view holds only the players near it. */
@@ -150,11 +165,12 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     if (!player || !meta || !msg || !Number.isFinite(msg.x) || !Number.isFinite(msg.y)) return;
 
     const now = Date.now();
-    if (now - meta.lastMoveAt < MIN_MOVE_INTERVAL_MS) return;
-    const dt = Math.min(1000, now - meta.lastMoveAt) / 1000;
+    const dt = Math.min(2000, now - meta.lastMoveAt) / 1000;
     meta.lastMoveAt = now;
-    // Budget-based speed check tolerates bursty packets without allowing speed hacks.
-    meta.allowance = Math.min(PLAYER_SPEED, meta.allowance + PLAYER_SPEED * dt * 1.25);
+    meta.tokens = Math.min(MOVE_BURST, meta.tokens + dt * MOVE_RATE);
+    if (meta.tokens < 1) return; // flooding: drop silently, the next move catches up
+    meta.tokens -= 1;
+    meta.allowance = Math.min(BUDGET_MAX, meta.allowance + PLAYER_SPEED * dt * 1.25);
 
     // Validate against exact positions so sliding along a wall never rounds into it.
     const x0 = meta.x;
@@ -168,7 +184,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       (world.canTravel(x0, y0, x1, y0) && world.canTravel(x1, y0, x1, y1)) ||
       (world.canTravel(x0, y0, x0, y1) && world.canTravel(x0, y1, x1, y1));
 
-    if (dist > meta.allowance + 2 || !pathOk) {
+    if (meta.allowance - dist < -BUDGET_DEBT - 2 || !pathOk) {
       client.send("correct", { x: x0, y: y0 } satisfies CorrectMessage);
       return;
     }
@@ -181,6 +197,29 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     player.ts = this.now();
     player.dir = Number.isInteger(msg.dir) && msg.dir >= 0 && msg.dir <= 3 ? msg.dir : player.dir;
     player.moving = Boolean(msg.moving);
+  }
+
+  /** Teleports through a door, but only if the player is really standing at it. */
+  private handleDoor(client: Client, msg: DoorMessage) {
+    const player = this.state.players.get(client.sessionId);
+    const meta = this.meta.get(client.sessionId);
+    const door = DOORS.find((d) => d.id === msg?.id);
+    if (!player || !meta || !door) return;
+    const t = door.trigger;
+    const slack = 64; // the client may be ahead of us, or used the door from a step away
+    if (meta.x < t.x - slack || meta.x > t.x + t.w + slack || meta.y < t.y - slack || meta.y > t.y + t.h + slack) return;
+
+    meta.x = door.to.x;
+    meta.y = door.to.y;
+    meta.allowance = 0;
+    meta.lastMoveAt = Date.now();
+    player.x = door.to.x;
+    player.y = door.to.y;
+    player.dir = door.dir;
+    player.moving = false;
+    player.ts = this.now();
+    client.send("correct", { x: door.to.x, y: door.to.y, dir: door.dir } satisfies CorrectMessage);
+    this.updateViews();
   }
 
   private handleLook(client: Client, msg: LookMessage) {
@@ -210,6 +249,34 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     meta.chatTimes.push(now);
 
     this.publish(this.makeMessage(client.sessionId, player.name, text));
+  }
+
+  /**
+   * Join/leave notices are collected for a few seconds and posted as one line,
+   * so a busy evening doesn't bury the chat in "X joined" spam.
+   */
+  private pendingPresence: Record<"joined" | "left", string[]> = { joined: [], left: [] };
+  private presenceTimer = false;
+
+  private queuePresence(what: "joined" | "left", name: string) {
+    this.pendingPresence[what].push(name);
+    if (this.presenceTimer) return;
+    this.presenceTimer = true;
+    this.clock.setTimeout(() => {
+      this.presenceTimer = false;
+      for (const kind of ["joined", "left"] as const) {
+        const names = this.pendingPresence[kind];
+        this.pendingPresence[kind] = [];
+        if (names.length === 0) continue;
+        const who =
+          names.length === 1
+            ? names[0]
+            : names.length <= 3
+              ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`
+              : `${names.slice(0, 2).join(", ")} and ${names.length - 2} others`;
+        this.system(kind === "joined" ? `${who} joined the town` : `${who} left`);
+      }
+    }, PRESENCE_BATCH_MS);
   }
 
   private system(text: string) {

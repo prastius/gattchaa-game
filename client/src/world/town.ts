@@ -1,6 +1,6 @@
 import Phaser from "phaser";
-import { MACHINES, PROPS, propAnchor, type Prop, type PropType } from "../../../shared/town";
-import { NPCS } from "../../../shared/npcs";
+import { DOORS, MACHINES, PROPS, STORE_ROOM, TOWN_AREA, inRect, propAnchor, type Prop, type PropType } from "../../../shared/town";
+import { NPCS, npcProducts } from "../../../shared/npcs";
 import { ROOM_MODES, type ShopProduct, type ShopRoom, type ShopSnapshot } from "../../../shared/gattchaa";
 import { FLOOR_TEX } from "./terrainTiles";
 
@@ -24,7 +24,11 @@ const SHEETS = {
   barrel: "town-barrel",
   crate: "town-crate",
   stools: "town-stools",
+  cabinet: "town-cabinet",
+  floorLamps: "town-floor-lamps",
+  posters: "town-posters",
   logo: "gattchaa-logo-sign",
+  logoBig: "gattchaa-logo-64",
 } as const;
 
 type Rect = readonly [x: number, y: number, w: number, h: number];
@@ -50,7 +54,13 @@ const ART: Record<PropType, Art> = {
   barrel: { tex: SHEETS.barrel, rects: [[2, 10, 28, 37], [34, 10, 28, 38]], dy: -2 },
   crate: { tex: SHEETS.crate, rects: [[69, 37, 22, 24], [69, 101, 22, 24]], dy: -3 },
   stool: { tex: SHEETS.stools, rects: [0, 1, 2, 3, 4, 5, 6, 7].map((i): Rect => [4 + i * 32, 0, 24, 32]), dy: -4 },
+  // Bookcases full of colourful boxes: booster-box shelves.
+  shelf: { tex: SHEETS.cabinet, rects: [[64, 101, 32, 68], [96, 101, 32, 68]], dy: 2 },
+  floorLamp: { tex: SHEETS.floorLamps, rects: [[4, 2, 24, 49]], dy: -2 },
 };
+
+// Only the illustrated posters (the sheet also has blank paper).
+const POSTERS: Rect[] = [[3, 39, 24, 36], [67, 35, 27, 40], [39, 35, 18, 24], [135, 67, 18, 24]];
 
 export function preloadTown(scene: Phaser.Scene) {
   const files: Record<string, string> = {
@@ -66,11 +76,16 @@ export function preloadTown(scene: Phaser.Scene) {
     [SHEETS.barrel]: "barrel.png",
     [SHEETS.crate]: "crate.png",
     [SHEETS.stools]: "stools.png",
+    [SHEETS.cabinet]: "cabinet.png",
+    [SHEETS.floorLamps]: "floor-lamps.png",
+    [SHEETS.posters]: "posters.png",
+    [FLOOR_TEX.wall]: "wall-brick.png",
     [FLOOR_TEX.herringbone]: "floor-herringbone.png",
     [FLOOR_TEX.diamond]: "floor-diamond.png",
   };
   for (const [key, file] of Object.entries(files)) scene.load.image(key, `${TOWN}${file}`);
   scene.load.image(SHEETS.logo, `${BRAND}logo-sign.png`);
+  scene.load.image(SHEETS.logoBig, `${BRAND}logo-64.png`);
 }
 
 const FONT = "system-ui, -apple-system, Segoe UI, sans-serif";
@@ -78,7 +93,7 @@ const FONT = "system-ui, -apple-system, Segoe UI, sans-serif";
 /** Something in town the player can walk up to and use. */
 export interface Hotspot {
   id: string;
-  /** "npc:<id>", "machine:<id>" or "table:<n>". */
+  /** "npc:<id>", "machine:<id>", "table:<n>" or "door:<id>". */
   target: string;
   x: number;
   y: number;
@@ -98,9 +113,11 @@ interface LiveSlot {
 
 export class Town {
   readonly hotspots: Hotspot[] = [];
+  /** Outdoor lamp heads, for the night glow. */
+  readonly lights: { x: number; y: number }[] = [];
   private stallSlots = new Map<string, LiveSlot[]>();
-  private machineSlots = new Map<string, LiveSlot>();
-  private tableLabels: Phaser.GameObjects.Text[] = [];
+  private machineSlots: { id: string; slot: LiveSlot }[] = [];
+  private tableLabels = new Map<number, Phaser.GameObjects.Text>();
   private fountain = { x: 0, y: 0 };
 
   constructor(
@@ -114,8 +131,22 @@ export class Town {
         if (!tex.has(name)) tex.add(name, 0, r[0], r[1], r[2], r[3]);
       });
     }
+    const posters = scene.textures.get(SHEETS.posters);
+    POSTERS.forEach((r, i) => posters.add(`poster:${i}`, 0, r[0], r[1], r[2], r[3]));
     for (const p of PROPS) this.place(p);
     this.decorate();
+    this.decorateInterior();
+    for (const d of DOORS) {
+      const t = d.trigger;
+      this.hotspots.push({
+        id: `door:${d.id}`,
+        target: `door:${d.id}`,
+        x: t.x + t.w / 2,
+        y: t.y + t.h / 2,
+        hit: new Phaser.Geom.Rectangle(t.x - 8, t.y - 40, t.w + 16, t.h + 40),
+        label: d.label,
+      });
+    }
   }
 
   get fountainPosition() {
@@ -132,12 +163,12 @@ export class Town {
 
     const [kind, id] = (p.tag ?? "").split(":");
     if (p.type === "fountain") this.fountain = { x, y: by - 40 };
+    if (p.type === "lamp") this.lights.push({ x, y: by - 70 });
 
     if (kind === "machine") {
       const m = MACHINES.find((mm) => mm.id === id)!;
-      this.sign(x, by - 66, m.label, by, 7);
       // The machine's glass front shows its featured pack.
-      this.machineSlots.set(id, { x: x - 2, y: by - 34, size: 18, depth: by + 0.5 });
+      this.machineSlots.push({ id, slot: { x: x - 2, y: by - 34, size: 18, depth: by + 0.5 } });
       this.hotspots.push({
         id: `machine:${id}`,
         target: `machine:${id}`,
@@ -178,7 +209,7 @@ export class Town {
         .setResolution(this.textRes)
         .setDepth(by + 100)
         .setVisible(false);
-      this.tableLabels[n] = label;
+      this.tableLabels.set(n, label);
       this.hotspots.push({
         id: `table:${n}`,
         target: `table:${n}`,
@@ -194,19 +225,53 @@ export class Town {
   private decorate() {
     const store = PROPS.find((p) => p.type === "store")!;
     const s = propAnchor(store);
-    // A dark plate with the logo, hung under the roof edge next to the door.
-    const plateX = s.x - 38;
-    const plateY = s.y - 98;
-    const g = this.scene.add.graphics().setDepth(s.y + 1);
+    // A dark plate with the logo, over the door.
+    const door = DOORS.find((d) => d.id === "store-in")!;
+    const plateX = door.trigger.x + door.trigger.w / 2;
+    const plateY = s.y - 125;
+    // In front of the building sprite (which sits a few px below its footprint).
+    const front = s.y + 10;
+    const g = this.scene.add.graphics().setDepth(front);
     g.fillStyle(0x131313, 1).fillRoundedRect(plateX - 27, plateY - 25, 54, 50, 6);
     g.lineStyle(2, 0xeb8224, 1).strokeRoundedRect(plateX - 27, plateY - 25, 54, 50, 6);
-    this.scene.add.image(plateX, plateY, SHEETS.logo).setDepth(s.y + 2);
-    this.sign(s.x + 40, s.y - 112, "GATTCHAA ORIPA", s.y + 1, 9);
+    this.scene.add.image(plateX, plateY, SHEETS.logo).setDepth(front + 1);
+    this.sign(s.x + 44, s.y - 118, "GATTCHAA ORIPA", front, 9);
 
-    const deck = PROPS.filter((p) => p.type === "cardTable").map(propAnchor);
+    // One sign per bank of machines (each machine names itself when you walk up).
+    const machines = PROPS.filter((p) => p.type === "machine");
+    const banks: Prop[][] = [];
+    for (const m of machines) {
+      const bank = banks.find((b) => b[b.length - 1].y === m.y && b[b.length - 1].x === m.x - 1);
+      if (bank) bank.push(m);
+      else banks.push([m]);
+    }
+    for (const bank of banks) {
+      const a = propAnchor(bank[0]);
+      const b = propAnchor(bank[bank.length - 1]);
+      this.sign((a.x + b.x) / 2, a.y - 64, "ORIPA MACHINES", a.y + 2, 8);
+    }
+
+    const deck = PROPS.filter((p) => p.type === "cardTable" && inRect(TOWN_AREA, p.x, p.y)).map(propAnchor);
     const dx = (Math.min(...deck.map((d) => d.x)) + Math.max(...deck.map((d) => d.x))) / 2;
     const dy = Math.min(...deck.map((d) => d.y)) - 72;
     this.sign(dx, dy, "ROOMS · SHARING PACK & PACKS BATTLE", dy + 40, 8);
+  }
+
+  /** The store's back wall: big logo, store name and posters. */
+  private decorateInterior() {
+    const cx = (STORE_ROOM.x + STORE_ROOM.w / 2) * 32;
+    const wallTop = STORE_ROOM.y * 32;
+    const depth = -0.5; // on the wall: behind everyone
+    const g = this.scene.add.graphics().setDepth(depth);
+    g.fillStyle(0x131313, 1).fillRoundedRect(cx - 40, wallTop + 6, 80, 72, 6);
+    g.lineStyle(2, 0xeb8224, 1).strokeRoundedRect(cx - 40, wallTop + 6, 80, 72, 6);
+    this.scene.add.image(cx, wallTop + 42, SHEETS.logoBig).setDepth(depth);
+    // Store name over the left shelves, tagline over the right; posters between.
+    this.sign(cx - 240, wallTop + 22, "GATTCHAA ONE · BATAM", depth, 9);
+    this.sign(cx + 240, wallTop + 22, "ORIPA · KUJI · TCG", depth, 9);
+    [cx - 150, cx - 120, cx + 120, cx + 150].forEach((px, i) =>
+      this.scene.add.image(px, wallTop + 62, SHEETS.posters, `poster:${i}`).setDepth(depth),
+    );
   }
 
   private sign(x: number, y: number, text: string, depth: number, size: number) {
@@ -228,11 +293,11 @@ export class Town {
   update(shop: ShopSnapshot, rooms: ShopRoom[]) {
     const inStock = shop.products.filter((p) => !p.soldOut && p.imageUrl);
     for (const [id, slots] of this.stallSlots) {
-      const sells = NPCS.find((n) => n.id === id)?.sells;
-      const list = sells ? inStock.filter((p) => sells.test(p.category)) : [];
+      const npc = NPCS.find((n) => n.id === id);
+      const list = npc ? npcProducts(npc, inStock) : [];
       slots.forEach((slot, i) => this.show(slot, list[i]));
     }
-    for (const [id, slot] of this.machineSlots) {
+    for (const { id, slot } of this.machineSlots) {
       const m = MACHINES.find((mm) => mm.id === id)!;
       this.show(slot, inStock.find((p) => m.match.test(p.category)));
     }

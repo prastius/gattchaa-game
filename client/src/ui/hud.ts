@@ -56,8 +56,16 @@ export class HUD {
     tctx.putImageData(img, 0, 0);
   }
 
+  private indoors = false;
+
   show() {
     this.root.hidden = false;
+  }
+
+  /** Inside the store the island map means nothing; show where you are instead. */
+  setIndoors(on: boolean) {
+    this.indoors = on;
+    this.minimap.hidden = on;
   }
 
   setConnected(connected: boolean) {
@@ -67,8 +75,9 @@ export class HUD {
   update(self: Dot | undefined, others: Iterable<Dot>, onlineCount: number, siteOnline = 0) {
     this.online.textContent = siteOnline > 0 ? `${onlineCount} in town · ${siteOnline} on Gattchaa` : `${onlineCount} in town`;
     if (self) {
-      this.coords.textContent = `${Math.floor(self.x / TILE_SIZE)}, ${Math.floor(self.y / TILE_SIZE)}`;
+      this.coords.textContent = this.indoors ? "Gattchaa Store" : `${Math.floor(self.x / TILE_SIZE)}, ${Math.floor(self.y / TILE_SIZE)}`;
     }
+    if (this.indoors) return;
 
     const { ctx, minimap } = this;
     const scale = minimap.width / (this.world.width * TILE_SIZE);

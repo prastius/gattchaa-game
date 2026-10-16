@@ -182,8 +182,20 @@ const TOWN_FILES = {
   "barrel.png": "Objects/Furniture/Barrel.png",
   "crate.png": "Objects/Furniture/Crate.png",
   "stools.png": "Objects/Furniture/Seating/Bar Stools.png",
+  "cabinet.png": "Objects/Furniture/Cabinet.png",
+  "floor-lamps.png": "Objects/Furniture/Lighting, Floor.png",
+  "posters.png": "Objects/Wall Items/Posters.png",
+  "wall-brick.png": "Structure/Walls/Brick Wall A.png",
 };
-const TOWN_CREDIT_DIRS = ["Structure/Structures", "Structure/Misc", "Structure/Floor", "Objects/Furniture", "Objects/Furniture/Seating"];
+const TOWN_CREDIT_DIRS = [
+  "Structure/Structures",
+  "Structure/Misc",
+  "Structure/Floor",
+  "Structure/Walls",
+  "Objects/Furniture",
+  "Objects/Furniture/Seating",
+  "Objects/Wall Items",
+];
 
 const elizaUrl = (src) => `${ELIZA}/${src.split("/").map(encodeURIComponent).join("/")}`;
 

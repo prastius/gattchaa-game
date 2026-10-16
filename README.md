@@ -85,7 +85,9 @@ scripts/
 - **Crisp pixel art with no flicker.** The game renders at the screen's real pixel density with whole-number zoom, nearest-neighbor filtering and whole-pixel positions. Tiles come from an atlas with a 1 px padded border, so neighboring tiles can't bleed into each other while the camera moves.
 - **Characters.** Each look is a short string such as `0.3.1.5.12.0.4.2.7.1.22`. The client stacks the LPC layers (shadow, body, head, shoes, legs, top, hair) and swaps the palette colors to the chosen skin, hair, eye and cloth colors. It makes one sprite sheet per distinct look and frees it when nobody on screen wears it.
 - **Scales to 100+ players.** The server sends each client only the players within about one screen of them (Colyseus `StateView`), with positions as whole pixels.
-- **Responsive movement.** Your character moves instantly on your screen. The server checks every move against a speed budget and the collision map, and snaps cheaters back.
+- **Responsive movement.** Your character moves instantly on your screen. The server checks every move against the collision map and a speed budget, and snaps cheaters back. The budget tolerates messages that arrive in bursts (mobile networks, a busy server), so honest players never rubber-band; over any stretch longer than a second or two, speed stays capped at 1.25× walking speed.
+- **Smooth other players.** Everyone else is drawn about 150 ms in the past and blended between timestamped server snapshots. The delay grows automatically on a bad connection. Press F3 to see it.
+- **Doors.** The store interior is a separate area in a corner of the map. Walking into the door asks the server to move you; the server checks you're really at the door first.
 - **Chat.** Your own messages appear instantly. The server cleans and rate-limits messages (5 per 5 s) and replays the last 50 to players who join. Chat is rendered as text, never HTML.
 - **Reconnects.** A dropped connection keeps your character in the world for 20 s while the SDK reconnects automatically.
 

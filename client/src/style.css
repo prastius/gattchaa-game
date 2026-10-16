@@ -127,6 +127,22 @@ button {
   background: var(--panel-raised);
 }
 
+.hud-row {
+  display: flex;
+  gap: 6px;
+}
+
+.hud-icon {
+  width: 38px;
+  padding: 8px 0;
+  text-align: center;
+}
+
+.hud-icon.off {
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+
 /* ---------- Chat ---------- */
 
 #chat {

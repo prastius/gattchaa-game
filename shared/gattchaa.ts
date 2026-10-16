@@ -36,6 +36,8 @@ export interface ShopRoom {
 }
 
 export interface ShopSnapshot {
+  /** False when the game server has no shop API configured (the town works, stalls show links). */
+  live: boolean;
   /** Base URL for menu links (daily login, marketplace…). */
   site: string;
   products: ShopProduct[];

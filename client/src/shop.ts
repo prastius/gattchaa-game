@@ -11,7 +11,9 @@ const REFRESH_MS = 30_000;
 
 /** Latest shop data, refreshed in the background. */
 export class Shop {
-  data: ShopSnapshot = { site: DEFAULT_SITE, products: [], rooms: [], siteOnline: 0, updatedAt: 0 };
+  data: ShopSnapshot = { live: false, site: DEFAULT_SITE, products: [], rooms: [], siteOnline: 0, updatedAt: 0 };
+  /** True once the game server has answered (even if it has no shop connected). */
+  loaded = false;
   private listeners = new Set<(s: ShopSnapshot) => void>();
 
   constructor() {
@@ -25,7 +27,7 @@ export class Shop {
 
   onChange(fn: (s: ShopSnapshot) => void) {
     this.listeners.add(fn);
-    if (this.data.updatedAt) fn(this.data);
+    if (this.loaded) fn(this.data);
   }
 
   /** Rooms people can still join, fullest first (closest to starting). */
@@ -42,6 +44,7 @@ export class Shop {
       const data = (await res.json()) as ShopSnapshot;
       if (!Array.isArray(data.products)) return;
       this.data = data;
+      this.loaded = true;
       for (const fn of this.listeners) fn(data);
     } catch {
       /* keep the last data; the town still works without it */

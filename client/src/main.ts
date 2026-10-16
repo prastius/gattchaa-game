@@ -12,6 +12,7 @@ import { Diagnostics } from "./ui/diagnostics";
 import { TownDialog } from "./ui/dialog";
 import { Announcer } from "./ui/announce";
 import { Shop } from "./shop";
+import { audio } from "./audio";
 
 const NAME_KEY = "my-world:name";
 const LOOK_KEY = "my-world:look";
@@ -56,6 +57,7 @@ $("login-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const name = sanitizeName(nameInput.value);
   const look = creator.encoded;
+  audio.start(); // needs this click (browser autoplay rules)
   joinBtn.disabled = true;
   joinBtn.textContent = "Connecting…";
   errorEl.textContent = "";
@@ -92,6 +94,7 @@ function start(room: Awaited<ReturnType<typeof joinWorld>>, name: string) {
   hud.show();
   chat.show();
   setupWardrobe(net, chat);
+  setupSoundButtons();
 
   // Render at the screen's real pixel density (then CSS-scale back down), so
   // pixel art is never stretched by a fractional factor on HiDPI displays.
@@ -122,6 +125,28 @@ function start(room: Awaited<ReturnType<typeof joinWorld>>, name: string) {
     new Diagnostics(game, room, () => scene.netStats());
   });
   if (import.meta.env.DEV) Object.assign(window, { __game: game, __room: room });
+}
+
+function setupSoundButtons() {
+  const music = $("music-btn");
+  const sound = $("sound-btn");
+  const render = () => {
+    music.classList.toggle("off", !audio.musicOn);
+    sound.classList.toggle("off", !audio.sfxOn);
+    music.setAttribute("aria-pressed", String(audio.musicOn));
+    sound.setAttribute("aria-pressed", String(audio.sfxOn));
+  };
+  music.addEventListener("click", () => {
+    audio.start();
+    audio.setMusic(!audio.musicOn);
+    render();
+  });
+  sound.addEventListener("click", () => {
+    audio.start();
+    audio.setSfx(!audio.sfxOn);
+    render();
+  });
+  render();
 }
 
 function setupWardrobe(net: Net, chat: ChatUI) {

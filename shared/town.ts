@@ -20,9 +20,15 @@ export const Floor = {
   Stone: 1,
   StoneEdge: 2,
   Brand: 3, // orange diamond tiles in front of the store
-  Wood: 4, // the Rooms deck
+  Wood: 4, // the Rooms deck and the store interior
+  Void: 5, // black, solid: everything around the store interior
+  WallTop: 6, // the store's back wall, three tiles tall
+  WallMid: 7,
+  WallBottom: 8,
 } as const;
 export type Floor = (typeof Floor)[keyof typeof Floor];
+/** Floors that block movement. */
+export const SOLID_FLOORS: readonly number[] = [Floor.Void, Floor.WallTop, Floor.WallMid, Floor.WallBottom];
 
 /** Flattened to grass and cleared of trees. */
 export const TOWN_AREA: Rect = { x: 168, y: 171, w: 49, h: 42 };
@@ -41,10 +47,64 @@ export const ROADS: Rect[] = [
   { x: 208, y: 199, w: 40, h: 4 }, // east
 ];
 
+// ---------------------------------------------------------------- store interior
+//
+// The inside of the Gattchaa store lives in the far north-west corner of the
+// map, out in the ocean where nobody can walk. The door teleports you there, so
+// it needs no separate map or room, and interest management keeps shoppers
+// inside from seeing (or being seen by) the plaza.
+
+/** Two 16x16 chunks square; the client draws only this while you're inside. */
+export const INTERIOR_ZONE: Rect = { x: 0, y: 0, w: 32, h: 32 };
+/** The walkable room plus its back wall (rows 8-10). */
+export const STORE_ROOM: Rect = { x: 6, y: 8, w: 20, h: 13 };
+const ROOM_FLOOR: Rect = { x: 6, y: 11, w: 20, h: 10 };
+export const STORE_RUG: Rect = { x: 13, y: 14, w: 6, h: 5 };
+/** Where the in-store shopper may wander. */
+export const STORE_WANDER: Rect = { x: 11, y: 14, w: 10, h: 6 };
+
 export const FLOORS: { rect: Rect; floor: Floor }[] = [
   { rect: PLAZA, floor: Floor.Stone },
   { rect: ROOMS_DECK, floor: Floor.Wood },
   { rect: BRAND_TERRACE, floor: Floor.Brand },
+  { rect: INTERIOR_ZONE, floor: Floor.Void },
+  { rect: { x: STORE_ROOM.x, y: 8, w: STORE_ROOM.w, h: 1 }, floor: Floor.WallTop },
+  { rect: { x: STORE_ROOM.x, y: 9, w: STORE_ROOM.w, h: 1 }, floor: Floor.WallMid },
+  { rect: { x: STORE_ROOM.x, y: 10, w: STORE_ROOM.w, h: 1 }, floor: Floor.WallBottom },
+  { rect: ROOM_FLOOR, floor: Floor.Wood },
+  { rect: STORE_RUG, floor: Floor.Brand },
+  { rect: { x: 15, y: 20, w: 2, h: 1 }, floor: Floor.Brand }, // doormat
+];
+
+/**
+ * Doors: stepping into `trigger` (pixels) while walking in `dir` asks the
+ * server to move you to `to`. The server re-checks that you're really there.
+ */
+export interface Door {
+  id: string;
+  label: string;
+  trigger: Rect;
+  /** 0 = up, 2 = down (protocol Dir values). */
+  dir: number;
+  to: { x: number; y: number };
+}
+
+const STORE_DOOR_X = 6112; // centre of the doorway in the Brick House sprite
+export const DOORS: Door[] = [
+  {
+    id: "store-in",
+    label: "Enter Gattchaa Store",
+    trigger: { x: STORE_DOOR_X - 16, y: 185 * 32, w: 32, h: 26 },
+    dir: 0,
+    to: { x: 16 * 32, y: 20 * 32 + 8 },
+  },
+  {
+    id: "store-out",
+    label: "Back to town",
+    trigger: { x: 15 * 32, y: 20 * 32 + 14, w: 64, h: 18 },
+    dir: 2,
+    to: { x: STORE_DOOR_X, y: 186 * 32 + 4 },
+  },
 ];
 
 /**
@@ -65,6 +125,8 @@ export const PROP_TYPES = {
   barrel: { w: 1, h: 1 },
   crate: { w: 1, h: 1 },
   stool: { w: 1, h: 1, walkable: true },
+  shelf: { w: 1, h: 1 },
+  floorLamp: { w: 1, h: 1 },
 } as const satisfies Record<string, { w: number; h: number; walkable?: boolean }>;
 export type PropType = keyof typeof PROP_TYPES;
 
@@ -139,6 +201,30 @@ const props: Prop[] = [
 [184, 185, 186, 187, 196, 197, 198, 199].forEach((x, i) => {
   props.push({ type: "machine", x, y: 184, tag: `machine:${MACHINES[i].id}`, variant: i % 2 });
 });
+
+// Inside the store: the full machine wall, two counters, shelves and a play corner.
+[7, 8, 9, 10, 21, 22, 23, 24].forEach((x, i) => {
+  props.push({ type: "machine", x, y: 13, tag: `machine:${MACHINES[i].id}`, variant: (i + 1) % 2 });
+});
+props.push(
+  { type: "counter", x: 12, y: 11, tag: "stall:pickup" },
+  { type: "counter", x: 17, y: 11, tag: "stall:new" },
+  ...[7, 8, 9, 22, 23, 24].map((x, i): Prop => ({ type: "shelf", x, y: 11, variant: i % 2 })),
+  ...[
+    [8, 17],
+    [22, 17],
+  ].flatMap(([x, y], i): Prop[] => [
+    { type: "cardTable", x, y, tag: `table:${4 + i}` },
+    { type: "stool", x, y: y - 1, variant: 0 },
+    { type: "stool", x: x + 1, y: y - 1, variant: 0 },
+    { type: "stool", x, y: y + 1, variant: 0 },
+    { type: "stool", x: x + 1, y: y + 1, variant: 0 },
+  ]),
+  { type: "pottedTree", x: 6, y: 20 },
+  { type: "pottedTree", x: 25, y: 20 },
+  { type: "floorLamp", x: 11, y: 11 },
+  { type: "floorLamp", x: 20, y: 11 },
+);
 
 export const PROPS: readonly Prop[] = props;
 
