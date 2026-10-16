@@ -7,10 +7,6 @@ export function httpBase(): string {
   return location.origin;
 }
 
-/** Small WebP thumbnail of a product image, resized and cached by the game server. */
-export const thumbUrl = (path: string, size: 64 | 128 | 256) =>
-  `${httpBase()}/api/gattchaa/img?p=${encodeURIComponent(path)}&s=${size}`;
-
 const REFRESH_MS = 30_000;
 
 /** Latest shop data, refreshed in the background. */

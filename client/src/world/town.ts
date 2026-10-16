@@ -3,7 +3,6 @@ import { MACHINES, PROPS, propAnchor, type Prop, type PropType } from "../../../
 import { NPCS } from "../../../shared/npcs";
 import { ROOM_MODES, type ShopProduct, type ShopRoom, type ShopSnapshot } from "../../../shared/gattchaa";
 import { FLOOR_TEX } from "./terrainTiles";
-import { thumbUrl } from "../shop";
 
 // Renders Gattchaa Town's buildings and furniture (LPC Revised art) and keeps
 // the "live" bits in sync with the shop: packs on the stall counters, a pack
@@ -227,7 +226,7 @@ export class Town {
 
   /** Refresh the live displays from the latest shop data. */
   update(shop: ShopSnapshot, rooms: ShopRoom[]) {
-    const inStock = shop.products.filter((p) => !p.soldOut && p.image);
+    const inStock = shop.products.filter((p) => !p.soldOut && p.imageUrl);
     for (const [id, slots] of this.stallSlots) {
       const sells = NPCS.find((n) => n.id === id)?.sells;
       const list = sells ? inStock.filter((p) => sells.test(p.category)) : [];
@@ -253,7 +252,7 @@ export class Town {
       slot.image?.setVisible(false);
       return;
     }
-    const key = `thumb:${product.image}`;
+    const key = `thumb:${product.imageUrl}`;
     if (slot.key === key) return;
     slot.key = key;
     const apply = () => {
@@ -270,7 +269,8 @@ export class Town {
       apply();
       return;
     }
-    this.scene.load.image(key, thumbUrl(product.image, 64));
+    // Needs CORS on the shop's thumbnails (see docs/gattchaa-town-api.md); without it the slot stays empty.
+    this.scene.load.image(key, product.imageUrl);
     this.scene.load.once(`filecomplete-image-${key}`, apply);
     if (!this.scene.load.isLoading()) this.scene.load.start();
   }

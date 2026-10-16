@@ -3,13 +3,13 @@ import { MACHINES } from "../../../shared/town";
 import {
   ROOM_MODES,
   formatRupiah,
-  productLink,
   siteLink,
+  tagLink,
   type ShopProduct,
   type ShopRoom,
 } from "../../../shared/gattchaa";
 import { FRAME, composeCharacter } from "../character";
-import { thumbUrl, type Shop } from "../shop";
+import type { Shop } from "../shop";
 
 // The panel that opens when you talk to someone or use a machine. Every
 // button is a real link into gattchaaoripa.com (new tab), so buying, logging
@@ -210,11 +210,11 @@ export class TownDialog {
     const items = sortSoldOutLast ? [...list].sort((a, b) => Number(a.soldOut) - Number(b.soldOut)) : list;
     const grid = el("div", "product-grid");
     for (const p of items) {
-      const card = external(el("a", `product${p.soldOut ? " sold-out" : ""}`), productLink(this.shop.site, p, from));
+      const card = external(el("a", `product${p.soldOut ? " sold-out" : ""}`), tagLink(p.url, from));
       const img = el("img");
       img.loading = "lazy";
       img.alt = "";
-      if (p.image) img.src = thumbUrl(p.image, 256);
+      if (p.imageUrl) img.src = p.imageUrl;
       const pic = el("div", "product-pic");
       pic.append(img);
       if (p.soldOut) pic.append(el("span", "chip chip-dark", "Sold out"));
@@ -239,12 +239,12 @@ export class TownDialog {
     ordered.slice(0, 12).forEach((r: ShopRoom, i) => {
       const row = external(
         el("a", `room${i === 0 && highlight !== undefined ? " highlight" : ""}`),
-        productLink(this.shop.site, r.product, "rooms", { mode: r.mode }),
+        tagLink(r.url, "rooms"),
       );
       const img = el("img");
       img.alt = "";
       img.loading = "lazy";
-      if (r.product.image) img.src = thumbUrl(r.product.image, 128);
+      if (r.product.imageUrl) img.src = r.product.imageUrl;
       const info = el("div", "room-info");
       info.append(el("span", `chip ${r.mode === "packs_battle" ? "chip-battle" : ""}`, ROOM_MODES[r.mode] ?? r.mode), el("div", "room-title", r.product.title));
       const seats = el("div", "room-seats");

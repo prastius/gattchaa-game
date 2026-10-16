@@ -3,6 +3,7 @@ import { Callbacks, type Room } from "@colyseus/sdk";
 import { CHUNK_TILES, PLAYER_SPEED, TILE_SIZE, WORLD_PX_H, WORLD_PX_W, hash2, type World } from "../../../shared/world";
 import { Dir, NET_SEND_HZ, type MoveMessage, type PlayerView } from "../../../shared/protocol";
 import { NPCS, type NpcDef } from "../../../shared/npcs";
+import { PROPS } from "../../../shared/town";
 import { CharacterTextures, PlayerSprite } from "../PlayerSprite";
 import { ATLAS_MARGIN, ATLAS_SPACING, buildTerrainAtlas, floorCell, tileCells, type TerrainAtlas } from "../world/terrainTiles";
 import { WORLD_TEX, createDecor, registerDecorFrames, type DecorSprite } from "../world/decorSprites";
@@ -102,7 +103,7 @@ export class WorldScene extends Phaser.Scene {
     this.load.image(WORLD_TEX.flowers, `${ASSETS}flowers.png`);
     this.load.image(WORLD_TEX.rocks, `${ASSETS}rocks.png`);
     preloadTown(this);
-    this.load.setCORS("anonymous"); // live product thumbnails come from the game server
+    this.load.setCORS("anonymous"); // product thumbnails come from the shop (needs CORS there)
   }
 
   create() {
@@ -211,7 +212,8 @@ export class WorldScene extends Phaser.Scene {
       this.npcs.get(id)?.sprite.destroy();
       const sprite = new PlayerSprite(this, this.charTextures, state.x, state.y, state.name, state.look, {
         npc: true,
-        title: npc?.title,
+        // Stall keepers already have a sign over their counter.
+        title: PROPS.some((p) => p.tag === `stall:${id}`) ? undefined : npc?.title,
         textRes: this.textRes,
       });
       sprite.dir = state.dir;

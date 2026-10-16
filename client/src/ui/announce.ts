@@ -1,5 +1,5 @@
-import { siteLink, type Announcement } from "../../../shared/gattchaa";
-import { thumbUrl, type Shop } from "../shop";
+import { siteLink, tagLink, type Announcement } from "../../../shared/gattchaa";
+import type { Shop } from "../shop";
 
 const SHOW_MS = 7000;
 
@@ -28,11 +28,11 @@ export class Announcer {
     card.className = "announce-card";
     card.target = "_blank";
     card.rel = "noopener";
-    card.href = a.url ? siteLink(this.shop.site, new URL(a.url).pathname, "announcement") : siteLink(this.shop.site, "/", "announcement");
-    if (a.image) {
+    card.href = a.url ? tagLink(a.url, "announcement") : siteLink(this.shop.site, "/", "announcement");
+    if (a.imageUrl) {
       const img = document.createElement("img");
       img.alt = "";
-      img.src = thumbUrl(a.image, 128);
+      img.src = a.imageUrl;
       card.append(img);
     }
     const text = document.createElement("div");

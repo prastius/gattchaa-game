@@ -1,127 +1,148 @@
-import type { Application, Request, Response } from "express";
-import sharp from "sharp";
+import crypto from "node:crypto";
+import express, { type Application, type Request, type Response } from "express";
 import { DEFAULT_SITE, type Announcement, type ShopProduct, type ShopRoom, type ShopSnapshot } from "../../shared/gattchaa";
 
-// Mirrors public data from gattchaaoripa.com: the product list (embedded in the
-// home page's Inertia props), open rooms (/rooms/state) and recent purchases
-// (/site-activity). Everything is cached, so players never hit the shop
-// directly and the game keeps working (with the last data) if the site is down.
+// Client for the Gattchaa Town API (contract: docs/gattchaa-town-api.md).
+//
+//  - Pull: GET {API}/catalog and GET {API}/live, with an API key and ETags, so an
+//    unchanged response costs the shop almost nothing.
+//  - Push: the shop POSTs signed webhooks to /hooks/gattchaa for things that
+//    should feel instant (big pulls, catalog or room changes).
+//
+// Without GATTCHAA_API_URL the feed stays off and makes no requests at all;
+// the town still works, the shop dialogs just show menu links.
 
-export const SITE = (process.env.GATTCHAA_URL || DEFAULT_SITE).replace(/\/+$/, "");
-
-const PRODUCTS_EVERY_MS = 5 * 60_000;
-const LIVE_EVERY_MS = 20_000;
-const FETCH_TIMEOUT_MS = 10_000;
-const UA = "GattchaaTown/1.0 (+game server)";
-
-interface RawProduct {
-  id: number;
-  title: string;
-  slug: string;
-  image_path: string;
-  price: number;
-  discount_price: number;
-  current_price: number;
-  type: string;
-  custom_label: string | null;
-  is_hot: number | boolean;
-  is_closed: boolean;
-  is_sold_out: boolean;
-  category?: { title: string };
+// Read at start-up (after Colyseus has loaded server/.env.<NODE_ENV>), not at import time.
+let API = "";
+let API_KEY = "";
+let WEBHOOK_SECRET = "";
+let SITE = DEFAULT_SITE;
+function loadConfig() {
+  API = (process.env.GATTCHAA_API_URL ?? "").replace(/\/+$/, "");
+  API_KEY = process.env.GATTCHAA_API_KEY ?? "";
+  WEBHOOK_SECRET = process.env.GATTCHAA_WEBHOOK_SECRET ?? "";
+  SITE = (process.env.GATTCHAA_SITE_URL || DEFAULT_SITE).replace(/\/+$/, "");
 }
 
-interface RawRoom {
+const CATALOG_EVERY_MS = 10 * 60_000; // webhooks make this a safety net
+const LIVE_EVERY_MS = 30_000;
+const FETCH_TIMEOUT_MS = 8_000;
+const WEBHOOK_TOLERANCE_S = 300;
+
+// ------------------------------------------------------------------ API shapes
+
+interface ApiProduct {
+  id: number;
+  slug: string;
+  title: string;
+  category: string;
+  type: string;
+  price: number;
+  original_price: number | null;
+  label: string | null;
+  is_hot: boolean;
+  is_sold_out: boolean;
+  image_url: string;
+  url: string;
+}
+
+interface ApiRoom {
   code: string | null;
   mode: string;
+  status: string | null;
   seats: number;
   taken_seats: number;
   seat_price: number;
   cards_per_seat: number;
-  status: string | null;
   fill_expires_at: string | null;
-  product: { title: string; slug: string; image_path: string; is_closed: boolean };
+  url: string;
+  product: { slug: string; title: string; image_url: string };
 }
 
-interface RawNotification {
-  id: number | string;
-  label: string;
-  message: string;
-  product_title?: string;
-  product_image?: string;
-  product_url?: string;
+interface ApiEvent {
+  id: string;
+  type: "purchase.highlight" | "catalog.updated" | "live.updated" | string;
+  data?: {
+    label?: string;
+    message?: string;
+    product?: { title?: string; image_url?: string; url?: string };
+  };
 }
 
-async function fetchText(path: string, accept = "text/html"): Promise<string> {
-  const res = await fetch(`${SITE}${path}`, {
-    headers: { Accept: accept, "User-Agent": UA },
-    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-  });
-  if (!res.ok) throw new Error(`${path}: HTTP ${res.status}`);
-  return res.text();
+/** Only plain http(s) links ever reach players (no javascript: URLs). */
+function safeUrl(raw: unknown): string {
+  const s = String(raw ?? "");
+  try {
+    const u = new URL(s);
+    return u.protocol === "https:" || u.protocol === "http:" ? u.toString() : "";
+  } catch {
+    return "";
+  }
 }
 
-function decodeEntities(s: string): string {
-  return s.replace(/&(quot|amp|lt|gt|#0?39|#x27);/g, (m) => ({ "&quot;": '"', "&amp;": "&", "&lt;": "<", "&gt;": ">" })[m] ?? "'");
-}
+const text = (raw: unknown, max: number) => String(raw ?? "").replace(/\s+/g, " ").trim().slice(0, max);
 
-/** Accepts "products/x.webp" or a full storage URL on the site; anything else is dropped. */
-export function storagePath(raw: unknown): string | undefined {
-  let p = String(raw ?? "");
-  const prefix = `${SITE}/storage/`;
-  if (p.startsWith(prefix)) p = p.slice(prefix.length);
-  else if (p.startsWith("/storage/")) p = p.slice("/storage/".length);
-  return /^[a-z0-9_\-/]+\.(webp|png|jpe?g)$/i.test(p) && !p.includes("..") ? p : undefined;
-}
-
-function toProduct(p: RawProduct): ShopProduct {
-  const price = Number(p.current_price) || Number(p.price) || 0;
-  const was = Number(p.price) > price ? Number(p.price) : undefined;
+function toProduct(p: ApiProduct): ShopProduct {
+  const price = Math.max(0, Number(p.price) || 0);
+  const was = Number(p.original_price) > price ? Number(p.original_price) : undefined;
   return {
     id: Number(p.id),
-    title: String(p.title).trim().replace(/\s+/g, " "),
-    slug: String(p.slug),
-    image: storagePath(p.image_path) ?? "",
+    slug: text(p.slug, 200),
+    title: text(p.title, 160),
+    category: text(p.category, 60),
+    type: text(p.type, 40),
     price,
     ...(was && { was }),
-    category: p.category?.title ?? "",
-    type: String(p.type ?? ""),
-    ...(p.custom_label && { label: String(p.custom_label) }),
+    ...(p.label && { label: text(p.label, 30) }),
     hot: Boolean(p.is_hot),
     soldOut: Boolean(p.is_sold_out),
+    imageUrl: safeUrl(p.image_url),
+    url: safeUrl(p.url),
   };
 }
 
-function toRoom(r: RawRoom): ShopRoom {
+function toRoom(r: ApiRoom): ShopRoom {
   return {
-    code: r.code,
-    mode: r.mode,
-    seats: Number(r.seats) || 0,
-    taken: Number(r.taken_seats) || 0,
-    seatPrice: Number(r.seat_price) || 0,
-    cardsPerSeat: Number(r.cards_per_seat) || 0,
-    status: r.status,
-    expiresAt: r.fill_expires_at,
-    product: { title: String(r.product?.title ?? ""), slug: String(r.product?.slug ?? ""), image: storagePath(r.product?.image_path) ?? "" },
+    code: r.code ? text(r.code, 40) : null,
+    mode: text(r.mode, 30),
+    status: r.status ? text(r.status, 30) : null,
+    seats: Math.max(0, Number(r.seats) || 0),
+    taken: Math.max(0, Number(r.taken_seats) || 0),
+    seatPrice: Math.max(0, Number(r.seat_price) || 0),
+    cardsPerSeat: Math.max(0, Number(r.cards_per_seat) || 0),
+    expiresAt: r.fill_expires_at ? text(r.fill_expires_at, 40) : null,
+    url: safeUrl(r.url),
+    product: { slug: text(r.product?.slug, 200), title: text(r.product?.title, 160), imageUrl: safeUrl(r.product?.image_url) },
   };
 }
+
+// ------------------------------------------------------------------ feed
 
 export class GattchaaFeed {
   private products: ShopProduct[] = [];
   private rooms: ShopRoom[] = [];
   private siteOnline = 0;
   private updatedAt = 0;
-  private seen = new Set<string>();
-  private primed = false;
-  private timers: NodeJS.Timeout[] = [];
+  private etags = new Map<string, string>();
+  private seenEvents = new Set<string>();
+  private pending = new Map<string, NodeJS.Timeout>();
   private listeners = new Set<(a: Announcement) => void>();
 
+  get enabled() {
+    return API !== "";
+  }
+
   start() {
-    const products = () => this.refreshProducts().catch((err) => console.warn("[gattchaa] products:", err.message));
-    const live = () => this.refreshLive().catch((err) => console.warn("[gattchaa] live:", err.message));
-    products();
-    live();
-    this.timers.push(setInterval(products, PRODUCTS_EVERY_MS), setInterval(live, LIVE_EVERY_MS));
-    for (const t of this.timers) t.unref();
+    loadConfig();
+    if (!this.enabled) {
+      console.log("[gattchaa] GATTCHAA_API_URL not set: shop feed off (no requests to the shop).");
+      return;
+    }
+    if (!API_KEY) console.warn("[gattchaa] GATTCHAA_API_KEY is empty; the API will probably refuse requests.");
+    this.refreshCatalog();
+    this.refreshLive();
+    setInterval(() => this.refreshCatalog(), CATALOG_EVERY_MS).unref();
+    setInterval(() => this.refreshLive(), LIVE_EVERY_MS).unref();
   }
 
   onAnnouncement(fn: (a: Announcement) => void): () => void {
@@ -137,7 +158,6 @@ export class GattchaaFeed {
     return this.siteOnline;
   }
 
-  /** Products currently on sale (not closed), in the site's own order. */
   get liveProducts() {
     return this.products;
   }
@@ -146,104 +166,114 @@ export class GattchaaFeed {
     return this.rooms;
   }
 
-  private async refreshProducts() {
-    const html = await fetchText("/");
-    const m = html.match(/data-page="([^"]*)"/);
-    if (!m) throw new Error("no Inertia page data on the home page");
-    const page = JSON.parse(decodeEntities(m[1])) as { props?: { products?: RawProduct[] } };
-    const raw = page.props?.products;
-    if (!Array.isArray(raw)) throw new Error("home page has no product list");
-    this.products = raw.filter((p) => p && p.slug && !p.is_closed).map(toProduct);
+  /** GET with API key + ETag. Resolves undefined when unchanged (304) or on failure. */
+  private async get<T>(path: string): Promise<T | undefined> {
+    const headers: Record<string, string> = { Accept: "application/json", Authorization: `Bearer ${API_KEY}` };
+    const etag = this.etags.get(path);
+    if (etag) headers["If-None-Match"] = etag;
+    try {
+      const res = await fetch(`${API}${path}`, { headers, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+      if (res.status === 304) return undefined;
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const tag = res.headers.get("etag");
+      if (tag) this.etags.set(path, tag);
+      return (await res.json()) as T;
+    } catch (err) {
+      console.warn(`[gattchaa] GET ${path} failed: ${(err as Error).message} (keeping last data)`);
+      return undefined;
+    }
+  }
+
+  private async refreshCatalog() {
+    const body = await this.get<{ data?: ApiProduct[] }>("/catalog");
+    if (!body || !Array.isArray(body.data)) return;
+    this.products = body.data.map(toProduct).filter((p) => p.slug && p.url);
     this.updatedAt = Date.now();
   }
 
   private async refreshLive() {
-    const [rooms, activity] = await Promise.allSettled([
-      fetchText("/rooms/state", "application/json").then((t) => JSON.parse(t) as { rooms?: RawRoom[] }),
-      fetchText("/site-activity", "application/json").then(
-        (t) => JSON.parse(t) as { online_count?: number; purchase_notifications?: RawNotification[] },
-      ),
-    ]);
+    const body = await this.get<{ data?: { rooms?: ApiRoom[]; online?: number } }>("/live");
+    if (!body?.data) return;
+    if (Array.isArray(body.data.rooms)) this.rooms = body.data.rooms.map(toRoom).filter((r) => r.url);
+    this.siteOnline = Math.max(0, Number(body.data.online) || 0);
+    this.updatedAt = Date.now();
+  }
 
-    if (rooms.status === "fulfilled" && Array.isArray(rooms.value.rooms)) {
-      this.rooms = rooms.value.rooms.filter((r) => r?.product?.slug && !r.product.is_closed).map(toRoom);
-    }
+  /** Coalesces bursts of webhooks (e.g. 20 seats sold in a second) into one fetch. */
+  private soon(key: string, fn: () => void) {
+    if (this.pending.has(key)) return;
+    this.pending.set(
+      key,
+      setTimeout(() => {
+        this.pending.delete(key);
+        fn();
+      }, 1500),
+    );
+  }
 
-    if (activity.status === "fulfilled") {
-      this.siteOnline = Math.max(0, Number(activity.value.online_count) || 0);
-      const fresh: Announcement[] = [];
-      for (const n of activity.value.purchase_notifications ?? []) {
-        const key = String(n.id);
-        if (this.seen.has(key)) continue;
-        this.seen.add(key);
-        // The first poll only learns what was already there; no replaying old news on restart.
-        if (!this.primed) continue;
-        // Only links back into the shop itself.
-        const raw = String(n.product_url ?? "");
-        const url = raw.startsWith(`${SITE}/`) ? raw : /^\/[^/]/.test(raw) ? `${SITE}${raw}` : undefined;
-        fresh.push({
-          label: String(n.label ?? "").slice(0, 60),
-          message: String(n.message ?? "").slice(0, 200),
-          title: n.product_title ? String(n.product_title).slice(0, 120) : undefined,
-          image: storagePath(n.product_image),
-          url,
-        });
+  handleEvent(e: ApiEvent) {
+    const id = text(e.id, 80);
+    if (!id || this.seenEvents.has(id)) return; // the shop may retry deliveries
+    this.seenEvents.add(id);
+    if (this.seenEvents.size > 1000) this.seenEvents = new Set([...this.seenEvents].slice(-500));
+
+    switch (e.type) {
+      case "catalog.updated":
+        this.soon("catalog", () => this.refreshCatalog());
+        break;
+      case "live.updated":
+        this.soon("live", () => this.refreshLive());
+        break;
+      case "purchase.highlight": {
+        const message = text(e.data?.message, 200);
+        if (!message) return;
+        const a: Announcement = {
+          label: text(e.data?.label, 60) || "Gattchaa",
+          message,
+          title: text(e.data?.product?.title, 120) || undefined,
+          imageUrl: safeUrl(e.data?.product?.image_url) || undefined,
+          url: safeUrl(e.data?.product?.url) || undefined,
+        };
+        for (const fn of this.listeners) fn(a);
+        break;
       }
-      this.primed = true;
-      if (this.seen.size > 2000) this.seen = new Set([...this.seen].slice(-500));
-      for (const a of fresh) for (const fn of this.listeners) fn(a);
+      default:
+        break; // unknown events are ignored, so the shop can add more later
     }
-    if (rooms.status === "rejected") throw rooms.reason;
-    if (activity.status === "rejected") throw activity.reason;
   }
 }
 
 export const feed = new GattchaaFeed();
 
-// ------------------------------------------------------------------ HTTP routes
-
-const THUMB_SIZES = new Set([64, 128, 256]);
-const MAX_CACHED = 400;
-const thumbs = new Map<string, Promise<Buffer>>();
-
-/** Downloads a product image once and serves small WebP thumbnails (with CORS, so WebGL can use them). */
-function thumbnail(path: string, size: number): Promise<Buffer> {
-  const key = `${size}:${path}`;
-  let p = thumbs.get(key);
-  if (!p) {
-    p = (async () => {
-      const res = await fetch(`${SITE}/storage/${path}`, { headers: { "User-Agent": UA }, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const input = Buffer.from(await res.arrayBuffer());
-      return sharp(input).resize(size, size, { fit: "inside", withoutEnlargement: true }).webp({ quality: 82 }).toBuffer();
-    })();
-    p.catch(() => thumbs.delete(key)); // retry later
-    thumbs.set(key, p);
-    if (thumbs.size > MAX_CACHED) thumbs.delete(thumbs.keys().next().value!);
-  }
-  return p;
+/** Checks `X-Gattchaa-Signature: t=<unix>,v1=<hex hmac-sha256 of "<t>.<body>">`. */
+export function verifySignature(header: string, body: Buffer, secret: string, nowS = Date.now() / 1000): boolean {
+  const parts = Object.fromEntries(header.split(",").map((kv) => kv.trim().split("=", 2) as [string, string]));
+  const t = Number(parts.t);
+  if (!secret || !Number.isFinite(t) || Math.abs(nowS - t) > WEBHOOK_TOLERANCE_S || !/^[0-9a-f]{64}$/.test(parts.v1 ?? "")) return false;
+  const expected = crypto.createHmac("sha256", secret).update(`${t}.`).update(body).digest();
+  return crypto.timingSafeEqual(expected, Buffer.from(parts.v1, "hex"));
 }
 
-export function registerGattchaaRoutes(app: Application) {
-  const cors = (res: Response) => res.set("Access-Control-Allow-Origin", "*");
+// ------------------------------------------------------------------ HTTP routes
 
+export function registerGattchaaRoutes(app: Application) {
+  // Clients read the cached snapshot from us; they never talk to the shop's API.
   app.get("/api/gattchaa/shop", (_req: Request, res: Response) => {
-    cors(res).set("Cache-Control", "public, max-age=15").json(feed.snapshot());
+    res.set("Access-Control-Allow-Origin", "*").set("Cache-Control", "public, max-age=15").json(feed.snapshot());
   });
 
-  app.get("/api/gattchaa/img", async (req: Request, res: Response) => {
-    cors(res);
-    const path = storagePath(req.query.p);
-    const size = Number(req.query.s) || 128;
-    if (!path || !THUMB_SIZES.has(size)) {
-      res.status(400).end();
+  app.post("/hooks/gattchaa", express.raw({ type: "application/json", limit: "64kb" }), (req: Request, res: Response) => {
+    const body = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
+    if (!verifySignature(String(req.get("x-gattchaa-signature") ?? ""), body, WEBHOOK_SECRET)) {
+      res.status(401).json({ error: "bad signature" });
       return;
     }
     try {
-      const buf = await thumbnail(path, size);
-      res.set("Content-Type", "image/webp").set("Cache-Control", "public, max-age=86400").send(buf);
+      feed.handleEvent(JSON.parse(body.toString("utf8")) as ApiEvent);
     } catch {
-      res.status(502).end();
+      res.status(400).json({ error: "bad json" });
+      return;
     }
+    res.status(204).end();
   });
 }

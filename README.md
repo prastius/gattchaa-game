@@ -89,6 +89,13 @@ scripts/
 - **Chat.** Your own messages appear instantly. The server cleans and rate-limits messages (5 per 5 s) and replays the last 50 to players who join. Chat is rendered as text, never HTML.
 - **Reconnects.** A dropped connection keeps your character in the world for 20 s while the SDK reconnects automatically.
 
+## Gattchaa shop data
+
+The stalls, machines, Rooms tables and big-pull announcements use the **Gattchaa Town API**, which the gattchaaoripa.com project provides. The blueprint for building it is in [docs/gattchaa-town-api.md](docs/gattchaa-town-api.md). The game server never scrapes the website.
+
+- Configure it in `server/.env.production` (see `server/.env.example`). Without `GATTCHAA_API_URL` the town still runs; the shop panels then only show links.
+- For local work without Laravel, run `npm run mock:gattchaa` next to `npm run dev`. `server/.env.development` already points at the mock.
+
 ## Changing the art
 
 `npm run fetch-assets` re-downloads everything listed in `scripts/fetch-assets.mjs` and regenerates the manifest, `shared/catalog.ts` and the credits.

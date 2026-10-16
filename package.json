@@ -13,7 +13,8 @@
     "start": "npm run start -w server",
     "typecheck": "npm run typecheck -w server && npm run typecheck -w client",
     "bots": "tsx scripts/bots.ts",
-    "fetch-assets": "node scripts/fetch-assets.mjs"
+    "fetch-assets": "node scripts/fetch-assets.mjs",
+    "mock:gattchaa": "tsx scripts/mock-gattchaa.ts"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",

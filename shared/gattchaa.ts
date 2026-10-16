@@ -1,37 +1,42 @@
-// Live data from gattchaaoripa.com, as the game server relays it to clients.
+// Live shop data from the Gattchaa Town API (see docs/gattchaa-town-api.md),
+// as the game server relays it to clients.
 
 export const DEFAULT_SITE = "https://gattchaaoripa.com";
 
 export interface ShopProduct {
   id: number;
-  title: string;
   slug: string;
-  /** Path under the site's /storage/, e.g. "products/foo.webp". */
-  image: string;
-  price: number;
-  /** Original price when discounted. */
-  was?: number;
+  title: string;
   category: string;
   /** "pack_opening", "oripa_kuji", "kuji"… */
   type: string;
+  price: number;
+  /** Original price when discounted. */
+  was?: number;
   label?: string;
   hot: boolean;
   soldOut: boolean;
+  /** Small square thumbnail (served by the shop with CORS for the game). */
+  imageUrl: string;
+  /** Product page on the shop. */
+  url: string;
 }
 
 export interface ShopRoom {
   code: string | null;
   mode: "sharing_pack" | "packs_battle" | string;
+  status: string | null;
   seats: number;
   taken: number;
   seatPrice: number;
   cardsPerSeat: number;
-  status: string | null;
   expiresAt: string | null;
-  product: { title: string; slug: string; image: string };
+  url: string;
+  product: { slug: string; title: string; imageUrl: string };
 }
 
 export interface ShopSnapshot {
+  /** Base URL for menu links (daily login, marketplace…). */
   site: string;
   products: ShopProduct[];
   rooms: ShopRoom[];
@@ -40,13 +45,12 @@ export interface ShopSnapshot {
   updatedAt: number;
 }
 
-/** server -> client: a purchase or big pull on the website. */
+/** server -> client: a highlighted purchase or big pull on the website. */
 export interface Announcement {
   label: string;
   message: string;
   title?: string;
-  /** Storage path of the product image. */
-  image?: string;
+  imageUrl?: string;
   url?: string;
 }
 
@@ -61,9 +65,9 @@ export const ROOM_MODES: Record<string, string> = {
   packs_battle: "Packs Battle",
 };
 
-/** Site link tagged with where in town it came from, so the shop can measure the game's traffic. */
-export function siteLink(site: string, path: string, from: string, params: Record<string, string> = {}): string {
-  const url = new URL(path, site);
+/** Adds tracking parameters so the shop can measure traffic coming from the game. */
+export function tagLink(href: string, from: string, params: Record<string, string> = {}): string {
+  const url = new URL(href);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
   url.searchParams.set("utm_source", "gattchaa_town");
   url.searchParams.set("utm_medium", "game");
@@ -71,7 +75,8 @@ export function siteLink(site: string, path: string, from: string, params: Recor
   return url.toString();
 }
 
-export const productLink = (site: string, p: { slug: string }, from: string, params?: Record<string, string>) =>
-  siteLink(site, `/gacha/${encodeURIComponent(p.slug)}`, from, params);
+/** A page on the shop by path, e.g. "/daily-login". */
+export const siteLink = (site: string, path: string, from: string, params?: Record<string, string>) =>
+  tagLink(new URL(path, site).toString(), from, params);
 
 export const formatRupiah = (n: number) => `Rp ${Math.round(n).toLocaleString("id-ID")}`;
