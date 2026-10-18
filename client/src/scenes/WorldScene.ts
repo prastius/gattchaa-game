@@ -346,9 +346,10 @@ export class WorldScene extends Phaser.Scene {
       if (k.down.isDown || k.s.isDown) dy += 1;
     }
 
-    // Hold mouse / finger to walk toward it (works on phones).
+    // Hold a finger on the screen to walk toward it (phones have no keys).
+    // The mouse never moves you: on desktop it only clicks things.
     const pointer = this.input.activePointer;
-    if (dx === 0 && dy === 0 && pointer.isDown && !this.pointerUsed) {
+    if (dx === 0 && dy === 0 && pointer.isDown && pointer.wasTouch && !this.pointerUsed) {
       const wp = pointer.positionToCamera(this.cameras.main) as Phaser.Math.Vector2;
       const px = wp.x - self.x;
       const py = wp.y - (self.y - 20);
@@ -451,7 +452,7 @@ export class WorldScene extends Phaser.Scene {
       .sort((a, b) => Number(b.target.startsWith("npc:")) - Number(a.target.startsWith("npc:")) || b.y - a.y);
     const h = hits[0];
     if (!h) return false;
-    // Doors only from up close; otherwise the click just walks you there.
+    // Doors only from up close; a tap from further away walks you there instead.
     if (h.target.startsWith("door:") && Math.hypot(h.x - self.x, h.y - self.y) > TALK_RANGE) return false;
     this.use(h.target, { x: h.x, y: h.y });
     return true;

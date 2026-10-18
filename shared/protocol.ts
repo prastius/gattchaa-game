@@ -5,6 +5,8 @@ export const ROOM_NAME = "world";
 export const NAME_MAX = 16;
 export const CHAT_MAX = 200;
 export const CHAT_HISTORY = 50;
+/** One world-chat message per player every this many ms. */
+export const CHAT_COOLDOWN_MS = 5000;
 export const NET_SEND_HZ = 12;
 
 /** Server only syncs players within this many pixels (per axis) of you. */

@@ -1,6 +1,7 @@
-import type { ChatMessage } from "../../../shared/protocol";
+import { CHAT_COOLDOWN_MS, type ChatMessage } from "../../../shared/protocol";
 
 const MAX_LINES = 100;
+const PLACEHOLDER = "Press Enter to chat";
 
 export class ChatUI {
   private root = document.getElementById("chat")!;
@@ -8,12 +9,23 @@ export class ChatUI {
   private form = document.getElementById("chat-form") as HTMLFormElement;
   private input = document.getElementById("chat-input") as HTMLInputElement;
   private enabled = true;
+  /** Mirrors the server's chat cooldown so we never show a message it will drop. */
+  private readyAt = 0;
+  private countdown?: number;
 
-  constructor(private onSend: (text: string) => void) {
+  /** onSend returns false if nothing was actually sent (e.g. the text sanitized to empty). */
+  constructor(private onSend: (text: string) => boolean) {
     this.form.addEventListener("submit", (e) => {
       e.preventDefault();
       const text = this.input.value.trim();
-      if (text) this.onSend(text);
+      if (text && Date.now() < this.readyAt) {
+        // Too soon: keep what they typed so they can send it when the timer ends.
+        this.root.classList.remove("cooldown");
+        void this.root.offsetWidth; // restart the shake animation
+        this.root.classList.add("cooldown");
+        return;
+      }
+      if (text && this.onSend(text)) this.startCooldown();
       this.input.value = "";
       this.input.blur();
     });
@@ -29,6 +41,23 @@ export class ChatUI {
         this.input.focus();
       }
     });
+  }
+
+  private startCooldown() {
+    this.readyAt = Date.now() + CHAT_COOLDOWN_MS;
+    clearInterval(this.countdown);
+    const tick = () => {
+      const left = Math.ceil((this.readyAt - Date.now()) / 1000);
+      if (left > 0) {
+        this.input.placeholder = `Wait ${left}s to chat again`;
+        return;
+      }
+      clearInterval(this.countdown);
+      this.input.placeholder = PLACEHOLDER;
+      this.root.classList.remove("cooldown");
+    };
+    tick();
+    this.countdown = window.setInterval(tick, 250);
   }
 
   show() {

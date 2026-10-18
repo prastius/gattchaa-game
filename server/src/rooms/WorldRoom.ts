@@ -3,6 +3,7 @@ import { StateView } from "@colyseus/schema";
 import { PLAYER_SPEED, World } from "../../../shared/world";
 import { normalizeLook } from "../../../shared/appearance";
 import {
+  CHAT_COOLDOWN_MS,
   CHAT_HISTORY,
   VIEW_RADIUS,
   sanitizeChat,
@@ -24,8 +25,6 @@ import type { Announcement, NpcSay } from "../../../shared/gattchaa";
 // Generated once per process; every room instance shares the same map.
 const world = new World();
 
-const CHAT_WINDOW_MS = 5000;
-const CHAT_MAX_PER_WINDOW = 5;
 const LOOK_COOLDOWN_MS = 1000;
 // Move messages: a token bucket, not a minimum gap. Networks (mobile, Wi-Fi)
 // and a busy server deliver messages in bursts; dropping "too close together"
@@ -56,7 +55,7 @@ interface PlayerMeta {
   /** Move-message rate limiter. */
   tokens: number;
   lastLookAt: number;
-  chatTimes: number[];
+  lastChatAt: number;
 }
 
 export class WorldRoom extends Room<{ state: WorldState }> {
@@ -111,7 +110,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       ts: this.now(),
     });
     this.state.players.set(client.sessionId, player);
-    this.meta.set(client.sessionId, { x: spawn.x, y: spawn.y, allowance: 0, lastMoveAt: Date.now(), tokens: MOVE_BURST, lastLookAt: 0, chatTimes: [] });
+    this.meta.set(client.sessionId, { x: spawn.x, y: spawn.y, allowance: 0, lastMoveAt: Date.now(), tokens: MOVE_BURST, lastLookAt: 0, lastChatAt: 0 });
     this.state.online = this.clients.length;
 
     client.view = new StateView();
@@ -241,12 +240,12 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     if (!text) return;
 
     const now = Date.now();
-    meta.chatTimes = meta.chatTimes.filter((t) => now - t < CHAT_WINDOW_MS);
-    if (meta.chatTimes.length >= CHAT_MAX_PER_WINDOW) {
-      client.send("chat", this.makeMessage("", "System", "You're sending messages too fast.", true));
+    const wait = meta.lastChatAt + CHAT_COOLDOWN_MS - now;
+    if (wait > 0) {
+      client.send("chat", this.makeMessage("", "System", `Slow down: wait ${Math.ceil(wait / 1000)}s before chatting again.`, true));
       return;
     }
-    meta.chatTimes.push(now);
+    meta.lastChatAt = now;
 
     this.publish(this.makeMessage(client.sessionId, player.name, text));
   }

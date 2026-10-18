@@ -76,13 +76,14 @@ export class Net {
     });
   }
 
-  sendChat(raw: string) {
+  sendChat(raw: string): boolean {
     const text = sanitizeChat(raw);
-    if (!text) return;
+    if (!text) return false;
     this.room.send("chat", { text } satisfies ChatSend);
     // Local echo: no waiting for the server round trip.
     this.chat.add({ id: 0, from: this.room.sessionId, name: this.myName, text, ts: Date.now() });
     this.onBubble?.(this.room.sessionId, text);
+    return true;
   }
 
   sendLook(look: string) {

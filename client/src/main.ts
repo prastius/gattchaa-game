@@ -81,7 +81,7 @@ $("login-form").addEventListener("submit", async (e) => {
 function start(room: Awaited<ReturnType<typeof joinWorld>>, name: string) {
   world ??= new World();
   const hud = new HUD(world);
-  const chat = new ChatUI((text) => net.sendChat(text));
+  const chat = new ChatUI((text): boolean => net.sendChat(text));
   const net = new Net(room, name, chat, hud, (reason) => {
     $("disconnected-reason").textContent = reason;
     $("disconnected").hidden = false;

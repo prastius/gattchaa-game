@@ -207,6 +207,17 @@ button {
   background: var(--panel-solid);
 }
 
+/* Tried to send during the chat cooldown. */
+#chat.cooldown #chat-input {
+  border-color: #e0605a;
+  animation: chat-shake 0.3s;
+}
+
+@keyframes chat-shake {
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
 /* ---------- Overlays + panels ---------- */
 
 .overlay {
