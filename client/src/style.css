@@ -127,6 +127,19 @@ button {
   background: var(--panel-raised);
 }
 
+.hud-button:disabled {
+  opacity: 0.4;
+  cursor: default;
+  background: var(--panel);
+}
+
+#zoom-in-btn,
+#zoom-out-btn {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+}
+
 .hud-row {
   display: flex;
   gap: 6px;

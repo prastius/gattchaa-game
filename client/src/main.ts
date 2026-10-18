@@ -34,6 +34,16 @@ function store(key: string, value: string) {
   }
 }
 
+// No browser "Save image as…" menu or image dragging over the game. Text
+// fields and the chat log keep their menu so copy/paste still works.
+document.addEventListener("contextmenu", (e) => {
+  const el = e.target as Element | null;
+  if (!el?.closest("input, textarea, #chat-log, a")) e.preventDefault();
+});
+document.addEventListener("dragstart", (e) => {
+  if (e.target instanceof HTMLImageElement || e.target instanceof HTMLCanvasElement) e.preventDefault();
+});
+
 // ---------------------------------------------------------------- login + character creation
 
 const nameInput = $<HTMLInputElement>("name-input");

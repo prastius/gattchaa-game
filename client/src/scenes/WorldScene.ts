@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 import { Callbacks, type Room } from "@colyseus/sdk";
 import { CHUNK_TILES, PLAYER_SPEED, TILE_SIZE, WORLD_PX_H, WORLD_PX_W, hash2, type World } from "../../../shared/world";
-import { Dir, NET_SEND_HZ, type MoveMessage, type PlayerView } from "../../../shared/protocol";
+import { Dir, NET_SEND_HZ, VIEW_RADIUS, type MoveMessage, type PlayerView } from "../../../shared/protocol";
 import { NPCS, type NpcDef } from "../../../shared/npcs";
 import { DOORS, INTERIOR_ZONE, PROPS, inRect } from "../../../shared/town";
 import { CharacterTextures, PlayerSprite } from "../PlayerSprite";
@@ -54,6 +54,11 @@ const NPC_FACE_RANGE = 150;
 const SPARK = "spark";
 const DOOR_TIMEOUT_MS = 900;
 const OUTDOOR_BG = "#1f5f7a";
+const ZOOM_KEY = "my-world:zoom";
+/** How many steps past the automatic zoom the player may zoom in. */
+const ZOOM_IN_STEPS = 2;
+/** Wheel delta per zoom step (one mouse notch is ~100; trackpads send many small deltas). */
+const WHEEL_STEP = 100;
 
 /**
  * Integer zoom keeps every art pixel the same size (no shimmer when scrolling).
@@ -64,6 +69,29 @@ export function pickZoom(width: number, height: number, dpr: number): number {
   const comfortable = Math.floor(Math.min(width / 1100, height / 640));
   const fitMin = Math.floor(Math.min(width / (14 * TILE_SIZE), height / (10 * TILE_SIZE)));
   return Math.max(1, Math.min(Math.max(comfortable, Math.floor(dpr)), fitMin));
+}
+
+/**
+ * Integer zoom levels the player may pick on this screen. Zooming out stops
+ * where the view would show further than the server syncs other players
+ * (VIEW_RADIUS), so nobody pops in at the screen edge.
+ */
+export function zoomRange(width: number, height: number, dpr: number) {
+  const auto = pickZoom(width, height, dpr);
+  const min = Math.max(1, Math.ceil(width / (2 * VIEW_RADIUS)), Math.ceil(height / (1.5 * VIEW_RADIUS)));
+  // Always keep at least ~8x5 tiles in view.
+  const closest = Math.max(1, Math.floor(Math.min(width / (8 * TILE_SIZE), height / (5 * TILE_SIZE))));
+  const max = Math.max(auto, Math.min(auto + ZOOM_IN_STEPS, closest));
+  return { auto, min: Math.min(min, auto), max };
+}
+
+function loadZoomSteps(): number {
+  try {
+    const n = Number(localStorage.getItem(ZOOM_KEY));
+    return Number.isInteger(n) ? n : 0;
+  } catch {
+    return 0;
+  }
 }
 
 export class WorldScene extends Phaser.Scene {
@@ -87,6 +115,9 @@ export class WorldScene extends Phaser.Scene {
   private lastSent = { x: 0, y: 0, dir: Dir.Down as number, moving: false, at: 0 };
   private hudAt = 0;
   private zoom = 1;
+  /** Player's zoom choice, in steps from the automatic zoom (+ = closer). */
+  private zoomSteps = loadZoomSteps();
+  private wheelDelta = 0;
   private prompt!: Phaser.GameObjects.Text;
   private focus?: { target: string; x: number; y: number };
   /** The current press opened something, so it must not also walk. */
@@ -146,8 +177,24 @@ export class WorldScene extends Phaser.Scene {
     });
     this.input.on("pointerdown", (p: Phaser.Input.Pointer) => {
       this.chat.blur();
-      this.pointerUsed = this.tryUse(p);
+      // Only a left click or a tap uses things; right/middle click does nothing.
+      this.pointerUsed = p.button === 0 && this.tryUse(p);
     });
+    this.input.on("wheel", (_p: Phaser.Input.Pointer, _over: unknown, _dx: number, dy: number) => {
+      // Collect small trackpad deltas into whole steps; reset when direction flips.
+      if (Math.sign(dy) !== Math.sign(this.wheelDelta)) this.wheelDelta = 0;
+      this.wheelDelta += dy;
+      if (Math.abs(this.wheelDelta) < WHEEL_STEP) return;
+      this.zoomBy(this.wheelDelta < 0 ? 1 : -1);
+      this.wheelDelta = 0;
+    });
+    this.input.keyboard!.on("keydown", (e: KeyboardEvent) => {
+      // Ctrl/Cmd +/- stays the browser's page zoom.
+      if (this.chat.isFocused() || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === "+" || e.key === "=") this.zoomBy(1);
+      else if (e.key === "-" || e.key === "_") this.zoomBy(-1);
+    });
+    this.hud.onZoom((step) => this.zoomBy(step));
     this.input.on("pointerup", () => (this.pointerUsed = false));
     // Releasing keys while focus is elsewhere never reaches Phaser; reset on blur.
     window.addEventListener("blur", () => this.input.keyboard?.resetKeys());
@@ -180,8 +227,35 @@ export class WorldScene extends Phaser.Scene {
   }
 
   private applyZoom() {
-    this.zoom = pickZoom(this.scale.width, this.scale.height, window.devicePixelRatio || 1);
-    this.cameras.main.setZoom(this.zoom);
+    const range = zoomRange(this.scale.width, this.scale.height, window.devicePixelRatio || 1);
+    // Clamp the saved choice to what this screen allows, so it can't drift past the ends.
+    this.zoomSteps = Phaser.Math.Clamp(this.zoomSteps, range.min - range.auto, range.max - range.auto);
+    const zoom = range.auto + this.zoomSteps;
+    this.hud.setZoomLimits(zoom > range.min, zoom < range.max);
+    if (zoom === this.zoom && this.cameras.main.zoom === zoom) return;
+    this.zoom = zoom;
+    this.cameras.main.setZoom(zoom);
+    this.refreshTextRes(this.children.list);
+  }
+
+  private zoomBy(step: number) {
+    const before = this.zoomSteps;
+    this.zoomSteps += step;
+    this.applyZoom();
+    if (this.zoomSteps === before) return;
+    try {
+      localStorage.setItem(ZOOM_KEY, String(this.zoomSteps));
+    } catch {
+      /* storage unavailable */
+    }
+  }
+
+  /** Re-rasterise every text at the new zoom (names, signs, bubbles), or it goes blurry. */
+  private refreshTextRes(objects: Phaser.GameObjects.GameObject[]) {
+    for (const obj of objects) {
+      if (obj instanceof Phaser.GameObjects.Text) obj.setResolution(this.zoom);
+      else if (obj instanceof Phaser.GameObjects.Container) this.refreshTextRes(obj.list);
+    }
   }
 
   /** Text is rasterised at the camera zoom so names stay crisp. */
@@ -199,7 +273,7 @@ export class WorldScene extends Phaser.Scene {
       const sessionId = key as string;
       const isSelf = sessionId === this.room.sessionId;
       this.entities.get(sessionId)?.sprite.destroy();
-      const sprite = new PlayerSprite(this, this.charTextures, state.x, state.y, state.name, state.look, { isSelf, textRes: this.textRes });
+      const sprite = new PlayerSprite(this, this.charTextures, state.x, state.y, state.name, state.look, { isSelf, textRes: () => this.textRes });
       sprite.dir = state.dir;
       this.entities.set(sessionId, { sprite, state, interp: new Interpolator(), lastTs: -1 });
       if (isSelf) {
@@ -227,7 +301,7 @@ export class WorldScene extends Phaser.Scene {
         npc: true,
         // Stall keepers already have a sign over their counter.
         title: PROPS.some((p) => p.tag === `stall:${id}`) ? undefined : npc?.title,
-        textRes: this.textRes,
+        textRes: () => this.textRes,
       });
       sprite.dir = state.dir;
       this.npcs.set(id, { sprite, state, interp: new Interpolator(), lastTs: -1, npc });

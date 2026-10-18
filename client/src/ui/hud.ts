@@ -28,6 +28,8 @@ export class HUD {
   private minimap = document.getElementById("minimap") as HTMLCanvasElement;
   private ctx = this.minimap.getContext("2d")!;
   private terrain: HTMLCanvasElement;
+  private zoomIn = document.getElementById("zoom-in-btn") as HTMLButtonElement;
+  private zoomOut = document.getElementById("zoom-out-btn") as HTMLButtonElement;
 
   constructor(private world: World) {
     // Pre-render the whole map once at 1px per tile.
@@ -54,6 +56,17 @@ export class HUD {
       }
     }
     tctx.putImageData(img, 0, 0);
+  }
+
+  /** step: +1 zooms in, -1 zooms out. */
+  onZoom(fn: (step: number) => void) {
+    this.zoomIn.addEventListener("click", () => fn(1));
+    this.zoomOut.addEventListener("click", () => fn(-1));
+  }
+
+  setZoomLimits(canZoomOut: boolean, canZoomIn: boolean) {
+    this.zoomOut.disabled = !canZoomOut;
+    this.zoomIn.disabled = !canZoomIn;
   }
 
   private indoors = false;

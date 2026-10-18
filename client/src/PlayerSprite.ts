@@ -56,7 +56,8 @@ export interface SpriteOptions {
   /** NPCs: role shown under the name ("Pokémon Packs"). */
   title?: string;
   npc?: boolean;
-  textRes: number;
+  /** Current text resolution; read again for text made later (chat bubbles). */
+  textRes: () => number;
 }
 
 const FONT = "system-ui, -apple-system, Segoe UI, sans-serif";
@@ -72,7 +73,7 @@ export class PlayerSprite {
   private titleLabel?: Phaser.GameObjects.Text;
   private bubble?: Phaser.GameObjects.Text;
   private bubbleY: number;
-  private textRes: number;
+  private textRes: () => number;
   private bubbleTimer?: Phaser.Time.TimerEvent;
   private look = "";
   private walked = 0;
@@ -105,7 +106,7 @@ export class PlayerSprite {
         strokeThickness: 3,
       })
       .setOrigin(0.5, 1)
-      .setResolution(this.textRes);
+      .setResolution(this.textRes());
     const parts: Phaser.GameObjects.GameObject[] = [this.sprite, this.label];
     if (hasTitle) {
       this.titleLabel = scene.add
@@ -117,7 +118,7 @@ export class PlayerSprite {
           strokeThickness: 3,
         })
         .setOrigin(0.5, 1)
-        .setResolution(this.textRes);
+        .setResolution(this.textRes());
       parts.push(this.titleLabel);
     }
 
@@ -165,7 +166,7 @@ export class PlayerSprite {
         align: "center",
       })
       .setOrigin(0.5, 1)
-      .setResolution(this.textRes);
+      .setResolution(this.textRes());
     this.container.add(this.bubble);
     this.bubbleTimer = this.scene.time.delayedCall(BUBBLE_MS, () => {
       this.bubble?.destroy();
