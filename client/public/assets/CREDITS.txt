@@ -401,6 +401,94 @@ Striped Wallpaper C
   LICENSE: OGA-BY 3.0
   DETAILS: Original by Eliza Wyatt.
 
+== Structure/Pillars ==
+Floral Pillar A
+-------------------
+  ARTIST(S): Lanea Zimmerman (aka Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-interior-castle-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Recolors and alternative base by Eliza Wyatt.
+
+Stone Pillar A
+-------------------
+  ARTIST(S): Lanea Zimmerman (aka Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-interior-castle-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Variations and recolors by Eliza Wyatt.
+
+== Structure/Doors ==
+12-Panel Door, 15-Panel Door
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-animated-doors
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original design and animation by Lanea Zimmerman. Converted to 15 panel door by Eliza Wyatt. Recolors by Eliza Wyatt.
+
+Doorframe A
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-interior-castle-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original doorframe by Lanea Zimmerman. Recolors and adjustments by Eliza Wyatt.
+
+Doorframe B
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-arabic-elements
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original doorway by Lanea Zimmerman. Recolors and adjustments by Eliza Wyatt.
+
+Prison Door
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-animated-doors
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original design and animation by Lanea Zimmerman. Recolors by Eliza Wyatt.
+
+Arched Doorway A
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-interior-castle-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Recolors by Eliza Wyatt.
+
+Arched Double Doors
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-interior-castle-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original door design by Lanea Zimmerman. Opening Animation by Eliza Wyatt. Recolors by Eliza Wyatt.
+
+== Structure/Windows ==
+Ornamental Windows A
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-modified-base-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Blue and yellow glow and emission map by Eliza Wyatt. Recolors by Eliza Wyatt.
+
+Ornamental Windows B
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-arabic-elements
+  SOURCE: https://opengameart.org/content/lpc-adobe-building-set
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Blue and yellow glow and emission map by Eliza Wyatt. Recolors by Eliza Wyatt.
+
+Stone Windows A
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-interior-castle-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Blue and yellow glow and emission map by Eliza Wyatt. Recolors by Eliza Wyatt.
+
+Window Awnings A
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/lpc-adobe-building-set
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Recolors by Eliza Wyatt.
+
 == Objects/Furniture ==
 Barrel
 -------------------

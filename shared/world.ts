@@ -6,7 +6,21 @@
 // artwork from the terrain at its four corners ("corner autotiling"), which is what
 // produces smooth grass/water/dirt edges with the LPC tilesets.
 
-import { FLOORS, INTERIOR_ZONE, PROPS, PROP_TYPES, ROADS, SOLID_FLOORS, SPAWN_AREA, TOWN_AREA, inRect, type Rect } from "./town";
+import {
+  FLOORS,
+  GARDENS,
+  INTERIOR_ZONE,
+  PROPS,
+  PROP_TYPES,
+  ROADS,
+  SOLID_FLOORS,
+  SPAWN_AREA,
+  STRUCT_BLOCKS,
+  STRUCT_GROUPS,
+  TOWN_AREA,
+  inRect,
+  type Rect,
+} from "./town";
 
 export const TILE_SIZE = 32;
 export const WORLD_TILES_W = 384;
@@ -109,6 +123,11 @@ export class World {
   readonly floor: Uint8Array;
   /** 1 where a town building or prop blocks the tile. */
   readonly solid: Uint8Array;
+  /** Stone structures (see STRUCT_BLOCKS): group index + 1 where the tile is a block's top… */
+  readonly structTop: Uint8Array;
+  /** …or its wall face, with the face row (0 = just under the top). */
+  readonly structFace: Uint8Array;
+  readonly faceRow: Uint8Array;
   readonly seed: number;
 
   constructor(seed = WORLD_SEED) {
@@ -117,6 +136,9 @@ export class World {
     this.decor = new Uint8Array(this.width * this.height);
     this.floor = new Uint8Array(this.width * this.height);
     this.solid = new Uint8Array(this.width * this.height);
+    this.structTop = new Uint8Array(this.width * this.height);
+    this.structFace = new Uint8Array(this.width * this.height);
+    this.faceRow = new Uint8Array(this.width * this.height);
     this.generateTerrain();
     this.shapeTown();
     this.cleanTerrain();
@@ -186,6 +208,7 @@ export class World {
         }
       }
     }
+    this.stampStructures();
     for (const p of PROPS) {
       const t: { w: number; h: number; walkable?: boolean } = PROP_TYPES[p.type];
       if (t.walkable) continue;
@@ -193,6 +216,67 @@ export class World {
         for (let x = p.x; x < p.x + t.w; x++) this.solid[y * width + x] = 1;
       }
     }
+    this.plantGardens();
+  }
+
+  /** Ramparts, towers and the palace: a solid top plus a solid face hanging below it. */
+  private stampStructures() {
+    const { width } = this;
+    for (const block of STRUCT_BLOCKS) {
+      const gi = STRUCT_GROUPS.findIndex((g) => g.id === block.group);
+      const g = gi + 1;
+      const { rect } = block;
+      for (let y = rect.y; y < rect.y + rect.h; y++) {
+        for (let x = rect.x; x < rect.x + rect.w; x++) {
+          const i = y * width + x;
+          this.structTop[i] = g;
+          this.structFace[i] = 0;
+          this.solid[i] = 1;
+        }
+      }
+      const faceRows = block.face ?? STRUCT_GROUPS[gi].face;
+      for (let x = rect.x; x < rect.x + rect.w; x++) {
+        for (let r = 0; r < faceRows; r++) {
+          const i = (rect.y + rect.h + r) * width + x;
+          // Runs into more of the same structure (a wall turning a corner): no face here.
+          if (this.structTop[i] === g) break;
+          this.structTop[i] = 0;
+          this.structFace[i] = g;
+          this.faceRow[i] = r;
+          this.solid[i] = 1;
+        }
+      }
+    }
+  }
+
+  /** Garden beds: clipped cypresses round the edge, flowers inside. */
+  private plantGardens() {
+    const { width, seed } = this;
+    for (const r of GARDENS) {
+      for (let y = r.y; y < r.y + r.h; y++) {
+        for (let x = r.x; x < r.x + r.w; x++) {
+          const i = y * width + x;
+          if (this.solid[i] || this.floor[i]) continue;
+          const edgeX = x === r.x || x === r.x + r.w - 1;
+          const edgeY = y === r.y || y === r.y + r.h - 1;
+          const centre = r.w >= 5 && r.h >= 5 && x === r.x + (r.w >> 1) && y === r.y + (r.h >> 1);
+          let d: number = Decor.none;
+          if (centre) d = Decor.bushTree;
+          else if (edgeX && edgeY) d = Decor.cypress;
+          else if (edgeY && r.h >= 3 && (x - r.x) % 4 === 0 && y === r.y + r.h - 1) d = Decor.cypress;
+          // Flowers in neat rows, a few gaps so it doesn't look printed.
+          else if ((y - r.y) % 2 === 1 && hash2(x, y, seed + 31) < 0.85) d = Decor.flowers;
+          this.decor[i] = d;
+        }
+      }
+    }
+  }
+
+  /** Stone structure at a tile: group index + 1 of its top or face (0 = none), and the face row. */
+  structAt(tx: number, ty: number): { top: number; face: number; row: number } {
+    if (!this.inBounds(tx, ty)) return { top: 0, face: 0, row: 0 };
+    const i = ty * this.width + tx;
+    return { top: this.structTop[i], face: this.structFace[i], row: this.faceRow[i] };
   }
 
   /** Trees and rocks stay out of town and off the roads. */

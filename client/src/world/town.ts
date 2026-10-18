@@ -1,5 +1,21 @@
 import Phaser from "phaser";
-import { DOORS, MACHINES, PROPS, STORE_ROOM, TOWN_AREA, inRect, propAnchor, type Prop, type PropType } from "../../../shared/town";
+import {
+  DOORS,
+  FACADES,
+  MACHINES,
+  PALACE_DOOR_X,
+  PALACE_FACE_BOTTOM,
+  PROPS,
+  BATTLE_HALL,
+  HALL,
+  HALL_CX,
+  TOWN_AREA,
+  TOWN_CX,
+  inRect,
+  propAnchor,
+  type Prop,
+  type PropType,
+} from "../../../shared/town";
 import { NPCS, npcProducts } from "../../../shared/npcs";
 import { ROOM_MODES, type ShopProduct, type ShopRoom, type ShopSnapshot } from "../../../shared/gattchaa";
 import { FLOOR_TEX } from "./terrainTiles";
@@ -12,7 +28,6 @@ const TOWN = `${import.meta.env.BASE_URL}assets/town/`;
 const BRAND = `${import.meta.env.BASE_URL}assets/gattchaa/`;
 
 const SHEETS = {
-  houseA: "town-house-a",
   houseB: "town-house-b",
   houseC: "town-house-c",
   fountain: "town-fountain",
@@ -26,7 +41,16 @@ const SHEETS = {
   stools: "town-stools",
   cabinet: "town-cabinet",
   floorLamps: "town-floor-lamps",
-  posters: "town-posters",
+  pillar: "town-pillar",
+  door: "town-door-arched",
+  windows: "town-windows",
+  thrones: "town-thrones",
+  loveseat: "town-loveseat",
+  tableOrnate: "town-table-ornate",
+  clock: "town-clock",
+  portraits: "town-portraits",
+  wallLights: "town-wall-lights",
+  curtains: "town-curtains",
   logo: "gattchaa-logo-sign",
   logoBig: "gattchaa-logo-64",
 } as const;
@@ -41,7 +65,6 @@ interface Art {
 
 // Rectangles measured from each sheet's alpha channel.
 const ART: Record<PropType, Art> = {
-  store: { tex: SHEETS.houseA, rects: [[24, 0, 208, 201]], dy: 4 },
   kujiHouse: { tex: SHEETS.houseB, rects: [[23, 0, 144, 192]] },
   gradingHouse: { tex: SHEETS.houseC, rects: [[0, 0, 160, 160]], dy: 4 },
   fountain: { tex: SHEETS.fountain, rects: [[0, 0, 64, 80]], dy: 6 },
@@ -57,14 +80,30 @@ const ART: Record<PropType, Art> = {
   // Bookcases full of colourful boxes: booster-box shelves.
   shelf: { tex: SHEETS.cabinet, rects: [[64, 101, 32, 68], [96, 101, 32, 68]], dy: 2 },
   floorLamp: { tex: SHEETS.floorLamps, rects: [[4, 2, 24, 49]], dy: -2 },
+  pillar: { tex: SHEETS.pillar, rects: [[0, 0, 32, 96]] },
+  // Gold throne, front view.
+  throne: { tex: SHEETS.thrones, rects: [[0, 0, 32, 64]], dy: 4 },
+  // Gold formal loveseat: facing you, and seen from behind.
+  loveseat: { tex: SHEETS.loveseat, rects: [[0, 9, 64, 40]], dy: 2 },
+  loveseatBack: { tex: SHEETS.loveseat, rects: [[0, 129, 64, 31]], dy: 2 },
+  coffeeTable: { tex: SHEETS.tableOrnate, rects: [[8, 35, 48, 25]], dy: -2 },
+  clock: { tex: SHEETS.clock, rects: [[7, 22, 18, 71], [39, 22, 18, 71]], dy: -2 },
 };
 
-// Only the illustrated posters (the sheet also has blank paper).
-const POSTERS: Rect[] = [[3, 39, 24, 36], [67, 35, 27, 40], [39, 35, 18, 24], [135, 67, 18, 24]];
+/** Wall art in the palace hall (frames in their sheets). */
+const PORTRAITS: Rect[] = [[2, 8, 29, 49], [34, 8, 29, 49]]; // king, queen
+const TORCH: Rect = [75, 31, 10, 33];
+const SWAG: Rect = [0, 128, 96, 64]; // red valance with tie-backs
+
+// Stone Windows A: three glass colours (dark, daylight, lamplit), each an arch on top of a tall pane.
+const WINDOW_ARCH = (c: number): Rect => [c * 32, 5, 32, 27];
+const WINDOW_BODY = (c: number): Rect => [c * 32, 34, 32, 62];
+const WINDOW_DAY = 1;
+const WINDOW_LIT = 2;
+
 
 export function preloadTown(scene: Phaser.Scene) {
   const files: Record<string, string> = {
-    [SHEETS.houseA]: "house-a.png",
     [SHEETS.houseB]: "house-b.png",
     [SHEETS.houseC]: "house-c.png",
     [SHEETS.fountain]: "fountain.png",
@@ -78,7 +117,19 @@ export function preloadTown(scene: Phaser.Scene) {
     [SHEETS.stools]: "stools.png",
     [SHEETS.cabinet]: "cabinet.png",
     [SHEETS.floorLamps]: "floor-lamps.png",
-    [SHEETS.posters]: "posters.png",
+    [SHEETS.pillar]: "pillar.png",
+    [SHEETS.door]: "door-arched.png",
+    [SHEETS.windows]: "windows-stone.png",
+    [FLOOR_TEX.stone]: "wall-stone.png",
+    [FLOOR_TEX.tile]: "floor-tile.png",
+    [FLOOR_TEX.carpet]: "carpet-floral.png",
+    [SHEETS.thrones]: "thrones.png",
+    [SHEETS.loveseat]: "loveseat.png",
+    [SHEETS.tableOrnate]: "table-ornate.png",
+    [SHEETS.clock]: "clock.png",
+    [SHEETS.portraits]: "portraits.png",
+    [SHEETS.wallLights]: "lighting-wall.png",
+    [SHEETS.curtains]: "curtains.png",
     [FLOOR_TEX.wall]: "wall-brick.png",
     [FLOOR_TEX.herringbone]: "floor-herringbone.png",
     [FLOOR_TEX.diamond]: "floor-diamond.png",
@@ -115,6 +166,8 @@ export class Town {
   readonly hotspots: Hotspot[] = [];
   /** Outdoor lamp heads, for the night glow. */
   readonly lights: { x: number; y: number }[] = [];
+  /** Lamplit window panes, faded in at night. */
+  readonly nightWindows: Phaser.GameObjects.Image[] = [];
   private stallSlots = new Map<string, LiveSlot[]>();
   private machineSlots: { id: string; slot: LiveSlot }[] = [];
   private tableLabels = new Map<number, Phaser.GameObjects.Text>();
@@ -131,9 +184,17 @@ export class Town {
         if (!tex.has(name)) tex.add(name, 0, r[0], r[1], r[2], r[3]);
       });
     }
-    const posters = scene.textures.get(SHEETS.posters);
-    POSTERS.forEach((r, i) => posters.add(`poster:${i}`, 0, r[0], r[1], r[2], r[3]));
+    const windows = scene.textures.get(SHEETS.windows);
+    for (const c of [WINDOW_DAY, WINDOW_LIT]) {
+      windows.add(`arch:${c}`, 0, ...WINDOW_ARCH(c));
+      windows.add(`pane:${c}`, 0, ...WINDOW_BODY(c));
+    }
+    scene.textures.get(SHEETS.door).add("closed", 0, 0, 32, 64, 64);
+    PORTRAITS.forEach((r, i) => scene.textures.get(SHEETS.portraits).add(`portrait:${i}`, 0, ...r));
+    scene.textures.get(SHEETS.wallLights).add("torch", 0, ...TORCH);
+    scene.textures.get(SHEETS.curtains).add("swag", 0, ...SWAG);
     for (const p of PROPS) this.place(p);
+    this.facades();
     this.decorate();
     this.decorateInterior();
     for (const d of DOORS) {
@@ -221,21 +282,85 @@ export class Town {
     }
   }
 
-  /** Static flourishes: the Gattchaa sign over the store and the deck sign. */
+  /** Doors, windows and banners on the palace and the towers (all on solid stone, so behind everyone). */
+  private facades() {
+    const depth = -0.5;
+    for (const f of FACADES) {
+      if (f.kind === "door") {
+        this.scene.add.image(f.x, f.y, SHEETS.door, "closed").setOrigin(0.5, 1).setDepth(depth);
+      } else if (f.kind === "window") {
+        for (const c of [WINDOW_DAY, WINDOW_LIT]) {
+          const arch = this.scene.add.image(f.x, f.y - 62, SHEETS.windows, `arch:${c}`).setOrigin(0.5, 1);
+          const pane = this.scene.add.image(f.x, f.y, SHEETS.windows, `pane:${c}`).setOrigin(0.5, 1);
+          if (c === WINDOW_DAY) {
+            arch.setDepth(depth);
+            pane.setDepth(depth);
+          } else {
+            // Above the night tint, so the panes glow.
+            for (const img of [arch, pane]) this.nightWindows.push(img.setDepth(1e6 - 8).setAlpha(0).setVisible(false));
+          }
+        }
+      } else if (f.kind === "portrait") {
+        this.scene.add.image(f.x, f.y, SHEETS.portraits, `portrait:${f.variant ?? 0}`).setOrigin(0.5, 1).setDepth(depth);
+      } else if (f.kind === "torch") {
+        this.scene.add.image(f.x, f.y, SHEETS.wallLights, "torch").setOrigin(0.5, 1).setDepth(depth);
+      } else if (f.kind === "swag") {
+        this.scene.add.image(f.x, f.y, SHEETS.curtains, "swag").setOrigin(0.5, 1).setDepth(depth + 0.05);
+      } else {
+        this.banner(f.x, f.y, depth + 0.1);
+      }
+    }
+  }
+
+  /** A Gattchaa banner hanging from a rod: orange cloth, swallowtail hem, the logo. */
+  private banner(x: number, bottom: number, depth: number) {
+    const w = 22;
+    const h = 58;
+    const top = bottom - h;
+    const g = this.scene.add.graphics().setDepth(depth);
+    g.fillStyle(0x131313, 1).fillRect(x - w / 2 - 1, top, w + 2, h - 6);
+    g.fillTriangle(x - w / 2 - 1, bottom - 7, x + w / 2 + 1, bottom - 7, x - w / 2 - 1, bottom + 1);
+    g.fillTriangle(x + w / 2 + 1, bottom - 7, x + w / 2 + 1, bottom + 1, x - w / 2 - 1, bottom - 7);
+    g.fillStyle(0xeb8224, 1).fillRect(x - w / 2, top + 1, w, h - 8);
+    g.fillTriangle(x - w / 2, bottom - 8, x + w / 2, bottom - 8, x - w / 2, bottom - 1);
+    g.fillTriangle(x + w / 2, bottom - 8, x + w / 2, bottom - 1, x - w / 2, bottom - 8);
+    // Notch between the two tails.
+    g.fillStyle(0x131313, 1).fillTriangle(x - 5, bottom - 1, x + 5, bottom - 1, x, bottom - 8);
+    g.fillStyle(0xb85f12, 1).fillRect(x - w / 2, top + 1, 2, h - 9).fillRect(x + w / 2 - 2, top + 1, 2, h - 9);
+    // Gold rod with end caps.
+    g.fillStyle(0x3b2a12, 1).fillRect(x - w / 2 - 4, top - 3, w + 8, 4);
+    g.fillStyle(0xf2c14e, 1).fillRect(x - w / 2 - 3, top - 2, w + 6, 2);
+    this.scene.add.image(x, top + 20, SHEETS.logo).setScale(0.42).setDepth(depth + 0.01);
+  }
+
+  /** Static flourishes: the Gattchaa crest on the keep, the palace and gate signs, the deck sign. */
   private decorate() {
-    const store = PROPS.find((p) => p.type === "store")!;
-    const s = propAnchor(store);
-    // A dark plate with the logo, over the door.
-    const door = DOORS.find((d) => d.id === "store-in")!;
-    const plateX = door.trigger.x + door.trigger.w / 2;
-    const plateY = s.y - 125;
-    // In front of the building sprite (which sits a few px below its footprint).
-    const front = s.y + 10;
-    const g = this.scene.add.graphics().setDepth(front);
-    g.fillStyle(0x131313, 1).fillRoundedRect(plateX - 27, plateY - 25, 54, 50, 6);
-    g.lineStyle(2, 0xeb8224, 1).strokeRoundedRect(plateX - 27, plateY - 25, 54, 50, 6);
-    this.scene.add.image(plateX, plateY, SHEETS.logo).setDepth(front + 1);
-    this.sign(s.x + 44, s.y - 118, "GATTCHAA ORIPA", front, 9);
+    // The crest: a dark plate with the logo, centred on the keep between its windows.
+    const plateX = PALACE_DOOR_X;
+    const plateY = 161 * 32;
+    const g = this.scene.add.graphics().setDepth(-0.5);
+    g.fillStyle(0x131313, 1).fillRoundedRect(plateX - 30, plateY - 28, 60, 56, 6);
+    g.lineStyle(2, 0xeb8224, 1).strokeRoundedRect(plateX - 30, plateY - 28, 60, 56, 6);
+    g.lineStyle(1, 0xf2c14e, 1).strokeRoundedRect(plateX - 26, plateY - 24, 52, 48, 4);
+    this.scene.add.image(plateX, plateY, SHEETS.logo).setDepth(-0.45);
+    this.sign(PALACE_DOOR_X, PALACE_FACE_BOTTOM * 32 - 68, "GATTCHAA ORIPA", -0.4, 9);
+
+    // The south gate: a stone lintel between the towers that you walk under.
+    const gx0 = (TOWN_CX - 3) * 32;
+    const gx1 = (TOWN_CX + 3) * 32;
+    const gy = 216 * 32 - 6;
+    const lintelDepth = 218 * 32 + 40; // in front of anyone walking through
+    const lintel = this.scene.add.graphics().setDepth(lintelDepth);
+    lintel.fillStyle(0x4b4b60, 1).fillRect(gx0 - 4, gy, gx1 - gx0 + 8, 30);
+    lintel.fillStyle(0xa89a8c, 1).fillRect(gx0 - 3, gy + 1, gx1 - gx0 + 6, 18);
+    lintel.fillStyle(0xd8d2c0, 1).fillRect(gx0 - 3, gy + 1, gx1 - gx0 + 6, 2);
+    lintel.fillStyle(0x726b7e, 1).fillRect(gx0 - 3, gy + 19, gx1 - gx0 + 6, 10);
+    for (let x = gx0 + 3; x < gx1 - 6; x += 16) {
+      lintel.fillStyle(0x4b4b60, 1).fillRect(x, gy - 7, 10, 8);
+      lintel.fillStyle(0xd8d2c0, 1).fillRect(x + 1, gy - 6, 8, 1);
+      lintel.fillStyle(0xa89a8c, 1).fillRect(x + 1, gy - 5, 8, 5);
+    }
+    this.sign(PALACE_DOOR_X, gy + 27, "GATTCHAA TOWN", lintelDepth + 1, 10);
 
     // One sign per bank of machines (each machine names itself when you walk up).
     const machines = PROPS.filter((p) => p.type === "machine");
@@ -257,21 +382,26 @@ export class Town {
     this.sign(dx, dy, "ROOMS · SHARING PACK & PACKS BATTLE", dy + 40, 8);
   }
 
-  /** The store's back wall: big logo, store name and posters. */
+  /** The palace hall: the crest above the throne, plaques by the door, the Battle Hall sign. */
   private decorateInterior() {
-    const cx = (STORE_ROOM.x + STORE_ROOM.w / 2) * 32;
-    const wallTop = STORE_ROOM.y * 32;
+    const cx = HALL_CX * 32;
     const depth = -0.5; // on the wall: behind everyone
+    const crestY = 7 * 32 - 4;
     const g = this.scene.add.graphics().setDepth(depth);
-    g.fillStyle(0x131313, 1).fillRoundedRect(cx - 40, wallTop + 6, 80, 72, 6);
-    g.lineStyle(2, 0xeb8224, 1).strokeRoundedRect(cx - 40, wallTop + 6, 80, 72, 6);
-    this.scene.add.image(cx, wallTop + 42, SHEETS.logoBig).setDepth(depth);
-    // Store name over the left shelves, tagline over the right; posters between.
-    this.sign(cx - 240, wallTop + 22, "GATTCHAA ONE · BATAM", depth, 9);
-    this.sign(cx + 240, wallTop + 22, "ORIPA · KUJI · TCG", depth, 9);
-    [cx - 150, cx - 120, cx + 120, cx + 150].forEach((px, i) =>
-      this.scene.add.image(px, wallTop + 62, SHEETS.posters, `poster:${i}`).setDepth(depth),
-    );
+    g.fillStyle(0x131313, 1).fillRoundedRect(cx - 34, crestY - 30, 68, 60, 6);
+    g.lineStyle(2, 0xeb8224, 1).strokeRoundedRect(cx - 34, crestY - 30, 68, 60, 6);
+    g.lineStyle(1, 0xf2c14e, 1).strokeRoundedRect(cx - 30, crestY - 26, 60, 52, 4);
+    this.scene.add.image(cx, crestY, SHEETS.logo).setDepth(depth + 0.01);
+
+    // Plaques on the wall top either side of the door.
+    const plaqueY = (HALL.y + HALL.h + 1) * 32 + 10;
+    this.sign(cx - 14 * 32, plaqueY, "GATTCHAA ONE · BATAM", depth, 9);
+    this.sign(cx + 14 * 32, plaqueY, "ORIPA · KUJI · TCG", depth, 9);
+
+    const tables = PROPS.filter((p) => p.type === "cardTable" && inRect(BATTLE_HALL, p.x, p.y)).map(propAnchor);
+    const tx = (Math.min(...tables.map((t) => t.x)) + Math.max(...tables.map((t) => t.x))) / 2;
+    const ty = Math.min(...tables.map((t) => t.y)) - 72;
+    this.sign(tx, ty, "BATTLE HALL · SHARING PACK & PACKS BATTLE", ty + 40, 8);
   }
 
   private sign(x: number, y: number, text: string, depth: number, size: number) {

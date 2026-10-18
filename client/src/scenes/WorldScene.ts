@@ -3,9 +3,9 @@ import { Callbacks, type Room } from "@colyseus/sdk";
 import { CHUNK_TILES, PLAYER_SPEED, TILE_SIZE, WORLD_PX_H, WORLD_PX_W, hash2, type World } from "../../../shared/world";
 import { Dir, NET_SEND_HZ, VIEW_RADIUS, type MoveMessage, type PlayerView } from "../../../shared/protocol";
 import { NPCS, type NpcDef } from "../../../shared/npcs";
-import { DOORS, INTERIOR_ZONE, PROPS, inRect } from "../../../shared/town";
+import { DOORS, INTERIOR_ZONE, PROPS, TOWN_AREA, inRect } from "../../../shared/town";
 import { CharacterTextures, PlayerSprite } from "../PlayerSprite";
-import { ATLAS_MARGIN, ATLAS_SPACING, FLOOR_TEX, buildTerrainAtlas, floorCell, tileCells, type TerrainAtlas } from "../world/terrainTiles";
+import { ATLAS_MARGIN, ATLAS_SPACING, FLOOR_TEX, buildTerrainAtlas, floorCell, structKey, tileCells, type TerrainAtlas } from "../world/terrainTiles";
 import { WORLD_TEX, createDecor, registerDecorFrames, type DecorSprite } from "../world/decorSprites";
 import { Town, preloadTown, type Hotspot } from "../world/town";
 import { Interpolator, ServerClock } from "../interp";
@@ -151,7 +151,17 @@ export class WorldScene extends Phaser.Scene {
     black.fillStyle(0x000000, 1).fillRect(0, 0, TILE_SIZE, TILE_SIZE);
     black.generateTexture(FLOOR_TEX.void, TILE_SIZE, TILE_SIZE);
     black.destroy();
-    this.atlas = buildTerrainAtlas(this, WORLD_TEX.terrain, ATLAS_KEY);
+    // Every stone-structure tile the town and the palace hall use, so the atlas can compose them up front.
+    const structs: string[] = [];
+    for (const area of [TOWN_AREA, INTERIOR_ZONE]) {
+      for (let ty = area.y; ty < area.y + area.h; ty++) {
+        for (let tx = area.x; tx < area.x + area.w; tx++) {
+          const k = structKey(this.world, tx, ty);
+          if (k) structs.push(k);
+        }
+      }
+    }
+    this.atlas = buildTerrainAtlas(this, WORLD_TEX.terrain, ATLAS_KEY, structs);
     registerDecorFrames(this);
 
     const cam = this.cameras.main;
@@ -161,7 +171,7 @@ export class WorldScene extends Phaser.Scene {
     this.scale.on(Phaser.Scale.Events.RESIZE, () => this.applyZoom());
 
     this.town = new Town(this, this.textRes);
-    this.daylight = new Daylight(this, this.town.lights);
+    this.daylight = new Daylight(this, this.town.lights, this.town.nightWindows);
     this.shop.onChange((data) => this.town.update(data, this.shop.openRooms));
 
     const K = Phaser.Input.Keyboard.KeyCodes;
@@ -703,9 +713,10 @@ export class WorldScene extends Phaser.Scene {
         gRow.push(atlas.terrain(g));
         oRow.push(o ? atlas.terrain(o) : -1);
         if (o) hasOverlay = true;
-        const f = floorCell(world, tx, ty);
-        fRow.push(f ? atlas.sheet(f) : -1);
-        if (f) hasFloor = true;
+        const sk = structKey(world, tx, ty);
+        const f = sk ? null : floorCell(world, tx, ty);
+        fRow.push(sk ? atlas.struct(sk) : f ? atlas.sheet(f) : -1);
+        if (sk || f) hasFloor = true;
 
         const d = world.decorAt(tx, ty);
         if (d) {

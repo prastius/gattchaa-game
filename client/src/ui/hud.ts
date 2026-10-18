@@ -18,6 +18,7 @@ const FLOOR_RGB: Record<number, [number, number, number]> = {
   [Floor.StoneEdge]: [170, 178, 186],
   [Floor.Brand]: [235, 130, 36],
   [Floor.Wood]: [176, 128, 80],
+  [Floor.Slab]: [204, 196, 170],
 };
 
 export class HUD {
@@ -41,7 +42,10 @@ export class HUD {
     for (let ty = 0; ty < world.height; ty++) {
       for (let tx = 0; tx < world.width; tx++) {
         const floor = world.floorAt(tx, ty);
-        const [r, g, b] = world.solidAt(tx, ty)
+        const st = world.structAt(tx, ty);
+        const [r, g, b] = st.top || st.face
+          ? [222, 214, 196] // stone walls and the palace
+          : world.solidAt(tx, ty)
           ? [120, 52, 30]
           : floor
             ? (FLOOR_RGB[floor] ?? [200, 200, 200])
@@ -88,7 +92,7 @@ export class HUD {
   update(self: Dot | undefined, others: Iterable<Dot>, onlineCount: number, siteOnline = 0) {
     this.online.textContent = siteOnline > 0 ? `${onlineCount} in town · ${siteOnline} on Gattchaa` : `${onlineCount} in town`;
     if (self) {
-      this.coords.textContent = this.indoors ? "Gattchaa Store" : `${Math.floor(self.x / TILE_SIZE)}, ${Math.floor(self.y / TILE_SIZE)}`;
+      this.coords.textContent = this.indoors ? "Gattchaa Palace" : `${Math.floor(self.x / TILE_SIZE)}, ${Math.floor(self.y / TILE_SIZE)}`;
     }
     if (this.indoors) return;
 

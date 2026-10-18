@@ -60,6 +60,8 @@ export class Daylight {
   constructor(
     scene: Phaser.Scene,
     lights: { x: number; y: number }[],
+    /** Lamplit windows: shown with the lamps, above the night tint. */
+    private windows: Phaser.GameObjects.Image[] = [],
   ) {
     if (!scene.textures.exists(GLOW)) {
       const size = 128;
@@ -94,6 +96,7 @@ export class Daylight {
     this.night = !indoors && lamps > 0.5;
     this.overlay.setFillStyle(tint).setVisible(tint !== 0xffffff);
     for (const g of this.glows) g.setAlpha(lamps * 0.75).setVisible(lamps > 0.02);
+    for (const w of this.windows) w.setAlpha(lamps * 0.85).setVisible(lamps > 0.02);
   }
 
   private dirty = true;
