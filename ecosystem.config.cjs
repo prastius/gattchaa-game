@@ -6,7 +6,8 @@ module.exports = {
     {
       name: "my-world",
       script: "server/build/index.js",
-      node_args: "--enable-source-maps",
+      // node:sqlite (saved accounts and shops) still prints an "experimental" notice; it's stable enough for this.
+      node_args: "--enable-source-maps --disable-warning=ExperimentalWarning",
       instances: 1,
       exec_mode: "fork",
       max_memory_restart: "512M",

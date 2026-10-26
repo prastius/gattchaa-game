@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { Dir } from "../../shared/protocol";
-import { FRAME, SHEET_H, SHEET_W, WALK_COLS, composeCharacter } from "./character";
+import { bodyName, decodeLook } from "../../shared/appearance";
+import { FRAME, SHEET_COLS, SHEET_H, SIT_COL, WALK_COLS, composeCharacter, sitDrop } from "./character";
 
 const BUBBLE_MS = 6000;
 const STRIDE_PX = 15; // distance walked per animation frame
@@ -19,13 +20,13 @@ export class CharacterTextures {
     if (this.scene.textures.exists(key)) return Promise.resolve(key);
     let p = this.loading.get(look);
     if (!p) {
-      p = composeCharacter(look).then((canvas) => {
+      p = composeCharacter(look, { sit: true }).then((canvas) => {
         this.loading.delete(look);
         if (!this.scene.textures.exists(key)) {
           const tex = this.scene.textures.addCanvas(key, canvas)!;
           for (let row = 0; row < SHEET_H / FRAME; row++) {
-            for (let col = 0; col < SHEET_W / FRAME; col++) {
-              tex.add(row * WALK_COLS + col, 0, col * FRAME, row * FRAME, FRAME, FRAME);
+            for (let col = 0; col < SHEET_COLS; col++) {
+              tex.add(row * SHEET_COLS + col, 0, col * FRAME, row * FRAME, FRAME, FRAME);
             }
           }
         }
@@ -61,6 +62,10 @@ export interface SpriteOptions {
 }
 
 const FONT = "system-ui, -apple-system, Segoe UI, sans-serif";
+const EMOJI_FONT = "Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif";
+/** Speech and emote bubbles have a tail this long under them. */
+const TAIL = 6;
+const EMOTE_MS = 2400;
 
 /**
  * A player (or NPC) avatar. The container's (x, y) is the player's feet, and its depth
@@ -71,13 +76,20 @@ export class PlayerSprite {
   private sprite: Phaser.GameObjects.Sprite;
   private label: Phaser.GameObjects.Text;
   private titleLabel?: Phaser.GameObjects.Text;
-  private bubble?: Phaser.GameObjects.Text;
+  private bubble?: Phaser.GameObjects.Container;
   private bubbleY: number;
   private textRes: () => number;
   private bubbleTimer?: Phaser.Time.TimerEvent;
+  private emoteBox?: Phaser.GameObjects.Container;
+  private emoteTimer?: Phaser.Time.TimerEvent;
   private look = "";
   private walked = 0;
   private destroyed = false;
+  private seated = false;
+  private lift = 0;
+  private body = "male";
+  /** How far the name, title and bubble are shifted down right now, following a seated head. */
+  private drop = 0;
 
   moving = false;
   dir: number = Dir.Down;
@@ -134,10 +146,42 @@ export class PlayerSprite {
     return this.container.y;
   }
 
+  get sitting() {
+    return this.seated;
+  }
+
+  /** Sits down (facing `dir`) or stands up; the name and bubble move with the head. */
+  set sitting(on: boolean) {
+    if (on === this.seated) return;
+    this.seated = on;
+    this.placeLabels();
+  }
+
+  /** Moves the name, title and bubble down to a seated head (how far depends on the body and facing). */
+  private placeLabels() {
+    const want = this.seated ? sitDrop(this.body, this.dir) : 0;
+    const dy = want - this.drop;
+    if (!dy) return;
+    this.drop = want;
+    for (const t of [this.label, this.titleLabel, this.bubble]) t?.setY(t.y + dy);
+    this.bubbleY += dy;
+  }
+
+  /** Raises chat bubbles by this many pixels (sellers: above their shop sign). */
+  set bubbleLift(px: number) {
+    const dy = this.lift - px;
+    if (dy === 0) return;
+    this.lift = px;
+    this.bubbleY += dy;
+    this.bubble?.setY(this.bubble.y + dy);
+  }
+
   setLook(look: string) {
     if (look === this.look) return;
     const previous = this.look;
     this.look = look;
+    this.body = bodyName(decodeLook(look));
+    this.placeLabels();
     this.textures.acquire(look).then((key) => {
       if (this.destroyed || this.look !== look) return;
       this.sprite.setTexture(key, this.frameIndex()).setVisible(true);
@@ -152,21 +196,29 @@ export class PlayerSprite {
     this.container.setDepth(y);
   }
 
+  /** A speech bubble over the head: rounded, with a little tail pointing down at the speaker. */
   say(text: string) {
     this.bubble?.destroy();
     this.bubbleTimer?.remove();
-    this.bubble = this.scene.add
-      .text(0, this.bubbleY, text, {
+    const label = this.scene.add
+      .text(0, -TAIL - 4, text, {
         fontFamily: FONT,
         fontSize: "12px",
         color: "#1b2733",
-        backgroundColor: "#fffdf5",
-        padding: { x: 7, y: 4 },
         wordWrap: { width: 190, useAdvancedWrap: true },
         align: "center",
       })
       .setOrigin(0.5, 1)
       .setResolution(this.textRes());
+    // Whole, even sizes keep the edges crisp at any zoom.
+    const w = Math.ceil((label.width + 14) / 2) * 2;
+    const h = Math.ceil(label.height) + 8;
+    const g = this.scene.add.graphics();
+    g.fillStyle(0x000000, 0.22).fillRoundedRect(-w / 2 + 1, -TAIL - h + 1, w, h, 8);
+    g.fillStyle(0xfffdf5, 1).fillRoundedRect(-w / 2, -TAIL - h, w, h, 8);
+    g.fillTriangle(-5, -TAIL - 1, 5, -TAIL - 1, 0, 0);
+    // The bubble's body ends where it always did; the tail hangs below it.
+    this.bubble = this.scene.add.container(0, this.bubbleY + TAIL, [g, label]);
     this.container.add(this.bubble);
     this.bubbleTimer = this.scene.time.delayedCall(BUBBLE_MS, () => {
       this.bubble?.destroy();
@@ -174,14 +226,39 @@ export class PlayerSprite {
     });
   }
 
+  /** An emote pops up above the head, Ragnarok style, for a couple of seconds. */
+  emote(glyph: string) {
+    this.emoteBox?.destroy();
+    this.emoteTimer?.remove();
+    const icon = this.scene.add
+      .text(0, -TAIL - 12, glyph, { fontFamily: EMOJI_FONT, fontSize: "16px", padding: { x: 2, y: 2 } })
+      .setOrigin(0.5)
+      .setResolution(this.textRes());
+    const g = this.scene.add.graphics();
+    g.fillStyle(0x000000, 0.22).fillRoundedRect(-13, -TAIL - 23, 28, 24, 10);
+    g.fillStyle(0xffffff, 1).fillRoundedRect(-14, -TAIL - 24, 28, 24, 10);
+    g.fillTriangle(-4, -TAIL - 1, 4, -TAIL - 1, 0, 0);
+    // Above the name (and above a seller's sign), a little to the right like a thought.
+    const y = this.label.y - 16 - this.lift;
+    const box = this.scene.add.container(10, y, [g, icon]).setScale(0.3);
+    this.container.add(box);
+    this.emoteBox = box;
+    this.scene.tweens.add({ targets: box, scale: 1, duration: 260, ease: "Back.Out" });
+    this.emoteTimer = this.scene.time.delayedCall(EMOTE_MS, () => {
+      this.scene.tweens.add({ targets: box, alpha: 0, y: y - 8, duration: 300, onComplete: () => box.destroy() });
+      if (this.emoteBox === box) this.emoteBox = undefined;
+    });
+  }
+
   private frameIndex(): number {
-    const col = this.moving ? 1 + (Math.floor(this.walked / STRIDE_PX) % (WALK_COLS - 1)) : 0;
-    return this.dir * WALK_COLS + col;
+    const col = this.seated ? SIT_COL : this.moving ? 1 + (Math.floor(this.walked / STRIDE_PX) % (WALK_COLS - 1)) : 0;
+    return this.dir * SHEET_COLS + col;
   }
 
   /** Per-frame: pick the walk frame from distance travelled (so feet match speed). */
   animate() {
-    if (!this.moving) this.walked = 0;
+    if (!this.moving || this.seated) this.walked = 0;
+    this.placeLabels();
     if (this.sprite.visible) this.sprite.setFrame(this.frameIndex());
   }
 
@@ -193,6 +270,7 @@ export class PlayerSprite {
   destroy() {
     this.destroyed = true;
     this.bubbleTimer?.remove();
+    this.emoteTimer?.remove();
     if (this.look) this.textures.release(this.look);
     this.container.destroy();
   }

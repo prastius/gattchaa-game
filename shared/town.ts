@@ -5,13 +5,17 @@
 // first; World then flattens this area, clears trees and stamps the floors,
 // stone structures and props below on top of it.
 //
-// Layout, north to south (the town is mirrored around tile column 192):
+// Layout, north to south (the core is mirrored around tile column 192):
 //   Gattchaa Palace (the store) against the north rampart, oripa machines at its feet
-//   Forecourt with the Kuji house (west) and Grading house (east)
+//   Forecourt with the Kuji house (west) and Grading house (east), houses beyond them
 //   Gardens either side of the grand avenue
 //   Fountain plaza where the east-west street crosses the avenue
-//   Rooms pavilion (west) and the market (east)
+//   Rooms pavilion (west) and the pack stalls (east)
+//   Lakeside park along the west wall; the café and more houses along the east wall
+//   The Market Square, where players run their own shops, either side of the avenue
 //   South gate between two towers, the main road out
+
+export const TILE = 32;
 
 export interface Rect {
   x: number;
@@ -47,28 +51,64 @@ export const SOLID_FLOORS: readonly number[] = [Floor.Void, Floor.WallTop, Floor
 export const TOWN_CX = 192;
 
 /** Flattened to grass and cleared of wild trees. */
-export const TOWN_AREA: Rect = { x: 148, y: 148, w: 88, h: 80 };
+export const TOWN_AREA: Rect = { x: 120, y: 148, w: 144, h: 112 };
 /** Inside the ramparts. */
-export const TOWN_INSIDE: Rect = { x: 158, y: 161, w: 68, h: 55 };
+export const TOWN_INSIDE: Rect = { x: 130, y: 158, w: 124, h: 92 };
 
-export const AVENUE: Rect = { x: 189, y: 176, w: 6, h: 46 };
-export const STREET: Rect = { x: 150, y: 185, w: 84, h: 4 };
+export const AVENUE: Rect = { x: 189, y: 176, w: 6, h: 80 };
+/** The east-west street, paved right through the west and east gates. */
+export const STREET: Rect = { x: 125, y: 185, w: 134, h: 4 };
 export const FORECOURT: Rect = { x: 160, y: 169, w: 64, h: 7 };
 export const BRAND_TERRACE: Rect = { x: 186, y: 169, w: 12, h: 3 };
 export const PLAZA: Rect = { x: 179, y: 181, w: 26, h: 21 };
 export const PAVILION: Rect = { x: 162, y: 193, w: 15, h: 15 };
-export const MARKET: Rect = { x: 207, y: 193, w: 15, h: 15 };
-/** New players appear on the avenue just south of the plaza. */
-export const SPAWN_AREA: Rect = { x: 189, y: 203, w: 6, h: 9 };
-/** Where wandering NPCs may walk: the fountain plaza. */
+/** The four pack stalls run by Gattchaa staff. */
+export const PACK_STALLS: Rect = { x: 207, y: 193, w: 15, h: 15 };
+/** The Market Square: wide open paving where players sit down and run their shops. */
+export const MARKET: Rect = { x: 156, y: 211, w: 72, h: 33 };
+/** Lakeside park along the west wall: a pond, a dirt trail round it, trees and benches. */
+export const PARK: Rect = { x: 130, y: 191, w: 25, h: 59 };
+/** The pond in the park (an ellipse, in tiles), with a dirt trail round it. */
+export const POND = { cx: 142, cy: 216, rx: 6.5, ry: 8.5 };
+/** The café terrace in the east quarter. */
+export const CAFE: Rect = { x: 231, y: 201, w: 19, h: 9 };
+/** New players appear on the avenue between the plaza and the Market Square. */
+export const SPAWN_AREA: Rect = { x: 189, y: 203, w: 6, h: 8 };
+/** Where wandering NPCs may walk: the fountain plaza… */
 export const WANDER_AREA: Rect = { x: 180, y: 182, w: 24, h: 19 };
+/** …the park (they walk round the pond)… */
+export const PARK_WANDER: Rect = { x: 131, y: 193, w: 22, h: 54 };
+/** …and the Market Square. */
+export const MARKET_WANDER: Rect = { x: 158, y: 213, w: 68, h: 29 };
 
 /** Dirt roads (vertex rectangles) leading out of the three gates. */
 export const ROADS: Rect[] = [
-  { x: 189, y: 218, w: 6, h: 44 }, // south
-  { x: 104, y: 185, w: 50, h: 4 }, // west
-  { x: 230, y: 185, w: 50, h: 4 }, // east
+  { x: 189, y: 252, w: 6, h: 44 }, // south
+  { x: 60, y: 185, w: 66, h: 4 }, // west
+  { x: 258, y: 185, w: 66, h: 4 }, // east
 ];
+
+/** Names for parts of town, for "where is this shop?" (first match wins). */
+const PLACES: { name: string; rect: Rect }[] = [
+  { name: "the Market Square", rect: MARKET },
+  { name: "the fountain plaza", rect: PLAZA },
+  { name: "the Rooms pavilion", rect: PAVILION },
+  { name: "the pack stalls", rect: PACK_STALLS },
+  { name: "the café", rect: { x: 228, y: 189, w: 26, h: 24 } },
+  { name: "the park", rect: PARK },
+  { name: "the palace forecourt", rect: { x: 158, y: 158, w: 68, h: 18 } },
+  { name: "the main street", rect: { x: 130, y: 182, w: 124, h: 9 } },
+  { name: "the avenue", rect: AVENUE },
+  { name: "the west quarter", rect: { x: 130, y: 158, w: 28, h: 30 } },
+  { name: "the east quarter", rect: { x: 226, y: 158, w: 28, h: 92 } },
+];
+
+/** Where a pixel position is, in words: "the Market Square", "the park"… */
+export function placeName(px: number, py: number): string {
+  const tx = px / TILE;
+  const ty = py / TILE;
+  return PLACES.find((p) => inRect(p.rect, tx, ty))?.name ?? "town";
+}
 
 // ---------------------------------------------------------------- stone structures
 //
@@ -102,18 +142,24 @@ const both = (group: StructGroup, r: Rect): StructBlock[] => [
   { group, rect: mirror(r) },
 ];
 
+/** The south rampart's top row; the gate is the gap in it where the avenue runs out of town. */
+export const SOUTH_WALL_Y = 250;
+
 export const STRUCT_BLOCKS: StructBlock[] = [
   // Ramparts: two tiles thick. Gaps for the south gate and the west/east street.
-  { group: "rampart", rect: { x: 156, y: 156, w: 72, h: 2 } },
-  ...both("rampart", { x: 156, y: 216, w: 33, h: 2 }),
-  ...both("rampart", { x: 156, y: 156, w: 2, h: 26 }),
-  ...both("rampart", { x: 156, y: 189, w: 2, h: 29 }),
-  // Corner towers, and a pair of towers at each gate.
+  { group: "rampart", rect: { x: 128, y: 156, w: 128, h: 2 } },
+  ...both("rampart", { x: 128, y: SOUTH_WALL_Y, w: 61, h: 2 }),
+  ...both("rampart", { x: 128, y: 156, w: 2, h: 26 }),
+  ...both("rampart", { x: 128, y: 189, w: 2, h: 63 }),
+  // Corner towers, a pair of towers at each gate, and towers along the long stretches.
+  ...both("tower", { x: 126, y: 154, w: 5, h: 5 }),
+  ...both("tower", { x: 126, y: SOUTH_WALL_Y - 3, w: 5, h: 5 }),
+  ...both("tower", { x: 126, y: 177, w: 5, h: 4 }),
+  ...both("tower", { x: 126, y: 189, w: 5, h: 4 }),
+  ...both("tower", { x: 126, y: 219, w: 5, h: 4 }),
   ...both("tower", { x: 154, y: 154, w: 5, h: 5 }),
-  ...both("tower", { x: 154, y: 213, w: 5, h: 5 }),
-  ...both("tower", { x: 154, y: 177, w: 5, h: 4 }),
-  ...both("tower", { x: 154, y: 189, w: 5, h: 4 }),
-  ...both("tower", { x: 184, y: 213, w: 5, h: 5 }),
+  ...both("tower", { x: 156, y: SOUTH_WALL_Y - 3, w: 5, h: 5 }),
+  ...both("tower", { x: 184, y: SOUTH_WALL_Y - 3, w: 5, h: 5 }),
   // Gattchaa Palace: the main hall, a tower at each end and a raised keep.
   { group: "palace", rect: { x: 178, y: 157, w: 28, h: 8 } },
   ...both("palaceTower", { x: 172, y: 155, w: 6, h: 9 }),
@@ -156,23 +202,66 @@ export const LOUNGE: Rect = { x: 10, y: 26, w: 12, h: 8 };
 /** Where the in-palace shopper may wander. */
 export const STORE_WANDER: Rect = { x: 24, y: 15, w: 16, h: 20 };
 
+// ---------------------------------------------------------------- floors
+
+/** Lanes between the quarters (stone paving). */
+const LANES: Rect[] = [
+  // Paths from the street to the pavilion and the pack stalls.
+  { x: 168, y: 189, w: 3, h: 4 },
+  mirror({ x: 168, y: 189, w: 3, h: 4 }),
+  // Paths from the forecourt down to the street.
+  { x: 168, y: 176, w: 3, h: 9 },
+  mirror({ x: 168, y: 176, w: 3, h: 9 }),
+  // From the street down to the Market Square, past the park and the café.
+  { x: 156, y: 189, w: 3, h: 22 },
+  mirror({ x: 156, y: 189, w: 3, h: 22 }),
+  // Through the west and east quarters, from the forecourt to the ramparts.
+  { x: 130, y: 171, w: 30, h: 3 },
+  mirror({ x: 130, y: 171, w: 30, h: 3 }),
+  // Into the east quarter, between its houses and the café.
+  { x: 228, y: 211, w: 26, h: 3 },
+];
+
+/** The Market Square's two fountains, either side of the avenue on its cross street. */
+const MARKET_FOUNTAIN = { x: 171, y: 226 };
+
+type TilePos = { x: number; y: number };
+/** A lamp post's mirror image across the avenue (lamps are one tile wide). */
+const mirrorLamp = (p: TilePos): TilePos => ({ x: 2 * TOWN_CX - p.x - 1, y: p.y });
+const strings = (...pairs: [TilePos, TilePos][]) => pairs.flatMap(([a, b]): [TilePos, TilePos][] => [[a, b], [mirrorLamp(b), mirrorLamp(a)]]);
+
+/** Bunting over the Market Square, strung between pairs of lamp posts (their footprint tiles). */
+export const BUNTING: [TilePos, TilePos][] = [
+  // Along the north and south sides of each fountain's paving.
+  ...strings(
+    ...[MARKET_FOUNTAIN.y - 2, MARKET_FOUNTAIN.y + 3].map((y): [TilePos, TilePos] => [
+      { x: MARKET_FOUNTAIN.x - 3, y },
+      { x: MARKET_FOUNTAIN.x + 4, y },
+    ]),
+  ),
+  // Along the square's north and south edges.
+  ...strings([{ x: 170, y: 211 }, { x: 182, y: 211 }], [{ x: 162, y: 243 }, { x: 174, y: 243 }], [{ x: 174, y: 243 }, { x: 186, y: 243 }]),
+  // Across the avenue where it comes into the square.
+  [{ x: 188, y: 210 }, { x: 195, y: 210 }],
+];
+
 export const FLOORS: { rect: Rect; floor: Floor }[] = [
+  { rect: MARKET, floor: Floor.Slab },
+  // A cross street through the square, widening round each fountain.
+  { rect: { x: MARKET.x, y: 226, w: MARKET.w, h: 2 }, floor: Floor.Stone },
+  { rect: { x: MARKET_FOUNTAIN.x - 3, y: MARKET_FOUNTAIN.y - 2, w: 8, h: 6 }, floor: Floor.Stone },
+  { rect: mirror({ x: MARKET_FOUNTAIN.x - 3, y: MARKET_FOUNTAIN.y - 2, w: 8, h: 6 }), floor: Floor.Stone },
   { rect: AVENUE, floor: Floor.Stone },
-  // Paved through the west and east gates.
-  { rect: { x: 153, y: STREET.y, w: 78, h: STREET.h }, floor: Floor.Stone },
+  { rect: STREET, floor: Floor.Stone },
   { rect: PLAZA, floor: Floor.Stone },
   // Flagstone square round the fountain.
   { rect: { x: 188, y: 188, w: 8, h: 6 }, floor: Floor.Slab },
   { rect: FORECOURT, floor: Floor.Slab },
-  { rect: MARKET, floor: Floor.Slab },
+  { rect: PACK_STALLS, floor: Floor.Slab },
   { rect: PAVILION, floor: Floor.Wood },
+  { rect: CAFE, floor: Floor.Wood },
   { rect: BRAND_TERRACE, floor: Floor.Brand },
-  // Paths from the street to the pavilion and market.
-  { rect: { x: 168, y: 189, w: 3, h: 4 }, floor: Floor.Stone },
-  { rect: mirror({ x: 168, y: 189, w: 3, h: 4 }), floor: Floor.Stone },
-  // Paths from the forecourt down to the street.
-  { rect: { x: 168, y: 176, w: 3, h: 9 }, floor: Floor.Stone },
-  { rect: mirror({ x: 168, y: 176, w: 3, h: 9 }), floor: Floor.Stone },
+  ...LANES.map((rect) => ({ rect, floor: Floor.Stone })),
 
   { rect: INTERIOR_ZONE, floor: Floor.Void },
   { rect: HALL, floor: Floor.Slab },
@@ -187,9 +276,24 @@ export const FLOORS: { rect: Rect; floor: Floor }[] = [
 export const GARDENS: Rect[] = [
   { x: 160, y: 177, w: 7, h: 7 },
   { x: 172, y: 177, w: 16, h: 3 },
-  { x: 160, y: 209, w: 23, h: 5 },
   { x: 172, y: 190, w: 5, h: 2 },
+  // Flower beds along the lanes in the west and east quarters.
+  { x: 131, y: 174, w: 6, h: 2 },
+  { x: 147, y: 174, w: 8, h: 2 },
+  // Between the Market Square and the south wall.
+  { x: 162, y: 245, w: 22, h: 2 },
 ].flatMap((r) => [r, mirror(r)]);
+
+/** Wild corners with trees, ferns and flowers at random: the park, and the orchard behind the café. */
+export const GROVES: Rect[] = [PARK, { x: 229, y: 216, w: 24, h: 31 }];
+
+/** Dirt trails (vertex rectangles) besides the ring round the pond: in from the lane, and down to the campfire. */
+export const TRAILS: Rect[] = [
+  { x: 148, y: 205, w: 9, h: 2 },
+  { x: 148, y: 226, w: 9, h: 2 },
+  { x: 141, y: 228, w: 2, h: 10 },
+  { x: 137, y: 237, w: 10, h: 6 },
+];
 
 /**
  * Doors: stepping into `trigger` (pixels) while walking in `dir` asks the
@@ -246,6 +350,15 @@ export const PROP_TYPES = {
   loveseatBack: { w: 2, h: 1 },
   coffeeTable: { w: 2, h: 1 },
   clock: { w: 1, h: 1 },
+  // Townhouses: big brick, red-brick gable, paneled with a porch.
+  houseA: { w: 6, h: 4 },
+  houseB: { w: 5, h: 5 },
+  houseC: { w: 5, h: 4 },
+  bench: { w: 2, h: 1 },
+  stoneSeat: { w: 2, h: 1 },
+  picnicTable: { w: 3, h: 1 },
+  campfire: { w: 1, h: 1 },
+  bin: { w: 1, h: 1 },
 } as const satisfies Record<string, { w: number; h: number; walkable?: boolean }>;
 export type PropType = keyof typeof PROP_TYPES;
 
@@ -257,6 +370,8 @@ export interface Prop {
   /** Links the prop to an interaction (machine id, table index…). */
   tag?: string;
   variant?: number;
+  /** Drawn mirrored (houses on the east side face the other way). */
+  flip?: boolean;
 }
 
 /** Oripa machines: one per franchise, matched against live category titles. */
@@ -271,10 +386,10 @@ export const MACHINES: { id: string; label: string; match: RegExp }[] = [
   { id: "more", label: "MORE TCG", match: /riftbound|vanguard|shadowverse|wei|marvel/i },
 ];
 
-/** A prop and its mirror image on the other side of the avenue. */
+/** A prop and its mirror image on the other side of the avenue (drawn flipped). */
 const pair = (p: Prop): Prop[] => {
   const w = PROP_TYPES[p.type].w;
-  return [p, { ...p, x: 2 * TOWN_CX - p.x - w }];
+  return [p, { ...p, x: 2 * TOWN_CX - p.x - w, flip: !p.flip }];
 };
 
 /** Rooms tables (tag = table index), each with four stools. */
@@ -294,7 +409,7 @@ const props: Prop[] = [
   // Pillars either side of the palace door.
   ...pair({ type: "pillar", x: 189, y: 168 }),
 
-  // Market: four stalls (vendors stand behind the counters)
+  // Pack stalls: four counters (vendors stand behind them)
   { type: "counter", x: 209, y: 197, tag: "stall:pokemon" },
   { type: "counter", x: 215, y: 197, tag: "stall:anime" },
   { type: "counter", x: 209, y: 203, tag: "stall:duel" },
@@ -330,6 +445,63 @@ const props: Prop[] = [
   ...pair({ type: "pottedTree", x: 184, y: 171 }),
   ...pair({ type: "pottedTree", x: 182, y: 181 }),
   ...pair({ type: "pottedTree", x: 182, y: 201 }),
+
+  // ---- West and east quarters: townhouses either side of a lane, lamps along the street.
+  ...pair({ type: "houseA", x: 131, y: 167 }),
+  ...pair({ type: "houseC", x: 139, y: 167 }),
+  ...pair({ type: "houseB", x: 146, y: 166 }),
+  ...pair({ type: "houseB", x: 132, y: 178 }),
+  ...pair({ type: "houseA", x: 140, y: 179 }),
+  ...pair({ type: "houseC", x: 149, y: 179 }),
+  ...pair({ type: "lamp", x: 137, y: 174 }),
+  ...pair({ type: "lamp", x: 146, y: 174 }),
+  ...pair({ type: "bin", x: 145, y: 170, variant: 1 }),
+  ...pair({ type: "pottedTree", x: 152, y: 169 }),
+  ...pair({ type: "lamp", x: 140, y: 184 }),
+  ...pair({ type: "lamp", x: 150, y: 184 }),
+
+  // ---- The Market Square: open paving for player shops, a fountain in each half with lamps
+  // at the corners of its paving (bunting is strung between them), lamps and benches round the edge.
+  ...pair({ type: "fountain", ...MARKET_FOUNTAIN }),
+  ...[MARKET_FOUNTAIN.y - 2, MARKET_FOUNTAIN.y + 3].flatMap((y) =>
+    [MARKET_FOUNTAIN.x - 3, MARKET_FOUNTAIN.x + 4].flatMap((x) => pair({ type: "lamp", x, y })),
+  ),
+  ...pair({ type: "bench", x: MARKET_FOUNTAIN.x, y: MARKET_FOUNTAIN.y - 3, variant: 6 }),
+  ...pair({ type: "bench", x: MARKET_FOUNTAIN.x, y: MARKET_FOUNTAIN.y + 4, variant: 4 }),
+  ...[162, 174, 186].flatMap((x) => pair({ type: "lamp", x, y: 243 })),
+  ...[170, 182].flatMap((x) => pair({ type: "lamp", x, y: 211 })),
+  ...pair({ type: "bench", x: 175, y: 211, variant: 0 }),
+  ...pair({ type: "bench", x: 165, y: 211, variant: 2 }),
+  ...pair({ type: "pottedTree", x: 160, y: 211 }),
+  ...pair({ type: "pottedTree", x: 156, y: 243 }),
+  ...pair({ type: "barrels", x: 157, y: 239 }),
+  ...pair({ type: "crate", x: 157, y: 241, variant: 1 }),
+
+  // ---- The park: benches by the pond, a campfire in the clearing, lamps where the trails start.
+  { type: "bench", x: 141, y: 201, variant: 3 },
+  { type: "bench", x: 138, y: 230, variant: 1 },
+  { type: "campfire", x: 141, y: 239 },
+  { type: "stoneSeat", x: 138, y: 239 },
+  { type: "stoneSeat", x: 143, y: 239, variant: 1 },
+  { type: "stoneSeat", x: 140, y: 241 },
+  { type: "lamp", x: 154, y: 203 },
+  { type: "lamp", x: 154, y: 229 },
+
+  // ---- The café: a house with picnic tables on its terrace.
+  { type: "houseA", x: 237, y: 196 },
+  ...[233, 245].flatMap((x) => [204, 207].map((y): Prop => ({ type: "picnicTable", x, y, variant: (x + y) % 2 }))),
+  ...[233, 235, 245, 247].flatMap((x) => [
+    { type: "stool", x, y: 203, variant: 2 } as Prop,
+    { type: "stool", x, y: 208, variant: 2 } as Prop,
+  ]),
+  { type: "pottedTree", x: 231, y: 201 },
+  { type: "pottedTree", x: 249, y: 201 },
+  { type: "lamp", x: 231, y: 209 },
+  { type: "lamp", x: 249, y: 209 },
+  { type: "bin", x: 236, y: 200 },
+  { type: "bench", x: 239, y: 231, variant: 5 },
+  { type: "lamp", x: 236, y: 214 },
+  { type: "lamp", x: 248, y: 214 },
 ];
 
 // Oripa machines: four each side of the palace door, against the palace wall.
@@ -402,7 +574,8 @@ export const FACADES: Facade[] = [
   ...[175, 209].map((t): Facade => ({ kind: "window", x: px(t), y: px(167) - 4 })),
   // Banners on the palace towers and the south gate towers.
   ...[173.5, 176.5, 207.5, 210.5].map((t): Facade => ({ kind: "banner", x: px(t), y: px(169) - 8 })),
-  ...[186.5, 197.5].map((t): Facade => ({ kind: "banner", x: px(t), y: px(222) - 6 })),
+  // (the gate towers' faces end 6 rows below the top of the south wall)
+  ...[186.5, 197.5].map((t): Facade => ({ kind: "banner", x: px(t), y: px(SOUTH_WALL_Y + 6) - 6 })),
 
   // Palace hall, back wall (face rows 6-9).
   ...[14, 20, 44, 50].map((t): Facade => ({ kind: "window", x: px(t), y: px(10) - 4 })),
@@ -413,7 +586,6 @@ export const FACADES: Facade[] = [
   { kind: "swag", x: px(HALL_CX), y: px(10) },
 ];
 
-export const TILE = 32;
 /** Pixel position of a prop's anchor (bottom centre of its footprint). */
 export function propAnchor(p: Prop): { x: number; y: number } {
   const t = PROP_TYPES[p.type];

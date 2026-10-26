@@ -1,5 +1,5 @@
 import { NPCS, npcProducts, type NpcDef } from "../../../shared/npcs";
-import { MACHINES } from "../../../shared/town";
+import { MACHINES, placeName } from "../../../shared/town";
 import {
   ROOM_MODES,
   formatRupiah,
@@ -8,13 +8,15 @@ import {
   type ShopProduct,
   type ShopRoom,
 } from "../../../shared/gattchaa";
+import { SHOP_AWAY_HOURS, SHOP_TITLE_MAX, signText, type PlayerShopDetails, type PlayerShopView } from "../../../shared/vending";
 import { FRAME, composeCharacter } from "../character";
 import type { Shop } from "../shop";
+import type { Vending } from "../vending";
 import { audio } from "../audio";
 
-// The panel that opens when you talk to someone or use a machine. Every
-// button is a real link into gattchaaoripa.com (new tab), so buying, logging
-// in and paying all happen on the actual site.
+// The panel that opens when you talk to someone, use a machine or visit a
+// player's shop. Every link goes to gattchaaoripa.com (new tab), so buying,
+// logging in and paying all happen on the actual site.
 
 interface LinkSpec {
   label: string;
@@ -52,6 +54,10 @@ const LINKS: Record<string, LinkSpec[]> = {
     { label: "Store & pickup info", path: "/about", hint: "Gattchaa One, Batam Mall" },
     { label: "Sign in", path: "/login" },
   ],
+  sell: [
+    { label: "List cards for sale", path: "/inventory", hint: "Listed cards show up in your shop" },
+    { label: "The marketplace", path: "/marketplace" },
+  ],
 };
 
 const $ = (id: string) => document.getElementById(id)!;
@@ -81,18 +87,31 @@ export class TownDialog {
   private logo = new Image();
   private openTarget: string | undefined;
   private renderToken = 0;
+  private keepScroll = 0;
+  /** What the open shop panel shows, so unrelated updates don't redraw it. */
+  private shownShop = "";
+  /** Shop panels opened from the Market Keeper's list get a way back to it. */
+  private backTo?: string;
+  /** Re-checks the spot under your feet while the open-a-shop form is up. */
+  private spotTimer?: number;
   /** Where the conversation is happening; walking away closes it. */
   anchor = { x: 0, y: 0 };
+  /** Where your character stands right now (set by the game scene). */
+  selfPosition?: () => { x: number; y: number } | undefined;
   onClose?: () => void;
 
-  constructor(private shop: Shop) {
+  constructor(
+    private shop: Shop,
+    private vending: Vending,
+  ) {
     this.logo.src = `${import.meta.env.BASE_URL}assets/gattchaa/logo-64.png`;
     $("dialog-close").addEventListener("click", () => this.close());
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && this.isOpen) this.close();
     });
-    // Live data changes (stock, seats) refresh whatever is open.
-    shop.onChange(() => this.openTarget && this.render(this.openTarget, false));
+    // Live data changes (stock, seats, shops opening) refresh whatever is open.
+    shop.onChange(() => this.refresh(false));
+    vending.onChange.add(() => this.refresh(true));
   }
 
   get isOpen() {
@@ -105,6 +124,7 @@ export class TownDialog {
 
   open(target: string, at: { x: number; y: number }) {
     this.anchor = at;
+    this.backTo = undefined;
     audio.blip();
     this.render(target, true);
     this.root.hidden = false;
@@ -114,16 +134,36 @@ export class TownDialog {
     if (!this.isOpen) return;
     this.root.hidden = true;
     this.openTarget = undefined;
+    clearInterval(this.spotTimer);
     this.onClose?.();
   }
 
   // ------------------------------------------------------------------ content
 
+  /** Redraws the open panel after a data update it shows (Gattchaa stock, or player shops). */
+  private refresh(playerShops: boolean) {
+    const target = this.openTarget;
+    if (!target || !this.isOpen) return;
+    const [kind, id] = target.split(":");
+    const shops = kind === "vend" || kind === "shop" || target === "npc:keeper";
+    if (shops !== playerShops) return;
+    if (kind === "vend") {
+      // Never wipe a half-typed shop title: only move on once your shop is open.
+      const mine = this.vending.myShop;
+      if (mine) this.render(`shop:${mine}`, true);
+      return;
+    }
+    if (kind === "shop" && this.shopState(id) === this.shownShop) return;
+    this.render(target, false);
+  }
+
   private render(target: string, fresh: boolean) {
     this.openTarget = target;
     const [kind, id] = target.split(":");
     const token = ++this.renderToken;
+    clearInterval(this.spotTimer);
     const keepScroll = fresh ? 0 : this.body.scrollTop;
+    this.keepScroll = keepScroll;
     this.body.replaceChildren();
     this.actions.replaceChildren();
 
@@ -145,6 +185,10 @@ export class TownDialog {
       if (fresh) this.say("Pull up a stool! These are the rooms open right now. Join one on Gattchaa and open packs together.");
       this.rooms(Number(id));
       this.links(LINKS.rooms, "rooms-table");
+    } else if (kind === "vend") {
+      this.vendPanel(fresh, token);
+    } else if (kind === "shop") {
+      this.shopPanel(id, fresh, token);
     }
     this.body.scrollTop = keepScroll;
   }
@@ -175,9 +219,194 @@ export class TownDialog {
       case "pickup":
         this.links(LINKS[npc.kind], from);
         break;
+      case "keeper":
+        this.shopList();
+        if (!this.vending.auth.signedIn) this.signInButton("Sign in to open your own shop");
+        else if (!this.vending.myShop) this.button("Open my shop", "Right where you're standing (V)", () => this.render("vend", true), "primary");
+        break;
       default:
         break;
     }
+  }
+
+  // ------------------------------------------------------------------ player shops
+
+  /** Everything the panel for a shop shows, as one string ("" once it's closed). */
+  private shopState(id: string): string {
+    const s = this.vending.shop(id);
+    return s ? `${s.name}|${s.look}|${s.title}|${s.owner}|${s.cards}|${s.rev}` : "";
+  }
+
+  /** The Market Keeper's board: every open shop and where it is, browsable from right there. */
+  private shopList() {
+    const shops: { id: string; shop: PlayerShopView }[] = [];
+    this.vending.forEach((shop, id) => shops.push({ id, shop }));
+    if (shops.length === 0) {
+      this.body.append(el("p", "dialog-empty", "No shops are open right now. Be the first: press Open shop (V) wherever you'd like to sell!"));
+      return;
+    }
+    // Sellers who are here first (you can chat with them), then the biggest shops.
+    shops.sort((a, b) => Number(b.shop.owner !== "") - Number(a.shop.owner !== "") || b.shop.cards - a.shop.cards);
+    this.section(`${shops.length} shop${shops.length === 1 ? "" : "s"} open`);
+    const list = el("div", "room-list");
+    for (const { id, shop } of shops) {
+      const row = el("button", "room shop-row");
+      row.type = "button";
+      const info = el("div", "room-info");
+      const cards = `${shop.cards} card${shop.cards === 1 ? "" : "s"}`;
+      const where = placeName(shop.x, shop.y);
+      info.append(el("div", "room-title", shop.title), el("div", "room-seats", `${shop.name} · ${cards} · ${shop.owner ? "here now" : "away"} · ${where}`));
+      row.append(el("span", `shop-dot${shop.owner ? " on" : ""}`), info, el("span", "room-join", "Browse"));
+      row.addEventListener("click", () => {
+        this.backTo = this.openTarget;
+        audio.blip();
+        this.render(`shop:${id}`, true);
+      });
+      list.append(row);
+    }
+    this.body.append(list);
+  }
+
+  /** "Open shop": the form to open yours right where you stand, or how to get one. */
+  private vendPanel(fresh: boolean, token: number) {
+    const mine = this.vending.myShop;
+    if (mine) return this.shopPanel(mine, fresh, token);
+    this.header("Open a shop", "Player shops", token);
+    const say = (text: string) => fresh && this.say(text);
+
+    if (!this.vending.auth.signedIn) {
+      say("Anyone signed in with Gattchaa can sit down anywhere in town and open a shop. It shows the cards you've listed on the Gattchaa marketplace, and buyers pay on gattchaaoripa.com.");
+      this.signInButton("You'll come straight back to town");
+      this.links(LINKS.sell, "vend");
+      return;
+    }
+    say(`Sit down and open your shop right here! It shows the cards you've listed on the Gattchaa marketplace, and stays open for ${SHOP_AWAY_HOURS} hours after you leave town.`);
+
+    // Whether this spot is allowed, checked again as you move (the server has the final say).
+    const spot = el("p", "shop-spot");
+    const checkSpot = () => {
+      const at = this.selfPosition?.();
+      const problem = at ? this.vending.spotProblem(at.x, at.y) : undefined;
+      spot.textContent = problem ?? (at ? `Good spot: ${placeName(at.x, at.y)}.` : "");
+      spot.classList.toggle("bad", Boolean(problem));
+    };
+    checkSpot();
+    this.spotTimer = window.setInterval(checkSpot, 400);
+
+    const form = el("form", "shop-form");
+    const label = el("label", "shop-form-label", "Shop title");
+    const input = el("input");
+    input.maxLength = SHOP_TITLE_MAX;
+    input.placeholder = "e.g. Cheap Pokémon SR!";
+    input.autocomplete = "off";
+    input.enterKeyHint = "go";
+    label.append(input);
+    const sign = el("small", "shop-form-hint", "Leave it empty for “your name's cards”.");
+    input.addEventListener("input", () => {
+      const title = input.value.trim();
+      sign.textContent = title ? `Your sign: ${signText(title)}` : "Leave it empty for “your name's cards”.";
+    });
+    const submit = el("button", "shop-form-submit", "Open shop here");
+    submit.type = "submit";
+    const error = el("p", "shop-form-error");
+    error.setAttribute("role", "alert");
+    form.append(label, sign, spot, submit, error);
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      submit.disabled = true;
+      submit.textContent = "Opening…";
+      error.textContent = "";
+      const failed = await this.vending.open(input.value);
+      if (token !== this.renderToken) return; // the shop appeared and the panel already moved on
+      if (failed) {
+        submit.disabled = false;
+        submit.textContent = "Open shop here";
+        error.textContent = failed;
+        return;
+      }
+      // Open: the shop arrives with the next state update, and refresh() shows it.
+      const opened = this.vending.myShop;
+      if (opened) this.render(`shop:${opened}`, true);
+    });
+    this.body.append(form);
+    this.links(LINKS.sell, "vend");
+    // Ready to type on desktop (on phones the keyboard would cover the panel).
+    if (fresh && matchMedia("(pointer: fine)").matches) setTimeout(() => input.focus(), 30);
+  }
+
+  /** A player's shop: their cards, each one a link to buy it on Gattchaa. */
+  private shopPanel(id: string, fresh: boolean, token: number) {
+    this.shownShop = this.shopState(id);
+    const shop = this.vending.shop(id);
+    if (this.backTo) this.button("← All shops", undefined, () => this.backTo && this.render(this.backTo, true));
+    if (!shop) {
+      this.header("Shop closed", "Player shops", token);
+      this.say("This shop has just closed. Tina, the Market Keeper in the Market Square, knows which shops are still open.");
+      return;
+    }
+    const mine = this.vending.isMine(id);
+    const where = placeName(shop.x, shop.y);
+    this.header(shop.name, mine ? `Your shop · ${where}` : `Player shop · ${shop.owner ? "seller is here" : "seller is away"} · ${where}`, token, shop.look);
+    if (fresh) this.say(`“${shop.title}”`);
+
+    const loading = el("p", "dialog-empty", "Loading cards…");
+    this.body.append(loading);
+    const keepScroll = this.keepScroll;
+    this.vending.details(id).then((d) => {
+      if (token !== this.renderToken) return;
+      loading.remove();
+      if (typeof d === "string") this.body.append(el("p", "dialog-empty", d));
+      else this.listings(d, id, mine);
+      this.body.scrollTop = keepScroll;
+    });
+
+    if (mine) {
+      this.links([{ label: "Manage my listings", path: "/inventory", hint: "Changes show up here" }], `shop-${id}`);
+      this.button("Close shop", "Stand up and roll up your rug", async (btn) => {
+        btn.disabled = true;
+        const failed = await this.vending.close();
+        if (failed) btn.disabled = false;
+        else this.close();
+      }, "danger");
+    }
+  }
+
+  private listings(d: PlayerShopDetails, stall: string, mine: boolean) {
+    if (!d.fresh) this.section("Gattchaa isn't answering right now, so these may be out of date.");
+    if (d.listings.length === 0) {
+      this.body.append(el("p", "dialog-empty", mine ? "You have no cards listed right now. List some on Gattchaa and they'll show up here." : "Sold out! Check back later."));
+      return;
+    }
+    const grid = el("div", "product-grid");
+    for (const l of d.listings) {
+      const card = external(el("a", "product"), tagLink(l.url, `shop-${stall}`));
+      const img = el("img");
+      img.loading = "lazy";
+      img.alt = "";
+      if (l.imageUrl) img.src = l.imageUrl;
+      const pic = el("div", "product-pic");
+      pic.append(img);
+      if (l.grade) pic.append(el("span", "chip", l.grade));
+      const meta = [l.condition, l.category].filter(Boolean).join(" · ");
+      card.append(pic, el("div", "product-title", l.title), el("div", "product-cat", meta), el("div", "product-price", formatRupiah(l.price)));
+      grid.append(card);
+    }
+    this.body.append(grid, el("p", "dialog-note", "You buy on gattchaaoripa.com, so payment and delivery are handled by Gattchaa."));
+  }
+
+  private signInButton(hint: string) {
+    this.button("Sign in with Gattchaa", hint, () => {
+      location.href = this.vending.auth.signInUrl;
+    }, "primary");
+  }
+
+  private button(label: string, hint: string | undefined, onClick: (btn: HTMLButtonElement) => void, variant = "") {
+    const b = el("button", `dialog-link${variant ? ` ${variant}` : ""}`);
+    b.type = "button";
+    b.append(el("span", "", label));
+    if (hint) b.append(el("small", "", hint));
+    b.addEventListener("click", () => onClick(b));
+    this.actions.append(b);
   }
 
   private header(name: string, title: string, token: number, look?: string) {

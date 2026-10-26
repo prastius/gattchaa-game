@@ -27,12 +27,21 @@ const B = BODY_TYPES;
 const M = ["male"];
 const F = ["female"];
 
+// Look-alikes whose sitting frames stand in for items that have none.
+const SIT_SKIRT = "legs/skirts/legs_skirts_plain.json";
+const SIT_SCOOP = "torso/shirts/shortsleeve/torso_clothes_tshirt_scoop.json";
+const SIT_SCOOP_LONG = "torso/shirts/longsleeve/torso_clothes_longsleeve2_scoop.json";
+const SIT_LONGSLEEVE = "torso/shirts/longsleeve/torso_clothes_longsleeve.json";
+const SIT_SLEEVELESS = "torso/shirts/sleeveless/torso_clothes_sleeveless2.json";
+
 /**
  * Character options, in UI order: [category, id, label, definition path, bodies, options].
  * - bodies: which body types offer this option (masculine/feminine lists differ).
  * - options.variant: for pre-coloured items, which colour file to use ("white" is
  *   recoloured at runtime like everything else; others are drawn as-is).
  * - options.hides: categories this item covers (a dress hides the bottom).
+ * - options.sitAs: definitions whose "sit" frames are used instead when the item
+ *   has none (same cloth palette, so the colour still matches).
  * - id "none" (no path) is an empty choice.
  */
 const ITEMS = [
@@ -107,12 +116,12 @@ const ITEMS = [
   ["top", "longPolo", "Long polo", "torso/shirts/longsleeve/torso_clothes_longsleeve2_polo.json", M],
   ["top", "scoop", "Scoop tee", "torso/shirts/shortsleeve/torso_clothes_tshirt_scoop.json", F],
   ["top", "scoopLong", "Scoop long", "torso/shirts/longsleeve/torso_clothes_longsleeve2_scoop.json", F],
-  ["top", "blouse", "Blouse", "torso/shirts/torso_clothes_blouse.json", F, { variant: "white" }],
-  ["top", "blouseLong", "Long blouse", "torso/shirts/torso_clothes_blouse_longsleeve.json", F, { variant: "white" }],
-  ["top", "tunic", "Tunic", "torso/shirts/torso_clothes_tunic.json", F, { variant: "white" }],
-  ["top", "sashDress", "Sash dress", "torso/dresses/dress_sash.json", F, { variant: "white", hides: ["bottom"] }],
-  ["top", "slitDress", "Slit dress", "torso/dresses/dress_slit.json", F, { variant: "white", hides: ["bottom"] }],
-  ["top", "kimono", "Kimono", "torso/dresses/kimono/dress_kimono.json", F, { variant: "white", hides: ["bottom"] }],
+  ["top", "blouse", "Blouse", "torso/shirts/torso_clothes_blouse.json", F, { variant: "white", sitAs: [SIT_SCOOP] }],
+  ["top", "blouseLong", "Long blouse", "torso/shirts/torso_clothes_blouse_longsleeve.json", F, { variant: "white", sitAs: [SIT_SCOOP_LONG] }],
+  ["top", "tunic", "Tunic", "torso/shirts/torso_clothes_tunic.json", F, { variant: "white", sitAs: [SIT_LONGSLEEVE] }],
+  ["top", "sashDress", "Sash dress", "torso/dresses/dress_sash.json", F, { variant: "white", hides: ["bottom"], sitAs: [SIT_SLEEVELESS, SIT_SKIRT] }],
+  ["top", "slitDress", "Slit dress", "torso/dresses/dress_slit.json", F, { variant: "white", hides: ["bottom"], sitAs: [SIT_SLEEVELESS, SIT_SKIRT] }],
+  ["top", "kimono", "Kimono", "torso/dresses/kimono/dress_kimono.json", F, { variant: "white", hides: ["bottom"], sitAs: [SIT_LONGSLEEVE, SIT_SKIRT] }],
 
   ["bottom", "pants", "Pants", "legs/pants/legs_pants.json", B],
   ["bottom", "shorts", "Shorts", "legs/shorts/legs_shorts.json", B],
@@ -122,9 +131,9 @@ const ITEMS = [
   ["bottom", "formal", "Formal pants", "legs/pants/legs_formal.json", M],
   ["bottom", "leggings", "Leggings", "legs/leggings/legs_leggings.json", F],
   ["bottom", "skirt", "Skirt", "legs/skirts/legs_skirts_plain.json", F],
-  ["bottom", "straightSkirt", "Pencil skirt", "legs/skirts/legs_skirt_straight.json", F, { variant: "white" }],
-  ["bottom", "belleSkirt", "Long skirt", "legs/skirts/legs_skirt_belle.json", F],
-  ["bottom", "slitSkirt", "Slit skirt", "legs/skirts/legs_skirts_slit.json", F],
+  ["bottom", "straightSkirt", "Pencil skirt", "legs/skirts/legs_skirt_straight.json", F, { variant: "white", sitAs: [SIT_SKIRT] }],
+  ["bottom", "belleSkirt", "Long skirt", "legs/skirts/legs_skirt_belle.json", F, { sitAs: [SIT_SKIRT] }],
+  ["bottom", "slitSkirt", "Slit skirt", "legs/skirts/legs_skirts_slit.json", F, { sitAs: [SIT_SKIRT] }],
 
   ["shoes", "shoes", "Shoes", "feet/shoes/feet_shoes_basic.json", B],
   ["shoes", "sneakers", "Sneakers", "feet/shoes/feet_shoes_revised.json", B],
@@ -199,6 +208,12 @@ const TOWN_FILES = {
   "portraits.png": "Objects/Wall Items/Paintings, Portraits.png",
   "lighting-wall.png": "Objects/Wall Items/Lighting, Wall.png",
   "curtains.png": "Objects/Wall Items/Curtains.png",
+  "bench.png": "Objects/Furniture/Seating/Ottoman, Long A.png",
+  "stone-slab.png": "Objects/Furniture/Stone Slab.png",
+  "table-rough.png": "Objects/Furniture/Table, Rough Wood.png",
+  "bin.png": "Objects/Furniture/Bin.png",
+  "campfire.png": "Objects/Small Items/Fire, Camp.png",
+  "water-fx.png": "FX/Water Reflections.png",
 };
 const TOWN_CREDIT_DIRS = [
   "Structure/Structures",
@@ -210,7 +225,9 @@ const TOWN_CREDIT_DIRS = [
   "Structure/Windows",
   "Objects/Furniture",
   "Objects/Furniture/Seating",
+  "Objects/Small Items",
   "Objects/Wall Items",
+  "FX",
 ];
 
 const elizaUrl = (src) => `${ELIZA}/${src.split("/").map(encodeURIComponent).join("/")}`;
@@ -255,6 +272,16 @@ async function pool(items, limit, fn) {
   return results;
 }
 
+const layersOf = (def) =>
+  Object.keys(def)
+    .filter((k) => /^layer_\d+$/.test(k))
+    .sort()
+    .map((k) => def[k]);
+
+/** URL of one animation sheet ("walk", "sit"…) for a layer directory. */
+const sheetUrl = (dir, anim, variant) =>
+  variant ? `${ULPC}/spritesheets/${dir}${anim}/${variant}.png` : `${ULPC}/spritesheets/${dir}${anim}.png`;
+
 async function fetchItem([category, id, label, defPath, bodies, opts = {}]) {
   const base = { category, id, name: label, bodies: [...bodies], materials: [], layers: [], ...(opts.hides && { hides: opts.hides }) };
   if (!defPath) return { item: base, credits: [] };
@@ -264,30 +291,58 @@ async function fetchItem([category, id, label, defPath, bodies, opts = {}]) {
   // Palette items recolour via their own materials; "white" variants share the cloth base palette.
   const materials = opts.fixed ? [] : variant ? (variant === "white" ? ["cloth"] : []) : materialsOf(def);
   const item = { ...base, materials };
+  const hasSit = (def.animations ?? []).includes("sit");
 
-  const layers = Object.keys(def)
-    .filter((k) => /^layer_\d+$/.test(k))
-    .sort()
-    .map((k) => def[k]);
-
+  const layers = layersOf(def);
   for (const [li, layer] of layers.entries()) {
     const out = { z: layer.zPos, files: {} };
     for (const body of bodies) {
       const dir = layer[body];
       if (!dir) continue;
-      const src = variant ? `${ULPC}/spritesheets/${dir}walk/${variant}.png` : `${ULPC}/spritesheets/${dir}walk.png`;
       const rel = `lpc/${category}/${id}/${li}_${body}.png`;
       try {
-        await save(rel, await get(src, "bin"));
+        await save(rel, await get(sheetUrl(dir, "walk", variant), "bin"));
         out.files[body] = { walk: rel };
       } catch (err) {
         console.warn(`  ${category}/${id} layer ${li} ${body}: ${err.message}`);
+        continue;
+      }
+      if (!hasSit) continue;
+      const sitRel = `lpc/${category}/${id}/${li}_${body}_sit.png`;
+      try {
+        await save(sitRel, await get(sheetUrl(dir, "sit", variant), "bin"));
+        out.files[body].sit = sitRel;
+      } catch (err) {
+        console.warn(`  ${category}/${id} layer ${li} ${body} sit: ${err.message}`);
       }
     }
     if (Object.keys(out.files).length) item.layers.push(out);
   }
   // A body only offers the item if its main layer exists for that body.
   item.bodies = bodies.filter((b) => item.layers[0]?.files[b]);
+
+  // No sitting frames of its own: borrow a look-alike's, recoloured with this item's palette.
+  if (!hasSit && opts.sitAs) {
+    item.sitLayers = [];
+    for (const [si, sitPath] of opts.sitAs.entries()) {
+      const sdef = await get(`${ULPC}/sheet_definitions/${sitPath}`, "json");
+      const svariant = sdef.variants ? (sdef.variants.includes("white") ? "white" : sdef.variants[0]) : null;
+      for (const [li, layer] of layersOf(sdef).entries()) {
+        const out = { z: layer.zPos, files: {} };
+        for (const body of item.bodies) {
+          if (!layer[body]) continue;
+          const rel = `lpc/${category}/${id}/sit${si}_${li}_${body}.png`;
+          try {
+            await save(rel, await get(sheetUrl(layer[body], "sit", svariant), "bin"));
+            out.files[body] = { sit: rel };
+          } catch (err) {
+            console.warn(`  ${category}/${id} sit stand-in ${sitPath} ${body}: ${err.message}`);
+          }
+        }
+        if (Object.keys(out.files).length) item.sitLayers.push(out);
+      }
+    }
+  }
 
   const usedDirs = layers.flatMap((l) => bodies.map((b) => l[b]).filter(Boolean));
   const credits = (def.credits ?? [])
@@ -305,7 +360,8 @@ async function fetchItem([category, id, label, defPath, bodies, opts = {}]) {
 
 async function main() {
   await fs.rm(path.join(OUT, "lpc"), { recursive: true, force: true });
-  const manifest = { version: 2, frame: 64, items: [], palettes: {} };
+  // v3: layers carry "sit" sheets too; items without them list stand-in sitLayers.
+  const manifest = { version: 3, frame: 64, items: [], palettes: {} };
   const credits = new Map();
 
   for (const [mat, file] of Object.entries(PALETTES)) {

@@ -1,6 +1,8 @@
 node_modules/
 dist/
 build/
+# SQLite save data (accounts, shops); back it up, never commit it
+server/data/
 *.log
 .env
 .DS_Store

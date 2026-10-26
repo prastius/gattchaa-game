@@ -9,7 +9,9 @@
 import {
   FLOORS,
   GARDENS,
+  GROVES,
   INTERIOR_ZONE,
+  POND,
   PROPS,
   PROP_TYPES,
   ROADS,
@@ -18,6 +20,7 @@ import {
   STRUCT_BLOCKS,
   STRUCT_GROUPS,
   TOWN_AREA,
+  TRAILS,
   inRect,
   type Rect,
 } from "./town";
@@ -185,6 +188,22 @@ export class World {
     };
     fill(TOWN_AREA, Terrain.Grass, 2);
     fill(INTERIOR_ZONE, Terrain.Grass, 2); // dry ground under the store interior
+
+    // The park pond: deep in the middle, shallow at the edge, a dirt trail round it.
+    const { cx, cy, rx, ry } = POND;
+    for (let vy = Math.floor(cy - ry * 1.6); vy <= Math.ceil(cy + ry * 1.6); vy++) {
+      for (let vx = Math.floor(cx - rx * 1.6); vx <= Math.ceil(cx + rx * 1.6); vx++) {
+        const e = Math.hypot((vx - cx) / rx, (vy - cy) / ry);
+        const i = vy * vw + vx;
+        if (e < 0.55) verts[i] = Terrain.Deep;
+        else if (e < 1) verts[i] = Terrain.Water;
+        else if (e >= 1.3 && e < 1.55) verts[i] = Terrain.Dirt;
+      }
+    }
+    for (const t of TRAILS) {
+      for (let y = t.y; y < t.y + t.h; y++) for (let x = t.x; x < t.x + t.w; x++) verts[y * vw + x] = Terrain.Dirt;
+    }
+
     for (const road of ROADS) {
       // Only carve roads over land; they simply end at the shore.
       for (let y = road.y; y < road.y + road.h; y++) {
@@ -217,6 +236,43 @@ export class World {
       }
     }
     this.plantGardens();
+    this.plantGroves();
+  }
+
+  /**
+   * The park and the orchard: trees far enough apart to walk between, kept off
+   * the trails, the banks and the furniture, with ferns and flowers in between.
+   */
+  private plantGroves() {
+    const { width, seed } = this;
+    const grassy = (x: number, y: number) => this.corners(x, y).every((t) => t === Terrain.Grass);
+    const near = (x: number, y: number, r: number, test: (x: number, y: number) => boolean) => {
+      for (let oy = -r; oy <= r; oy++) for (let ox = -r; ox <= r; ox++) if (test(x + ox, y + oy)) return true;
+      return false;
+    };
+    for (const r of GROVES) {
+      for (let y = r.y; y < r.y + r.h; y++) {
+        for (let x = r.x; x < r.x + r.w; x++) {
+          const i = y * width + x;
+          if (this.solid[i] || this.floor[i] || this.decor[i] || !grassy(x, y)) continue;
+          const roll = hash2(x, y, seed + 41);
+          const kind = hash2(x, y, seed + 42);
+          let d: number = Decor.none;
+          if (
+            roll < 0.2 &&
+            !near(x, y, 1, (ax, ay) => !grassy(ax, ay) || this.solidAt(ax, ay) || this.floorAt(ax, ay) !== 0) &&
+            !near(x, y, 2, (ax, ay) => DECOR_BLOCKS[this.decorAt(ax, ay)])
+          ) {
+            d = [Decor.oak, Decor.bushTree, Decor.oakRoots, Decor.oakTall, Decor.cypress][Math.floor(kind * 5)];
+          } else if (roll > 0.88) {
+            d = Decor.flowers;
+          } else if (roll > 0.82) {
+            d = kind < 0.5 ? Decor.fern : Decor.tallGrass;
+          }
+          this.decor[i] = d;
+        }
+      }
+    }
   }
 
   /** Ramparts, towers and the palace: a solid top plus a solid face hanging below it. */

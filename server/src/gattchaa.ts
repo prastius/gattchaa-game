@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import express, { type Application, type Request, type Response } from "express";
-import { DEFAULT_SITE, type Announcement, type ShopProduct, type ShopRoom, type ShopSnapshot } from "../../shared/gattchaa";
+import { DEFAULT_SITE, type Announcement, type MarketListing, type ShopProduct, type ShopRoom, type ShopSnapshot } from "../../shared/gattchaa";
 
 // Client for the Gattchaa Town API (contract: docs/gattchaa-town-api.md).
 //
@@ -8,6 +8,8 @@ import { DEFAULT_SITE, type Announcement, type ShopProduct, type ShopRoom, type 
 //    unchanged response costs the shop almost nothing.
 //  - Push: the shop POSTs signed webhooks to /hooks/gattchaa for things that
 //    should feel instant (big pulls, catalog or room changes).
+//  - Accounts: players sign in on gattchaaoripa.com, which sends them back with a
+//    one-time ticket we redeem here; player shops show each seller's listings.
 //
 // Without GATTCHAA_API_URL the feed stays off and makes no requests at all;
 // the town still works, the shop dialogs just show menu links.
@@ -17,17 +19,22 @@ let API = "";
 let API_KEY = "";
 let WEBHOOK_SECRET = "";
 let SITE = DEFAULT_SITE;
+let SIGNIN_URL = "";
 function loadConfig() {
   API = (process.env.GATTCHAA_API_URL ?? "").replace(/\/+$/, "");
   API_KEY = process.env.GATTCHAA_API_KEY ?? "";
   WEBHOOK_SECRET = process.env.GATTCHAA_WEBHOOK_SECRET ?? "";
   SITE = (process.env.GATTCHAA_SITE_URL || DEFAULT_SITE).replace(/\/+$/, "");
+  SIGNIN_URL = process.env.GATTCHAA_SIGNIN_URL || `${SITE}/town/enter`;
 }
 
 const CATALOG_EVERY_MS = 10 * 60_000; // webhooks make this a safety net
 const LIVE_EVERY_MS = 30_000;
 const FETCH_TIMEOUT_MS = 8_000;
 const WEBHOOK_TOLERANCE_S = 300;
+/** Seller listings are re-checked (with an ETag) at most this often; webhooks clear it sooner. */
+const LISTINGS_TTL_MS = 60_000;
+const MAX_LISTINGS = 60;
 
 // ------------------------------------------------------------------ API shapes
 
@@ -59,15 +66,36 @@ interface ApiRoom {
   product: { slug: string; title: string; image_url: string };
 }
 
+interface ApiListing {
+  id: number | string;
+  title: string;
+  image_url: string;
+  price: number;
+  condition?: string | null;
+  grade?: string | null;
+  category?: string | null;
+  url: string;
+}
+
 interface ApiEvent {
   id: string;
-  type: "purchase.highlight" | "catalog.updated" | "live.updated" | string;
+  type: "purchase.highlight" | "catalog.updated" | "live.updated" | "listing.updated" | string;
   data?: {
     label?: string;
     message?: string;
     product?: { title?: string; image_url?: string; url?: string };
+    /** listing.updated: whose listings changed. */
+    user_id?: string | number;
   };
 }
+
+/** A Gattchaa user, from a redeemed sign-in ticket. */
+export interface GattchaaUser {
+  id: string;
+  displayName: string;
+}
+
+type Fetched = { body: unknown; etag?: string } | "not-modified" | undefined;
 
 /** Only plain http(s) links ever reach players (no javascript: URLs). */
 function safeUrl(raw: unknown): string {
@@ -101,6 +129,19 @@ function toProduct(p: ApiProduct): ShopProduct {
   };
 }
 
+function toListing(l: ApiListing): MarketListing {
+  return {
+    id: text(l.id, 40),
+    title: text(l.title, 160),
+    imageUrl: safeUrl(l.image_url),
+    price: Math.max(0, Math.round(Number(l.price) || 0)),
+    ...(l.condition && { condition: text(l.condition, 40) }),
+    ...(l.grade && { grade: text(l.grade, 40) }),
+    ...(l.category && { category: text(l.category, 60) }),
+    url: safeUrl(l.url),
+  };
+}
+
 function toRoom(r: ApiRoom): ShopRoom {
   return {
     code: r.code ? text(r.code, 40) : null,
@@ -127,9 +168,17 @@ export class GattchaaFeed {
   private seenEvents = new Set<string>();
   private pending = new Map<string, NodeJS.Timeout>();
   private listeners = new Set<(a: Announcement) => void>();
+  private listingCache = new Map<string, { at: number; etag?: string; listings: MarketListing[] }>();
+  private listingFetches = new Map<string, Promise<MarketListing[] | undefined>>();
+  private listingListeners = new Set<(userId: string) => void>();
 
   get enabled() {
     return API !== "";
+  }
+
+  /** Where "Sign in with Gattchaa" sends players; empty when the API isn't configured. */
+  get signInUrl() {
+    return this.enabled ? SIGNIN_URL : "";
   }
 
   start() {
@@ -166,22 +215,83 @@ export class GattchaaFeed {
     return this.rooms;
   }
 
-  /** GET with API key + ETag. Resolves undefined when unchanged (304) or on failure. */
-  private async get<T>(path: string): Promise<T | undefined> {
+  onListingsChanged(fn: (userId: string) => void): () => void {
+    this.listingListeners.add(fn);
+    return () => this.listingListeners.delete(fn);
+  }
+
+  /** GET with the API key, revalidating with an ETag when given one. Undefined on failure. */
+  private async fetchJson(path: string, etag?: string): Promise<Fetched> {
     const headers: Record<string, string> = { Accept: "application/json", Authorization: `Bearer ${API_KEY}` };
-    const etag = this.etags.get(path);
     if (etag) headers["If-None-Match"] = etag;
     try {
       const res = await fetch(`${API}${path}`, { headers, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
-      if (res.status === 304) return undefined;
+      if (res.status === 304) return "not-modified";
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const tag = res.headers.get("etag");
-      if (tag) this.etags.set(path, tag);
-      return (await res.json()) as T;
+      return { body: await res.json(), etag: res.headers.get("etag") ?? undefined };
     } catch (err) {
       console.warn(`[gattchaa] GET ${path} failed: ${(err as Error).message} (keeping last data)`);
       return undefined;
     }
+  }
+
+  /** GET with API key + ETag. Resolves undefined when unchanged (304) or on failure. */
+  private async get<T>(path: string): Promise<T | undefined> {
+    const res = await this.fetchJson(path, this.etags.get(path));
+    if (!res || res === "not-modified") return undefined;
+    if (res.etag) this.etags.set(path, res.etag);
+    return res.body as T;
+  }
+
+  /**
+   * Swaps a one-time sign-in ticket for the Gattchaa user it was made for.
+   * Null when the ticket is unknown, used or expired; throws when Gattchaa can't be reached.
+   */
+  async redeemTicket(ticket: string): Promise<GattchaaUser | null> {
+    if (!this.enabled) throw new Error("Gattchaa API not configured");
+    const res = await fetch(`${API}/tickets/redeem`, {
+      method: "POST",
+      headers: { Accept: "application/json", "Content-Type": "application/json", Authorization: `Bearer ${API_KEY}` },
+      body: JSON.stringify({ ticket }),
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    });
+    if (res.status === 404 || res.status === 410 || res.status === 422) return null;
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const body = (await res.json()) as { data?: { user_id?: unknown; display_name?: unknown } } | null;
+    const id = text(body?.data?.user_id, 40);
+    return id ? { id, displayName: text(body?.data?.display_name, 40) || "Collector" } : null;
+  }
+
+  /**
+   * A seller's marketplace listings. Cached for a minute, then revalidated with an
+   * ETag; one request per seller at a time. When Gattchaa can't be reached: the
+   * last known listings, or undefined if there are none.
+   */
+  listings(userId: string): Promise<MarketListing[] | undefined> {
+    const cached = this.listingCache.get(userId);
+    if (cached && Date.now() - cached.at < LISTINGS_TTL_MS) return Promise.resolve(cached.listings);
+    if (!this.enabled) return Promise.resolve(cached?.listings);
+    let pending = this.listingFetches.get(userId);
+    if (!pending) {
+      pending = this.fetchListings(userId).finally(() => this.listingFetches.delete(userId));
+      this.listingFetches.set(userId, pending);
+    }
+    return pending;
+  }
+
+  private async fetchListings(userId: string): Promise<MarketListing[] | undefined> {
+    const cached = this.listingCache.get(userId);
+    const res = await this.fetchJson(`/users/${encodeURIComponent(userId)}/listings`, cached?.etag);
+    if (res === "not-modified" && cached) {
+      cached.at = Date.now();
+      return cached.listings;
+    }
+    const data = res && res !== "not-modified" ? (res.body as { data?: ApiListing[] } | null)?.data : undefined;
+    if (!res || res === "not-modified" || !Array.isArray(data)) return cached?.listings;
+    const listings = data.map(toListing).filter((l) => l.title && l.url).slice(0, MAX_LISTINGS);
+    if (this.listingCache.size >= 500) this.listingCache.clear(); // far more sellers than a town has; just bounds memory
+    this.listingCache.set(userId, { at: Date.now(), etag: res.etag, listings });
+    return listings;
   }
 
   private async refreshCatalog() {
@@ -235,6 +345,16 @@ export class GattchaaFeed {
           url: safeUrl(e.data?.product?.url) || undefined,
         };
         for (const fn of this.listeners) fn(a);
+        break;
+      }
+      case "listing.updated": {
+        const userId = text(e.data?.user_id, 40);
+        if (!userId) return;
+        const cached = this.listingCache.get(userId);
+        if (cached) cached.at = 0; // the next read revalidates
+        this.soon(`listings:${userId}`, () => {
+          for (const fn of this.listingListeners) fn(userId);
+        });
         break;
       }
       default:

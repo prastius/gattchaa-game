@@ -23,6 +23,7 @@ sudo env PATH="$PATH" pm2 startup systemd -u "$USER" --hp "$HOME"
 # Reverse proxy + HTTPS
 sed "s/play.example.com/$DOMAIN/g" deploy/nginx.conf | sudo tee /etc/nginx/sites-available/my-world >/dev/null
 sudo ln -sf /etc/nginx/sites-available/my-world /etc/nginx/sites-enabled/my-world
+sudo cp deploy/nginx-gzip.conf /etc/nginx/conf.d/my-world-gzip.conf
 sudo nginx -t && sudo systemctl reload nginx
 sudo certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos --register-unsafely-without-email --redirect
 

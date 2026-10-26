@@ -47,6 +47,21 @@ export interface ShopSnapshot {
   updatedAt: number;
 }
 
+/** A card a player has listed on the Gattchaa marketplace (shown in their shop in town). */
+export interface MarketListing {
+  id: string;
+  title: string;
+  imageUrl: string;
+  price: number;
+  /** "Near Mint", "Played"… */
+  condition?: string;
+  /** "PSA 10", "BGS 9.5"… for graded cards. */
+  grade?: string;
+  category?: string;
+  /** The listing's page on the marketplace, where it's bought. */
+  url: string;
+}
+
 /** server -> client: a highlighted purchase or big pull on the website. */
 export interface Announcement {
   label: string;

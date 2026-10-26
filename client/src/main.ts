@@ -1,8 +1,10 @@
 import Phaser from "phaser";
 import { World } from "../../shared/world";
-import { sanitizeName } from "../../shared/protocol";
+import { sanitizeName, type AuthInfo } from "../../shared/protocol";
 import { LOOK_KEYS, decodeLook, encodeLook, randomLook } from "../../shared/appearance";
 import { joinWorld, Net } from "./net";
+import { Auth } from "./auth";
+import { Vending } from "./vending";
 import { preloadCharacterArt } from "./character";
 import { WorldScene, type WorldSceneData } from "./scenes/WorldScene";
 import { CharacterCreator } from "./ui/creator";
@@ -52,12 +54,61 @@ const errorEl = $("login-error");
 
 nameInput.value = stored(NAME_KEY) ?? "";
 // Looks saved by an older version (different field count) are discarded.
-const savedLook = stored(LOOK_KEY)?.split(".").length === LOOK_KEYS.length ? stored(LOOK_KEY) : null;
-const creator = new CharacterCreator($("creator"), savedLook ? decodeLook(savedLook) : randomLook());
+const validLook = (look: string | null | undefined): look is string => look?.split(".").length === LOOK_KEYS.length;
+const savedLook = stored(LOOK_KEY);
+let creator = new CharacterCreator($("creator"), validLook(savedLook) ? decodeLook(savedLook) : randomLook());
 preloadCharacterArt();
 
 // Shop data (products, rooms) starts loading right away so the town is stocked on arrival.
 const shop = new Shop();
+
+// ---------------------------------------------------------------- Gattchaa account (optional)
+
+const auth = new Auth();
+const accountEl = $("account");
+const accountStatus = $("account-status");
+const signInBtn = $<HTMLButtonElement>("signin-btn");
+const signOutBtn = $<HTMLButtonElement>("signout-btn");
+/** The game server is linked to Gattchaa, so signing in works. */
+let canSignIn = false;
+
+function renderAccount() {
+  accountEl.hidden = !auth.signedIn && !canSignIn;
+  signInBtn.hidden = auth.signedIn;
+  signOutBtn.hidden = !auth.signedIn;
+  if (auth.signedIn) {
+    const who = document.createElement("strong");
+    who.textContent = auth.displayName || "your Gattchaa account";
+    accountStatus.replaceChildren("Signed in as ", who, ". You can open a shop anywhere in town, and it stays open while you're away.");
+  } else {
+    accountStatus.textContent = "Playing as a guest. Sign in with your Gattchaa account to open your own shop in town.";
+  }
+}
+signInBtn.addEventListener("click", () => (location.href = auth.signInUrl));
+signOutBtn.addEventListener("click", async () => {
+  signOutBtn.disabled = true;
+  await auth.signOut();
+  signOutBtn.disabled = false;
+  renderAccount();
+});
+shop.onChange((data) => {
+  canSignIn = data.live;
+  renderAccount();
+});
+renderAccount();
+
+// Back from gattchaaoripa.com with ?ticket=…: finish signing in, and bring back the saved character.
+auth.completeSignIn().then((result) => {
+  if (typeof result === "string") errorEl.textContent = result;
+  if (result && typeof result === "object") {
+    nameInput.value = result.name || sanitizeName(result.displayName);
+    if (validLook(result.look)) {
+      creator.destroy();
+      creator = new CharacterCreator($("creator"), decodeLook(result.look));
+    }
+  }
+  renderAccount();
+});
 
 // Generate the world while the player picks their outfit (~0.5 s of CPU).
 let world: World | undefined;
@@ -73,7 +124,7 @@ $("login-form").addEventListener("submit", async (e) => {
   errorEl.textContent = "";
 
   try {
-    const room = await joinWorld({ name, look });
+    const room = await joinWorld({ name, look, token: auth.token ?? undefined });
     store(NAME_KEY, name);
     store(LOOK_KEY, look);
     creator.destroy();
@@ -96,9 +147,18 @@ function start(room: Awaited<ReturnType<typeof joinWorld>>, name: string) {
     $("disconnected-reason").textContent = reason;
     $("disconnected").hidden = false;
   });
-  const dialog = new TownDialog(shop);
+  room.onMessage("auth", (info: AuthInfo) => {
+    if (!info.expired) return;
+    auth.forget();
+    chat.addSystem("Your Gattchaa sign-in has expired. Sign in again on the start screen to open a shop.");
+  });
+  const vending = new Vending(room, auth);
+  const dialog = new TownDialog(shop, vending);
   const announcer = new Announcer(shop);
   net.onAnnounce.add((a) => announcer.show(a));
+  const showVending = () => hud.setVending(Boolean(vending.myShop));
+  vending.onChange.add(showVending);
+  showVending();
 
   $("login").hidden = true;
   hud.show();
@@ -128,7 +188,7 @@ function start(room: Awaited<ReturnType<typeof joinWorld>>, name: string) {
     game.scale.resize(nw, nh);
     game.scale.setZoom(1 / dpr);
   });
-  const data: WorldSceneData = { world, room, net, chat, hud, shop, dialog };
+  const data: WorldSceneData = { world, room, net, chat, hud, shop, dialog, vending };
   game.scene.add("world", WorldScene, true, data);
   game.events.once(Phaser.Core.Events.READY, () => {
     const scene = game.scene.getScene("world") as WorldScene;

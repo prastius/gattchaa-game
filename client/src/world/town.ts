@@ -9,6 +9,10 @@ import {
   BATTLE_HALL,
   HALL,
   HALL_CX,
+  BUNTING,
+  CAFE,
+  MARKET,
+  SOUTH_WALL_Y,
   TOWN_AREA,
   TOWN_CX,
   inRect,
@@ -19,6 +23,7 @@ import {
 import { NPCS, npcProducts } from "../../../shared/npcs";
 import { ROOM_MODES, type ShopProduct, type ShopRoom, type ShopSnapshot } from "../../../shared/gattchaa";
 import { FLOOR_TEX } from "./terrainTiles";
+import { GLOW, makeGlowTexture, type Light } from "./daylight";
 
 // Renders Gattchaa Town's buildings and furniture (LPC Revised art) and keeps
 // the "live" bits in sync with the shop: packs on the stall counters, a pack
@@ -28,8 +33,14 @@ const TOWN = `${import.meta.env.BASE_URL}assets/town/`;
 const BRAND = `${import.meta.env.BASE_URL}assets/gattchaa/`;
 
 const SHEETS = {
+  houseA: "town-house-a",
   houseB: "town-house-b",
   houseC: "town-house-c",
+  bench: "town-bench",
+  stoneSlab: "town-stone-slab",
+  tableRough: "town-table-rough",
+  bin: "town-bin",
+  campfire: "town-campfire",
   fountain: "town-fountain",
   vending: "town-vending",
   counter: "town-counter",
@@ -61,12 +72,27 @@ interface Art {
   rects: Rect[];
   /** Nudge the sprite's bottom edge relative to the footprint (px). */
   dy?: number;
+  /** Animated: every rect is a frame, played in a loop at this many frames per second. */
+  fps?: number;
 }
+
+const HOUSE_A: Rect = [24, 0, 208, 201];
+const HOUSE_B: Rect = [23, 0, 144, 192];
+const HOUSE_C: Rect = [0, 0, 160, 160];
 
 // Rectangles measured from each sheet's alpha channel.
 const ART: Record<PropType, Art> = {
-  kujiHouse: { tex: SHEETS.houseB, rects: [[23, 0, 144, 192]] },
-  gradingHouse: { tex: SHEETS.houseC, rects: [[0, 0, 160, 160]], dy: 4 },
+  kujiHouse: { tex: SHEETS.houseB, rects: [HOUSE_B] },
+  gradingHouse: { tex: SHEETS.houseC, rects: [HOUSE_C], dy: 4 },
+  houseA: { tex: SHEETS.houseA, rects: [HOUSE_A], dy: 8 },
+  houseB: { tex: SHEETS.houseB, rects: [HOUSE_B] },
+  houseC: { tex: SHEETS.houseC, rects: [HOUSE_C], dy: 4 },
+  // Long cushioned benches in eight colours.
+  bench: { tex: SHEETS.bench, rects: [69, 101].flatMap((y) => [4, 68, 132, 196].map((x): Rect => [x, y, 57, 22])), dy: -5 },
+  stoneSeat: { tex: SHEETS.stoneSlab, rects: [[0, 16, 64, 26], [0, 80, 64, 33]], dy: -3 },
+  picnicTable: { tex: SHEETS.tableRough, rects: [[8, 22, 80, 42], [8, 86, 80, 42], [8, 150, 80, 42]], dy: -4 },
+  campfire: { tex: SHEETS.campfire, rects: [0, 32, 64, 96].map((x): Rect => [x, 32, 32, 32]), dy: 2, fps: 8 },
+  bin: { tex: SHEETS.bin, rects: [0, 64].flatMap((y) => [9, 73, 137].map((x): Rect => [x, y, 14, 31])), dy: -3 },
   fountain: { tex: SHEETS.fountain, rects: [[0, 0, 64, 80]], dy: 6 },
   machine: { tex: SHEETS.vending, rects: [[16, 0, 32, 64], [112, 0, 32, 64]], dy: 2 },
   counter: { tex: SHEETS.counter, rects: [[96, 140, 96, 46]], dy: 4 },
@@ -101,11 +127,58 @@ const WINDOW_BODY = (c: number): Rect => [c * 32, 34, 32, 62];
 const WINDOW_DAY = 1;
 const WINDOW_LIT = 2;
 
+/** The glass in each townhouse's windows (sheet pixels), lit up warm at night. */
+const HOUSE_WINDOWS: Partial<Record<string, Rect[]>> = {
+  [SHEETS.houseA]: [[116, 130, 24, 25], [180, 98, 24, 25]],
+  [SHEETS.houseB]: [[50, 132, 28, 35], [85, 79, 24, 17]],
+  [SHEETS.houseC]: [[33, 77, 41, 27]],
+};
+const LIT = "-lit";
+
+/**
+ * A copy of a house sheet holding only its window glass, recoloured to warm
+ * lamplight (top bright, bottom deeper). Drawn additively over the night tint,
+ * so windows glow, and a player passing in front is lit up rather than covered.
+ */
+function makeLitWindows(scene: Phaser.Scene, tex: string, windows: Rect[]) {
+  const src = scene.textures.get(tex).getSourceImage() as HTMLImageElement;
+  const canvas = document.createElement("canvas");
+  canvas.width = src.width;
+  canvas.height = src.height;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
+  ctx.drawImage(src, 0, 0);
+  const out = ctx.createImageData(src.width, src.height);
+  const from = ctx.getImageData(0, 0, src.width, src.height).data;
+  for (const [x0, y0, w, h] of windows) {
+    for (let y = y0; y < y0 + h; y++) {
+      const k = (y - y0) / Math.max(1, h - 1);
+      for (let x = x0; x < x0 + w; x++) {
+        const i = (y * src.width + x) * 4;
+        // Only the dark glass, not the frames and glazing bars.
+        if (from[i + 3] === 0 || from[i] + from[i + 1] + from[i + 2] > 120) continue;
+        out.data[i] = 255;
+        out.data[i + 1] = Math.round(222 - 70 * k);
+        out.data[i + 2] = Math.round(140 - 90 * k);
+        out.data[i + 3] = 255;
+      }
+    }
+  }
+  ctx.putImageData(out, 0, 0);
+  const lit = scene.textures.addCanvas(tex + LIT, canvas)!;
+  windows.forEach((r, i) => lit.add(`w${i}`, 0, ...r));
+}
+
 
 export function preloadTown(scene: Phaser.Scene) {
   const files: Record<string, string> = {
+    [SHEETS.houseA]: "house-a.png",
     [SHEETS.houseB]: "house-b.png",
     [SHEETS.houseC]: "house-c.png",
+    [SHEETS.bench]: "bench.png",
+    [SHEETS.stoneSlab]: "stone-slab.png",
+    [SHEETS.tableRough]: "table-rough.png",
+    [SHEETS.bin]: "bin.png",
+    [SHEETS.campfire]: "campfire.png",
     [SHEETS.fountain]: "fountain.png",
     [SHEETS.vending]: "vending.png",
     [SHEETS.counter]: "counter.png",
@@ -164,8 +237,8 @@ interface LiveSlot {
 
 export class Town {
   readonly hotspots: Hotspot[] = [];
-  /** Outdoor lamp heads, for the night glow. */
-  readonly lights: { x: number; y: number }[] = [];
+  /** Outdoor lamp heads and fires, for the night glow. */
+  readonly lights: Light[] = [];
   /** Lamplit window panes, faded in at night. */
   readonly nightWindows: Phaser.GameObjects.Image[] = [];
   private stallSlots = new Map<string, LiveSlot[]>();
@@ -193,9 +266,14 @@ export class Town {
     PORTRAITS.forEach((r, i) => scene.textures.get(SHEETS.portraits).add(`portrait:${i}`, 0, ...r));
     scene.textures.get(SHEETS.wallLights).add("torch", 0, ...TORCH);
     scene.textures.get(SHEETS.curtains).add("swag", 0, ...SWAG);
+    makeGlowTexture(scene);
+    for (const [tex, windows] of Object.entries(HOUSE_WINDOWS)) {
+      if (windows && !scene.textures.exists(tex + LIT)) makeLitWindows(scene, tex, windows);
+    }
     for (const p of PROPS) this.place(p);
     this.facades();
     this.decorate();
+    this.bunting();
     this.decorateInterior();
     for (const d of DOORS) {
       const t = d.trigger;
@@ -218,13 +296,21 @@ export class Town {
     const art = ART[p.type];
     const { x, y } = propAnchor(p);
     const variant = (p.variant ?? 0) % art.rects.length;
-    const r = art.rects[variant];
     const by = y + (art.dy ?? 0);
-    this.scene.add.image(x, by, art.tex, `${r[0]},${r[1]},${variant}`).setOrigin(0.5, 1).setDepth(by);
+    const frame = (i: number) => `${art.rects[i][0]},${art.rects[i][1]},${i}`;
+    const image = this.scene.add.image(x, by, art.tex, frame(art.fps ? 0 : variant)).setOrigin(0.5, 1).setDepth(by).setFlipX(Boolean(p.flip));
+    if (art.fps) {
+      // Flickering flames: step through the frames, each prop starting at its own point.
+      let i = (p.x * 7 + p.y * 3) % art.rects.length;
+      this.scene.time.addEvent({ delay: 1000 / art.fps, loop: true, callback: () => image.setFrame(frame((i = (i + 1) % art.rects.length))) });
+    }
+    this.litWindows(p, art, x, by);
 
     const [kind, id] = (p.tag ?? "").split(":");
-    if (p.type === "fountain") this.fountain = { x, y: by - 40 };
+    // Fireworks go over the first fountain: the one in the plaza.
+    if (p.type === "fountain" && !this.fountain.x) this.fountain = { x, y: by - 40 };
     if (p.type === "lamp") this.lights.push({ x, y: by - 70 });
+    if (p.type === "campfire") this.lights.push({ x, y: by - 12, fire: true });
 
     if (kind === "machine") {
       const m = MACHINES.find((mm) => mm.id === id)!;
@@ -282,6 +368,30 @@ export class Town {
     }
   }
 
+  /** A house's windows, lit at night (faded in by Daylight with the lamps), with a soft glow round each. */
+  private litWindows(p: Prop, art: Art, x: number, by: number) {
+    const windows = HOUSE_WINDOWS[art.tex];
+    if (!windows) return;
+    const [ax, ay, aw, ah] = art.rects[0];
+    const left = x - aw / 2;
+    const top = by - ah;
+    windows.forEach(([wx, wy, ww, wh], i) => {
+      // Mirrored houses have their windows on the other side.
+      const lx = p.flip ? aw - (wx - ax) - ww : wx - ax;
+      const pane = this.scene.add
+        .image(left + lx, top + (wy - ay), art.tex + LIT, `w${i}`)
+        .setOrigin(0, 0)
+        .setFlipX(Boolean(p.flip))
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const glow = this.scene.add
+        .image(left + lx + ww / 2, top + (wy - ay) + wh / 2, GLOW)
+        .setDisplaySize(ww * 2.6, wh * 2.6)
+        .setTint(0x8a6a3a)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      for (const img of [glow, pane]) this.nightWindows.push(img.setDepth(1e6 - 8).setAlpha(0).setVisible(false));
+    });
+  }
+
   /** Doors, windows and banners on the palace and the towers (all on solid stone, so behind everyone). */
   private facades() {
     const depth = -0.5;
@@ -308,6 +418,36 @@ export class Town {
         this.scene.add.image(f.x, f.y, SHEETS.curtains, "swag").setOrigin(0.5, 1).setDepth(depth + 0.05);
       } else {
         this.banner(f.x, f.y, depth + 0.1);
+      }
+    }
+  }
+
+  /** Strings of little flags between lamp posts over the Market Square, sagging a bit in the middle. */
+  private bunting() {
+    const colors = [0xeb8224, 0xfff4e0, 0x2ec4b6, 0xf2c14e, 0xe8505b, 0x4f8ff7];
+    for (const [a, b] of BUNTING) {
+      // Hung just under the lamp heads.
+      const ax = (a.x + 0.5) * 32;
+      const bx = (b.x + 0.5) * 32;
+      const ay = (a.y + 1) * 32 - 66;
+      const by = (b.y + 1) * 32 - 66;
+      const len = Math.hypot(bx - ax, by - ay);
+      const sag = Math.min(16, len * 0.07);
+      const at = (t: number) => ({ x: Math.round(ax + (bx - ax) * t), y: Math.round(ay + (by - ay) * t + sag * 4 * t * (1 - t)) });
+      // In front of anyone standing behind the posts, behind anyone in front of them.
+      const g = this.scene.add.graphics().setDepth(Math.max(a.y, b.y) * 32 + 31);
+      g.lineStyle(1, 0x4a3520, 1).beginPath();
+      const steps = Math.ceil(len / 6);
+      for (let i = 0; i <= steps; i++) {
+        const p = at(i / steps);
+        if (i === 0) g.moveTo(p.x, p.y);
+        else g.lineTo(p.x, p.y);
+      }
+      g.strokePath();
+      const flags = Math.floor(len / 10);
+      for (let i = 1; i < flags; i++) {
+        const p = at(i / flags);
+        g.fillStyle(colors[(i + a.x + a.y) % colors.length], 1).fillTriangle(p.x - 3, p.y, p.x + 4, p.y, p.x, p.y + 7);
       }
     }
   }
@@ -348,8 +488,8 @@ export class Town {
     // The south gate: a stone lintel between the towers that you walk under.
     const gx0 = (TOWN_CX - 3) * 32;
     const gx1 = (TOWN_CX + 3) * 32;
-    const gy = 216 * 32 - 6;
-    const lintelDepth = 218 * 32 + 40; // in front of anyone walking through
+    const gy = SOUTH_WALL_Y * 32 - 6;
+    const lintelDepth = (SOUTH_WALL_Y + 2) * 32 + 40; // in front of anyone walking through
     const lintel = this.scene.add.graphics().setDepth(lintelDepth);
     lintel.fillStyle(0x4b4b60, 1).fillRect(gx0 - 4, gy, gx1 - gx0 + 8, 30);
     lintel.fillStyle(0xa89a8c, 1).fillRect(gx0 - 3, gy + 1, gx1 - gx0 + 6, 18);
@@ -380,6 +520,14 @@ export class Town {
     const dx = (Math.min(...deck.map((d) => d.x)) + Math.max(...deck.map((d) => d.x))) / 2;
     const dy = Math.min(...deck.map((d) => d.y)) - 72;
     this.sign(dx, dy, "ROOMS · SHARING PACK & PACKS BATTLE", dy + 40, 8);
+
+    // The Market Square's name over each half, where the lanes and the avenue come in.
+    const my = MARKET.y * 32 + 2;
+    for (const mx of [(MARKET.x + (TOWN_CX - 3 - MARKET.x) / 2) * 32, (TOWN_CX + 3 + (MARKET.x + MARKET.w - TOWN_CX - 3) / 2) * 32]) {
+      this.sign(mx, my, "MARKET SQUARE · PLAYER SHOPS", my + 8, 9);
+    }
+    // Over the café's front wall (the café is the house at the top of its terrace).
+    this.sign((CAFE.x + CAFE.w / 2) * 32, CAFE.y * 32 - 70, "COLLECTORS' CAFÉ", CAFE.y * 32 + 9, 9);
   }
 
   /** The palace hall: the crest above the throne, plaques by the door, the Battle Hall sign. */

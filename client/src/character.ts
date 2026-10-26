@@ -6,12 +6,24 @@ import { ITEM_FIELDS, bodyName, decodeLook, isHidden, type ItemField } from "../
 
 export const FRAME = 64;
 export const WALK_COLS = 9; // column 0 = standing, 1..8 = walk cycle
-export const SHEET_W = FRAME * WALK_COLS;
+/** One sitting pose after the walk cycle: resting, or minding a shop. */
+export const SIT_COL = WALK_COLS;
+export const SHEET_COLS = WALK_COLS + 1;
+export const SHEET_W = FRAME * SHEET_COLS;
 export const SHEET_H = FRAME * 4; // rows: up, left, down, right
+
+/**
+ * LPC sit sheets hold three poses (one knee up, legs folded to one side, on a
+ * chair). Men sit with a knee up, women with their legs folded to the side.
+ */
+const SIT_POSE: Record<string, number> = { male: 0, female: 1 };
+/** How far the head drops when seated (px), facing up, left, down, right; measured from the LPC heads. */
+const SIT_DROP: Record<string, readonly number[]> = { male: [10, 8, 2, 9], female: [9, 8, 7, 9] };
+export const sitDrop = (body: string, dir: number) => (SIT_DROP[body] ?? SIT_DROP.male)[dir] ?? 8;
 
 interface LayerDef {
   z: number;
-  files: Record<string, { walk: string; idle?: string }>;
+  files: Record<string, { walk?: string; sit?: string }>;
 }
 interface ItemDef {
   category: string;
@@ -19,6 +31,8 @@ interface ItemDef {
   name: string;
   materials: string[];
   layers: LayerDef[];
+  /** Stand-in sitting layers for items that have no sit frames of their own. */
+  sitLayers?: LayerDef[];
 }
 interface Manifest {
   items: ItemDef[];
@@ -100,8 +114,12 @@ function recolor(file: string, map: Map<number, number>): Promise<CanvasImageSou
   return p;
 }
 
-/** Composes the walk sheet (576x256) for an encoded look. */
-export async function composeCharacter(lookStr: string, target?: HTMLCanvasElement): Promise<HTMLCanvasElement> {
+/**
+ * Composes the sprite sheet for an encoded look: the walk cycle (576x256), plus
+ * the body's sitting pose to its right when `sit` is set (640x256). Previews
+ * that only walk skip the sitting layers and their downloads.
+ */
+export async function composeCharacter(lookStr: string, opts: { sit?: boolean } = {}): Promise<HTMLCanvasElement> {
   const m = await loadManifest();
   const look = decodeLook(lookStr);
   const body = bodyName(look);
@@ -130,7 +148,9 @@ export async function composeCharacter(lookStr: string, target?: HTMLCanvasEleme
     if (choice) picks.push([item(field, choice.id), colors[field]]);
   }
 
-  const layers: { z: number; src: Promise<CanvasImageSource> }[] = [];
+  // `pose`: which column of an LPC sit sheet to copy into the sitting column.
+  const layers: { z: number; pose?: number; src: Promise<CanvasImageSource> }[] = [];
+  const pose = SIT_POSE[body] ?? 0;
   for (const [it, choice] of picks) {
     if (!it) continue;
     const map = colorMap(m, it, choice);
@@ -138,16 +158,23 @@ export async function composeCharacter(lookStr: string, target?: HTMLCanvasEleme
       const file = layer.files[body]?.walk;
       if (file) layers.push({ z: layer.z, src: recolor(file, map) });
     }
+    if (!opts.sit) continue;
+    for (const layer of it.sitLayers ?? it.layers) {
+      const file = layer.files[body]?.sit;
+      if (file) layers.push({ z: layer.z, pose, src: recolor(file, map) });
+    }
   }
   layers.sort((a, b) => a.z - b.z);
   const sources = await Promise.all(layers.map((l) => l.src));
 
-  const canvas = target ?? document.createElement("canvas");
-  canvas.width = SHEET_W;
+  const canvas = document.createElement("canvas");
+  canvas.width = opts.sit ? SHEET_W : WALK_COLS * FRAME;
   canvas.height = SHEET_H;
   const ctx = canvas.getContext("2d")!;
-  ctx.clearRect(0, 0, SHEET_W, SHEET_H);
-  for (const src of sources) ctx.drawImage(src, 0, 0);
+  layers.forEach((l, i) => {
+    if (l.pose === undefined) ctx.drawImage(sources[i], 0, 0);
+    else ctx.drawImage(sources[i], l.pose * FRAME, 0, FRAME, SHEET_H, SIT_COL * FRAME, 0, FRAME, SHEET_H);
+  });
   return canvas;
 }
 
@@ -155,7 +182,7 @@ export async function composeCharacter(lookStr: string, target?: HTMLCanvasEleme
 export async function preloadCharacterArt(): Promise<void> {
   const m = await loadManifest();
   await Promise.all(
-    m.items.flatMap((i) => i.layers.flatMap((l) => Object.values(l.files).map((f) => loadImage(f.walk).catch(() => undefined)))),
+    m.items.flatMap((i) => i.layers.flatMap((l) => Object.values(l.files).map((f) => f.walk && loadImage(f.walk).catch(() => undefined)))),
   );
 }
 

@@ -1,21 +1,24 @@
 import Phaser from "phaser";
 import { Callbacks, type Room } from "@colyseus/sdk";
-import { CHUNK_TILES, PLAYER_SPEED, TILE_SIZE, WORLD_PX_H, WORLD_PX_W, hash2, type World } from "../../../shared/world";
-import { Dir, NET_SEND_HZ, VIEW_RADIUS, type MoveMessage, type PlayerView } from "../../../shared/protocol";
+import { CHUNK_TILES, PLAYER_SPEED, TILE_SIZE, WORLD_PX_H, WORLD_PX_W, hash2, isWet, type World } from "../../../shared/world";
+import { Dir, EMOTES, EMOTE_COOLDOWN_MS, NET_SEND_HZ, VIEW_RADIUS, type MoveMessage, type PlayerView, type SitMessage } from "../../../shared/protocol";
 import { NPCS, type NpcDef } from "../../../shared/npcs";
 import { DOORS, INTERIOR_ZONE, PROPS, TOWN_AREA, inRect } from "../../../shared/town";
 import { CharacterTextures, PlayerSprite } from "../PlayerSprite";
 import { ATLAS_MARGIN, ATLAS_SPACING, FLOOR_TEX, buildTerrainAtlas, floorCell, structKey, tileCells, type TerrainAtlas } from "../world/terrainTiles";
 import { WORLD_TEX, createDecor, registerDecorFrames, type DecorSprite } from "../world/decorSprites";
 import { Town, preloadTown, type Hotspot } from "../world/town";
+import { SELLER_BUBBLE_LIFT, Shops } from "../world/shops";
 import { Interpolator, ServerClock } from "../interp";
 import { Daylight } from "../world/daylight";
+import { Critters } from "../world/ambience";
 import { audio } from "../audio";
 import type { ChatUI } from "../ui/chat";
 import type { HUD } from "../ui/hud";
 import type { Net } from "../net";
 import type { Shop } from "../shop";
 import type { TownDialog } from "../ui/dialog";
+import type { Vending } from "../vending";
 
 export interface WorldSceneData {
   world: World;
@@ -25,11 +28,14 @@ export interface WorldSceneData {
   hud: HUD;
   shop: Shop;
   dialog: TownDialog;
+  vending: Vending;
 }
 
 interface Chunk {
   map: Phaser.Tilemaps.Tilemap;
   decor: DecorSprite[];
+  /** Animated touches: glints on the water. */
+  fx: Phaser.GameObjects.Sprite[];
 }
 
 /** Synced fields shared by players and NPCs (live schema instances, mutated in place by the SDK). */
@@ -59,6 +65,13 @@ const ZOOM_KEY = "my-world:zoom";
 const ZOOM_IN_STEPS = 2;
 /** Wheel delta per zoom step (one mouse notch is ~100; trackpads send many small deltas). */
 const WHEEL_STEP = 100;
+/** Matches the server's sit cooldown (250 ms) with room to spare. */
+const SIT_TOGGLE_MS = 300;
+const VENDING_HINT_MS = 4000;
+/** Water glints (LPC Revised "Water Reflections"): 32 px frames, shimmer lines then small sparkles. */
+const WATER_FX = "water-fx";
+/** Share of open-water tiles with a glint. */
+const GLINT_CHANCE = 0.045;
 
 /**
  * Integer zoom keeps every art pixel the same size (no shimmer when scrolling).
@@ -102,16 +115,25 @@ export class WorldScene extends Phaser.Scene {
   private hud!: HUD;
   private shop!: Shop;
   private dialog!: TownDialog;
+  private vending!: Vending;
 
   private charTextures!: CharacterTextures;
   private atlas!: TerrainAtlas;
   private town!: Town;
+  /** Player shops: rugs, signs, and the look-alikes of sellers who are away. */
+  private playerShops!: Shops;
+  /** Session ids of players minding their shop (their chat bubbles go above the sign). */
+  private sellers = new Set<string>();
+  private sitToggledAt = 0;
+  private emotedAt = 0;
+  private vendingHintAt = 0;
+  private wasVending = false;
   private entities = new Map<string, Entity>();
   private npcs = new Map<string, Entity>();
   private clock = new ServerClock();
   private self?: PlayerSprite;
   private chunks = new Map<string, Chunk>();
-  private keys!: Record<"up" | "down" | "left" | "right" | "w" | "a" | "s" | "d" | "e", Phaser.Input.Keyboard.Key>;
+  private keys!: Record<"up" | "down" | "left" | "right" | "w" | "a" | "s" | "d" | "e" | "x" | "v", Phaser.Input.Keyboard.Key>;
   private lastSent = { x: 0, y: 0, dir: Dir.Down as number, moving: false, at: 0 };
   private hudAt = 0;
   private zoom = 1;
@@ -123,6 +145,8 @@ export class WorldScene extends Phaser.Scene {
   /** The current press opened something, so it must not also walk. */
   private pointerUsed = false;
   private daylight!: Daylight;
+  /** Butterflies by day, fireflies at night. */
+  private critters!: Critters;
   /** Inside the Gattchaa store (the interior zone)? */
   private indoors = false;
   private doorPendingUntil = 0;
@@ -142,6 +166,7 @@ export class WorldScene extends Phaser.Scene {
     this.load.image(WORLD_TEX.flowers, `${ASSETS}flowers.png`);
     this.load.image(WORLD_TEX.rocks, `${ASSETS}rocks.png`);
     preloadTown(this);
+    this.load.spritesheet(WATER_FX, `${import.meta.env.BASE_URL}assets/town/water-fx.png`, { frameWidth: 32, frameHeight: 32 });
     this.load.setCORS("anonymous"); // product thumbnails come from the shop (needs CORS there)
   }
 
@@ -163,6 +188,11 @@ export class WorldScene extends Phaser.Scene {
     }
     this.atlas = buildTerrainAtlas(this, WORLD_TEX.terrain, ATLAS_KEY, structs);
     registerDecorFrames(this);
+    if (!this.anims.exists("glint-a")) {
+      this.anims.create({ key: "glint-a", frames: this.anims.generateFrameNumbers(WATER_FX, { start: 0, end: 3 }), frameRate: 6, repeat: -1 });
+      this.anims.create({ key: "glint-b", frames: this.anims.generateFrameNumbers(WATER_FX, { start: 4, end: 7 }), frameRate: 7, repeat: -1 });
+    }
+    this.critters = new Critters(this, this.world);
 
     const cam = this.cameras.main;
     cam.setBounds(0, 0, WORLD_PX_W, WORLD_PX_H);
@@ -174,19 +204,46 @@ export class WorldScene extends Phaser.Scene {
     this.daylight = new Daylight(this, this.town.lights, this.town.nightWindows);
     this.shop.onChange((data) => this.town.update(data, this.shop.openRooms));
 
+    this.playerShops = new Shops(this, this.charTextures, () => this.textRes);
+    const syncShops = () => {
+      this.playerShops.sync(this.vending);
+      this.sellers.clear();
+      const spots: { x: number; y: number }[] = [];
+      this.vending.forEach((s) => {
+        if (s.owner) this.sellers.add(s.owner);
+        spots.push(s);
+      });
+      this.hud.setShops(spots);
+    };
+    this.vending.onChange.add(syncShops);
+    syncShops();
+    // The open-a-shop panel checks the spot you're standing on as you move.
+    this.dialog.selfPosition = () => this.self && { x: this.self.x, y: this.self.y };
+
     const K = Phaser.Input.Keyboard.KeyCodes;
     // enableCapture=false so the browser still delivers these keys to the chat input.
     this.keys = this.input.keyboard!.addKeys(
-      { up: K.UP, down: K.DOWN, left: K.LEFT, right: K.RIGHT, w: K.W, a: K.A, s: K.S, d: K.D, e: K.E },
+      { up: K.UP, down: K.DOWN, left: K.LEFT, right: K.RIGHT, w: K.W, a: K.A, s: K.S, d: K.D, e: K.E, x: K.X, v: K.V },
       false,
     ) as typeof this.keys;
     this.keys.e.on("down", () => {
-      if (this.chat.isFocused()) return;
+      if (this.typing()) return;
       if (this.dialog.isOpen) this.dialog.close();
       else if (this.focus) this.use(this.focus.target, this.focus);
     });
+    this.keys.x.on("down", () => {
+      if (!this.typing()) this.toggleSit();
+    });
+    this.keys.v.on("down", () => {
+      if (!this.typing()) this.openShopPanel();
+    });
+    this.hud.onSit(() => this.toggleSit());
+    this.hud.onShop(() => this.openShopPanel());
+    this.hud.onEmote((e) => this.emote(e));
     this.input.on("pointerdown", (p: Phaser.Input.Pointer) => {
       this.chat.blur();
+      // Clicking the world leaves any text box (a shop title…), so the game keys work again.
+      if (this.typing()) (document.activeElement as HTMLElement | null)?.blur();
       // Only a left click or a tap uses things; right/middle click does nothing.
       this.pointerUsed = p.button === 0 && this.tryUse(p);
     });
@@ -200,9 +257,11 @@ export class WorldScene extends Phaser.Scene {
     });
     this.input.keyboard!.on("keydown", (e: KeyboardEvent) => {
       // Ctrl/Cmd +/- stays the browser's page zoom.
-      if (this.chat.isFocused() || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (this.typing() || e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.key === "+" || e.key === "=") this.zoomBy(1);
       else if (e.key === "-" || e.key === "_") this.zoomBy(-1);
+      // 1-9 and 0: the emotes, in picker order.
+      else if (/^[0-9]$/.test(e.key)) this.emote((Number(e.key) + 9) % 10);
     });
     this.hud.onZoom((step) => this.zoomBy(step));
     this.input.on("pointerup", () => (this.pointerUsed = false));
@@ -324,6 +383,7 @@ export class WorldScene extends Phaser.Scene {
 
     this.net.onBubble = (sessionId, text) => this.entities.get(sessionId)?.sprite.say(text);
     this.net.onNpcSay = ({ id, text }) => this.npcs.get(id)?.sprite.say(text);
+    this.net.onEmote = (sessionId, e) => this.entities.get(sessionId)?.sprite.emote(EMOTES[e] ?? "❓");
     this.net.onAnnounce.add(() => this.celebrate());
     this.net.onCorrect = ({ x, y, dir }) => {
       if (!this.self) return;
@@ -372,10 +432,16 @@ export class WorldScene extends Phaser.Scene {
       sprite.dir = p.dir;
       // Legs move while actually moving (>15 px/s), so stops look like stops.
       sprite.moving = step > (15 * dt) / 1000;
+      // Sit once they've arrived (the sit flag can land a frame before the last step).
+      sprite.sitting = Boolean(s.sit) && !sprite.moving;
       sprite.setLook(s.look);
       sprite.animate();
     };
-    for (const [id, e] of this.entities) if (id !== this.room.sessionId) drive(e);
+    for (const [id, e] of this.entities) {
+      if (id === this.room.sessionId) continue;
+      drive(e);
+      e.sprite.bubbleLift = this.sellers.has(id) ? SELLER_BUBBLE_LIFT : 0;
+    }
     for (const e of this.npcs.values()) {
       drive(e);
       this.faceVisitor(e);
@@ -384,6 +450,7 @@ export class WorldScene extends Phaser.Scene {
 
     this.updateIndoors();
     this.daylight.update(time, this.indoors);
+    this.critters.update(time, dt, this.cameras.main.worldView, this.daylight.night, this.indoors);
     audio.calm = this.indoors || this.daylight.night;
     if (this.doorPendingUntil && performance.now() > this.doorPendingUntil) {
       // The server said no (or lag): don't leave the screen black.
@@ -422,7 +489,7 @@ export class WorldScene extends Phaser.Scene {
     let dx = 0;
     let dy = 0;
 
-    if (!this.chat.isFocused()) {
+    if (!this.typing()) {
       const k = this.keys;
       if (k.left.isDown || k.a.isDown) dx -= 1;
       if (k.right.isDown || k.d.isDown) dx += 1;
@@ -443,9 +510,27 @@ export class WorldScene extends Phaser.Scene {
       }
     }
 
+    const vending = Boolean(this.vending.myShop);
+    if (this.wasVending && !vending) self.sitting = false; // shop closed: stand up
+    this.wasVending = vending;
+    self.bubbleLift = vending ? SELLER_BUBBLE_LIFT : 0;
+    if (vending) {
+      // Minding your shop: seated on its rug, facing the street, until you close it.
+      self.sitting = true;
+      self.dir = Dir.Down;
+      self.moving = false;
+      self.animate();
+      if ((dx || dy) && time - this.vendingHintAt > VENDING_HINT_MS) {
+        this.vendingHintAt = time;
+        this.chat.addSystem("You're minding your shop. Close it (My shop, or V) to walk around.");
+      }
+      return;
+    }
+
     const len = Math.hypot(dx, dy);
     let moving = false;
     if (len > 0) {
+      self.sitting = false; // walking gets you up (the server does the same)
       const step = (PLAYER_SPEED * dt) / 1000;
       const next = this.world.move(self.x, self.y, (dx / len) * step, (dy / len) * step);
       moving = next.x !== self.x || next.y !== self.y;
@@ -477,9 +562,50 @@ export class WorldScene extends Phaser.Scene {
 
   // ---------------------------------------------------------------- interaction
 
-  /** NPCs (where they are right now) plus the town's fixed hotspots. */
+  /** Typing in the chat or any other text box (a shop title…): game keys are off. */
+  private typing(): boolean {
+    const el = document.activeElement as HTMLElement | null;
+    return this.chat.isFocused() || Boolean(el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)));
+  }
+
+  /** Shows an emote over your head (the server allows one a second). */
+  private emote(e: number) {
+    const now = performance.now();
+    if (!this.self || now - this.emotedAt < EMOTE_COOLDOWN_MS) return;
+    this.emotedAt = now;
+    this.net.sendEmote(e);
+    audio.blip();
+  }
+
+  /** Sits down where you stand, or gets up. */
+  private toggleSit() {
+    const self = this.self;
+    const now = performance.now();
+    if (!self || this.vending.myShop || now - this.sitToggledAt < SIT_TOGGLE_MS) return;
+    this.sitToggledAt = now;
+    self.sitting = !self.sitting;
+    self.moving = false;
+    self.animate();
+    this.room.send("sit", { on: self.sitting } satisfies SitMessage);
+  }
+
+  /**
+   * "Open shop" (V): your shop's panel if it's open, otherwise the form to open
+   * one right here (or how to sign in, for guests).
+   */
+  private openShopPanel() {
+    const self = this.self;
+    if (!self) return;
+    const mine = this.vending.myShop;
+    const shop = mine && this.vending.shop(mine);
+    if (shop) this.use(`shop:${mine}`, shop);
+    else if (this.dialog.isOpen && this.dialog.target === "vend") this.dialog.close();
+    else this.dialog.open("vend", { x: self.x, y: self.y });
+  }
+
+  /** NPCs (where they are right now) plus the town's fixed hotspots and the player shops. */
   private hotspots(): Hotspot[] {
-    const list: Hotspot[] = [...this.town.hotspots];
+    const list: Hotspot[] = [...this.town.hotspots, ...this.playerShops.hotspots];
     for (const [id, e] of this.npcs) {
       const { x, y } = e.sprite;
       list.push({
@@ -498,7 +624,7 @@ export class WorldScene extends Phaser.Scene {
   private updateFocus() {
     const self = this.self;
     let best: Hotspot | undefined;
-    if (self && !this.chat.isFocused()) {
+    if (self && !this.typing()) {
       let bestD = TALK_RANGE;
       for (const h of this.hotspots()) {
         const d = Math.hypot(h.x - self.x, h.y - self.y);
@@ -600,6 +726,7 @@ export class WorldScene extends Phaser.Scene {
       d.image.destroy();
       d.shadow?.destroy();
     }
+    for (const s of chunk.fx) s.destroy();
   }
 
   /** Fireworks over the fountain when someone pulls a hit on Gattchaa. */
@@ -701,6 +828,7 @@ export class WorldScene extends Phaser.Scene {
     let hasOverlay = false;
     let hasFloor = false;
     const decor: DecorSprite[] = [];
+    const fx: Phaser.GameObjects.Sprite[] = [];
 
     for (let y = 0; y < h; y++) {
       const gRow: number[] = [];
@@ -729,6 +857,15 @@ export class WorldScene extends Phaser.Scene {
             hash2(tx, ty, world.seed + 12),
           );
           if (sprite) decor.push(sprite);
+        } else if (hash2(tx, ty, world.seed + 61) < GLINT_CHANCE && world.corners(tx, ty).every(isWet)) {
+          // Sunlight glinting on open water, each at its own pace.
+          const pick = hash2(tx, ty, world.seed + 62);
+          const glint = this.add
+            .sprite(tx * TILE_SIZE + TILE_SIZE / 2, ty * TILE_SIZE + TILE_SIZE / 2, WATER_FX)
+            .setDepth(-1.5)
+            .setAlpha(0.75)
+            .play({ key: pick < 0.5 ? "glint-a" : "glint-b", delay: pick * 3000, repeatDelay: 1200 + pick * 2600 });
+          fx.push(glint);
         }
       }
       ground.push(gRow);
@@ -743,6 +880,6 @@ export class WorldScene extends Phaser.Scene {
     map.createBlankLayer("ground", tileset, px, py)!.putTilesAt(ground, 0, 0).setDepth(-3);
     if (hasOverlay) map.createBlankLayer("overlay", tileset, px, py)!.putTilesAt(overlay, 0, 0).setDepth(-2);
     if (hasFloor) map.createBlankLayer("floor", tileset, px, py)!.putTilesAt(floor, 0, 0).setDepth(-1);
-    return { map, decor };
+    return { map, decor, fx };
   }
 }

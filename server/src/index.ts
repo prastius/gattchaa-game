@@ -1,11 +1,12 @@
 import fs from "node:fs";
 import { monitorEventLoopDelay } from "node:perf_hooks";
 import { fileURLToPath } from "node:url";
-import express from "express";
 import { defineRoom, defineServer } from "colyseus";
 import { ROOM_NAME } from "../../shared/protocol";
 import { WorldRoom } from "./rooms/WorldRoom";
 import { feed, registerGattchaaRoutes } from "./gattchaa";
+import { registerApiRoutes } from "./api";
+import { serveClient } from "./static";
 
 const port = Number(process.env.PORT) || 2567;
 
@@ -18,6 +19,8 @@ const server = defineServer({
   },
 
   express: (app) => {
+    // Behind nginx on the same machine: take the player's address from X-Forwarded-For.
+    app.set("trust proxy", "loopback");
     let lastCpu = process.cpuUsage();
     let lastAt = Date.now();
     // How late the server runs its work. If this climbs into seconds, players
@@ -42,11 +45,10 @@ const server = defineServer({
     });
 
     registerGattchaaRoutes(app);
+    registerApiRoutes(app);
 
     // In production the server also hosts the built client, so one port serves everything.
-    if (fs.existsSync(clientDist)) {
-      app.use(express.static(clientDist, { maxAge: "1h", index: "index.html" }));
-    }
+    if (fs.existsSync(clientDist)) serveClient(app, clientDist);
   },
 });
 

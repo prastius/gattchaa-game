@@ -5,6 +5,8 @@ import {
   type ChatMessage,
   type ChatSend,
   type CorrectMessage,
+  type EmoteEvent,
+  type EmoteMessage,
   type JoinOptions,
   type LookMessage,
 } from "../../shared/protocol";
@@ -34,6 +36,7 @@ export class Net {
   onBubble?: (sessionId: string, text: string) => void;
   onCorrect?: (pos: CorrectMessage) => void;
   onNpcSay?: (msg: NpcSay) => void;
+  onEmote?: (sessionId: string, e: number) => void;
   readonly onAnnounce = new Set<(a: Announcement) => void>();
 
   constructor(
@@ -57,6 +60,7 @@ export class Net {
     });
     room.onMessage("correct", (pos: CorrectMessage) => this.onCorrect?.(pos));
     room.onMessage("npc:say", (msg: NpcSay) => this.onNpcSay?.(msg));
+    room.onMessage("emote", (msg: EmoteEvent) => this.onEmote?.(msg.from, msg.e));
     room.onMessage("announce", (a: Announcement) => {
       for (const fn of this.onAnnounce) fn(a);
     });
@@ -88,5 +92,11 @@ export class Net {
 
   sendLook(look: string) {
     this.room.send("look", { look } satisfies LookMessage);
+  }
+
+  /** Shows an emote over your head: locally right away, and to everyone nearby. */
+  sendEmote(e: number) {
+    this.room.send("emote", { e } satisfies EmoteMessage);
+    this.onEmote?.(this.room.sessionId, e);
   }
 }

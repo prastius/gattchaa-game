@@ -19,6 +19,15 @@ export type Dir = (typeof Dir)[keyof typeof Dir];
 export interface JoinOptions {
   name: string;
   look: string;
+  /** Game session from a Gattchaa sign-in (POST /api/auth/ticket); guests have none. */
+  token?: string;
+}
+
+/** server -> client, on joining: whether the Gattchaa sign-in was accepted. */
+export interface AuthInfo {
+  signedIn: boolean;
+  /** A token was sent but is no longer valid (expired, or signed out). */
+  expired?: boolean;
 }
 
 /** client -> server: local player position (client-predicted, server-validated) */
@@ -32,6 +41,28 @@ export interface MoveMessage {
 /** client -> server: change appearance */
 export interface LookMessage {
   look: string;
+}
+
+/** client -> server: sit down where you stand, or get up (walking also gets you up) */
+export interface SitMessage {
+  on: boolean;
+}
+
+/** Emotes, Ragnarok style: a picture pops up over your head (keys 1-9 and 0 in this order). */
+export const EMOTES = ["👋", "😄", "😂", "😍", "😮", "😢", "😡", "👍", "❗", "❓"] as const;
+export const EMOTE_NAMES = ["Wave", "Happy", "LOL", "Love", "Wow", "Sad", "Angry", "Nice", "!", "?"] as const;
+/** One emote per player this often (ms). */
+export const EMOTE_COOLDOWN_MS = 1000;
+
+/** client -> server: show an emote (index into EMOTES) */
+export interface EmoteMessage {
+  e: number;
+}
+
+/** server -> client: someone showed an emote */
+export interface EmoteEvent {
+  from: string;
+  e: number;
 }
 
 /** client -> server */
@@ -70,6 +101,8 @@ export interface PlayerView {
   y: number;
   dir: number;
   moving: boolean;
+  /** Players only (NPCs never sit). */
+  sit?: boolean;
 }
 
 export function sanitizeName(raw: unknown): string {

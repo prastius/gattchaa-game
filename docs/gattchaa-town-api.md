@@ -1,18 +1,21 @@
 # Gattchaa Town API: blueprint for gattchaaoripa.com
 
-This is what the Gattchaa Oripa (Laravel) project needs to build so Gattchaa Town can show live packs, rooms and big pulls. The town never scrapes or browses the website: it reads two small JSON endpoints and receives webhooks.
+This is what the Gattchaa Oripa (Laravel) project needs to build so Gattchaa Town can show live packs, rooms and big pulls, let players sign in with their Gattchaa account, and run player shops in town. The town never scrapes or browses the website: it reads a few small JSON endpoints and receives webhooks.
 
-Players never call this API. Only the game server does, about **8 requests per minute in total**, however many people are in town. Unchanged responses are answered with `304 Not Modified`, which is nearly free.
+Players never call this API. Only the game server does: about **8 requests per minute** for packs and rooms however many people are in town, plus about one request per open player shop every 10 minutes. Unchanged responses are answered with `304 Not Modified`, which is nearly free.
 
 ```
  Browser (player) ──WebSocket──▶ Game server (Colyseus, VPS)
                                    │  ▲
          GET /api/town/v1/catalog  │  │  POST /hooks/gattchaa   (signed webhook)
-         GET /api/town/v1/live     ▼  │
+         GET /api/town/v1/live     │  │
+   POST /api/town/v1/tickets/redeem│  │
+   GET  /api/town/v1/users/{id}/listings
+                                   ▼  │
                                 Gattchaa Oripa (Laravel)
 ```
 
-Links the player clicks (product pages, daily login, marketplace…) open gattchaaoripa.com in a new tab, so login, payment and pulls stay on the real site.
+Links the player clicks (product pages, daily login, a card in someone's shop…) open gattchaaoripa.com in a new tab, so login, payment and pulls stay on the real site. **The game never handles money**: a card in a player's shop is bought on its marketplace page.
 
 ---
 
@@ -27,6 +30,11 @@ Links the player clicks (product pages, daily login, marketplace…) open gattch
 | 5 | `SendTownWebhook` queued job + `Town::event()` helper | 30 min |
 | 6 | Fire 3 events from existing code (product saved, room seats changed, highlighted purchase) | 30 min |
 | 7 | 256 px product thumbnails + CORS header for them | 30 min |
+| 8 | Sign-in: `GET /town/enter` page + `POST /api/town/v1/tickets/redeem` | 45 min |
+| 9 | Player shops: `GET /api/town/v1/users/{id}/listings` (a seller's marketplace listings) | 30 min |
+| 10 | Fire `listing.updated` when a listing is created, changed, sold or removed | 15 min |
+
+Items 1–7 light up the stalls, machines and Rooms tables. Items 8–10 turn on signing in and player shops; the town works without them (players are simply guests).
 
 ---
 
@@ -38,7 +46,7 @@ Links the player clicks (product pages, daily login, marketplace…) open gattch
 TOWN_API_KEY=<long random string>          # php -r "echo bin2hex(random_bytes(32));"
 TOWN_WEBHOOK_URL=https://town.gattchaaoripa.com/hooks/gattchaa
 TOWN_WEBHOOK_SECRET=<another long random string>
-TOWN_ORIGIN=https://town.gattchaaoripa.com  # where the game is hosted (for CORS on thumbnails)
+TOWN_ORIGIN=https://town.gattchaaoripa.com  # where the game is hosted: CORS on thumbnails, and where /town/enter sends players
 ```
 
 **Game server `server/.env.production`** (on the VPS):
@@ -56,12 +64,15 @@ If `TOWN_WEBHOOK_URL` is empty, Laravel should skip sending webhooks. If `GATTCH
 
 ## 3. Endpoints
 
-Both endpoints:
+All `/api/town/v1` endpoints:
 
 - require `Authorization: Bearer <TOWN_API_KEY>` and return `401` otherwise;
-- return `ETag`, and answer `304` when the request's `If-None-Match` matches;
-- are cached server-side (`Cache::remember`) so even a burst costs one query;
 - use `snake_case` fields and absolute URLs.
+
+The `GET` endpoints also:
+
+- return `ETag`, and answer `304` when the request's `If-None-Match` matches;
+- are cached server-side (`Cache::remember`) so even a burst costs one query.
 
 ### 3.1 `GET /api/town/v1/catalog`
 
@@ -133,6 +144,62 @@ Open rooms and how many people are on the website. The game polls this every **3
 - `online`: the same number as `online_count` in `/site-activity`.
 - Do **not** include anything about the current visitor (`is_seated` etc.). This endpoint is anonymous data for the town.
 
+### 3.3 Sign-in: `GET /town/enter` (web page) and `POST /api/town/v1/tickets/redeem`
+
+Players sign in to the town with their Gattchaa account, so the town knows who owns a shop. Passwords never touch the game:
+
+1. In the town, **Sign in with Gattchaa** opens `https://gattchaaoripa.com/town/enter`. This is an ordinary web route behind the `auth` middleware, so a logged-out player logs in first and comes back.
+2. It stores a **one-time ticket** for that user (random, 60 seconds) and redirects to `{TOWN_ORIGIN}/?ticket=<ticket>`. Always redirect to `TOWN_ORIGIN` itself; never take a return address from the request (that would be an open redirect).
+3. The game server swaps the ticket at once:
+
+```http
+POST /api/town/v1/tickets/redeem
+Authorization: Bearer <TOWN_API_KEY>
+Content-Type: application/json
+
+{ "ticket": "k3J9…" }
+```
+
+```json
+{ "data": { "user_id": 1001, "display_name": "Rina" } }
+```
+
+- The ticket is deleted when it's read, so it works once. Unknown, used or expired tickets: `404`.
+- `display_name` is shown in town as the shop owner's name. Use the public name the marketplace shows, **never** the email or real name if those are private.
+- Tickets are 16–128 characters of `A-Z a-z 0-9 _ -` (`Str::random(48)` is fine).
+
+The game then keeps its own session for that player (30 days), so this happens once per device, not on every visit.
+
+### 3.4 `GET /api/town/v1/users/{user_id}/listings`
+
+A seller's **active** marketplace listings. They are what their player shop in town shows. Each card links to its listing page, where it's bought as usual. The game asks when a shop opens, when someone browses it (at most once a minute per seller), and after `listing.updated`.
+
+```json
+{
+  "data": [
+    {
+      "id": 5001,
+      "title": "Pikachu Illustration Rare",
+      "image_url": "https://gattchaaoripa.com/storage/marketplace/thumbs/5001.webp",
+      "price": 850000,
+      "condition": "Near Mint",
+      "grade": "PSA 10",
+      "category": "Pokemon JP",
+      "url": "https://gattchaaoripa.com/marketplace/listings/5001"
+    }
+  ]
+}
+```
+
+| Field | Notes |
+|---|---|
+| `price` | integer rupiah, what the buyer pays on the site |
+| `condition`, `grade` | optional (`null`): grade only for graded slabs, e.g. "PSA 10" |
+| `image_url` | a small image (about 256 px). It's shown in an `<img>` in the shop panel, so no CORS is needed |
+| `url` | the listing's page on the marketplace |
+
+Newest first, at most 60. An unknown user, or one with nothing listed: `{ "data": [] }`. A player can only open a shop when they have at least one listing.
+
 ---
 
 ## 4. Webhooks (Laravel → game)
@@ -150,10 +217,11 @@ Sent as `POST {TOWN_WEBHOOK_URL}` from a **queued job**, so the website never wa
 | `purchase.highlight` | Whenever the site creates a purchase notification (the "Recent purchase" toast), or a pull above a rarity/value threshold you choose | `{ "label": "Big hit!", "message": "Someone pulled Charizard ex SAR!", "product": { "title", "image_url", "url" } }` |
 | `catalog.updated` | A product is created, updated, closed or sells out | none |
 | `live.updated` | A room seat is taken or released, or a room fills, resolves or expires | none |
+| `listing.updated` | A marketplace listing is created, changed (price…), sold or removed | `{ "user_id": 1001 }` (the seller) |
 
 In town, `purchase.highlight` shows a toast to everyone, sets off fireworks over the fountain, makes the Town Crier shout it, and posts it in chat. **Use the same wording and masking as the website toast.** Never include a buyer's real name, email or anything private. The game shows `message` verbatim.
 
-`catalog.updated` and `live.updated` carry no data: the game simply re-fetches (bursts are merged into one request).
+`catalog.updated` and `live.updated` carry no data: the game simply re-fetches (bursts are merged into one request). `listing.updated` makes the game re-fetch that seller's listings, so their shop sign and any open shop panels update within a few seconds.
 
 ---
 
@@ -187,6 +255,7 @@ Adjust model and relation names to the project. They are written to match the fi
     'key' => env('TOWN_API_KEY'),
     'webhook_url' => env('TOWN_WEBHOOK_URL'),
     'webhook_secret' => env('TOWN_WEBHOOK_SECRET'),
+    'origin' => env('TOWN_ORIGIN'),
 ],
 ```
 
@@ -232,8 +301,20 @@ use App\Http\Controllers\Api\TownController;
 Route::prefix('town/v1')->middleware(['town', 'throttle:120,1'])->group(function () {
     Route::get('catalog', [TownController::class, 'catalog']);
     Route::get('live', [TownController::class, 'live']);
+    Route::post('tickets/redeem', [TownController::class, 'redeem']);
+    Route::get('users/{userId}/listings', [TownController::class, 'listings'])->whereNumber('userId');
 });
 ```
+
+And in `routes/web.php` (the sign-in page players are sent to):
+
+```php
+use App\Http\Controllers\TownEnterController;
+
+Route::get('town/enter', TownEnterController::class)->middleware('auth')->name('town.enter');
+```
+
+A "Play Gattchaa Town" button anywhere on the site can link to `route('town.enter')`: it signs the player straight into the town.
 
 ### 6.4 `app/Http/Controllers/Api/TownController.php`
 
@@ -243,7 +324,9 @@ Route::prefix('town/v1')->middleware(['town', 'throttle:120,1'])->group(function
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\MarketplaceListing;
 use App\Models\Product;
+use App\Models\User;
 use App\Support\Town;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -282,6 +365,40 @@ class TownController extends Controller
         return $this->withEtag($request, $payload);
     }
 
+    /** Swaps a one-time sign-in ticket (made by /town/enter) for the user it belongs to. */
+    public function redeem(Request $request): JsonResponse
+    {
+        $ticket = (string) $request->input('ticket');
+        // pull(): read once and delete, so a ticket can't be used twice.
+        $userId = preg_match('/^[A-Za-z0-9_-]{16,128}$/', $ticket) ? Cache::pull("town:ticket:{$ticket}") : null;
+        $user = $userId ? User::find($userId) : null;
+        if (! $user) {
+            return response()->json(['message' => 'Unknown or expired ticket.'], 404);
+        }
+
+        return response()->json(['data' => [
+            'user_id' => $user->id,
+            'display_name' => $user->name, // the public name the marketplace shows, never the email
+        ]]);
+    }
+
+    /** A seller's active marketplace listings: what their player shop in town shows. */
+    public function listings(Request $request, int $userId): JsonResponse
+    {
+        $payload = Cache::remember("town:listings:{$userId}", 30, fn () => [
+            'data' => MarketplaceListing::query() // adjust to the marketplace's model and columns
+                ->where('seller_id', $userId)
+                ->where('status', 'active')
+                ->latest()
+                ->limit(60)
+                ->get()
+                ->map(fn (MarketplaceListing $l) => Town::listing($l))
+                ->values(),
+        ]);
+
+        return $this->withEtag($request, $payload);
+    }
+
     /** 304 when the game already has this exact data. */
     private function withEtag(Request $request, array $payload): JsonResponse
     {
@@ -294,7 +411,33 @@ class TownController extends Controller
 }
 ```
 
-`App\Services\SiteActivity` and `App\Services\RoomState` stand for wherever that logic lives today (probably the controllers behind `/site-activity` and `/rooms/state`). Move it into a small service so both the website and the Town API call the same code.
+`App\Services\SiteActivity` and `App\Services\RoomState` stand for wherever that logic lives today (probably the controllers behind `/site-activity` and `/rooms/state`). Move it into a small service so both the website and the Town API call the same code. Likewise, `MarketplaceListing`, `seller_id` and `status` stand for however the marketplace stores listings.
+
+### 6.4b `app/Http/Controllers/TownEnterController.php`: the sign-in page
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
+
+/** "Play Gattchaa Town": sends the signed-in user to the town with a one-time ticket. */
+class TownEnterController extends Controller
+{
+    public function __invoke(Request $request): RedirectResponse
+    {
+        $ticket = Str::random(48);
+        Cache::put("town:ticket:{$ticket}", $request->user()->id, now()->addSeconds(60));
+
+        // Only ever back to the town itself, never to an address taken from the request.
+        return redirect()->away(rtrim((string) config('services.town.origin'), '/') . '/?ticket=' . $ticket);
+    }
+}
+```
 
 ### 6.5 `app/Support/Town.php`: mapping and events in one place
 
@@ -351,6 +494,21 @@ class Town
         ];
     }
 
+    /** One marketplace listing, as a player's shop in town shows it. */
+    public static function listing($l): array
+    {
+        return [
+            'id' => $l->id,
+            'title' => $l->title,
+            'image_url' => $l->thumbnail_url, // a small (~256 px) image of the card
+            'price' => (int) $l->price,
+            'condition' => $l->condition ?: null, // "Near Mint"…
+            'grade' => $l->grade ?: null,         // "PSA 10"… graded slabs only
+            'category' => $l->category?->title,
+            'url' => route('marketplace.show', $l), // where it's bought
+        ];
+    }
+
     /** products/foo.webp -> https://…/storage/products/thumbs/foo.webp */
     public static function thumb(?string $imagePath): string
     {
@@ -366,6 +524,7 @@ class Town
         // Bust the API cache so the game's re-fetch sees the change.
         if ($type === 'catalog.updated') cache()->forget('town:catalog');
         if ($type === 'live.updated') cache()->forget('town:live');
+        if ($type === 'listing.updated') cache()->forget("town:listings:{$data['user_id']}");
 
         SendTownWebhook::dispatch(array_filter([
             'id' => 'evt_' . Str::ulid(),
@@ -429,6 +588,10 @@ public function deleted(Product $p): void { Town::event('catalog.updated'); }
 
 // Where a seat is taken / released, and where a room fills, resolves or expires:
 Town::event('live.updated');
+
+// App\Observers\MarketplaceListingObserver: any change to a listing (new, price, sold, removed).
+public function saved(MarketplaceListing $l): void   { Town::event('listing.updated', ['user_id' => $l->seller_id]); }
+public function deleted(MarketplaceListing $l): void { Town::event('listing.updated', ['user_id' => $l->seller_id]); }
 
 // Where the site creates a purchase notification (what /site-activity returns):
 Town::event('purchase.highlight', [
@@ -496,17 +659,20 @@ curl -sI -H "Origin: https://town.gattchaaoripa.com" <an image_url> | grep -i ac
 # 4. Webhook end to end (from tinker)
 php artisan tinker --execute="App\Support\Town::event('purchase.highlight', ['label'=>'Test','message'=>'Hello from Laravel'])"
 # -> a toast + fireworks in town; the game logs 204. 401 = secret mismatch or server clock off by >5 min.
+
+# 5. Sign-in: log in on the site, open /town/enter -> you land on the town with ?ticket=…
+#    A ticket works once:
+curl -s -X POST -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" \
+  -d '{"ticket":"<ticket from the address bar>"}' https://gattchaaoripa.com/api/town/v1/tickets/redeem   # 200, then 404
+
+# 6. A seller's listings (what their shop shows)
+curl -s -H "Authorization: Bearer $KEY" https://gattchaaoripa.com/api/town/v1/users/<user id>/listings | head -c 400
 ```
 
-**Without Laravel**: this repo ships a mock that speaks exactly this contract: `npm run mock:gattchaa`. With `server/.env.development` pointing at it, the town fills with sample packs and rooms, and a signed "big hit" arrives every 40 s. `scripts/mock-gattchaa.ts` is also a working reference for the signature code.
+**Without Laravel**: this repo ships a mock that speaks exactly this contract: `npm run mock:gattchaa`. With `server/.env.development` pointing at it, the town fills with sample packs and rooms, and a signed "big hit" arrives every 40 s. Its `/town/enter` page lets you sign in as one of three pretend users (two sellers and a collector with nothing listed), and one seller's prices drop now and then (`listing.updated`). `scripts/mock-gattchaa.ts` is also a working reference for the signature code.
 
 ---
 
-## 8. Later: link game accounts to Gattchaa accounts (optional)
+## 8. Later
 
-This isn't needed for the above. It's the next step if you want GP rewards, cosmetics for purchases, or real names on the leaderboard:
-
-1. A **"Play Gattchaa Town"** button on the site calls `POST /api/town/v1/tickets` (session-authenticated) and gets a one-time ticket that lasts 60 s.
-2. The site opens `https://town.gattchaaoripa.com/?ticket=…`; the game sends the ticket when joining.
-3. The game server calls `POST /api/town/v1/tickets/redeem` (API key) and gets back `{ user_id, display_name }`. The ticket is deleted, so it can't be reused.
-4. Later endpoints like `POST /api/town/v1/users/{id}/rewards` (API key) let the game grant GP or cosmetics. All the rules stay on the Laravel side.
+With accounts linked, more is possible without changing the above. For example, `POST /api/town/v1/users/{id}/rewards` (API key) would let the game grant GP or cosmetics, for an event or a finished card album. Rewards should stay tied to the account (not tradeable), and all the rules about them stay on the Laravel side.

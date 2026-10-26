@@ -48,7 +48,30 @@ export function sky(hour: number): { tint: number; lamps: number } {
   return { tint: 0xffffff, lamps: 0 };
 }
 
-const GLOW = "lamp-glow";
+/** A soft warm radial glow (added over the night tint for lamps, fires and windows). */
+export const GLOW = "lamp-glow";
+
+export function makeGlowTexture(scene: Phaser.Scene) {
+  if (scene.textures.exists(GLOW)) return;
+  const size = 128;
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext("2d")!;
+  const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  grad.addColorStop(0, "rgba(255, 214, 140, 0.9)");
+  grad.addColorStop(0.35, "rgba(255, 170, 80, 0.35)");
+  grad.addColorStop(1, "rgba(255, 150, 60, 0)");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, size, size);
+  scene.textures.addCanvas(GLOW, canvas);
+}
+
+/** A light source: a lamp head, or a fire (bigger, flickering glow). */
+export interface Light {
+  x: number;
+  y: number;
+  fire?: boolean;
+}
 
 export class Daylight {
   private overlay: Phaser.GameObjects.Rectangle;
@@ -59,23 +82,11 @@ export class Daylight {
 
   constructor(
     scene: Phaser.Scene,
-    lights: { x: number; y: number }[],
+    lights: Light[],
     /** Lamplit windows: shown with the lamps, above the night tint. */
     private windows: Phaser.GameObjects.Image[] = [],
   ) {
-    if (!scene.textures.exists(GLOW)) {
-      const size = 128;
-      const canvas = document.createElement("canvas");
-      canvas.width = canvas.height = size;
-      const ctx = canvas.getContext("2d")!;
-      const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
-      grad.addColorStop(0, "rgba(255, 214, 140, 0.9)");
-      grad.addColorStop(0.35, "rgba(255, 170, 80, 0.35)");
-      grad.addColorStop(1, "rgba(255, 150, 60, 0)");
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, size, size);
-      scene.textures.addCanvas(GLOW, canvas);
-    }
+    makeGlowTexture(scene);
     // A huge screen-fixed rectangle multiplied over everything below it.
     this.overlay = scene.add
       .rectangle(0, 0, 40000, 40000, 0xffffff)
@@ -83,7 +94,10 @@ export class Daylight {
       .setBlendMode(Phaser.BlendModes.MULTIPLY)
       .setDepth(1e6 - 10);
     for (const l of lights) {
-      this.glows.push(scene.add.image(l.x, l.y, GLOW).setBlendMode(Phaser.BlendModes.ADD).setDepth(1e6 - 9).setAlpha(0).setScale(1.3));
+      const glow = scene.add.image(l.x, l.y, GLOW).setBlendMode(Phaser.BlendModes.ADD).setDepth(1e6 - 9).setAlpha(0).setScale(l.fire ? 1.9 : 1.3);
+      // Firelight never sits still.
+      if (l.fire) scene.time.addEvent({ delay: 110, loop: true, callback: () => glow.setScale(1.75 + Math.random() * 0.35) });
+      this.glows.push(glow);
     }
   }
 

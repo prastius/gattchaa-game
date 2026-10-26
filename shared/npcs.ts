@@ -4,11 +4,11 @@
 
 import { CATALOG, type CatalogItem } from "./catalog";
 import { COLOR_FIELDS, ITEM_FIELDS, defaultLook, encodeLook, type ColorField, type ItemField, type Look } from "./appearance";
-import { STORE_WANDER, TILE, WANDER_AREA, type Rect } from "./town";
+import { MARKET_WANDER, PARK_WANDER, STORE_WANDER, TILE, WANDER_AREA, type Rect } from "./town";
 import type { ShopProduct } from "./gattchaa";
 import { Dir } from "./protocol";
 
-export type NpcKind = "guide" | "shop" | "kuji" | "rooms" | "market" | "grading" | "pickup" | "crier" | "local";
+export type NpcKind = "guide" | "shop" | "kuji" | "rooms" | "market" | "grading" | "pickup" | "crier" | "keeper" | "local";
 
 export interface NpcDef {
   id: string;
@@ -67,13 +67,13 @@ const LOCAL_TIPS = [
   "Tip: walk up to any machine or stall and press E (or tap it) to see what's in stock right now.",
   "Tip: the tables in the Rooms pavilion show live Sharing Pack and Packs Battle rooms. Talk to Andi to join one.",
   "Tip: when someone pulls a big hit on Gattchaa, the whole town hears about it!",
-  "Tip: open the Wardrobe (top right) to change your outfit any time.",
+  "Tip: press X to sit anywhere. Signed in with Gattchaa? Press V (or Open shop) to sell your cards right where you stand. Most sellers gather in the Market Square, south of the fountain.",
 ];
 const LOCAL_CHATTER = [
   ["Which set are you collecting?", "I love the fountain here.", "Anyone joining a Sharing Pack?"],
   ["Has anyone tried a Packs Battle yet?", "Saving up for the next Kuji…", "Nice outfit!"],
   ["The new Pokémon sets look amazing.", "Meet me at the Rooms pavilion!", "Hi everyone!"],
-  ["Who wants to trade?", "I should get my cards graded.", "This town is cozy."],
+  ["Who wants to trade?", "I found a great card in the Market Square!", "This town is cozy."],
 ];
 
 export const NPCS: NpcDef[] = [
@@ -235,6 +235,39 @@ export const NPCS: NpcDef[] = [
     }),
   ),
   {
+    id: "keeper",
+    name: "Tina",
+    title: "Market Keeper",
+    kind: "keeper",
+    look: look({ body: "female", hair: "bun", hairColor: "black", skin: "bronze", top: "cardigan", topColor: "forest", bottom: "belleSkirt", bottomColor: "walnut", shoes: "sandals", shoesColor: "brown", hat: "kerchief", hatColor: "orange" }),
+    ...at(187.5, 212.6),
+    dir: Dir.Down,
+    greeting: "Welcome to the Market Square! Collectors sell their own Gattchaa cards all over town. Here's every shop that's open: pick one to browse it. Buying happens on Gattchaa Oripa.",
+    chatter: ["Fresh cards in the Market Square!", "Open your own shop anywhere in town!", "Looking for a card? Ask me who's selling."],
+  },
+  {
+    id: "cafe",
+    name: "Leo",
+    title: "Café Owner",
+    kind: "local",
+    look: look({ body: "male", hair: "parted", hairColor: "chestnut", beard: "stubble", skin: "light", top: "longsleeve", topColor: "white", bottom: "pants", bottomColor: "black", shoes: "shoes", shoesColor: "brown" }),
+    ...at(240.5, 201.4),
+    dir: Dir.Down,
+    greeting: "Welcome to the Collectors' Café! Grab a table, show off your pulls and swap stories. Best seats in town for people-watching.",
+    chatter: ["Grab a table, stay a while!", "Who pulled something good today?", "Best spot in town to talk cards."],
+  },
+  {
+    id: "ivy",
+    name: "Ivy",
+    title: "",
+    kind: "local",
+    look: look({ body: "female", hair: "braid", hairColor: "dark_brown", skin: "light", top: "longsleeve", topColor: "forest", bottom: "pants", bottomColor: "tan", shoes: "boots", shoesColor: "brown", hat: "cap", hatColor: "forest" }),
+    ...at(151, 216.5),
+    dir: Dir.Left,
+    greeting: "Shh… I'm watching the fish. The pond is the calmest spot in town. Come back at night, when the campfire's lit.",
+    chatter: ["So calm here…", "Did you see that fish jump?", "The campfire's lovely at night."],
+  },
+  {
     id: "crier",
     name: "Toto",
     title: "Town Crier",
@@ -265,6 +298,36 @@ export const NPCS: NpcDef[] = [
       wander: WANDER_AREA,
       greeting: LOCAL_TIPS[i],
       chatter: LOCAL_CHATTER[i],
+    }),
+  ),
+  // Strollers in the park and shoppers in the Market Square.
+  ...(
+    [
+      ["mila", "Mila", PARK_WANDER, at(146, 204), { body: "female", hair: "wavy", hairColor: "blonde", skin: "light", top: "scoop", topColor: "rose", bottom: "skirt", bottomColor: "white", shoes: "sandals", shoesColor: "white" },
+        "Isn't the park lovely? Walk round the pond, then sit by the campfire. Locals swap cards there at night.",
+        ["What a lovely day for a walk.", "I come here to sort my binder.", "Campfire tonight, anyone?"]],
+      ["theo", "Theo", PARK_WANDER, at(136, 232), { body: "male", hair: "curly", hairColor: "dark_brown", skin: "brown", top: "tshirt", topColor: "sky", bottom: "shorts", bottomColor: "navy", shoes: "sneakers", shoesColor: "white" },
+        "The west gate leads out to the wilds. Not much out there yet, but I hear monsters will roam those fields one day.",
+        ["Nice day for a walk.", "I traded three cards by the campfire last night!", "This park is my favourite spot."]],
+      ["kai", "Kai", MARKET_WANDER, at(176, 226), { body: "male", hair: "spiked", hairColor: "black", skin: "olive", top: "vneck", topColor: "orange", bottom: "cuffed", bottomColor: "charcoal", shoes: "sneakers", shoesColor: "black" },
+        "Players sell their own cards in the Market Square. Walk up to anyone sitting under a sign and press E to see what they've got.",
+        ["So many shops today!", "Anyone selling Pokémon SRs?", "I always check the Market Square first."]],
+      ["nina", "Nina", MARKET_WANDER, at(208, 232), { body: "female", hair: "lob", hairColor: "black", skin: "amber", top: "blouse", topColor: "lavender", bottom: "leggings", bottomColor: "black", shoes: "shoes", shoesColor: "black", glasses: "round" },
+        "Tina by the avenue knows every shop that's open. Ask her before you walk the whole square!",
+        ["Window shopping again…", "Found a great deal over there!", "Who's selling One Piece cards?"]],
+    ] as const
+  ).map(
+    ([id, name, wander, pos, spec, greeting, chatter]): NpcDef => ({
+      id,
+      name,
+      title: "",
+      kind: "local",
+      look: look(spec),
+      ...pos,
+      dir: Dir.Down,
+      wander,
+      greeting,
+      chatter: [...chatter],
     }),
   ),
 ];

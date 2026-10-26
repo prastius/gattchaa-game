@@ -115,45 +115,126 @@ button {
 
 .hud-button {
   pointer-events: auto;
-  padding: 8px 12px;
-  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 10px;
   border: 1px solid var(--line);
   background: var(--panel);
+  color: var(--ink);
+  font: inherit;
   font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
+  transition: background 0.12s, transform 0.12s;
 }
 
 .hud-button:hover {
   background: var(--panel-raised);
 }
 
+.hud-button:active {
+  transform: translateY(1px);
+}
+
 .hud-button:disabled {
   opacity: 0.4;
   cursor: default;
   background: var(--panel);
+  transform: none;
 }
 
-#zoom-in-btn,
-#zoom-out-btn {
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 1;
+.hud-button svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .hud-row {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 6px;
+  max-width: calc(100vw - 24px);
 }
 
 .hud-icon {
   width: 38px;
-  padding: 8px 0;
-  text-align: center;
+  padding: 0;
 }
 
+/* Music or sound switched off: dimmed, with the "muted" strokes of the icon. */
 .hud-icon.off {
-  opacity: 0.45;
-  text-decoration: line-through;
+  --on: none;
+  --mute: inline;
+  color: var(--ink-dim);
+}
+
+#emote-btn[aria-expanded="true"] {
+  background: var(--panel-raised);
+  border-color: var(--accent);
+}
+
+/* Emotes: tap one (or press its number) and it pops up over your head for everyone nearby. */
+.emote-picker {
+  pointer-events: auto;
+  display: grid;
+  grid-template-columns: repeat(5, 42px);
+  gap: 4px;
+  padding: 6px;
+  border-radius: 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+
+.emote-picker[hidden] {
+  display: none;
+}
+
+.emote-picker button {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.emote-picker button:hover,
+.emote-picker button:focus-visible {
+  background: var(--panel-raised);
+  outline: none;
+}
+
+.emote-picker kbd {
+  position: absolute;
+  right: 4px;
+  bottom: 2px;
+  color: var(--ink-dim);
+  font: 600 9px/1 system-ui, sans-serif;
+}
+
+/* "Open shop" / "My shop": the one orange button. */
+.hud-accent {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
+}
+
+.hud-accent:hover {
+  background: var(--accent-soft);
 }
 
 /* ---------- Chat ---------- */
@@ -361,6 +442,55 @@ button {
   color: var(--ink-dim);
 }
 
+/* ---------- Gattchaa account (start screen) ---------- */
+
+.account {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #17130f;
+  border: 1px solid var(--line);
+}
+
+.account-status {
+  flex: 1 1 220px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-dim);
+}
+
+.account-status strong {
+  color: var(--ink);
+}
+
+.account-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent-soft);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.account-btn:hover {
+  background: rgba(235, 130, 36, 0.14);
+}
+
+.account-link {
+  padding: 4px 2px;
+  border: 0;
+  background: none;
+  color: var(--ink-dim);
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 /* ---------- Character creator ---------- */
 
 #creator {
@@ -536,6 +666,21 @@ button {
     width: 112px;
     height: 112px;
   }
+  /* Phones: the wardrobe button is just its shirt icon, so the buttons fit on fewer rows. */
+  #wardrobe-btn {
+    width: 38px;
+    padding: 0;
+  }
+  #wardrobe-btn span {
+    display: none;
+  }
+  .emote-picker {
+    grid-template-columns: repeat(5, 38px);
+  }
+  .emote-picker button {
+    width: 38px;
+    height: 38px;
+  }
   #chat-log {
     max-height: 92px;
     font-size: 13px;
@@ -709,6 +854,166 @@ button {
 .product:hover,
 .room:hover {
   border-color: var(--accent);
+}
+
+button.dialog-link {
+  font: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+button.dialog-link:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+.dialog-link.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.dialog-link.primary small {
+  color: rgba(26, 13, 3, 0.75);
+}
+
+.dialog-link.danger:hover {
+  border-color: var(--danger);
+}
+
+.dialog-note {
+  margin: 10px 0 0;
+  color: var(--ink-dim);
+  font-size: 12px;
+}
+
+/* ---------- Player shops: open-a-shop form, shop list ---------- */
+
+.shop-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.shop-form-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.shop-form-label input {
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #17130f;
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px; /* no iOS zoom on focus */
+  text-transform: none;
+  letter-spacing: normal;
+  outline: none;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.shop-form-label input:focus {
+  border-color: var(--accent);
+}
+
+.shop-form-hint {
+  color: var(--ink-dim);
+  font-size: 12px;
+}
+
+/* Whether you can open your shop where you stand: green tick or a red reason. */
+.shop-spot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 0;
+  color: #7ad48f;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.shop-spot::before {
+  content: "✓";
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(122, 212, 143, 0.16);
+  font-size: 11px;
+}
+
+.shop-spot.bad {
+  color: #ff8a7a;
+}
+
+.shop-spot.bad::before {
+  content: "!";
+  background: rgba(255, 138, 122, 0.16);
+}
+
+.shop-spot:empty {
+  display: none;
+}
+
+.shop-form-submit {
+  align-self: flex-start;
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.shop-form-submit:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.shop-form-error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 13px;
+}
+
+.shop-form-error:empty {
+  display: none;
+}
+
+.shop-row {
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* Green when the seller is in town (you can chat with them). */
+.shop-dot {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  margin: 0 4px 0 2px;
+  border-radius: 50%;
+  background: #6b6b6b;
+}
+
+.shop-dot.on {
+  background: #7bd389;
 }
 
 .product-grid {
