@@ -21,7 +21,7 @@ Open the page in two browser windows to see multiplayer and chat.
 | Hold finger | Walk toward it (phones) |
 | E / tap | Talk, use a machine, browse a player's shop |
 | X / chair button | Sit down where you stand; walking gets you up |
-| V / Open shop | Open your shop right where you stand (signed-in players); while it's open: see it, or close it |
+| V / Open shop | Open your shop where you stand in the Market Square (signed-in players); while it's open: see it, or close it |
 | 1–9, 0 / smiley button | Emotes over your head: wave, happy, LOL, love, wow, sad, angry, nice, !, ? |
 | Enter | Open chat, then Enter again to send. Esc cancels. |
 | Wardrobe | Change your outfit at any time; everyone sees it |
@@ -120,8 +120,8 @@ scripts/
 - **Emotes.** Ten Ragnarok-style emotes pop up over your head (number keys or the smiley button), one per second at most.
 - **Reconnects.** A dropped connection keeps your character in the world for 20 s while the SDK reconnects automatically.
 - **Accounts are optional.** Anyone can walk around and chat as a guest. **Sign in with Gattchaa** goes to gattchaaoripa.com, which sends the player back with a one-time ticket. The game swaps it for its own 30-day session, so passwords never reach the game. Signed-in players get their character back on any device. One window per account: opening a second one takes over.
-- **Player shops.** Ragnarok-style vending: a signed-in player presses **Open shop** (V) anywhere in town, names their shop, and sits down on a rug with a sign over their head. Everyone can browse the cards they've listed on the Gattchaa marketplace. Each card links to its listing, so buying (and the money) stays on the website.
-  - **Where:** anywhere inside the walls, except the palace, right in front of doors and staff, or so close to another shop that the signs would overlap. The form says whether the spot is good before you open.
+- **Player shops.** Ragnarok-style vending: a signed-in player presses **Open shop** (V) in the Market Square, names their shop, and sits down on a rug with a sign over their head. Everyone can browse the cards they've listed on the Gattchaa marketplace. Each card links to its listing, so buying (and the money) stays on the website.
+  - **Where:** only in the Market Square, and not right in front of staff or so close to another shop that the signs would overlap. The form says whether the spot is good before you open. Shops saved outside the square (from before this rule) close when the server starts.
   - **While it's open:** the seller stays seated, and signs stay lit at night.
   - **When the seller leaves:** a look-alike minds the shop for 24 hours.
   - **Finding shops:** Tina, the Market Keeper in the Market Square, lists every open shop with where it is, and you can browse them from her list. The minimap marks shops in orange.

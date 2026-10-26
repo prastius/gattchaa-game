@@ -120,7 +120,7 @@ export class HUD {
   /** While you mind a shop the button opens it ("My shop"), and there's no Sit (you're already seated). */
   setVending(on: boolean) {
     this.shopLabel.textContent = on ? "My shop" : "Open shop";
-    this.shopBtn.title = on ? "Your shop (V)" : "Open a shop right here (V)";
+    this.shopBtn.title = on ? "Your shop (V)" : "Open a shop in the Market Square (V)";
     this.sitBtn.hidden = on;
   }
 

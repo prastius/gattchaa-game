@@ -67,7 +67,7 @@ const LOCAL_TIPS = [
   "Tip: walk up to any machine or stall and press E (or tap it) to see what's in stock right now.",
   "Tip: the tables in the Rooms pavilion show live Sharing Pack and Packs Battle rooms. Talk to Andi to join one.",
   "Tip: when someone pulls a big hit on Gattchaa, the whole town hears about it!",
-  "Tip: press X to sit anywhere. Signed in with Gattchaa? Press V (or Open shop) to sell your cards right where you stand. Most sellers gather in the Market Square, south of the fountain.",
+  "Tip: press X to sit anywhere. Signed in with Gattchaa? Walk to the Market Square, south of the fountain, and press V (or Open shop) to sell your cards.",
 ];
 const LOCAL_CHATTER = [
   ["Which set are you collecting?", "I love the fountain here.", "Anyone joining a Sharing Pack?"],
@@ -242,8 +242,8 @@ export const NPCS: NpcDef[] = [
     look: look({ body: "female", hair: "bun", hairColor: "black", skin: "bronze", top: "cardigan", topColor: "forest", bottom: "belleSkirt", bottomColor: "walnut", shoes: "sandals", shoesColor: "brown", hat: "kerchief", hatColor: "orange" }),
     ...at(187.5, 212.6),
     dir: Dir.Down,
-    greeting: "Welcome to the Market Square! Collectors sell their own Gattchaa cards all over town. Here's every shop that's open: pick one to browse it. Buying happens on Gattchaa Oripa.",
-    chatter: ["Fresh cards in the Market Square!", "Open your own shop anywhere in town!", "Looking for a card? Ask me who's selling."],
+    greeting: "Welcome to the Market Square! Collectors sell their own Gattchaa cards right here in the square. Here's every shop that's open: pick one to browse it. Buying happens on Gattchaa Oripa.",
+    chatter: ["Fresh cards in the Market Square!", "Open your own shop right here in the square!", "Looking for a card? Ask me who's selling."],
   },
   {
     id: "cafe",

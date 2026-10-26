@@ -24,7 +24,7 @@ import {
 } from "../../../shared/protocol";
 import { DOORS, placeName } from "../../../shared/town";
 import type { DoorMessage } from "../../../shared/protocol";
-import { SHOP_AWAY_HOURS, sanitizeShopTitle, shopSpotProblem, type ShopOpenMessage, type ShopResult } from "../../../shared/vending";
+import { SHOP_AWAY_HOURS, inShopZone, sanitizeShopTitle, shopSpotProblem, type ShopOpenMessage, type ShopResult } from "../../../shared/vending";
 import { Player, PlayerShop, WorldState } from "./WorldState";
 import { NpcBrain } from "./NpcBrain";
 import { feed } from "../gattchaa";
@@ -148,6 +148,8 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     if (!shopsMarkedAway) {
       shopsMarkedAway = true;
       db.markShopsAway(Date.now() + AWAY_MS);
+      // Shops opened before they were limited to the Market Square close.
+      for (const row of db.shops()) if (!inShopZone(row.x, row.y)) db.closeShop(row.accountId);
     }
     this.syncShops();
     this.clock.setInterval(() => this.syncShops(), SHOP_SYNC_MS);

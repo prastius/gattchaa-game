@@ -1,6 +1,6 @@
 # Gattchaa Town API: blueprint for gattchaaoripa.com
 
-This is what the Gattchaa Oripa (Laravel) project needs to build so Gattchaa Town can show live packs, rooms and big pulls, let players sign in with their Gattchaa account, and run player shops in town. The town never scrapes or browses the website: it reads a few small JSON endpoints and receives webhooks.
+This is what the Gattchaa Oripa (Laravel) project needs to build so Gattchaa Town can show live packs, rooms and big pulls, let players sign in with their Gattchaa account, and run player shops in the Market Square. The town never scrapes or browses the website: it reads a few small JSON endpoints and receives webhooks.
 
 Players never call this API. Only the game server does: about **8 requests per minute** for packs and rooms however many people are in town, plus about one request per open player shop every 10 minutes. Unchanged responses are answered with `304 Not Modified`, which is nearly free.
 

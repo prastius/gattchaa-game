@@ -79,7 +79,7 @@ function renderAccount() {
   if (auth.signedIn) {
     const who = document.createElement("strong");
     who.textContent = auth.displayName || "your Gattchaa account";
-    accountStatus.replaceChildren("Signed in as ", who, ". You can open a shop anywhere in town, and it stays open while you're away.");
+    accountStatus.replaceChildren("Signed in as ", who, ". You can open a shop in the Market Square, and it stays open while you're away.");
   } else {
     accountStatus.textContent = "Playing as a guest. Sign in with your Gattchaa account to open your own shop in town.";
   }

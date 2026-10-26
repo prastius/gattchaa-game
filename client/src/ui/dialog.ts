@@ -222,7 +222,7 @@ export class TownDialog {
       case "keeper":
         this.shopList();
         if (!this.vending.auth.signedIn) this.signInButton("Sign in to open your own shop");
-        else if (!this.vending.myShop) this.button("Open my shop", "Right where you're standing (V)", () => this.render("vend", true), "primary");
+        else if (!this.vending.myShop) this.button("Open my shop", "Pick a spot in this square (V)", () => this.render("vend", true), "primary");
         break;
       default:
         break;
@@ -242,7 +242,7 @@ export class TownDialog {
     const shops: { id: string; shop: PlayerShopView }[] = [];
     this.vending.forEach((shop, id) => shops.push({ id, shop }));
     if (shops.length === 0) {
-      this.body.append(el("p", "dialog-empty", "No shops are open right now. Be the first: press Open shop (V) wherever you'd like to sell!"));
+      this.body.append(el("p", "dialog-empty", "No shops are open right now. Be the first: find a spot in the Market Square and press Open shop (V)!"));
       return;
     }
     // Sellers who are here first (you can chat with them), then the biggest shops.
@@ -275,12 +275,12 @@ export class TownDialog {
     const say = (text: string) => fresh && this.say(text);
 
     if (!this.vending.auth.signedIn) {
-      say("Anyone signed in with Gattchaa can sit down anywhere in town and open a shop. It shows the cards you've listed on the Gattchaa marketplace, and buyers pay on gattchaaoripa.com.");
+      say("Anyone signed in with Gattchaa can sit down in the Market Square and open a shop. It shows the cards you've listed on the Gattchaa marketplace, and buyers pay on gattchaaoripa.com.");
       this.signInButton("You'll come straight back to town");
       this.links(LINKS.sell, "vend");
       return;
     }
-    say(`Sit down and open your shop right here! It shows the cards you've listed on the Gattchaa marketplace, and stays open for ${SHOP_AWAY_HOURS} hours after you leave town.`);
+    say(`Find a free spot in the Market Square and open your shop! It shows the cards you've listed on the Gattchaa marketplace, and stays open for ${SHOP_AWAY_HOURS} hours after you leave town.`);
 
     // Whether this spot is allowed, checked again as you move (the server has the final say).
     const spot = el("p", "shop-spot");

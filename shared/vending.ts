@@ -1,12 +1,12 @@
-// Player shops ("vending", Ragnarok style): a signed-in player sits down
-// anywhere in town, names their shop, and everyone can browse the cards they've
+// Player shops ("vending", Ragnarok style): a signed-in player sits down in
+// the Market Square, names their shop, and everyone can browse the cards they've
 // listed on the Gattchaa marketplace. A rug appears under them and a sign over
 // their head. Buying always happens on gattchaaoripa.com, so the game never
 // handles money. Rules here are shared by client and server.
 
 import type { MarketListing } from "./gattchaa";
 import { NPCS } from "./npcs";
-import { DOORS, PROPS, TILE, TOWN_INSIDE, inRect, propAnchor } from "./town";
+import { DOORS, MARKET, PROPS, TILE, inRect, propAnchor } from "./town";
 
 export const SHOP_TITLE_MAX = 30;
 /** Signs over the shops show this many characters; the shop panel shows the whole title. */
@@ -49,13 +49,16 @@ const KEEP_CLEAR: { x: number; y: number; what: string }[] = [
   }),
 ];
 
+/** Shops only open in the Market Square, so buyers know where to look. */
+export const inShopZone = (x: number, y: number) => inRect(MARKET, x / TILE, y / TILE);
+
 /**
  * Why a shop can't open with its seller's feet at (x, y), or undefined when it
- * can. Inside the town walls (not in the palace), clear of doors and
- * shopkeepers, and not crowding another shop.
+ * can. In the Market Square, clear of doors and shopkeepers, and not crowding
+ * another shop.
  */
 export function shopSpotProblem(x: number, y: number, shops: Iterable<{ x: number; y: number; name: string }>): string | undefined {
-  if (!inRect(TOWN_INSIDE, x / TILE, y / TILE)) return "Shops can only open inside the town walls, outdoors.";
+  if (!inShopZone(x, y)) return "Shops can only open in the Market Square, south of the fountain plaza.";
   for (const k of KEEP_CLEAR) {
     if (Math.hypot(k.x - x, k.y - y) < SHOP_CLEARANCE) return `Too close to ${k.what}. Move a few steps away.`;
   }
