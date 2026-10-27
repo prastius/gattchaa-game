@@ -320,6 +320,32 @@ export class SoundSystem {
   }
 
   /** Level up: a rising arpeggio with a shimmer. */
+  /** Picked something up. Rarer finds ring a little brighter. */
+  pickup(rare = false) {
+    const t = this.ready();
+    if (t === undefined) return;
+    this.tone(rare ? 988 : 660, t, 0.07, "triangle", 0.1);
+    this.tone(rare ? 1480 : 990, t + 0.07, 0.12, "triangle", 0.09);
+    if (rare) this.tone(1976, t + 0.14, 0.2, "triangle", 0.07);
+  }
+
+  /** Gold changed hands. */
+  coin() {
+    const t = this.ready();
+    if (t === undefined) return;
+    this.tone(1568, t, 0.05, "square", 0.05);
+    this.tone(2093, t + 0.05, 0.14, "square", 0.05);
+  }
+
+  /** Glug, then a little sparkle. */
+  potion() {
+    const t = this.ready();
+    if (t === undefined) return;
+    this.tone(330, t, 0.09, "sine", 0.12, 520);
+    this.tone(392, t + 0.1, 0.09, "sine", 0.1, 620);
+    this.tone(1320, t + 0.2, 0.18, "triangle", 0.06);
+  }
+
   levelUp() {
     const t = this.ready();
     if (t === undefined) return;

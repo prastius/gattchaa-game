@@ -5,6 +5,7 @@
 // tuning a monster or raising the level cap is a one-line change.
 
 import { TILE, TOWN_AREA, INTERIOR_ZONE, inRect, type Rect } from "./town";
+import type { ItemId } from "./items";
 
 /** Highest level for now; raised step by step. The EXP curve already continues past it. */
 export const LEVEL_CAP = 50;
@@ -50,10 +51,18 @@ export interface Stats {
   attackMs: number;
 }
 
-export function statsFor(cls: ClassId, level: number): Stats {
+/** A class at a level, plus whatever its equipment adds. */
+export function statsFor(cls: ClassId, level: number, bonus?: { atk: number; def: number; hp: number; mp: number }): Stats {
   const c = CLASSES[cls];
   const at = ([base, per]: [number, number]) => Math.floor(base + per * (level - 1));
-  return { maxHp: at(c.hp), maxMp: at(c.mp), atk: at(c.atk), def: at(c.def), range: c.range, attackMs: c.attackMs };
+  return {
+    maxHp: at(c.hp) + (bonus?.hp ?? 0),
+    maxMp: at(c.mp) + (bonus?.mp ?? 0),
+    atk: at(c.atk) + (bonus?.atk ?? 0),
+    def: at(c.def) + (bonus?.def ?? 0),
+    range: c.range,
+    attackMs: c.attackMs,
+  };
 }
 
 // ---------------------------------------------------------------- monsters
@@ -81,13 +90,27 @@ export interface MonsterDef {
   /** Body radius: players reach it from this much further away. */
   radius: number;
   respawnMs: number;
+  /** What it may leave on the ground: [item, chance 0..1], each rolled on its own. */
+  drops: [ItemId, number][];
 }
 
 export const MONSTERS: Record<MonsterId, MonsterDef> = {
-  slime: { id: "slime", name: "Slime", level: 1, hp: 30, atk: 4, def: 0, exp: 8, gold: [1, 3], speed: 38, chase: 70, aggro: 0, range: 36, attackMs: 2000, radius: 10, respawnMs: 12_000 },
-  snake: { id: "snake", name: "Grass Snake", level: 4, hp: 85, atk: 9, def: 2, exp: 32, gold: [3, 7], speed: 45, chase: 80, aggro: 0, range: 40, attackMs: 1700, radius: 12, respawnMs: 15_000 },
-  hornet: { id: "hornet", name: "Hornet", level: 7, hp: 130, atk: 12, def: 4, exp: 80, gold: [6, 12], speed: 70, chase: 95, aggro: 120, range: 36, attackMs: 1400, radius: 8, respawnMs: 18_000 },
-  snapper: { id: "snapper", name: "Snapper Flower", level: 10, hp: 280, atk: 17, def: 5, exp: 240, gold: [18, 30], speed: 0, chase: 0, aggro: 110, range: 64, attackMs: 1600, radius: 22, respawnMs: 30_000 },
+  slime: {
+    id: "slime", name: "Slime", level: 1, hp: 30, atk: 4, def: 0, exp: 8, gold: [1, 3], speed: 38, chase: 70, aggro: 0, range: 36, attackMs: 2000, radius: 10, respawnMs: 12_000,
+    drops: [["jelly", 0.7], ["redPotion", 0.05], ["leatherCap", 0.015], ["leatherPants", 0.015], ["leatherBoots", 0.01], ["copperRing", 0.003], ["cloverCharm", 0.003]],
+  },
+  snake: {
+    id: "snake", name: "Grass Snake", level: 4, hp: 85, atk: 9, def: 2, exp: 32, gold: [3, 7], speed: 45, chase: 80, aggro: 0, range: 40, attackMs: 1700, radius: 12, respawnMs: 15_000,
+    drops: [["scale", 0.6], ["redPotion", 0.06], ["leatherArmor", 0.012], ["leatherBoots", 0.015], ["woodShield", 0.012], ["guardShield", 0.004], ["vigorRing", 0.002]],
+  },
+  hornet: {
+    id: "hornet", name: "Hornet", level: 7, hp: 130, atk: 12, def: 4, exp: 80, gold: [6, 12], speed: 70, chase: 95, aggro: 120, range: 36, attackMs: 1400, radius: 8, respawnMs: 18_000,
+    drops: [["honey", 0.55], ["orangePotion", 0.03], ["kettleHelm", 0.006], ["legionArmor", 0.005], ["bronzeSword", 0.005], ["ironGreaves", 0.006], ["ironBoots", 0.006], ["stingerPendant", 0.003]],
+  },
+  snapper: {
+    id: "snapper", name: "Snapper Flower", level: 10, hp: 280, atk: 17, def: 5, exp: 240, gold: [18, 30], speed: 0, chase: 0, aggro: 110, range: 64, attackMs: 1600, radius: 22, respawnMs: 30_000,
+    drops: [["bloom", 0.6], ["orangePotion", 0.08], ["redPotion", 0.1], ["saber", 0.008], ["bronzeHelm", 0.008], ["guardShield", 0.01], ["plateArmor", 0.004], ["meadowCrown", 0.0005]],
+  },
 };
 
 export const isMonsterId = (id: unknown): id is MonsterId => typeof id === "string" && Object.hasOwn(MONSTERS, id);
@@ -156,11 +179,16 @@ export function hitChance(attackerLevel: number, defenderLevel: number): number 
 
 export const CRIT_CHANCE = 0.05;
 
-/** One hit: attack spread ±15 %, minus defence (crits ignore it and hit 1.5x). At least 1. */
+/**
+ * One hit: attack spread ±15 %, softened by defence (defence equal to the
+ * attack halves it, so armour always helps but never makes you untouchable).
+ * Crits ignore defence and hit 1.5x. At least 1.
+ */
 export function rollDamage(atk: number, def: number, rand: () => number = Math.random): { damage: number; crit: boolean } {
   const base = atk * (0.85 + rand() * 0.3);
   const crit = rand() < CRIT_CHANCE;
-  return { damage: Math.max(1, Math.round(crit ? base * 1.5 : base - def)), crit };
+  const soft = atk + Math.max(0, def) > 0 ? atk / (atk + Math.max(0, def)) : 1;
+  return { damage: Math.max(1, Math.round(crit ? base * 1.5 : base * soft)), crit };
 }
 
 /** Share of max HP/MP regained per second out of combat, standing in the field (a full heal in a minute). */

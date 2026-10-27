@@ -1170,6 +1170,17 @@ https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-
 https://opengameart.org/content/bat-sprite
 ```
 
+## Item icons
+
+Potions, weapons, shields, rings, amulets and monster loot in the bag (armour icons are cut from the character art below):
+
+```
+"Kyrise's Free 16x16 RPG Icon Pack" by Kyrise.
+License: CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/).
+https://opengameart.org/content/kyrises-free-16x16-rpg-icon-pack
+https://kyrise.itch.io/
+```
+
 ## Gattchaa logo
 
 The Gattchaa logo and product images are property of Gattchaa Hobby Store and are not covered by the licenses above.
@@ -1191,6 +1202,44 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Authors: bluecarrot16
 - Licenses: CC0
 - <https://opengameart.org/content/lpc-hair>
+
+### Arming Sword (weapon/sword/arming)
+
+- Authors: ElizaWy; walk and down by JaidynReiman
+- Licenses: OGA-BY 3.0
+- <https://github.com/ElizaWy/LPC/tree/main/Characters/Props/Sword%2001%20-%20Arming%20Sword>
+- <https://opengameart.org/content/lpc-expanded-sit-run-jump-more>
+
+### Armour (arms/armour/plate/male)
+
+- Authors: Michael Whitlock (bigbeargames), Matthew Krohn (makrohn), Johannes Sjölund (wulax), bluecarrot16, JaidynReiman
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+- Notes: original by wulax, recolors by bigbeargames; adapted to v3 bases and further recolors by bluecarrot16, climb/emote/jump by JaidynReiman
+- <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+- <http://opengameart.org/content/lpc-clothing-updates>
+
+### Armour (arms/armour/plate/thin)
+
+- Authors: Michael Whitlock (bigbeargames), Matthew Krohn (makrohn), Johannes Sjölund (wulax), bluecarrot16, JaidynReiman
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+- Notes: original by wulax, adapted to female by makrohn, recolors by bigbeargames; adapted to v3 bases and further recolors by bluecarrot16, climb/emote by JaidynReiman
+- <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+- <https://opengameart.org/content/lpc-combat-armor-for-women>
+- <http://opengameart.org/content/lpc-clothing-updates>
+
+### Armour (feet/armour/plate)
+
+- Authors: Matthew Krohn (makrohn), Johannes Sjölund (wulax)
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+- Notes: original by wulax, recolors by bigbeargames, edits for v3 base and recolors by bluecarrot16
+- <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+
+### Armour (legs/armour/plate)
+
+- Authors: bluecarrot16, JaidynReiman, Michael Whitlock (bigbeargames), Matthew Krohn (makrohn), Johannes Sjölund (wulax)
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+- Notes: reduced to 7 colors an adapted to v3 bases by bluecarrot16, climb/jump/sit/emote/run by JaidynReiman
+- <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
 
 ### Bandana (hat/cloth/bandana)
 
@@ -1387,6 +1436,14 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://github.com/ElizaWy/LPC/blob/main/Characters/Hair>
 - <https://opengameart.org/content/lpc-expanded-sit-run-jump-more>
 
+### Crown (hat/formal/crown)
+
+- Authors: DarkwallLKE, Charles Sanchez (CharlesGabriel)
+- Licenses: CC-BY-SA 3.0, GPL 3.0
+- <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
+- <https://opengameart.org/content/lpc-crown>
+- <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
+
 ### Cuffed Pants (legs/cuffed)
 
 - Authors: ElizaWy, JaidynReiman, Johannes Sjölund (wulax), Stephen Challener (Redshrike)
@@ -1417,6 +1474,13 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Licenses: OGA-BY 3.0
 - <https://opengameart.org/content/lpc-hair>
 - <https://opengameart.org/content/lpc-expanded-sit-run-jump-more>
+
+### Dagger (weapon/sword/dagger)
+
+- Authors: bluecarrot16, Johannes Sjölund (wulax), Matthew Krohn (makrohn)
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+- <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+- <https://opengameart.org/content/lpc-extended-weapon-animations>
 
 ### Dreadlocks short (hair/dreadlocks_short)
 
@@ -1480,6 +1544,12 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Licenses: OGA-BY 3.0
 - <https://github.com/ElizaWy/LPC/tree/main/Characters/Hair>
 - <https://opengameart.org/content/lpc-expanded-sit-run-jump-more>
+
+### Heater Shield Base (shield/heater/original/wood)
+
+- Authors: bluecarrot16, Sander Frenken (castelonia), ElizaWy
+- Licenses: OGA-BY 3.0
+- <https://opengameart.org/content/lpc-shields>
 
 ### High and tight (hair/high_and_tight)
 
@@ -1545,6 +1615,14 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://opengameart.org/content/lpc-pirates>
 - <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
 
+### Kettle helm (hat/helmet/kettle)
+
+- Authors: Johannes Sjölund (wulax), JaidynReiman, Napsio (Vitruvian Studio)
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+- Notes: previously referred to as chain-hat, color reduction by Napsio (Vitruvian Studio)
+- <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+- <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
+
 ### Kimono (dress/kimono/normal)
 
 - Authors: JaidynReiman, Stephen Challener (Redshrike), Johannes Sjölund (wulax)
@@ -1556,6 +1634,25 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Authors: JaidynReiman
 - Licenses: OGA-BY 3.0+, CC-BY 3.0+, GPL 3.0+
 - <https://opengameart.org/content/lpc-expanded-xlong-hair>
+
+### Leather (torso/armour/leather)
+
+- Authors: Johannes Sjölund (wulax), bluecarrot16, JaidynReiman
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+- Notes: adapted to v3 bases by bluecarrot16, reduced colors and climb/emote/jump by JaidynReiman
+- <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+- <https://opengameart.org/content/lpc-clothing-updates>
+- <https://opengameart.org/content/lpc-expanded-armor>
+
+### Leather (torso/armour/leather/female)
+
+- Authors: Michael Whitlock (bigbeargames), Matthew Krohn (makrohn), Johannes Sjölund (wulax), bluecarrot16, JaidynReiman
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+- Notes: recolor of torso/armour/leather/female/brown.png, adapted to v3 bases by bluecarrot16, reduced colors and climb/emote/jump by JaidynReiman
+- <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+- <https://opengameart.org/content/lpc-combat-armor-for-women>
+- <https://opengameart.org/content/lpc-clothing-updates>
+- <https://opengameart.org/content/lpc-expanded-armor>
 
 ### Leather Cap (hat/cloth/leather_cap)
 
@@ -1573,6 +1670,13 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <http://opengameart.org/content/sara-wizard>
 - <https://opengameart.org/content/lpc-sara>
 - <https://opengameart.org/content/lpc-expanded-pants>
+
+### Legion (torso/armour/legion)
+
+- Authors: Napsio (Vitruvian Studio), JaidynReiman, bluecarrot16, Nila122
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 2.0, GPL 3.0
+- Notes: adapted to v3 bases by bluecarrot16, jump/run/sit/combat and teen by JaidynReiman, color reduction to 6 colors inspired by Napsio (Vitruvian Studio)
+- <https://opengameart.org/content/lpc-roman-armor>
 
 ### Lob (hair/lob)
 
@@ -1683,6 +1787,14 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
 - <https://opengameart.org/content/lpc-expanded-hair>
 
+### Mail (hat/helmet/mail)
+
+- Authors: Napsio (Vitruvian Studio), Johannes Sjölund (wulax), JaidynReiman
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+- Notes: reduced palette version by Napsio
+- <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+- <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
+
 ### Medium Beard (beards/beard/medium)
 
 - Authors: ElizaWy
@@ -1711,6 +1823,13 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Licenses: CC-BY-SA 3.0, GPL 3.0
 - Notes: Original by Nemisys, repositioning by JaidynReiman.
 - <https://opengameart.org/content/lpc-brunet-mustache>
+
+### Nasal helm (hat/helmet/nasal)
+
+- Authors: bluecarrot16
+- Licenses: CC-BY 3.0, CC-BY 4.0, OGA-BY 3.0, GPL 2.0, GPL 3.0
+- <https://opengameart.org/content/lpc-helmets>
+- <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
 
 ### Natural (hair/natural)
 
@@ -1786,6 +1905,23 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Notes: original by wulax, edited for female base by pvigier, edited for v3 base by bluecarrot16, idle & sit by Ahmad3366, color reduced & female sit/emote by JaidynReiman
 - <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
 
+### Plate (torso/armour/plate/female)
+
+- Authors: JaidynReiman, bluecarrot16, Michael Whitlock (bigbeargames), Matthew Krohn (makrohn), Johannes Sjölund (wulax)
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+- Notes: original by wulax, adapted to female base by makrohn, recolor by bigbeargames, color reduced to 7 colors and adapted to v3 bases by bluecarrot16, run/jump/sit/climb/revised combat by JaidynReiman, reduced colors to 6 (based on Napsio's Vitruvian)
+- <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+- <https://opengameart.org/content/lpc-combat-armor-for-women>
+- <http://opengameart.org/content/lpc-clothing-updates>
+
+### Plate (torso/armour/plate/male)
+
+- Authors: Napsio (Vitruvian Studio), JaidynReiman, bluecarrot16, Michael Whitlock (bigbeargames), Johannes Sjölund (wulax)
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+- Notes: original by wulax, recolor by bigbeargames, color reduced to 7 colors and adapted to v3 bases by bluecarrot16, run/jump/sit/climb/revised combat by JaidynReiman, reduced colors to 6 (based on Napsio's Vitruvian)
+- <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+- <https://opengameart.org/content/lpc-combat-armor-for-women>
+
 ### Ponytail (hair/ponytail)
 
 - Authors: JaidynReiman, Manuel Riecke (MrBeast)
@@ -1823,6 +1959,13 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Licenses: CC-BY-SA 3.0, GPL 3.0
 - <https://opengameart.org/content/clothing-facial-features-and-ui-elements>
 - <https://opengameart.org/content/lpc-gentleman>
+
+### Saber (weapon/sword/saber)
+
+- Authors: Daniel Eddeland (daneeklu), Johannes Sjölund (wulax), gr3yh47, bluecarrot16
+- Licenses: CC-BY-SA 3.0
+- <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+- <https://opengameart.org/content/lpc-extended-weapon-animations>
 
 ### Sandals (feet/sandals)
 

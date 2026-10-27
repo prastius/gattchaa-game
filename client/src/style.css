@@ -427,6 +427,286 @@ button {
   }
 }
 
+/* ---------- Bag (I) and the quick potion button ---------- */
+
+/* How many potions you carry, in the corner of the potion button. */
+.hud-counted {
+  position: relative;
+}
+
+.hud-count {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: #b8322a;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+
+.bag {
+  --cell: 42px;
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  width: calc(var(--cell) * 6 + 4px * 5 + 28px);
+  max-height: calc(100vh - 24px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px 14px;
+  border-radius: 14px;
+  background: var(--panel-solid);
+  border: 1px solid rgba(235, 130, 36, 0.45);
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.55);
+  z-index: 6;
+  animation: bag-in 0.14s ease-out;
+}
+
+@keyframes bag-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+.bag-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bag-head h2 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.bag-head .gold {
+  margin-left: auto;
+  font-size: 14px;
+}
+
+.bag-head .dialog-close {
+  margin-left: 0;
+}
+
+.bag-top {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+#bag-portrait {
+  flex: none;
+  width: 72px;
+  height: 88px;
+  border-radius: 10px;
+  background: radial-gradient(circle at 50% 70%, #3a2a1c, #1d1712 70%);
+  border: 1px solid var(--line);
+  image-rendering: pixelated;
+}
+
+.bag-gear {
+  display: grid;
+  grid-template-columns: repeat(4, var(--cell));
+  gap: 4px;
+}
+
+.bag-grid {
+  display: grid;
+  grid-template-columns: repeat(6, var(--cell));
+  gap: 4px;
+}
+
+.bag-stats {
+  margin: 0;
+  color: var(--ink-dim);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.slot {
+  position: relative;
+  width: var(--cell);
+  height: var(--cell);
+  padding: 0;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: #232323;
+  cursor: pointer;
+}
+
+.slot canvas {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 32px;
+  height: 32px;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+/* A soft light behind each item, so dark iron reads on the dark panel. */
+.slot.filled {
+  background: radial-gradient(circle at 50% 50%, #4d463d, #2c2925 72%);
+}
+
+.slot:hover {
+  border-color: var(--accent-soft);
+}
+
+.slot.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(235, 130, 36, 0.45);
+}
+
+.slot[data-rarity="uncommon"] {
+  border-color: rgba(125, 219, 110, 0.7);
+}
+
+.slot[data-rarity="rare"] {
+  border-color: rgba(92, 178, 255, 0.8);
+}
+
+.slot[data-rarity="epic"] {
+  border-color: rgba(200, 139, 255, 0.85);
+}
+
+.slot[data-rarity="legendary"] {
+  border-color: #ffad42;
+  box-shadow: inset 0 0 10px rgba(255, 173, 66, 0.35);
+}
+
+.slot-count {
+  position: absolute;
+  right: 3px;
+  bottom: 1px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 2px #000, 0 0 2px #000;
+  pointer-events: none;
+}
+
+/* Empty equipment slots say what goes there. */
+.slot-label {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: rgba(245, 241, 234, 0.32);
+  font-size: 9.5px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.slot.filled .slot-label {
+  display: none;
+}
+
+.bag-detail {
+  min-height: 92px;
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--panel-raised);
+  border: 1px solid var(--line);
+  font-size: 13px;
+}
+
+.bag-detail p {
+  margin: 4px 0 0;
+}
+
+.bag-hint {
+  color: var(--ink-dim);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.bag-name {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.bag-meta {
+  color: var(--ink-dim);
+  font-size: 12px;
+}
+
+.bag-meta .too-low {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.bag-bonus {
+  color: #9fe58f;
+  font-weight: 700;
+}
+
+.bag-desc {
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+.bag-price {
+  color: #ffd27a;
+  font-size: 12px;
+}
+
+.bag-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.bag-button {
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: #333;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.bag-button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.bag-button.danger:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+@media (max-width: 600px) {
+  .bag {
+    --cell: min(46px, calc((100vw - 48px) / 6));
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    max-height: 82vh;
+    border-radius: 14px 14px 0 0;
+  }
+  .bag-top,
+  .bag-grid {
+    justify-content: center;
+  }
+}
+
 /* ---------- Chat ---------- */
 
 #chat {
@@ -1077,6 +1357,116 @@ button.dialog-link:disabled {
   margin: 10px 0 0;
   color: var(--ink-dim);
   font-size: 12px;
+}
+
+/* ---------- NPC merchants: buy and sell for gold ---------- */
+
+.trade-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 6px 8px 0;
+  background: var(--panel-solid);
+}
+
+.trade-tab {
+  padding: 6px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--panel-raised);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.trade-tab.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.trade-gold {
+  margin-left: auto;
+  font-size: 14px;
+}
+
+.sell-all {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.ware-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ware {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: var(--panel-raised);
+  border: 1px solid var(--line);
+}
+
+.ware-icon {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  image-rendering: pixelated;
+}
+
+.ware-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.ware-name {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.ware-info {
+  color: var(--ink-dim);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ware-actions {
+  display: flex;
+  gap: 4px;
+  flex: none;
+}
+
+.ware-button {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 210, 122, 0.4);
+  background: #3a3021;
+  color: #ffd27a;
+  font: inherit;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ware-button:hover:not(:disabled) {
+  border-color: #ffd27a;
+}
+
+.ware-button:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 /* ---------- Player shops: open-a-shop form, shop list ---------- */

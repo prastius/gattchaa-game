@@ -9,9 +9,11 @@ import {
   type ShopRoom,
 } from "../../../shared/gattchaa";
 import { SHOP_AWAY_HOURS, SHOP_TITLE_MAX, signText, type PlayerShopDetails, type PlayerShopView } from "../../../shared/vending";
-import { FRAME, composeCharacter } from "../character";
+import { ITEMS, OUTFITTER_STOCK, RARITY, bonusText, sellPrice, type ItemDef, type ItemId } from "../../../shared/items";
+import { FRAME, composeCharacter, itemIcon } from "../character";
 import type { Shop } from "../shop";
 import type { Vending } from "../vending";
+import type { Net } from "../net";
 import { audio } from "../audio";
 
 // The panel that opens when you talk to someone, use a machine or visit a
@@ -94,6 +96,8 @@ export class TownDialog {
   private backTo?: string;
   /** Re-checks the spot under your feet while the open-a-shop form is up. */
   private spotTimer?: number;
+  /** Which side of a merchant's counter is showing. */
+  private tradeTab: "buy" | "sell" = "buy";
   /** Where the conversation is happening; walking away closes it. */
   anchor = { x: 0, y: 0 };
   /** Where your character stands right now (set by the game scene). */
@@ -103,6 +107,7 @@ export class TownDialog {
   constructor(
     private shop: Shop,
     private vending: Vending,
+    private net: Net,
   ) {
     this.logo.src = `${import.meta.env.BASE_URL}assets/gattchaa/logo-64.png`;
     $("dialog-close").addEventListener("click", () => this.close());
@@ -112,6 +117,14 @@ export class TownDialog {
     // Live data changes (stock, seats, shops opening) refresh whatever is open.
     shop.onChange(() => this.refresh(false));
     vending.onChange.add(() => this.refresh(true));
+    // Gold and bag changes redraw a merchant's counter.
+    const trade = () => {
+      if (this.isOpen && this.openTarget && NPCS.find((n) => `npc:${n.id}` === this.openTarget)?.kind === "outfitter") {
+        this.render(this.openTarget, false);
+      }
+    };
+    net.onBag.add(trade);
+    net.onStats.add(trade);
   }
 
   get isOpen() {
@@ -125,6 +138,7 @@ export class TownDialog {
   open(target: string, at: { x: number; y: number }) {
     this.anchor = at;
     this.backTo = undefined;
+    this.tradeTab = "buy";
     audio.blip();
     this.render(target, true);
     this.root.hidden = false;
@@ -219,6 +233,9 @@ export class TownDialog {
       case "pickup":
         this.links(LINKS[npc.kind], from);
         break;
+      case "outfitter":
+        this.counter(npc);
+        break;
       case "keeper":
         this.shopList();
         if (!this.vending.auth.signedIn) this.signInButton("Sign in to open your own shop");
@@ -227,6 +244,111 @@ export class TownDialog {
       default:
         break;
     }
+  }
+
+  // ------------------------------------------------------------------ NPC merchants (in-game gold)
+
+  /** A merchant's counter: buy their stock, or sell them what's in your bag. */
+  private counter(npc: NpcDef) {
+    const gold = this.net.stats?.gold ?? 0;
+    const tabs = el("div", "trade-tabs");
+    for (const [tab, label] of [["buy", "Buy"], ["sell", "Sell"]] as const) {
+      const b = el("button", `trade-tab${this.tradeTab === tab ? " on" : ""}`, label);
+      b.type = "button";
+      b.addEventListener("click", () => {
+        if (this.tradeTab === tab) return;
+        this.tradeTab = tab;
+        audio.blip();
+        this.render(`npc:${npc.id}`, false);
+        this.body.scrollTop = 0;
+      });
+      tabs.append(b);
+    }
+    const purse = el("span", "gold trade-gold");
+    purse.append(el("span", "coin"), el("span", "", gold.toLocaleString("en-US")));
+    tabs.append(purse);
+    this.body.append(tabs);
+    if (this.tradeTab === "buy") this.wares(npc, gold);
+    else this.buyBack(npc);
+  }
+
+  private wares(npc: NpcDef, gold: number) {
+    const list = el("div", "ware-list");
+    for (const id of OUTFITTER_STOCK) {
+      const it = ITEMS[id];
+      const price = it.price ?? 0;
+      const buttons: HTMLButtonElement[] = [this.wareButton(`Buy · ${price}`, gold >= price, () => this.net.buy(npc.id, id, 1))];
+      if (it.kind === "use") buttons.push(this.wareButton(`×10 · ${price * 10}`, gold >= price * 10, () => this.net.buy(npc.id, id, 10)));
+      list.append(this.ware(it, this.wareInfo(it), buttons));
+    }
+    this.body.append(list);
+  }
+
+  private buyBack(npc: NpcDef) {
+    const bag = this.net.bag?.bag ?? [];
+    let lootGold = 0;
+    let lootCount = 0;
+    for (const s of bag) {
+      if (!s || ITEMS[s.id].kind !== "loot") continue;
+      lootGold += sellPrice(ITEMS[s.id]) * s.n;
+      lootCount += s.n;
+    }
+    if (lootCount > 0) {
+      const all = el("button", "dialog-link primary sell-all");
+      all.type = "button";
+      all.append(el("span", "", `Sell all monster loot · +${lootGold} gold`), el("small", "", `${lootCount} item${lootCount === 1 ? "" : "s"}: jelly, scales, honey and the like`));
+      all.addEventListener("click", () => {
+        audio.coin();
+        this.net.sellLoot(npc.id);
+      });
+      this.body.append(all);
+    }
+    const list = el("div", "ware-list");
+    bag.forEach((s, slot) => {
+      if (!s) return;
+      const it = ITEMS[s.id];
+      const price = sellPrice(it);
+      if (price <= 0) return;
+      const buttons = [this.wareButton(`Sell · ${price}`, true, () => this.net.sell(npc.id, slot, 1))];
+      if (s.n > 1) buttons.push(this.wareButton(`All · ${price * s.n}`, true, () => this.net.sell(npc.id, slot, s.n)));
+      list.append(this.ware(it, `${s.n > 1 ? `×${s.n} · ` : ""}${this.wareInfo(it)}`, buttons));
+    });
+    if (list.childElementCount === 0) {
+      this.body.append(el("p", "dialog-empty", "Nothing in your bag to sell. Monsters outside the gate drop loot I'll gladly buy!"));
+    } else this.body.append(list);
+    this.body.append(el("p", "dialog-note", "Worn equipment isn't for sale: take it off in your bag (I) first."));
+  }
+
+  private wareInfo(it: ItemDef): string {
+    const parts = [bonusText(it) || it.desc];
+    if (it.lv && it.lv > 1) parts.unshift(`Lv ${it.lv}+`);
+    return parts.join(" · ");
+  }
+
+  private ware(it: ItemDef, info: string, buttons: HTMLButtonElement[]) {
+    const row = el("div", "ware");
+    const icon = el("canvas", "ware-icon");
+    icon.width = icon.height = 32;
+    itemIcon(it.id as ItemId).then((c) => icon.getContext("2d")!.drawImage(c, 0, 0));
+    const text = el("div", "ware-text");
+    const name = el("div", "ware-name", it.name);
+    name.style.color = RARITY[it.rarity].color;
+    text.append(name, el("div", "ware-info", info));
+    const actions = el("div", "ware-actions");
+    actions.append(...buttons);
+    row.append(icon, text, actions);
+    return row;
+  }
+
+  private wareButton(label: string, enabled: boolean, onClick: () => void) {
+    const b = el("button", "ware-button", label);
+    b.type = "button";
+    b.disabled = !enabled;
+    b.addEventListener("click", () => {
+      audio.coin();
+      onClick();
+    });
+    return b;
   }
 
   // ------------------------------------------------------------------ player shops

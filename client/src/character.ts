@@ -1,5 +1,6 @@
 import { CATALOG } from "../../shared/catalog";
 import { ITEM_FIELDS, bodyName, decodeLook, isHidden, type ItemField } from "../../shared/appearance";
+import { ITEMS, parseGear, splitAppearance, type GearArt, type ItemId, type Slot } from "../../shared/items";
 
 // Builds a character sprite sheet from LPC layers (body, head, hair, clothes...)
 // recoloured with palette swaps. One sheet per distinct appearance, cached.
@@ -30,6 +31,8 @@ interface ItemDef {
   id: string;
   name: string;
   materials: string[];
+  /** Materials drawn in another colour than the palette's base (leather armour is drawn in "leather"). */
+  bases?: Record<string, string>;
   layers: LayerDef[];
   /** Stand-in sitting layers for items that have no sit frames of their own. */
   sitLayers?: LayerDef[];
@@ -75,8 +78,9 @@ function colorMap(m: Manifest, item: ItemDef, choice: Record<string, string>): M
   for (const material of item.materials) {
     const name = choice[material];
     const pal = m.palettes[material];
-    if (!name || !pal || name === pal.base) continue;
-    const from = pal.colors[pal.base];
+    const base = item.bases?.[material] ?? pal?.base;
+    if (!name || !pal || !base || name === base) continue;
+    const from = pal.colors[base];
     const to = pal.colors[name];
     if (!from || !to) continue;
     from.forEach((c, i) => to[i] && map.set(hexToInt(c), hexToInt(to[i])));
@@ -114,16 +118,26 @@ function recolor(file: string, map: Map<number, number>): Promise<CanvasImageSou
   return p;
 }
 
+/** Worn equipment covers the clothes underneath: a helmet replaces the hat, greaves the trousers… */
+const GEAR_COVERS: Partial<Record<Slot, ItemField>> = { head: "hat", legs: "bottom", feet: "shoes" };
+
+const findItem = (m: Manifest, category: string, id: string) => m.items.find((i) => i.category === category && i.id === id);
+const gearPick = (m: Manifest, art: GearArt): [ItemDef | undefined, Record<string, string>] => [findItem(m, "gear", art.id), { ...art.colors }];
+
 /**
- * Composes the sprite sheet for an encoded look: the walk cycle (576x256), plus
- * the body's sitting pose to its right when `sit` is set (640x256). Previews
- * that only walk skip the sitting layers and their downloads.
+ * Composes the sprite sheet for an appearance key (an encoded look, plus
+ * "|gear" when equipment is worn): the walk cycle (576x256), plus the body's
+ * sitting pose to its right when `sit` is set (640x256). Previews that only
+ * walk skip the sitting layers and their downloads.
  */
-export async function composeCharacter(lookStr: string, opts: { sit?: boolean } = {}): Promise<HTMLCanvasElement> {
+export async function composeCharacter(key: string, opts: { sit?: boolean } = {}): Promise<HTMLCanvasElement> {
   const m = await loadManifest();
+  const { look: lookStr, gear: gearStr } = splitAppearance(key);
   const look = decodeLook(lookStr);
   const body = bodyName(look);
-  const item = (category: string, id: string) => m.items.find((i) => i.category === category && i.id === id);
+  const item = (category: string, id: string) => findItem(m, category, id);
+  const gear = parseGear(gearStr);
+  const covered = new Set(gear.map((g) => g.slot && GEAR_COVERS[g.slot]).filter(Boolean));
 
   const cloth = CATALOG.clothColors;
   const hair = CATALOG.hairColors[look.hairColor];
@@ -143,10 +157,11 @@ export async function composeCharacter(lookStr: string, opts: { sit?: boolean } 
     glasses: {},
   };
   for (const field of Object.keys(ITEM_FIELDS) as ItemField[]) {
-    if (isHidden(look, field)) continue;
+    if (isHidden(look, field) || covered.has(field)) continue;
     const choice = ITEM_FIELDS[field][look[field]];
     if (choice) picks.push([item(field, choice.id), colors[field]]);
   }
+  for (const g of gear) for (const art of g.art ?? []) picks.push(gearPick(m, art));
 
   // `pose`: which column of an LPC sit sheet to copy into the sitting column.
   const layers: { z: number; pose?: number; src: Promise<CanvasImageSource> }[] = [];
@@ -178,12 +193,98 @@ export async function composeCharacter(lookStr: string, opts: { sit?: boolean } 
   return canvas;
 }
 
-/** Preloads every character layer so the creator feels instant. */
+/** Preloads every character layer so the creator feels instant (equipment loads when someone wears it). */
 export async function preloadCharacterArt(): Promise<void> {
   const m = await loadManifest();
   await Promise.all(
-    m.items.flatMap((i) => i.layers.flatMap((l) => Object.values(l.files).map((f) => f.walk && loadImage(f.walk).catch(() => undefined)))),
+    m.items
+      .filter((i) => i.category !== "gear")
+      .flatMap((i) => i.layers.flatMap((l) => Object.values(l.files).map((f) => f.walk && loadImage(f.walk).catch(() => undefined)))),
   );
+}
+
+// ---------------------------------------------------------------- item icons
+
+/** Item icons are drawn at this size (the 16px icon pack at 2x). */
+export const ICON = 32;
+const icons = new Map<string, Promise<HTMLCanvasElement>>();
+
+/**
+ * An item's icon on a 32x32 canvas (cached): from the icon pack, or cut from
+ * its gear art (the standing, facing-down frame, trimmed and centred).
+ */
+export function itemIcon(id: ItemId): Promise<HTMLCanvasElement> {
+  let p = icons.get(id);
+  if (!p) {
+    p = drawIcon(id).catch((err) => {
+      console.warn("item icon", id, err);
+      return blankIcon();
+    });
+    icons.set(id, p);
+  }
+  return p;
+}
+
+function blankIcon(): HTMLCanvasElement {
+  const c = document.createElement("canvas");
+  c.width = c.height = ICON;
+  return c;
+}
+
+async function drawIcon(id: ItemId): Promise<HTMLCanvasElement> {
+  const it = ITEMS[id];
+  const out = blankIcon();
+  const ctx = out.getContext("2d")!;
+  ctx.imageSmoothingEnabled = false;
+  if (it.icon) {
+    const img = await loadImage(`items/${it.icon}.png`);
+    ctx.drawImage(img, 0, 0, img.width, img.height, (ICON - img.width * 2) / 2, (ICON - img.height * 2) / 2, img.width * 2, img.height * 2);
+    return out;
+  }
+
+  // The art alone, on the male body's standing frame: facing down, or sideways
+  // for boots (one boot side-on reads better than two specks).
+  const row = it.slot === "feet" ? 3 : 2;
+  const m = await loadManifest();
+  const frame = document.createElement("canvas");
+  frame.width = frame.height = FRAME;
+  const fctx = frame.getContext("2d", { willReadFrequently: true })!;
+  const layers: { z: number; src: CanvasImageSource }[] = [];
+  for (const art of it.art ?? []) {
+    const [def, choice] = gearPick(m, art);
+    if (!def) continue;
+    const map = colorMap(m, def, choice);
+    for (const layer of def.layers) {
+      const file = layer.files.male?.walk;
+      if (file) layers.push({ z: layer.z, src: await recolor(file, map) });
+    }
+  }
+  layers.sort((a, b) => a.z - b.z);
+  for (const l of layers) fctx.drawImage(l.src, 0, row * FRAME, FRAME, FRAME, 0, 0, FRAME, FRAME);
+
+  // Trim to the drawn pixels, then fill the icon with them (up to 2x) in the middle.
+  const px = fctx.getImageData(0, 0, FRAME, FRAME).data;
+  let x0 = FRAME;
+  let y0 = FRAME;
+  let x1 = -1;
+  let y1 = -1;
+  for (let y = 0; y < FRAME; y++) {
+    for (let x = 0; x < FRAME; x++) {
+      if (px[(y * FRAME + x) * 4 + 3] === 0) continue;
+      x0 = Math.min(x0, x);
+      y0 = Math.min(y0, y);
+      x1 = Math.max(x1, x);
+      y1 = Math.max(y1, y);
+    }
+  }
+  if (x1 < 0) return out;
+  const w = x1 - x0 + 1;
+  const h = y1 - y0 + 1;
+  const scale = Math.min(2, (ICON - 2) / Math.max(w, h));
+  const dw = Math.round(w * scale);
+  const dh = Math.round(h * scale);
+  ctx.drawImage(frame, x0, y0, w, h, Math.floor((ICON - dw) / 2), Math.floor((ICON - dh) / 2), dw, dh);
+  return out;
 }
 
 /** Mid-tone swatch colour for a palette entry (for the UI). */

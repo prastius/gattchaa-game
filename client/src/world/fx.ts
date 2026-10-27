@@ -9,8 +9,8 @@ const DEPTH = 1e6 - 5;
 /** 3x3 white pixel made by the world scene. */
 const SPARK = "spark";
 
-/** dealt: your hits; taken: hits on you; other: everyone else's; miss: a whiff. */
-export type NumberKind = "dealt" | "crit" | "taken" | "other" | "miss";
+/** dealt: your hits; taken: hits on you; other: everyone else's; miss: a whiff; heal: potions. */
+export type NumberKind = "dealt" | "crit" | "taken" | "other" | "miss" | "heal";
 
 const NUMBER_STYLE: Record<NumberKind, { size: number; color: string }> = {
   dealt: { size: 14, color: "#ffffff" },
@@ -18,6 +18,7 @@ const NUMBER_STYLE: Record<NumberKind, { size: number; color: string }> = {
   taken: { size: 14, color: "#ff5c57" },
   other: { size: 11, color: "#d9dde2" },
   miss: { size: 11, color: "#9fd3ff" },
+  heal: { size: 14, color: "#7cf08a" },
 };
 
 export class Fx {

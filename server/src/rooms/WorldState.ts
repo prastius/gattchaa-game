@@ -20,6 +20,8 @@ export const Player = schema(
     mhp: t.uint16().default(0),
     /** Knocked out, until they return to town. */
     dead: t.boolean().default(false),
+    /** What they're wearing, for drawing them (see gearString in shared/items.ts). */
+    gear: t.string().default(""),
   },
   "Player",
 );
@@ -74,6 +76,20 @@ export const Monster = schema(
 );
 export type Monster = SchemaType<typeof Monster>;
 
+/** An item lying on the ground (monster loot, or dropped by a player). */
+export const Drop = schema(
+  {
+    item: t.string(),
+    n: t.uint16().default(1),
+    x: t.uint16(),
+    y: t.uint16(),
+    /** Session id of whoever gets first pick; cleared when anyone may take it. */
+    owner: t.string().default(""),
+  },
+  "Drop",
+);
+export type Drop = SchemaType<typeof Drop>;
+
 export const WorldState = schema(
   {
     // .view(): each client only receives the players its StateView contains
@@ -81,6 +97,8 @@ export const WorldState = schema(
     players: t.map(Player).view(),
     // Monsters out in the fields; like players, each client only gets the ones near it.
     monsters: t.map(Monster).view(),
+    // Items on the ground; also only the ones near you.
+    drops: t.map(Drop).view(),
     // A dozen townspeople; everyone gets all of them.
     npcs: t.map(Npc),
     // Open player shops. Everyone gets all of them: the Market Keeper lists them, and the minimap shows them.

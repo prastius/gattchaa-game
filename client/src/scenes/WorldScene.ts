@@ -8,6 +8,7 @@ import {
   MONSTER_ID_PREFIX,
   NET_SEND_HZ,
   VIEW_RADIUS,
+  type DropView,
   type FxEvent,
   type MonsterView,
   type MoveMessage,
@@ -16,10 +17,12 @@ import {
   type TargetMessage,
 } from "../../../shared/protocol";
 import { isClassId, isMonsterId, reach, statsFor } from "../../../shared/rpg";
+import { ITEMS, PICKUP_RANGE, RARITY, appearanceKey, isItemId } from "../../../shared/items";
 import { NPCS, type NpcDef } from "../../../shared/npcs";
 import { DOORS, INTERIOR_ZONE, PROPS, TOWN_AREA, inRect } from "../../../shared/town";
 import { CharacterTextures, PlayerSprite } from "../PlayerSprite";
 import { MonsterSprite } from "../MonsterSprite";
+import { DropSprite } from "../DropSprite";
 import { createMonsterAnims, levelColor, preloadMonsters } from "../world/monsterArt";
 import { Fx, type NumberKind } from "../world/fx";
 import { ATLAS_MARGIN, ATLAS_SPACING, FLOOR_TEX, buildTerrainAtlas, floorCell, structKey, tileCells, type TerrainAtlas } from "../world/terrainTiles";
@@ -33,6 +36,7 @@ import { audio } from "../audio";
 import type { ChatUI } from "../ui/chat";
 import type { HUD } from "../ui/hud";
 import type { StatusPanel } from "../ui/status";
+import type { BagPanel } from "../ui/bag";
 import type { Net } from "../net";
 import type { Shop } from "../shop";
 import type { TownDialog } from "../ui/dialog";
@@ -48,6 +52,7 @@ export interface WorldSceneData {
   dialog: TownDialog;
   vending: Vending;
   status: StatusPanel;
+  bag: BagPanel;
 }
 
 interface Chunk {
@@ -73,6 +78,11 @@ interface MobEntity {
   state: MonsterView;
   interp: Interpolator;
   lastTs: number;
+}
+
+interface DropEntity {
+  sprite: DropSprite;
+  state: DropView;
 }
 
 const ATLAS_KEY = "terrain-atlas";
@@ -105,6 +115,10 @@ const TARGET_DROP_RANGE = 700;
 /** Chasing stops this far inside reach, so the server (which sees you a moment late) agrees. */
 const CHASE_MARGIN = 8;
 const NO_TARGET_HINT_MS = 3000;
+/** Loot further than this (px) can't be clicked from where you stand. */
+const LOOT_CLICK_RANGE = 420;
+/** Ask again if the server hasn't answered a pick-up by then (it was a step ahead of us). */
+const PICKUP_RETRY_MS = 500;
 
 const dirTo = (dx: number, dy: number) => (Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? Dir.Left : Dir.Right) : dy < 0 ? Dir.Up : Dir.Down);
 const isMonster = (id: string) => id.startsWith(MONSTER_ID_PREFIX);
@@ -153,6 +167,7 @@ export class WorldScene extends Phaser.Scene {
   private dialog!: TownDialog;
   private vending!: Vending;
   private status!: StatusPanel;
+  private bag!: BagPanel;
 
   private charTextures!: CharacterTextures;
   private atlas!: TerrainAtlas;
@@ -168,6 +183,16 @@ export class WorldScene extends Phaser.Scene {
   private entities = new Map<string, Entity>();
   private npcs = new Map<string, Entity>();
   private monsters = new Map<string, MobEntity>();
+  /** Items lying on the ground near you. */
+  private drops = new Map<string, DropEntity>();
+  /** The item you clicked: walk to it and pick it up. */
+  private pickTarget?: string;
+  private pickSentAt = 0;
+  private pickTries = 0;
+  /** Loot floats queue up so several pick-ups don't print over each other. */
+  private nextLootFloat = 0;
+  private potionHintAt = 0;
+  private hoveredDrop?: string;
   private fx!: Fx;
   /** The monster you're attacking (auto-attacks while it's in reach). */
   private target?: string;
@@ -291,13 +316,30 @@ export class WorldScene extends Phaser.Scene {
     this.hud.onShop(() => this.openShopPanel());
     this.hud.onEmote((e) => this.emote(e));
     this.hud.onAttack(() => this.targetNearest());
+    this.hud.onBag(() => this.bag.toggle());
+    this.hud.onPotion(() => this.drinkPotion());
+    this.bag.appearance = () => {
+      const me = this.entities.get(this.room.sessionId)?.state;
+      return me ? appearanceKey(me.look, me.gear) : "";
+    };
+    this.bag.health = () => {
+      const me = this.entities.get(this.room.sessionId)?.state;
+      return { hp: me?.hp ?? 0, mhp: me?.mhp ?? 0 };
+    };
+    const countPotions = () => {
+      let n = 0;
+      for (const s of this.net.bag?.bag ?? []) if (s && ITEMS[s.id].heal) n += s.n;
+      this.hud.setPotions(n);
+    };
+    this.net.onBag.add(countPotions);
+    countPotions();
     this.status.onReturn(() => this.room.send("revive"));
     this.input.on("pointerdown", (p: Phaser.Input.Pointer) => {
       this.chat.blur();
       // Clicking the world leaves any text box (a shop title…), so the game keys work again.
       if (this.typing()) (document.activeElement as HTMLElement | null)?.blur();
-      // Only a left click or a tap uses things; right/middle click does nothing. Monsters first.
-      this.pointerUsed = p.button === 0 && (this.tryTarget(p) || this.tryUse(p));
+      // Only a left click or a tap uses things; right/middle click does nothing. Monsters first, then loot.
+      this.pointerUsed = p.button === 0 && (this.tryTarget(p) || this.tryPickup(p) || this.tryUse(p));
     });
     this.input.on("wheel", (_p: Phaser.Input.Pointer, _over: unknown, _dx: number, dy: number) => {
       // Collect small trackpad deltas into whole steps; reset when direction flips.
@@ -318,6 +360,8 @@ export class WorldScene extends Phaser.Scene {
       } else if (e.key === "Escape" && this.target && !this.dialog.isOpen) this.clearTarget();
       else if (e.key === "+" || e.key === "=") this.zoomBy(1);
       else if (e.key === "-" || e.key === "_") this.zoomBy(-1);
+      else if (e.key === "i" || e.key === "I") this.bag.toggle();
+      else if (e.key === "q" || e.key === "Q") this.drinkPotion();
       // 1-9 and 0: the emotes, in picker order.
       else if (/^[0-9]$/.test(e.key)) this.emote((Number(e.key) + 9) % 10);
     });
@@ -400,7 +444,10 @@ export class WorldScene extends Phaser.Scene {
       const sessionId = key as string;
       const isSelf = sessionId === this.room.sessionId;
       this.entities.get(sessionId)?.sprite.destroy();
-      const sprite = new PlayerSprite(this, this.charTextures, state.x, state.y, state.name, state.look, { isSelf, textRes: () => this.textRes });
+      const sprite = new PlayerSprite(this, this.charTextures, state.x, state.y, state.name, appearanceKey(state.look, state.gear), {
+        isSelf,
+        textRes: () => this.textRes,
+      });
       sprite.dir = state.dir;
       this.entities.set(sessionId, { sprite, state, interp: new Interpolator(), lastTs: -1 });
       if (isSelf) {
@@ -457,6 +504,24 @@ export class WorldScene extends Phaser.Scene {
       if (this.target === id) this.clearTarget();
     });
 
+    callbacks.onAdd("drops", (value, key) => {
+      const state = value as DropView;
+      const id = key as string;
+      if (!isItemId(state.item)) return;
+      this.drops.get(id)?.sprite.destroy();
+      const sprite = new DropSprite(this, state.item, state.n, state.x, state.y, () => this.textRes);
+      this.drops.set(id, { sprite, state });
+    });
+
+    // Picked up, gone stale, or out of view.
+    callbacks.onRemove("drops", (_value, key) => {
+      const id = key as string;
+      this.drops.get(id)?.sprite.destroy();
+      this.drops.delete(id);
+      if (this.pickTarget === id) this.pickTarget = undefined;
+      if (this.hoveredDrop === id) this.hoveredDrop = undefined;
+    });
+
     this.net.onFx = (events) => {
       for (const ev of events) this.onFx(ev);
     };
@@ -487,7 +552,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.self) {
       const me = this.entities.get(this.room.sessionId);
       if (me) {
-        this.self.setLook(me.state.look); // wardrobe changes come back via state
+        this.self.setLook(appearanceKey(me.state.look, me.state.gear)); // wardrobe and gear changes come back via state
         this.updateHealth(me.state);
       }
       this.updateSelf(time, dt);
@@ -516,7 +581,7 @@ export class WorldScene extends Phaser.Scene {
       sprite.moving = step > (15 * dt) / 1000;
       // Sit once they've arrived (the sit flag can land a frame before the last step).
       sprite.sitting = Boolean(s.sit) && !sprite.moving;
-      sprite.setLook(s.look);
+      sprite.setLook(appearanceKey(s.look, s.gear));
       if (!e.npc) {
         sprite.dead = Boolean(s.dead);
         sprite.setHp(s.hp ?? 0, s.mhp ?? 0, (s.hp ?? 0) < (s.mhp ?? 0));
@@ -551,6 +616,7 @@ export class WorldScene extends Phaser.Scene {
       sprite.setHp(s.hp);
       sprite.animate();
     }
+    for (const d of this.drops.values()) d.sprite.locked = Boolean(d.state.owner) && d.state.owner !== this.room.sessionId;
     this.updateTarget();
     this.clock.update(dt, starved);
 
@@ -574,6 +640,7 @@ export class WorldScene extends Phaser.Scene {
       for (const [id, { sprite }] of this.entities) if (id !== this.room.sessionId) others.push(sprite);
       const state = this.room.state as { online?: number; siteOnline?: number };
       this.hud.update(this.self, others, state.online ?? this.entities.size, state.siteOnline ?? 0);
+      this.bag.tick();
     }
   }
 
@@ -639,9 +706,25 @@ export class WorldScene extends Phaser.Scene {
       return;
     }
 
-    // Walk to the monster you clicked until it's in reach; any manual step takes over.
-    if (dx || dy) this.chasing = false;
-    else if (this.chasing && this.target) {
+    // Walk to the loot or monster you clicked until it's in reach; any manual step takes over.
+    if (dx || dy) {
+      this.chasing = false;
+      this.pickTarget = undefined;
+    } else if (this.pickTarget) {
+      const d = this.drops.get(this.pickTarget);
+      const ox = d ? d.state.x - self.x : 0;
+      const oy = d ? d.state.y - self.y : 0;
+      if (!d) this.pickTarget = undefined;
+      else if (Math.hypot(ox, oy) > PICKUP_RANGE - CHASE_MARGIN) {
+        dx = ox;
+        dy = oy;
+      } else if (time - this.pickSentAt > PICKUP_RETRY_MS) {
+        // A couple of tries (the server sees us a moment late), then let it be: the bag may be full.
+        this.pickSentAt = time;
+        if (this.pickTries++ < 3) this.net.pickup(this.pickTarget);
+        else this.pickTarget = undefined;
+      }
+    } else if (this.chasing && this.target) {
       const mob = this.monsters.get(this.target);
       if (mob) {
         const ox = mob.sprite.x - self.x;
@@ -750,6 +833,67 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 
+  /** Click/tap on loot: walk over and pick it up. */
+  private tryPickup(p: Phaser.Input.Pointer): boolean {
+    const self = this.self;
+    const id = this.dropAt(p);
+    if (!id || !self || self.dead) return false;
+    const d = this.drops.get(id)!;
+    if (this.vending.myShop) this.chat.addSystem("You're minding your shop. Close it first to pick things up.");
+    else if (d.state.owner && d.state.owner !== this.room.sessionId) this.chat.addSystem("That's someone else's loot for a few more seconds.");
+    else {
+      this.pickTarget = id;
+      this.pickSentAt = 0;
+      this.pickTries = 0;
+      if (self.sitting) this.toggleSit();
+    }
+    return true;
+  }
+
+  /** The loot under the pointer, front-most first. */
+  private dropAt(p: Phaser.Input.Pointer): string | undefined {
+    const self = this.self;
+    if (!self) return undefined;
+    const wp = p.positionToCamera(this.cameras.main) as Phaser.Math.Vector2;
+    let best: string | undefined;
+    let bestY = -Infinity;
+    for (const [id, d] of this.drops) {
+      const s = d.sprite;
+      if (s.y > bestY && s.hitBox().contains(wp.x, wp.y) && Math.hypot(s.x - self.x, s.y - self.y) < LOOT_CLICK_RANGE) {
+        bestY = s.y;
+        best = id;
+      }
+    }
+    return best;
+  }
+
+  /** Q or the potion button: the smallest potion that heals you fully, or else the biggest you have. */
+  private drinkPotion() {
+    const me = this.entities.get(this.room.sessionId)?.state;
+    const bag = this.net.bag?.bag;
+    if (!me || !bag || me.dead) return;
+    const hint = (text: string) => {
+      if (performance.now() - this.potionHintAt < NO_TARGET_HINT_MS) return;
+      this.potionHintAt = performance.now();
+      this.chat.addSystem(text);
+    };
+    const missing = (me.mhp ?? 0) - (me.hp ?? 0);
+    if (missing <= 0) return hint("You're already at full health.");
+    let best = -1;
+    let bestHeal = 0;
+    bag.forEach((s, i) => {
+      const heal = s ? (ITEMS[s.id].heal ?? 0) : 0;
+      if (!heal) return;
+      const better = best < 0 || (bestHeal < missing ? heal > bestHeal : heal >= missing && heal < bestHeal);
+      if (better) {
+        best = i;
+        bestHeal = heal;
+      }
+    });
+    if (best < 0) return hint("You have no potions. Bram the Outfitter by the south gate sells them.");
+    this.net.useItem(best);
+  }
+
   /** Click/tap on a monster attacks it. */
   private tryTarget(p: Phaser.Input.Pointer): boolean {
     const id = this.monsterAt(p);
@@ -810,15 +954,23 @@ export class WorldScene extends Phaser.Scene {
       this.status.showTarget(mob.sprite.def.name, mob.sprite.def.level, mob.state.hp, mob.sprite.def.hp, color);
     }
 
-    // Desktop: point at a monster to see its name.
+    // Desktop: point at a monster (or loot) to see its name.
     const pointer = this.input.activePointer;
     const hovered = pointer.wasTouch ? undefined : this.monsterAt(pointer);
+    const hoveredDrop = pointer.wasTouch || hovered ? undefined : this.dropAt(pointer);
+    if (hoveredDrop !== this.hoveredDrop) {
+      const before = this.hoveredDrop ? this.drops.get(this.hoveredDrop) : undefined;
+      if (before) before.sprite.hovered = false;
+      const now = hoveredDrop ? this.drops.get(hoveredDrop) : undefined;
+      if (now) now.sprite.hovered = true;
+      this.hoveredDrop = hoveredDrop;
+    }
     if (hovered !== this.hovered) {
       const before = this.hovered ? this.monsters.get(this.hovered) : undefined;
       if (before) before.sprite.hovered = false;
       this.hovered = hovered;
-      this.game.canvas.style.cursor = hovered ? "pointer" : "";
     }
+    this.game.canvas.style.cursor = hovered || hoveredDrop ? "pointer" : "";
     const now = hovered ? this.monsters.get(hovered) : undefined;
     if (now) {
       now.sprite.setNameColor(levelColor(this.myLevel, now.sprite.kind));
@@ -891,6 +1043,23 @@ export class WorldScene extends Phaser.Scene {
         // Above the name tag, one line each.
         if (ev.exp) this.fx.float(self.x, self.y - 84, `+${ev.exp} EXP`, "#ffe2a0", 250);
         if (ev.gold) this.fx.float(self.x, self.y - 70, `+${ev.gold} gold`, "#ffd27a", 450);
+        return;
+      }
+      case "loot": {
+        const self = this.self;
+        if (!self || !isItemId(ev.item)) return;
+        const it = ITEMS[ev.item];
+        const now = performance.now();
+        const delay = Math.max(0, this.nextLootFloat - now);
+        this.nextLootFloat = now + delay + 260;
+        this.fx.float(self.x, self.y - 84, `+ ${it.name}${ev.n > 1 ? ` ×${ev.n}` : ""}`, RARITY[it.rarity].color, delay);
+        this.time.delayedCall(delay, () => audio.pickup(it.rarity !== "common"));
+        return;
+      }
+      case "heal": {
+        const b = this.body(ev.t);
+        if (b) this.fx.number(b.x, b.top, `+${ev.d}`, "heal");
+        if (ev.t === me) audio.potion();
         return;
       }
     }

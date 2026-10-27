@@ -23,6 +23,9 @@ Open the page in two browser windows to see multiplayer and chat.
 | Click / tap a monster | Attack it: you walk up to it and keep hitting while it's in reach |
 | Space / sword button | Attack the nearest monster (outside the town walls) |
 | Esc | Stop attacking |
+| Click / tap loot on the ground | Walk over and pick it up |
+| I / bag button | Bag: wear gear, drink potions, see your ATK and DEF |
+| Q / potion button | Drink a potion (the smallest one that heals you fully) |
 | X / chair button | Sit down where you stand; walking gets you up |
 | V / Open shop | Open your shop where you stand in the Market Square (signed-in players); while it's open: see it, or close it |
 | 1–9, 0 / smiley button | Emotes over your head: wave, happy, LOL, love, wow, sad, angry, nice, !, ? |
@@ -60,7 +63,7 @@ PM2 settings are in `ecosystem.config.cjs`.
 
 ### Saved data
 
-Accounts (players who signed in with Gattchaa), their characters' progress (class, level, EXP, HP/MP, gold) and open shops are kept in one SQLite file, `server/data/town.db`, using Node's built-in `node:sqlite`. There's no database server to run. Deploys and restarts leave the file alone; open shops come back after a restart. Back it up with a copy while the server is stopped, or live with `sqlite3 server/data/town.db ".backup town-backup.db"`. Set `DB_PATH` to keep it somewhere else.
+Accounts (players who signed in with Gattchaa), their characters' progress (class, level, EXP, HP/MP, gold, bag and equipment) and open shops are kept in one SQLite file, `server/data/town.db`, using Node's built-in `node:sqlite`. There's no database server to run. Deploys and restarts leave the file alone; open shops come back after a restart. Back it up with a copy while the server is stopped, or live with `sqlite3 server/data/town.db ".backup town-backup.db"`. Set `DB_PATH` to keep it somewhere else.
 
 ### Load testing
 
@@ -80,11 +83,14 @@ shared/       Code used by both client and server
   catalog.ts      Generated list of hair/clothes/colour options
   protocol.ts     Message types, name/chat sanitizing
   vending.ts      Player shop rules (where a shop may open) and messages
-  rpg.ts          Leveling and fighting: classes, the EXP curve, monsters, fields, damage rules
+  rpg.ts          Leveling and fighting: classes, the EXP curve, monsters (and their drops), fields, damage rules
+  items.ts        Every item: stats, prices, rarity, icon and how it looks when worn; the Outfitter's stock
 server/       Colyseus server
-  src/rooms/WorldRoom.ts   Joins, interest management, movement validation, chat, emotes, wardrobe, sitting, shops
+  src/rooms/WorldRoom.ts   Joins, interest management, movement validation, chat, emotes, wardrobe, sitting, shops, trading
   src/rooms/WorldState.ts  Synced state
-  src/rooms/Combat.ts      Monsters (spawning, AI), auto-attacks, EXP, level-ups, knockouts
+  src/rooms/Combat.ts      Monsters (spawning, AI), auto-attacks, EXP, level-ups, knockouts, loot, using items
+  src/rooms/Inventory.ts   A character's bag and equipment
+  src/rooms/Drops.ts       Items on the ground: first pick for the top fighter, then anyone; they fade after 90 s
   src/db.ts                SQLite: accounts, sessions, characters, open shops
   src/api.ts               Sign-in with Gattchaa, shop details
   src/gattchaa.ts          Gattchaa Town API client + webhooks
@@ -93,9 +99,10 @@ client/       Phaser game
   src/main.ts              Character creator and sign-in, then boots Phaser; wardrobe panel
   src/auth.ts              Gattchaa sign-in (ticket -> session token)
   src/vending.ts           Player shops: open/close yours, load a shop's cards
-  src/character.ts         Builds character sprite sheets (walk + sit) from recolored LPC layers
+  src/character.ts         Builds character sprite sheets (walk + sit) from recolored LPC layers, gear included; item icons
   src/PlayerSprite.ts      Avatar, walk/sit animation, name tag, chat bubble, emotes, health bar
   src/MonsterSprite.ts     Monster: animation, health bar, name on hover, target ring
+  src/DropSprite.ts        Loot on the ground: bounce, rarity glow, name on hover
   src/world/terrainTiles.ts  Corner autotiling + padded tile atlas
   src/world/decorSprites.ts  Trees, rocks, plants
   src/world/town.ts        Buildings and furniture, lit windows at night, bunting, live shop displays
@@ -105,7 +112,7 @@ client/       Phaser game
   src/world/monsterArt.ts  Monster sprite sheets and their animations
   src/world/fx.ts          Damage numbers, slashes, level-up light
   src/scenes/WorldScene.ts   Chunk streaming, water glints, input, camera, interpolation
-  src/ui/                  Creator, chat, HUD + minimap + emote picker, status panel (HP/MP/EXP), NPC and shop panels
+  src/ui/                  Creator, chat, HUD + minimap + emote picker, status panel (HP/MP/EXP), bag, NPC and shop panels
   public/assets/           Downloaded art + manifest (committed)
 scripts/
   fetch-assets.mjs   Re-downloads the art from pinned commits and regenerates catalog + credits
@@ -157,7 +164,20 @@ Ragnarok and TibiaME style: click a monster and your character fights it. Everyt
 - **Fainting.** At 0 HP you faint and return to town fully healed. Novices lose no EXP (the classes will lose a little).
 - **Saving.** Signed-in players' progress is saved on every level-up and faint, every 30 s, and when they leave. Guests can fight too, but start over next visit.
 - **Server cost.** Monsters only think while a player is near their spawn area, and fight events go only to players close enough to see them. 20 bots fighting at once used about 5 % of one CPU core.
-- **Testing.** Outside production (`NODE_ENV` not `production`), type `/level 25` in chat to jump to a level.
+- **Testing.** Outside production (`NODE_ENV` not `production`), chat commands help: `/level 25` jumps to a level, `/item saber` (or `/item redPotion 20`) adds items, `/gold 1000` sets your gold. `/help` lists every item id.
+
+## Items and equipment
+
+Every item is in `shared/items.ts`: its stats, price, rarity, icon, and how it looks when worn. The server owns every bag; the client only asks ("wear slot 3", "pick up that") and draws the answer.
+
+- **Equipment.** Eight slots: weapon, shield, head, armour, legs, feet, ring and amulet. Worn gear adds ATK, DEF, HP or MP, and some needs a minimum level. The first six slots show on your character for everyone (LPC armour and weapon art, recoloured iron, bronze or steel). A helmet replaces your hat, greaves your trousers, boots your shoes. Weapons are put away while you sit.
+- **Rarity.** Common, Uncommon (green), Rare (blue), Epic (purple) and Legendary (orange). Rare finds get a chat line; a Legendary find is announced to the whole town. On the ground, rarer loot glows, and Legendary loot sends up a pillar of light.
+- **Loot.** Each monster has a drop table in `shared/rpg.ts` (every entry rolled on its own): its own monster loot (Slime Jelly, Snake Scale, Wild Honey, Bloom Crystal), potions, and now and then a piece of gear. Loot lands on the ground around the monster. For 15 seconds only the player who did the most damage can take it (it looks faded to everyone else); then anyone can. It fades away after 90 seconds. Click it to walk over and pick it up.
+- **Bag.** 30 slots. Potions and loot stack up to 99. Click an item for its details, double-click to wear or drink it. You can drop things on the ground, where anyone can pick them up.
+- **Potions.** Red Potions heal 40 HP, Orange Potions 100 HP, one every 0.8 s, even mid-fight. Q drinks the smallest one that heals you fully.
+- **The Outfitter.** Bram stands outside the south gate, across from Rowan. He sells potions and starter gear (Dagger, Short Sword, Wooden Shield, Leather Cap, Chain Coif, Leather Armour, Leather Pants and Boots, Copper Ring, Clover Charm) and buys anything with a price, with a one-click "sell all monster loot". Better gear only comes from monsters.
+- **Saving.** The bag and equipment are saved with the rest of your progress, plus right away after buying, selling or finding something good. Guests keep their bag until they leave.
+- **Defence.** Damage is softened by defence rather than reduced by it (defence equal to the attack halves a hit), so armour always helps but never makes you untouchable.
 
 ## Gattchaa shop data
 
@@ -181,6 +201,8 @@ The stalls, machines, Rooms tables, big-pull announcements, signing in and playe
 
 - **Add a hairstyle or clothing item:** add its `sheet_definitions` path to `ITEMS`. Browse the options at <https://liberatedpixelcup.github.io/Universal-LPC-Spritesheet-Character-Generator/>.
 - **Monsters:** `MONSTER_FILES` lists the sheets taken from "[LPC] Monsters" (OpenGameArt). `client/src/world/monsterArt.ts` says how each sheet is laid out.
+- **Equipment art:** `GEAR` lists the armour and weapon sheets. Items in `shared/items.ts` pick pieces by id and recolour them (`colors: { metal: "bronze" }`).
+- **Item icons:** every icon from Kyrise's 16x16 RPG Icon Pack (CC-BY 4.0) is in `client/public/assets/items/`; an item names one with `icon`. Items without one get an icon cut from their gear art.
 - **Change the season:** swap `terrain_summer.png` / `trees_summer.png` for the spring, autumn or winter versions in the same repo.
 
 ## License note

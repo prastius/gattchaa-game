@@ -159,13 +159,52 @@ const ITEMS = [
   ["glasses", "shades", "Shades", "headwear/accessories/glasses/facial_glasses_shades.json", B, { variant: "black" }],
 ];
 
+/**
+ * Equipment art (category "gear"): how armour and weapons look on a character.
+ * Never offered in the character creator; items in shared/items.ts pick pieces
+ * by id and recolour them (iron, bronze, gold…). [id, label, definition path, options]
+ * Weapons have no sitting frames, so they're put away while you sit.
+ */
+const GEAR = [
+  ["capLeather", "Leather cap", "headwear/hats/caps/hat_cap_leather.json", { variant: "leather" }],
+  ["coif", "Mail coif", "headwear/helmets/helmets/hat_helmet_mail.json"],
+  ["kettle", "Kettle helm", "headwear/helmets/helmets/hat_helmet_kettle.json"],
+  ["nasal", "Nasal helm", "headwear/helmets/helmets/hat_helmet_nasal.json"],
+  ["crown", "Crown", "headwear/hats/formal/hat_formal_crown.json", { variant: "crown_gold" }],
+  ["leatherArmor", "Leather armour", "torso/armour/torso_armour_leather.json"],
+  ["legion", "Legion armour", "torso/armour/torso_armour_legion.json"],
+  ["plate", "Plate armour", "torso/armour/torso_armour_plate.json"],
+  ["plateArms", "Plate arms", "arms/arms_armour.json"],
+  ["pants", "Pants", "legs/pants/legs_pants.json"],
+  ["greaves", "Greaves", "legs/legs_armour.json"],
+  ["boots", "Boots", "feet/boots/feet_boots_basic.json"],
+  ["ironBoots", "Armoured boots", "feet/feet_armour.json"],
+  ["dagger", "Dagger", "weapons/sword/weapon_sword_dagger.json"],
+  ["swordIron", "Iron arming sword", "weapons/sword/weapon_sword_arming.json", { variant: "iron" }],
+  ["swordBronze", "Bronze arming sword", "weapons/sword/weapon_sword_arming.json", { variant: "bronze" }],
+  ["saber", "Saber", "weapons/sword/weapon_sword_saber.json"],
+  ["shield", "Heater shield", "weapons/shields/heater/shield_heater_wood.json"],
+].map(([id, label, def, opts]) => ["gear", id, label, def, B, opts]);
+
 const PALETTES = {
   body: "palette_definitions/body/body_ulpc.json",
   hair: "palette_definitions/hair/hair_ulpc.json",
   cloth: "palette_definitions/cloth/cloth_ulpc.json",
   eye: "palette_definitions/eye/eye_ulpc.json",
+  metal: "palette_definitions/metal/metal_ulpc.json",
+  wood: "palette_definitions/wood/wood_ulpc.json",
 };
-const PALETTE_BASE = { body: "light", hair: "orange", cloth: "white", eye: "blue" };
+const PALETTE_BASE = { body: "light", hair: "orange", cloth: "white", eye: "blue", metal: "steel", wood: "maple" };
+
+/** Item icons: Kyrise's Free 16x16 RPG Icon Pack (CC-BY 4.0). Every 16x16 icon is kept, so new items can use any of them. */
+const ICONS_ZIP = "https://opengameart.org/sites/default/files/Kyrises_16x16_RPG_Icon_Pack_V1.2.zip";
+const ICONS_DIR = "Kyrise's 16x16 RPG Icon Pack - V1.2/icons/16x16/";
+const ICONS_CREDIT = [
+  "\"Kyrise's Free 16x16 RPG Icon Pack\" by Kyrise.",
+  "License: CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/).",
+  "https://opengameart.org/content/kyrises-free-16x16-rpg-icon-pack",
+  "https://kyrise.itch.io/",
+].join("\n");
 
 /** World art from Eliza Wyatt's LPC Revised (OGA-BY 3.0). */
 const WORLD_FILES = {
@@ -306,11 +345,22 @@ async function pool(items, limit, fn) {
   return results;
 }
 
+/** The definition's layers, minus ones that only exist for special animations (a sword's big slash). */
 const layersOf = (def) =>
   Object.keys(def)
     .filter((k) => /^layer_\d+$/.test(k))
     .sort()
-    .map((k) => def[k]);
+    .map((k) => def[k])
+    .filter((l) => !l.custom_animation);
+
+/** Materials whose art isn't drawn in the palette's usual base colour (leather armour is drawn in "leather"). */
+function basesOf(def) {
+  const r = def.recolors ?? {};
+  const out = {};
+  if (r.material && r.base) out[r.material] = r.base;
+  for (const [k, v] of Object.entries(r)) if (k.startsWith("color_") && v.base) out[v.material] = v.base;
+  return out;
+}
 
 /** URL of one animation sheet ("walk", "sit"…) for a layer directory. */
 const sheetUrl = (dir, anim, variant) =>
@@ -324,7 +374,8 @@ async function fetchItem([category, id, label, defPath, bodies, opts = {}]) {
   const variant = def.variants ? (opts.variant ?? (def.variants.includes("white") ? "white" : def.variants[0])) : null;
   // Palette items recolour via their own materials; "white" variants share the cloth base palette.
   const materials = opts.fixed ? [] : variant ? (variant === "white" ? ["cloth"] : []) : materialsOf(def);
-  const item = { ...base, materials };
+  const bases = variant ? {} : basesOf(def);
+  const item = { ...base, materials, ...(Object.keys(bases).length && { bases }) };
   const hasSit = (def.animations ?? []).includes("sit");
 
   const layers = layersOf(def);
@@ -395,14 +446,15 @@ async function fetchItem([category, id, label, defPath, bodies, opts = {}]) {
 async function main() {
   await fs.rm(path.join(OUT, "lpc"), { recursive: true, force: true });
   // v3: layers carry "sit" sheets too; items without them list stand-in sitLayers.
-  const manifest = { version: 3, frame: 64, items: [], palettes: {} };
+  // v4: equipment art (category "gear"), metal and wood palettes, per-item palette bases.
+  const manifest = { version: 4, frame: 64, items: [], palettes: {} };
   const credits = new Map();
 
   for (const [mat, file] of Object.entries(PALETTES)) {
     manifest.palettes[mat] = { base: PALETTE_BASE[mat], colors: await get(`${ULPC}/${file}`, "json") };
   }
 
-  const results = await pool(ITEMS, 8, fetchItem);
+  const results = await pool([...ITEMS, ...GEAR], 8, fetchItem);
   for (const { item, credits: cr } of results) {
     if (item.bodies.length === 0) {
       console.warn(`  dropping ${item.category}/${item.id}: no artwork for the requested bodies`);
@@ -431,6 +483,15 @@ async function main() {
     if (!data) throw new Error(`lpc-monsters.zip has no ${name}`);
     await save(`monsters/${name}`, data);
   }
+
+  await fs.rm(path.join(OUT, "items"), { recursive: true, force: true });
+  let icons = 0;
+  for (const [name, data] of unzip(await get(ICONS_ZIP, "bin"))) {
+    if (!name.startsWith(ICONS_DIR) || !name.endsWith(".png")) continue;
+    await save(`items/${name.slice(ICONS_DIR.length)}`, data);
+    icons++;
+  }
+  if (icons === 0) throw new Error("the icon pack had no icons where expected");
 
   await save("lpc/manifest.json", JSON.stringify(manifest));
   await fs.writeFile(path.join(ROOT, "shared/catalog.ts"), renderCatalog(manifest));
@@ -518,6 +579,14 @@ function renderCredits(entries, terrainCredits, townCredits) {
     "",
     "```",
     MONSTER_CREDIT,
+    "```",
+    "",
+    "## Item icons",
+    "",
+    "Potions, weapons, shields, rings, amulets and monster loot in the bag (armour icons are cut from the character art below):",
+    "",
+    "```",
+    ICONS_CREDIT,
     "```",
     "",
     "## Gattchaa logo",

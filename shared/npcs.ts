@@ -8,7 +8,7 @@ import { MARKET_WANDER, PARK_WANDER, STORE_WANDER, TILE, WANDER_AREA, type Rect 
 import type { ShopProduct } from "./gattchaa";
 import { Dir } from "./protocol";
 
-export type NpcKind = "guide" | "shop" | "kuji" | "rooms" | "market" | "grading" | "pickup" | "crier" | "keeper" | "local";
+export type NpcKind = "guide" | "shop" | "kuji" | "rooms" | "market" | "grading" | "pickup" | "crier" | "keeper" | "outfitter" | "local";
 
 export interface NpcDef {
   id: string;
@@ -268,6 +268,18 @@ export const NPCS: NpcDef[] = [
     greeting:
       "Off to the South Meadow? Slimes (Lv 1) by the road only fight back if you hit them. Grass Snakes (Lv 4) hide in the west grass. Hornets (Lv 7) in the east field sting on sight, and Snapper Flowers (Lv 10) guard the lake. Click a monster or press Space to attack. Hurt? Sit down (X) to heal faster, or rest inside the walls.",
     chatter: ["Monsters past this gate. Stay sharp!", "Hornets in the east field sting first!", "Hurt? Sit down and rest a while.", "Train hard, and one day you'll be a Knight."],
+  },
+  {
+    id: "outfitter",
+    name: "Bram",
+    title: "Outfitter",
+    kind: "outfitter",
+    look: look({ body: "male", hair: "bedhead", hairColor: "ginger", beard: "medium", skin: "light", top: "shirt", topColor: "forest", bottom: "pants", bottomColor: "brown", shoes: "boots", shoesColor: "walnut", hat: "cap", hatColor: "leather" }),
+    ...at(196.5, 257.6),
+    dir: Dir.Down,
+    greeting:
+      "Potions, blades and good leather! Gear up before you head out, and bring me whatever the monsters drop. I pay fair. Wear your gear from your bag (I), and keep a few Red Potions handy (Q drinks one).",
+    chatter: ["Red Potions! Don't leave town without them!", "Got slime jelly? I'll buy it!", "A sharp blade and good boots. That's all you need.", "Bring me what the monsters drop!"],
   },
   {
     id: "ivy",

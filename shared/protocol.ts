@@ -1,5 +1,7 @@
 // Message contract between client and server.
 
+import type { Slot } from "./items";
+
 export const ROOM_NAME = "world";
 
 export const NAME_MAX = 16;
@@ -106,9 +108,43 @@ export interface StatsMessage {
   mp: number;
   mmp: number;
   gold: number;
+  /** Attack and defence, equipment included. */
+  atk: number;
+  def: number;
   /** Signed in, so progress is saved. Guests start over next visit. */
   saved: boolean;
 }
+
+/** client -> server: use a bag slot (wear it, or drink it). */
+export interface ItemUseMessage {
+  slot: number;
+}
+
+/** client -> server: take off what's worn in a slot. */
+export interface UnequipMessage {
+  slot: Slot;
+}
+
+/** client -> server: put some of a bag slot on the ground (all of it when n is missing). */
+export interface ItemDropMessage {
+  slot: number;
+  n?: number;
+}
+
+/** client -> server: pick up an item lying on the ground. */
+export interface PickupMessage {
+  id: string;
+}
+
+/** client -> server: buy from an NPC merchant. */
+export interface NpcBuyMessage {
+  npc: string;
+  item: string;
+  n: number;
+}
+
+/** client -> server: sell to an NPC merchant: some of one bag slot, or every piece of monster loot. */
+export type NpcSellMessage = { npc: string; slot: number; n: number } | { npc: string; loot: true };
 
 /**
  * server -> client: fighting near you, batched once per server tick.
@@ -121,7 +157,11 @@ export type FxEvent =
   | { k: "down"; t: string }
   | { k: "lvup"; t: string; lv: number }
   /** Only to the player who earned it. */
-  | { k: "gain"; exp: number; gold: number };
+  | { k: "gain"; exp: number; gold: number }
+  /** Only to the player who picked it up (or bought it). */
+  | { k: "loot"; item: string; n: number }
+  /** A potion (or anything else) healed someone. */
+  | { k: "heal"; t: string; d: number };
 
 /** Monster ids start with this; player session ids never do. */
 export const MONSTER_ID_PREFIX = "~";
@@ -142,6 +182,18 @@ export interface PlayerView {
   mhp?: number;
   /** Knocked out, waiting to return to town. */
   dead?: boolean;
+  /** Visible equipment (see gearString in items.ts). */
+  gear?: string;
+}
+
+/** Read-only shape of an item lying on the ground. */
+export interface DropView {
+  item: string;
+  n: number;
+  x: number;
+  y: number;
+  /** Session id of whoever has first pick ("" = anyone may take it). */
+  owner: string;
 }
 
 /** Read-only shape of a synced monster. Its max HP and name come from MONSTERS. */

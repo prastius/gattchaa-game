@@ -8,10 +8,17 @@ import {
   type EmoteEvent,
   type EmoteMessage,
   type FxEvent,
+  type ItemDropMessage,
+  type ItemUseMessage,
   type JoinOptions,
   type LookMessage,
+  type NpcBuyMessage,
+  type NpcSellMessage,
+  type PickupMessage,
   type StatsMessage,
+  type UnequipMessage,
 } from "../../shared/protocol";
+import type { BagMessage, ItemId, Slot } from "../../shared/items";
 import type { Announcement, NpcSay } from "../../shared/gattchaa";
 import type { ChatUI } from "./ui/chat";
 import { audio } from "./audio";
@@ -43,8 +50,11 @@ export class Net {
   onFx?: (events: FxEvent[]) => void;
   readonly onAnnounce = new Set<(a: Announcement) => void>();
   readonly onStats = new Set<(s: StatsMessage) => void>();
+  readonly onBag = new Set<(b: BagMessage) => void>();
   /** Your latest character sheet. */
   stats?: StatsMessage;
+  /** Your bag and equipment, as of the server's last word. */
+  bag?: BagMessage;
 
   constructor(
     readonly room: Room,
@@ -76,6 +86,10 @@ export class Net {
       for (const fn of this.onStats) fn(s);
     });
     room.onMessage("fx", (events: FxEvent[]) => this.onFx?.(events));
+    room.onMessage("bag", (b: BagMessage) => {
+      this.bag = b;
+      for (const fn of this.onBag) fn(b);
+    });
 
     room.onDrop((code, reason) => {
       console.warn("connection dropped", code, reason);
@@ -104,6 +118,36 @@ export class Net {
 
   sendLook(look: string) {
     this.room.send("look", { look } satisfies LookMessage);
+  }
+
+  // ---------------------------------------------------------------- items (the server answers with a new bag)
+
+  useItem(slot: number) {
+    this.room.send("item:use", { slot } satisfies ItemUseMessage);
+  }
+
+  unequip(slot: Slot) {
+    this.room.send("item:unequip", { slot } satisfies UnequipMessage);
+  }
+
+  dropItem(slot: number, n?: number) {
+    this.room.send("item:drop", { slot, ...(n !== undefined && { n }) } satisfies ItemDropMessage);
+  }
+
+  pickup(id: string) {
+    this.room.send("item:pickup", { id } satisfies PickupMessage);
+  }
+
+  buy(npc: string, item: ItemId, n: number) {
+    this.room.send("npc:buy", { npc, item, n } satisfies NpcBuyMessage);
+  }
+
+  sell(npc: string, slot: number, n: number) {
+    this.room.send("npc:sell", { npc, slot, n } satisfies NpcSellMessage);
+  }
+
+  sellLoot(npc: string) {
+    this.room.send("npc:sell", { npc, loot: true } satisfies NpcSellMessage);
   }
 
   /** Shows an emote over your head: locally right away, and to everyone nearby. */

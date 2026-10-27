@@ -44,6 +44,7 @@ async function runBot(i: number) {
   room.onMessage("chat", () => stats.chatsIn++);
   room.onMessage("me", () => {});
   room.onMessage("fx", () => {});
+  room.onMessage("bag", () => {});
   room.onMessage("correct", (p: { x: number; y: number }) => {
     stats.corrections++;
     x = p.x;

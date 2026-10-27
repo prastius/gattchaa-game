@@ -18,19 +18,28 @@ import {
   type EmoteEvent,
   type EmoteMessage,
   type FxEvent,
+  type ItemDropMessage,
+  type ItemUseMessage,
   type JoinOptions,
   type LookMessage,
   type MoveMessage,
+  type NpcBuyMessage,
+  type NpcSellMessage,
+  type PickupMessage,
   type SitMessage,
   type TargetMessage,
+  type UnequipMessage,
 } from "../../../shared/protocol";
 import { DOORS, placeName } from "../../../shared/town";
 import type { DoorMessage } from "../../../shared/protocol";
 import { LEVEL_CAP } from "../../../shared/rpg";
+import { BAG_SIZE, ITEMS, OUTFITTER_STOCK, isItemId, isSlot } from "../../../shared/items";
+import { NPCS } from "../../../shared/npcs";
 import { SHOP_AWAY_HOURS, inShopZone, sanitizeShopTitle, shopSpotProblem, type ShopOpenMessage, type ShopResult } from "../../../shared/vending";
-import { Monster, Player, PlayerShop, WorldState } from "./WorldState";
+import { Drop, Monster, Player, PlayerShop, WorldState } from "./WorldState";
 import { NpcBrain } from "./NpcBrain";
 import { Combat } from "./Combat";
+import { Drops } from "./Drops";
 import { feed } from "../gattchaa";
 import { db, type Account, type Progress } from "../db";
 import type { Announcement, NpcSay } from "../../../shared/gattchaa";
@@ -68,6 +77,11 @@ const TAKEN_OVER = 4001;
 /** Fights are sent to players this close (px, per axis): everyone who has the fighters in view. */
 const FX_X = VIEW_ENTER_X + VIEW_EXIT_PAD;
 const FX_Y = VIEW_ENTER_Y + VIEW_EXIT_PAD;
+// Bag actions (use, wear, pick up, buy…): a token bucket, so quick clicking works but flooding doesn't.
+const ITEM_RATE = 8;
+const ITEM_BURST = 12;
+/** How close (px) you must stand to an NPC merchant to trade. */
+const TRADE_RANGE = 160;
 
 /** After a restart nobody is in town yet, so every shop's away timer starts then (once per process). */
 let shopsMarkedAway = false;
@@ -85,6 +99,8 @@ interface PlayerMeta {
   lastChatAt: number;
   lastSitAt: number;
   lastEmoteAt: number;
+  itemTokens: number;
+  lastItemAt: number;
   /** Signed in with Gattchaa. Guests can walk and chat, but can't own anything. */
   account?: Account;
   /** Id of the shop they're minding: they stay seated on its rug until they close it. */
@@ -109,6 +125,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
   private startedAt = Date.now();
   private brain!: NpcBrain;
   private combat!: Combat;
+  private drops!: Drops;
   /** Fight events waiting to go out, per session; sent once per tick. */
   private fx = new Map<string, FxEvent[]>();
   private stopAnnouncements?: () => void;
@@ -132,6 +149,21 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     emote: (client: Client, msg: EmoteMessage) => this.handleEmote(client, msg),
     target: (client: Client, msg: TargetMessage) => this.handleTarget(client, msg),
     revive: (client: Client) => this.handleRevive(client),
+    "item:use": (client: Client, msg: ItemUseMessage) => {
+      if (this.itemOk(client) && this.bagSlot(msg?.slot)) this.combat.useItem(client.sessionId, msg.slot);
+    },
+    "item:unequip": (client: Client, msg: UnequipMessage) => {
+      if (this.itemOk(client) && isSlot(msg?.slot)) this.combat.unequip(client.sessionId, msg.slot);
+    },
+    "item:drop": (client: Client, msg: ItemDropMessage) => {
+      if (!this.itemOk(client) || !this.bagSlot(msg?.slot) || this.meta.get(client.sessionId)?.shop) return;
+      this.combat.dropItem(client.sessionId, msg.slot, Number.isInteger(msg.n) ? msg.n! : Infinity);
+    },
+    "item:pickup": (client: Client, msg: PickupMessage) => {
+      if (this.itemOk(client) && typeof msg?.id === "string") this.combat.pickup(client.sessionId, msg.id.slice(0, 16));
+    },
+    "npc:buy": (client: Client, msg: NpcBuyMessage) => this.handleBuy(client, msg),
+    "npc:sell": (client: Client, msg: NpcSellMessage) => this.handleSell(client, msg),
     "shop:open": (client: Client, msg: ShopOpenMessage) => {
       this.handleShopOpen(client, msg).catch((err) => {
         console.error("[shops] open failed:", err);
@@ -146,12 +178,17 @@ export class WorldRoom extends Room<{ state: WorldState }> {
 
     this.brain = new NpcBrain(world, feed, this.now, (msg: NpcSay) => this.broadcast("npc:say", msg));
     for (const [id, npc] of this.brain.npcs) this.state.npcs.set(id, npc);
-    this.combat = new Combat(world, this.state.monsters, this.now, {
+    this.drops = new Drops(this.state.drops, world, (drop) => {
+      for (const client of this.clients) if (client.view?.has(drop)) client.view.remove(drop);
+    });
+    this.combat = new Combat(world, this.state.monsters, this.drops, this.now, {
       emit: (x, y, ev) => {
         for (const [id, meta] of this.meta) if (Math.abs(meta.x - x) <= FX_X && Math.abs(meta.y - y) <= FX_Y) this.queueFx(id, ev);
       },
       tell: (id, ev) => this.queueFx(id, ev),
       sheet: (id, sheet) => this.clients.getById(id)?.send("me", sheet),
+      bag: (id, bag) => this.clients.getById(id)?.send("bag", bag),
+      notice: (id, text) => this.clients.getById(id)?.send("chat", this.makeMessage("", "System", text, true)),
       save: (id, progress) => this.saveProgress(id, progress),
       despawn: (mob) => {
         // Out of every view first, or the views would keep holding it.
@@ -161,10 +198,15 @@ export class WorldRoom extends Room<{ state: WorldState }> {
         const name = this.state.players.get(id)?.name;
         if (name && lv % 10 === 0) this.system(`${name} reached level ${lv}!`);
       },
+      found: (id, item) => {
+        const name = this.state.players.get(id)?.name;
+        if (name) this.system(`✨ ${name} found the legendary ${item.name}!`);
+      },
     });
     this.clock.setInterval(() => {
       this.brain.tick(NPC_TICK_MS);
       this.combat.tick(NPC_TICK_MS);
+      this.drops.tick(Date.now());
       this.flushFx();
       this.state.siteOnline = feed.online;
     }, NPC_TICK_MS);
@@ -236,6 +278,8 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       lastChatAt: 0,
       lastSitAt: 0,
       lastEmoteAt: 0,
+      itemTokens: ITEM_BURST,
+      lastItemAt: Date.now(),
       account,
       shop: shop && shopId,
     };
@@ -290,15 +334,16 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     if (player) this.queuePresence("left", player.name);
   }
 
-  /** Interest management: each client's view holds only the players and monsters near it. */
+  /** Interest management: each client's view holds only the players, monsters and items near it. */
   private updateViews() {
     const players = [...this.state.players.entries()];
     const monsters = [...this.state.monsters.values()];
+    const drops = [...this.state.drops.values()];
     for (const client of this.clients) {
       const view = client.view;
       const me = this.state.players.get(client.sessionId);
       if (!view || !me) continue;
-      const near = (other: Player | Monster) => {
+      const near = (other: Player | Monster | Drop) => {
         const dx = Math.abs(other.x - me.x);
         const dy = Math.abs(other.y - me.y);
         const visible = view.has(other);
@@ -307,6 +352,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       };
       for (const [id, other] of players) if (id !== client.sessionId) near(other);
       for (const mob of monsters) near(mob);
+      for (const drop of drops) near(drop);
     }
   }
 
@@ -397,6 +443,50 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     if (!this.combat.revive(client.sessionId)) return;
     const spawn = world.findSpawn();
     this.teleport(client, spawn.x, spawn.y, Dir.Down);
+  }
+
+  // ---------------------------------------------------------------- items
+
+  /** Rate limit for bag actions. */
+  private itemOk(client: Client): boolean {
+    const meta = this.meta.get(client.sessionId);
+    if (!meta) return false;
+    const now = Date.now();
+    meta.itemTokens = Math.min(ITEM_BURST, meta.itemTokens + ((now - meta.lastItemAt) / 1000) * ITEM_RATE);
+    meta.lastItemAt = now;
+    if (meta.itemTokens < 1) return false;
+    meta.itemTokens -= 1;
+    return true;
+  }
+
+  private bagSlot = (slot: unknown): slot is number => Number.isInteger(slot) && (slot as number) >= 0 && (slot as number) < BAG_SIZE;
+
+  /** The merchant NPC you're trading with, if you're really standing at their counter. */
+  private merchant(client: Client, npcId: unknown) {
+    const meta = this.meta.get(client.sessionId);
+    const def = NPCS.find((n) => n.id === npcId);
+    const npc = def && this.state.npcs.get(def.id);
+    if (!meta || !def || !npc || def.kind !== "outfitter") return undefined;
+    if (Math.hypot(npc.x - meta.x, npc.y - meta.y) > TRADE_RANGE) return undefined;
+    return def;
+  }
+
+  private handleBuy(client: Client, msg: NpcBuyMessage) {
+    if (!this.itemOk(client) || !this.merchant(client, msg?.npc)) return;
+    const id = msg.item;
+    if (!isItemId(id) || !OUTFITTER_STOCK.includes(id)) return;
+    this.combat.buy(client.sessionId, id, Number(msg.n));
+  }
+
+  private handleSell(client: Client, msg: NpcSellMessage) {
+    if (!this.itemOk(client) || !this.merchant(client, msg?.npc)) return;
+    if ("loot" in msg) {
+      if (!this.combat.sell(client.sessionId, -1, 0)) client.send("chat", this.makeMessage("", "System", "You have no monster loot to sell.", true));
+      return;
+    }
+    if (!this.bagSlot(msg.slot)) return;
+    const n = Number.isInteger(msg.n) && msg.n > 0 ? msg.n : 1;
+    if (!this.combat.sell(client.sessionId, msg.slot, n)) client.send("chat", this.makeMessage("", "System", "The Outfitter won't buy that.", true));
   }
 
   private queueFx(id: string, ev: FxEvent) {
@@ -656,7 +746,16 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       this.combat.cheatLevel(client.sessionId, lv);
       return reply(`Test command: you are now level ${lv}.`);
     }
-    reply(`Test commands: /level <1-${LEVEL_CAP}>`);
+    if (name === "item" && isItemId(arg)) {
+      const count = Number(text.split(" ")[2] ?? 1);
+      this.combat.cheatItem(client.sessionId, arg, Number.isFinite(count) ? count : 1);
+      return reply(`Test command: added ${ITEMS[arg].name}.`);
+    }
+    if (name === "gold" && Number.isFinite(n)) {
+      this.combat.cheatGold(client.sessionId, n);
+      return reply(`Test command: you now have ${Math.max(0, Math.floor(n))} gold.`);
+    }
+    reply(`Test commands: /level <1-${LEVEL_CAP}>, /item <id> [count], /gold <amount>. Item ids: ${Object.keys(ITEMS).join(", ")}`);
   }
 
   private system(text: string) {

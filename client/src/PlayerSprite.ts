@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { Dir } from "../../shared/protocol";
 import { bodyName, decodeLook } from "../../shared/appearance";
+import { splitAppearance } from "../../shared/items";
 import { FRAME, SHEET_COLS, SHEET_H, SIT_COL, WALK_COLS, composeCharacter, sitDrop } from "./character";
 
 const BUBBLE_MS = 6000;
@@ -186,7 +187,7 @@ export class PlayerSprite {
     if (look === this.look) return;
     const previous = this.look;
     this.look = look;
-    this.body = bodyName(decodeLook(look));
+    this.body = bodyName(decodeLook(splitAppearance(look).look));
     this.placeLabels();
     this.textures.acquire(look).then((key) => {
       if (this.destroyed || this.look !== look) return;

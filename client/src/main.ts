@@ -11,6 +11,7 @@ import { CharacterCreator } from "./ui/creator";
 import { ChatUI } from "./ui/chat";
 import { HUD } from "./ui/hud";
 import { StatusPanel } from "./ui/status";
+import { BagPanel } from "./ui/bag";
 import { Diagnostics } from "./ui/diagnostics";
 import { TownDialog } from "./ui/dialog";
 import { Announcer } from "./ui/announce";
@@ -156,7 +157,8 @@ function start(room: Awaited<ReturnType<typeof joinWorld>>, name: string) {
     chat.addSystem("Your Gattchaa sign-in has expired. Sign in again on the start screen to open a shop.");
   });
   const vending = new Vending(room, auth);
-  const dialog = new TownDialog(shop, vending);
+  const dialog = new TownDialog(shop, vending, net);
+  const bag = new BagPanel(net);
   const announcer = new Announcer(shop);
   net.onAnnounce.add((a) => announcer.show(a));
   const showVending = () => hud.setVending(Boolean(vending.myShop));
@@ -192,13 +194,13 @@ function start(room: Awaited<ReturnType<typeof joinWorld>>, name: string) {
     game.scale.resize(nw, nh);
     game.scale.setZoom(1 / dpr);
   });
-  const data: WorldSceneData = { world, room, net, chat, hud, shop, dialog, vending, status };
+  const data: WorldSceneData = { world, room, net, chat, hud, shop, dialog, vending, status, bag };
   game.scene.add("world", WorldScene, true, data);
   game.events.once(Phaser.Core.Events.READY, () => {
     const scene = game.scene.getScene("world") as WorldScene;
     new Diagnostics(game, room, () => scene.netStats());
   });
-  if (import.meta.env.DEV) Object.assign(window, { __game: game, __room: room });
+  if (import.meta.env.DEV) Object.assign(window, { __game: game, __room: room, __net: net });
 }
 
 function setupSoundButtons() {

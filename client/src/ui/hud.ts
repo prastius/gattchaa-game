@@ -40,6 +40,9 @@ export class HUD {
   private zoomOut = document.getElementById("zoom-out-btn") as HTMLButtonElement;
   private sitBtn = document.getElementById("sit-btn") as HTMLButtonElement;
   private attackBtn = document.getElementById("attack-btn") as HTMLButtonElement;
+  private potionBtn = document.getElementById("potion-btn") as HTMLButtonElement;
+  private potionCount = document.getElementById("potion-count")!;
+  private bagBtn = document.getElementById("bag-btn") as HTMLButtonElement;
   private shopBtn = document.getElementById("shop-btn") as HTMLButtonElement;
   private shopLabel = document.getElementById("shop-label")!;
   private emoteBtn = document.getElementById("emote-btn") as HTMLButtonElement;
@@ -93,6 +96,20 @@ export class HUD {
   /** The sword button (phones): attack the nearest monster. Only shown outside the walls. */
   onAttack(fn: () => void) {
     this.attackBtn.addEventListener("click", fn);
+  }
+
+  /** The potion button: drink one (Q). Shown while you carry any. */
+  onPotion(fn: () => void) {
+    this.potionBtn.addEventListener("click", fn);
+  }
+
+  setPotions(n: number) {
+    this.potionBtn.hidden = n <= 0;
+    this.potionCount.textContent = n > 99 ? "99+" : String(n);
+  }
+
+  onBag(fn: () => void) {
+    this.bagBtn.addEventListener("click", fn);
   }
 
   onSit(fn: () => void) {

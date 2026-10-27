@@ -19,9 +19,13 @@ import {
   statsFor,
   type ClassId,
   type MonsterDef,
+  type Stats,
 } from "../../../shared/rpg";
+import { ITEMS, MAX_STACK, PICKUP_RANGE, POTION_MS, RARITY, sellPrice, type BagMessage, type ItemDef, type ItemId, type Slot } from "../../../shared/items";
 import type { Progress } from "../db";
 import { Monster, type Player } from "./WorldState";
+import { Inventory } from "./Inventory";
+import type { Drops } from "./Drops";
 
 /** Spawn groups with a player this close (px) think; the rest sleep, so empty fields cost nothing. */
 const WAKE_PX = 1600;
@@ -54,10 +58,16 @@ export interface CombatHooks {
   tell(id: string, ev: FxEvent): void;
   /** A player's own sheet changed. */
   sheet(id: string, sheet: StatsMessage): void;
+  /** A player's bag or equipment changed. */
+  bag(id: string, bag: BagMessage): void;
+  /** A line in one player's chat ("Your bag is full."). */
+  notice(id: string, text: string): void;
   save(id: string, progress: Progress): void;
   /** A monster is about to be removed from the state: take it out of every view first. */
   despawn(mob: Monster): void;
   levelUp(id: string, lv: number): void;
+  /** Someone picked up something legendary. */
+  found(id: string, item: ItemDef): void;
 }
 
 interface Fighter {
@@ -69,6 +79,11 @@ interface Fighter {
   exp: number;
   mp: number;
   gold: number;
+  inv: Inventory;
+  /** Class, level and equipment together; recomputed whenever one changes. */
+  stats: Stats;
+  /** No potion before this. */
+  potionAt: number;
   /** Signed in: progress goes to the database. */
   saved: boolean;
   target?: string;
@@ -82,6 +97,8 @@ interface Fighter {
   dirty: boolean;
   /** The owner's sheet needs resending. */
   sheetDirty: boolean;
+  /** …and their bag. */
+  bagDirty: boolean;
 }
 
 interface Mob {
@@ -127,6 +144,7 @@ export class Combat {
   constructor(
     private world: World,
     private monsters: MapSchema<Monster>,
+    private drops: Drops,
     private now: () => number,
     private hooks: CombatHooks,
   ) {
@@ -141,7 +159,8 @@ export class Combat {
   join(id: string, player: Player, pos: { x: number; y: number }, progress: Progress | undefined, saved: boolean) {
     const cls = isClassId(progress?.cls) ? progress.cls : "novice";
     const lv = Math.min(LEVEL_CAP, Math.max(1, Math.floor(progress?.lv ?? 1)));
-    const s = statsFor(cls, lv);
+    const inv = Inventory.load(progress?.bag, progress?.gear);
+    const s = statsFor(cls, lv, inv.bonus());
     const f: Fighter = {
       id,
       player,
@@ -150,6 +169,9 @@ export class Combat {
       exp: lv >= LEVEL_CAP ? 0 : Math.max(0, Math.floor(progress?.exp ?? 0)),
       mp: Math.min(s.maxMp, progress?.mp ?? s.maxMp),
       gold: Math.max(0, Math.floor(progress?.gold ?? 0)),
+      inv,
+      stats: s,
+      potionAt: 0,
       saved,
       nextAttackAt: 0,
       lastCombatAt: 0,
@@ -158,9 +180,11 @@ export class Combat {
       mpAcc: 0,
       dirty: false,
       sheetDirty: true,
+      bagDirty: true,
     };
     player.lv = lv;
     player.mhp = s.maxHp;
+    player.gear = inv.visible();
     // Knocked out when they left: they're back in town now, fully healed.
     const hp = progress?.hp ?? s.maxHp;
     player.hp = hp > 0 ? Math.min(s.maxHp, hp) : s.maxHp;
@@ -173,6 +197,7 @@ export class Combat {
     if (!f) return;
     this.save(f);
     this.fighters.delete(id);
+    this.drops.release(id);
     for (const mob of this.mobs.values()) {
       mob.damage.delete(id);
       if (mob.target === id) this.giveUp(mob);
@@ -201,7 +226,7 @@ export class Combat {
   revive(id: string): boolean {
     const f = this.fighters.get(id);
     if (!f?.player.dead) return false;
-    const s = statsFor(f.cls, f.player.lv);
+    const s = f.stats;
     f.player.dead = false;
     f.player.hp = s.maxHp;
     f.mp = s.maxMp;
@@ -217,6 +242,20 @@ export class Combat {
     if (!f) return;
     f.exp = 0;
     this.setLevel(f, Math.min(LEVEL_CAP, Math.max(1, Math.floor(lv))), true);
+  }
+
+  /** Testing only: conjure items and gold. */
+  cheatItem(id: string, item: ItemId, n: number) {
+    const f = this.fighters.get(id);
+    if (!f) return;
+    if (f.inv.add(item, Math.min(MAX_STACK, Math.max(1, Math.floor(n)))) > 0) this.changed(f);
+  }
+
+  cheatGold(id: string, gold: number) {
+    const f = this.fighters.get(id);
+    if (!f) return;
+    f.gold = Math.max(0, Math.floor(gold));
+    f.dirty = f.sheetDirty = true;
   }
 
   // ---------------------------------------------------------------- the loop
@@ -242,9 +281,14 @@ export class Combat {
       for (const f of this.fighters.values()) if (f.dirty) this.save(f);
     }
     for (const f of this.fighters.values()) {
-      if (!f.sheetDirty) continue;
-      f.sheetDirty = false;
-      this.hooks.sheet(f.id, this.sheet(f));
+      if (f.sheetDirty) {
+        f.sheetDirty = false;
+        this.hooks.sheet(f.id, this.sheet(f));
+      }
+      if (f.bagDirty) {
+        f.bagDirty = false;
+        this.hooks.bag(f.id, f.inv.message());
+      }
     }
   }
 
@@ -269,7 +313,7 @@ export class Combat {
       return;
     }
     if (now < f.nextAttackAt || inSafeZone(f.pos.x, f.pos.y)) return;
-    const s = statsFor(f.cls, f.player.lv);
+    const s = f.stats;
     if (dist(f.pos, mob) > reach(s.range, mob.def) + REACH_SLACK) return;
 
     f.nextAttackAt = now + s.attackMs;
@@ -298,7 +342,11 @@ export class Combat {
 
   private defeat(mob: Mob) {
     this.hooks.emit(mob.x, mob.y, { k: "down", t: mob.id });
-    this.reward(mob);
+    const top = this.reward(mob);
+    // Each drop is rolled on its own; whoever did the most damage gets first pick.
+    for (const [item, chance] of mob.def.drops) {
+      if (Math.random() < chance) this.drops.spawn(item, 1, mob.x, mob.y, top ?? "");
+    }
     this.hooks.despawn(mob.state);
     this.monsters.delete(mob.id);
     this.mobs.delete(mob.id);
@@ -306,11 +354,11 @@ export class Combat {
     for (const f of this.fighters.values()) if (f.target === mob.id) f.target = undefined;
   }
 
-  /** EXP goes to everyone who hurt it, by how much; the gold to whoever did the most. */
-  private reward(mob: Mob) {
+  /** EXP goes to everyone who hurt it, by how much; the gold to whoever did the most (returned). */
+  private reward(mob: Mob): string | undefined {
     let total = 0;
     for (const d of mob.damage.values()) total += d;
-    if (total <= 0) return;
+    if (total <= 0) return undefined;
     const earners: { f: Fighter; dmg: number }[] = [];
     for (const [id, dmg] of mob.damage) {
       const f = this.fighters.get(id);
@@ -326,6 +374,7 @@ export class Combat {
       }
       if (exp || gold) this.hooks.tell(f.id, { k: "gain", exp, gold });
     }
+    return top?.f.id;
   }
 
   /** Returns the EXP actually gained (none at the level cap). */
@@ -345,12 +394,11 @@ export class Combat {
 
   /** New level: new max HP/MP, fully healed, and a burst of light for everyone nearby. */
   private setLevel(f: Fighter, lv: number, announce: boolean) {
-    const s = statsFor(f.cls, lv);
     f.player.lv = lv;
-    f.player.mhp = s.maxHp;
-    f.player.hp = s.maxHp;
-    f.mp = s.maxMp;
-    f.dirty = f.sheetDirty = true;
+    this.restat(f);
+    f.player.hp = f.stats.maxHp;
+    f.mp = f.stats.maxMp;
+    f.dirty = true;
     if (announce) {
       this.hooks.emit(f.pos.x, f.pos.y, { k: "lvup", t: f.id, lv });
       this.hooks.levelUp(f.id, lv);
@@ -362,7 +410,7 @@ export class Combat {
     if (now < f.regenAt) return;
     f.regenAt = now + REGEN_MS;
     if (f.player.dead || now - f.lastCombatAt < COMBAT_MS) return;
-    const s = statsFor(f.cls, f.player.lv);
+    const s = f.stats;
     const rate = (REGEN_RATE * REGEN_MS) / 1000 * (f.player.sit ? SIT_REGEN : 1) * (inSafeZone(f.pos.x, f.pos.y) ? TOWN_REGEN : 1);
     if (f.player.hp < s.maxHp) {
       f.hpAcc += s.maxHp * rate;
@@ -399,14 +447,24 @@ export class Combat {
   }
 
   private sheet(f: Fighter): StatsMessage {
-    const s = statsFor(f.cls, f.player.lv);
-    return { cls: f.cls, lv: f.player.lv, exp: f.exp, mp: f.mp, mmp: s.maxMp, gold: f.gold, saved: f.saved };
+    const s = f.stats;
+    return { cls: f.cls, lv: f.player.lv, exp: f.exp, mp: f.mp, mmp: s.maxMp, gold: f.gold, atk: s.atk, def: s.def, saved: f.saved };
+  }
+
+  /** After a level or equipment change: new totals, with HP and MP kept under the new maximums. */
+  private restat(f: Fighter) {
+    f.stats = statsFor(f.cls, f.player.lv, f.inv.bonus());
+    f.player.mhp = f.stats.maxHp;
+    f.player.hp = Math.min(f.player.hp, f.stats.maxHp);
+    f.mp = Math.min(f.mp, f.stats.maxMp);
+    f.player.gear = f.inv.visible();
+    f.sheetDirty = true;
   }
 
   private save(f: Fighter) {
     f.dirty = false;
     if (!f.saved) return;
-    const s = statsFor(f.cls, f.player.lv);
+    const s = f.stats;
     const p = f.player;
     this.hooks.save(f.id, {
       cls: f.cls,
@@ -415,7 +473,122 @@ export class Combat {
       hp: p.hp >= s.maxHp ? null : p.hp,
       mp: f.mp >= s.maxMp ? null : f.mp,
       gold: f.gold,
+      ...f.inv.save(),
     });
+  }
+
+  // ---------------------------------------------------------------- items
+
+  /** The bag changed: resend it, and save it with the next batch. */
+  private changed(f: Fighter) {
+    f.dirty = f.bagDirty = true;
+  }
+
+  /** Wear it, or drink it. */
+  useItem(id: string, slot: number) {
+    const f = this.fighters.get(id);
+    const s = f?.inv.bag[slot];
+    if (!f || !s || f.player.dead) return;
+    const it = ITEMS[s.id];
+    if (it.kind === "use") return this.drink(f, slot, it);
+    if (it.kind !== "equip") return;
+    if (f.player.lv < (it.lv ?? 1)) return this.hooks.notice(id, `You need to be level ${it.lv} to wear the ${it.name}.`);
+    f.inv.equip(slot);
+    this.restat(f);
+    this.changed(f);
+  }
+
+  private drink(f: Fighter, slot: number, it: ItemDef) {
+    const now = Date.now();
+    if (!it.heal || now < f.potionAt) return;
+    if (f.player.hp >= f.stats.maxHp) return this.hooks.notice(f.id, "You're already at full health.");
+    f.potionAt = now + POTION_MS;
+    f.inv.take(slot, 1);
+    const healed = Math.min(it.heal, f.stats.maxHp - f.player.hp);
+    f.player.hp += healed;
+    this.hooks.emit(f.pos.x, f.pos.y, { k: "heal", t: f.id, d: healed });
+    this.changed(f);
+  }
+
+  unequip(id: string, slot: Slot) {
+    const f = this.fighters.get(id);
+    if (!f || f.player.dead || !f.inv.gear[slot]) return;
+    if (!f.inv.unequip(slot)) return this.hooks.notice(id, "Your bag is full.");
+    this.restat(f);
+    this.changed(f);
+  }
+
+  /** Puts some of a bag slot on the ground at your feet, for anyone to take. */
+  dropItem(id: string, slot: number, n: number) {
+    const f = this.fighters.get(id);
+    if (!f || f.player.dead) return;
+    const taken = f.inv.take(slot, n);
+    if (!taken) return;
+    this.drops.spawn(taken.id, taken.n, f.pos.x, f.pos.y);
+    this.changed(f);
+  }
+
+  pickup(id: string, dropId: string) {
+    const f = this.fighters.get(id);
+    const d = this.drops.get(dropId);
+    if (!f || !d || f.player.dead) return;
+    // The client walks up first; allow for it being a step ahead of us.
+    if (dist(f.pos, d) > PICKUP_RANGE + 2 * REACH_SLACK) return;
+    if (d.owner && d.owner !== id) return this.hooks.notice(id, "That's someone else's loot for a few more seconds.");
+    const item = ITEMS[d.item as ItemId];
+    if (!item) return this.drops.remove(dropId);
+    const got = f.inv.add(item.id as ItemId, d.n);
+    if (got <= 0) return this.hooks.notice(id, "Your bag is full. Sell or drop something first.");
+    if (got < d.n) d.n -= got;
+    else this.drops.remove(dropId);
+    this.hooks.tell(id, { k: "loot", item: item.id, n: got });
+    this.changed(f);
+    if (item.rarity === "common") return;
+    // A good find is saved straight away.
+    this.save(f);
+    if (item.rarity === "legendary") this.hooks.found(id, item);
+    else if (item.rarity !== "uncommon") this.hooks.notice(id, `You found a ${RARITY[item.rarity].name.toLowerCase()} item: ${item.name}!`);
+  }
+
+  /** Buys from a merchant (the room checked you're at their counter and they sell it). */
+  buy(id: string, item: ItemId, n: number) {
+    const f = this.fighters.get(id);
+    const price = ITEMS[item].price ?? 0;
+    const count = Math.min(MAX_STACK, Math.max(1, Math.floor(n) || 1));
+    if (!f || f.player.dead || price <= 0) return;
+    if (f.gold < price * count) return this.hooks.notice(id, "You don't have enough gold.");
+    if (f.inv.room(item, count) < count) return this.hooks.notice(id, "Your bag is full.");
+    f.gold -= price * count;
+    f.inv.add(item, count);
+    this.hooks.tell(id, { k: "loot", item, n: count });
+    this.traded(f);
+  }
+
+  /** Sells some of one bag slot, or (slot -1) every piece of monster loot. Returns the gold earned. */
+  sell(id: string, slot: number, n: number): number {
+    const f = this.fighters.get(id);
+    if (!f || f.player.dead) return 0;
+    let gold = 0;
+    const slots = slot < 0 ? f.inv.bag.flatMap((s, i) => (s && ITEMS[s.id].kind === "loot" ? [i] : [])) : [slot];
+    for (const i of slots) {
+      const s = f.inv.bag[i];
+      const price = s ? sellPrice(ITEMS[s.id]) : 0;
+      if (!s || price <= 0) continue;
+      const taken = f.inv.take(i, slot < 0 ? s.n : n);
+      if (taken) gold += price * taken.n;
+    }
+    if (gold <= 0) return 0;
+    f.gold += gold;
+    this.hooks.tell(id, { k: "gain", exp: 0, gold });
+    this.traded(f);
+    return gold;
+  }
+
+  /** Gold changed hands: show it and save now. */
+  private traded(f: Fighter) {
+    this.changed(f);
+    f.sheetDirty = true;
+    this.save(f);
   }
 
   // ---------------------------------------------------------------- monsters
@@ -547,7 +720,7 @@ export class Combat {
       this.hooks.emit(f.pos.x, f.pos.y, { k: "miss", a: mob.id, t: f.id });
       return;
     }
-    const { damage, crit } = rollDamage(def.atk, statsFor(f.cls, f.player.lv).def);
+    const { damage, crit } = rollDamage(def.atk, f.stats.def);
     f.player.hp = Math.max(0, f.player.hp - damage);
     f.dirty = true;
     this.hooks.emit(f.pos.x, f.pos.y, { k: "hit", a: mob.id, t: f.id, d: damage, ...(crit && { crit: 1 as const }) });
