@@ -6,6 +6,8 @@ A browser-based multiplayer open world with customizable characters and live cha
 - **Server:** Colyseus 0.18 + TypeScript on Node.js
 - **Art:** LPC (Liberated Pixel Cup) pixel art: 32 px tiles, ¾ top-down view, layered characters. See [CREDITS.md](CREDITS.md).
 
+**How to play** (controls, the town, jobs, skills, every item, card and monster, the Blacksmith) is in [docs/GAMEPLAY.md](docs/GAMEPLAY.md), written for players and the team. This README is for developers.
+
 ## Run locally
 
 ```bash
@@ -135,7 +137,7 @@ scripts/
 - **Smooth other players.** Everyone else is drawn about 150 ms in the past and blended between timestamped server snapshots. The delay grows automatically on a bad connection. Press F3 to see it.
 - **Doors.** The store interior is a separate area in a corner of the map. Walking into the door asks the server to move you; the server checks you're really at the door first.
 - **Chat.** Your own messages appear instantly. The server cleans and rate-limits messages (5 per 5 s) and replays the last 50 to players who join. Chat is rendered as text, never HTML.
-- **Emotes.** Ten Ragnarok-style emotes pop up over your head (number keys or the smiley button), one per second at most.
+- **Emotes.** Ten Ragnarok-style emotes pop up over your head (the smiley button; the number keys are for skills), one per second at most.
 - **Reconnects.** A dropped connection keeps your character in the world for 20 s while the SDK reconnects automatically.
 - **Accounts are optional.** Anyone can walk around and chat as a guest. **Sign in with Gattchaa** goes to gattchaaoripa.com, which sends the player back with a one-time ticket. The game swaps it for its own 30-day session, so passwords never reach the game. Signed-in players get their character back on any device. One window per account: opening a second one takes over.
 - **Player shops.** Ragnarok-style vending: a signed-in player presses **Open shop** (V) in the Market Square, names their shop, and sits down on a rug with a sign over their head. Everyone can browse the cards they've listed on the Gattchaa marketplace. Each card links to its listing, so buying (and the money) stays on the website.
