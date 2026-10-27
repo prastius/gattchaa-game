@@ -13,6 +13,7 @@ import { HUD } from "./ui/hud";
 import { StatusPanel } from "./ui/status";
 import { BagPanel } from "./ui/bag";
 import { SkillsUI } from "./ui/skills";
+import { TitlesUI } from "./ui/titles";
 import { Diagnostics } from "./ui/diagnostics";
 import { TownDialog } from "./ui/dialog";
 import { Announcer } from "./ui/announce";
@@ -161,6 +162,7 @@ function start(room: Awaited<ReturnType<typeof joinWorld>>, name: string) {
   const dialog = new TownDialog(shop, vending, net);
   const bag = new BagPanel(net);
   const skills = new SkillsUI(net);
+  const titles = new TitlesUI(net);
   const announcer = new Announcer(shop);
   net.onAnnounce.add((a) => announcer.show(a));
   const showVending = () => hud.setVending(Boolean(vending.myShop));
@@ -196,7 +198,7 @@ function start(room: Awaited<ReturnType<typeof joinWorld>>, name: string) {
     game.scale.resize(nw, nh);
     game.scale.setZoom(1 / dpr);
   });
-  const data: WorldSceneData = { world, room, net, chat, hud, shop, dialog, vending, status, bag, skills };
+  const data: WorldSceneData = { world, room, net, chat, hud, shop, dialog, vending, status, bag, skills, titles };
   game.scene.add("world", WorldScene, true, data);
   game.events.once(Phaser.Core.Events.READY, () => {
     const scene = game.scene.getScene("world") as WorldScene;

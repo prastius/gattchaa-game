@@ -4,6 +4,8 @@ import { bodyName, decodeLook } from "../../shared/appearance";
 import { splitAppearance } from "../../shared/items";
 import { FRAME, SHEET_COLS, SHEET_H, SIT_COL, WALK_COLS, composeCharacter, sitDrop } from "./character";
 import { ORB, SPARK } from "./world/fx";
+import { AURA_LEGENDARY } from "../../shared/items";
+import { AURA_CARD_MASTER, AURA_KINGSLAYER, AURA_PIONEER } from "../../shared/titles";
 
 const BUBBLE_MS = 6000;
 const STRIDE_PX = 15; // distance walked per animation frame
@@ -70,8 +72,30 @@ const TAIL = 6;
 const EMOTE_MS = 2400;
 const HP_BAR_W = 30;
 const LUNGE_PX = 6;
-/** Aura colours by upgrade level: +7 a cool blue, +9 violet, +10 gold. */
-const AURA_TINT: Record<number, number> = { 7: 0x6fc3ff, 9: 0xc08bff, 10: 0xffcf5a };
+/**
+ * How each aura looks: its colour, one ring or two, a column of light, rings
+ * rippling out, how often a mote rises (ms) and the motes' colours.
+ */
+interface AuraStyle {
+  tint: number;
+  double?: boolean;
+  column?: boolean;
+  ripple?: boolean;
+  motes: number;
+  colors?: number[];
+}
+const AURAS: Record<number, AuraStyle> = {
+  // Upgraded gear: +7 a cool blue, +9 violet, +10 gold.
+  7: { tint: 0x6fc3ff, motes: 240 },
+  9: { tint: 0xc08bff, double: true, motes: 110 },
+  10: { tint: 0xffcf5a, double: true, column: true, ripple: true, motes: 60 },
+  // Legendary gear: embers.
+  [AURA_LEGENDARY]: { tint: 0xffad42, double: true, motes: 70, colors: [0xffad42, 0xff6a2a, 0xffe08a] },
+  // Titles.
+  [AURA_KINGSLAYER]: { tint: 0xff4d6d, double: true, ripple: true, motes: 80, colors: [0xff4d6d, 0xff9a5a, 0xffffff] },
+  [AURA_CARD_MASTER]: { tint: 0xff7ad9, double: true, column: true, motes: 70, colors: [0xff7ad9, 0xc88bff, 0xffffff] },
+  [AURA_PIONEER]: { tint: 0xbff6ff, double: true, column: true, ripple: true, motes: 45, colors: [0xff7a7a, 0xffd27a, 0x7ddb6e, 0x5cb2ff, 0xc88bff] },
+};
 /** Above the night tint (with the lamp glows), so auras light up the dark. */
 const NIGHT_GLOW_DEPTH = 1e6 - 9;
 
@@ -111,6 +135,8 @@ export class PlayerSprite {
   /** The aura's light at night: outside the container, above the night tint. */
   private nightGlow?: Phaser.GameObjects.Image;
   private aura = 0;
+  /** A player's title under their name (NPCs get theirs once, in the constructor). */
+  private titleKey = "";
 
   moving = false;
   dir: number = Dir.Down;
@@ -245,28 +271,29 @@ export class PlayerSprite {
   }
 
   /**
-   * The glow upgraded gear gives (0 = none): a coloured ring breathing at the
-   * feet and motes rising around the body; a second ring and more motes at +9;
-   * a column of light with rings rippling out at +10.
+   * An aura (0 = none; see AURAS): a coloured ring breathing at the feet and
+   * motes rising around the body, with a second ring, a column of light or
+   * rings rippling out for the grander ones.
    */
-  setAura(level: number) {
-    if (level === this.aura) return;
-    this.aura = level;
+  setAura(aura: number) {
+    if (aura === this.aura) return;
+    this.aura = aura;
     for (const box of [this.auraBox, this.auraFront]) {
       this.scene.tweens.killTweensOf(box.list);
       box.removeAll(true);
     }
     this.nightGlow?.destroy();
     this.nightGlow = undefined;
-    const tint = AURA_TINT[level];
-    if (!tint) return;
+    const style = AURAS[aura];
+    if (!style) return;
+    const { tint } = style;
     const add = Phaser.BlendModes.ADD;
     this.nightGlow = this.scene.add
       .image(this.x, this.y - 6, ORB)
       .setTint(tint)
       .setBlendMode(add)
       .setDepth(NIGHT_GLOW_DEPTH)
-      .setScale(level >= 10 ? 1.3 : 1.1, level >= 10 ? 1.1 : 0.6)
+      .setScale(style.column ? 1.3 : 1.1, style.column ? 1.1 : 0.6)
       .setVisible(false);
     // Additive light alone washes out to white on bright grass, so the ring and disc are solid colour.
     const glow = this.scene.add.image(0, -1, ORB).setTint(tint).setBlendMode(add).setScale(1.1, 0.45).setAlpha(0.7);
@@ -276,20 +303,21 @@ export class PlayerSprite {
     const breathe = { duration: 900, yoyo: true, repeat: -1, ease: "Sine.InOut" };
     this.scene.tweens.add({ targets: [disc, ring], scaleX: 1.1, scaleY: 1.1, ...breathe });
     this.scene.tweens.add({ targets: glow, alpha: 0.4, ...breathe });
-    if (level >= 9) {
+    if (style.double) {
       const inner = this.scene.add.ellipse(0, 0, 28, 9).setStrokeStyle(1, 0xffffff, 0.8);
       this.auraBox.add(inner);
       this.scene.tweens.add({ targets: inner, scaleX: 1.2, scaleY: 1.2, ...breathe });
     }
-    if (level >= 10) {
+    if (style.column) {
       const column = this.scene.add.image(0, -24, ORB).setTint(tint).setBlendMode(add).setScale(0.7, 1.5).setAlpha(0.3);
-      const ripple = this.scene.add.ellipse(0, 0, 44, 15).setStrokeStyle(2, 0xffffff, 1);
       this.auraBox.addAt(column, 0);
-      this.auraBox.add(ripple);
       this.scene.tweens.add({ targets: column, alpha: 0.55, duration: 1100, yoyo: true, repeat: -1, ease: "Sine.InOut" });
+    }
+    if (style.ripple) {
+      const ripple = this.scene.add.ellipse(0, 0, 44, 15).setStrokeStyle(2, 0xffffff, 1);
+      this.auraBox.add(ripple);
       this.scene.tweens.add({ targets: ripple, scaleX: 1.8, scaleY: 1.8, alpha: 0, duration: 1400, repeat: -1, ease: "Quad.Out" });
     }
-    // A few motes at +7, more at +9, a stream at +10.
     const motes = this.scene.add.particles(0, 0, SPARK, {
       x: { min: -16, max: 16 },
       y: { min: -6, max: 2 },
@@ -297,10 +325,34 @@ export class PlayerSprite {
       lifespan: { min: 900, max: 1500 },
       scale: { start: 1.3, end: 0 },
       alpha: { start: 1, end: 0 },
-      tint: [tint, tint, 0xffffff],
-      frequency: level >= 10 ? 60 : level >= 9 ? 110 : 240,
+      tint: style.colors ?? [tint, tint, 0xffffff],
+      frequency: style.motes,
     });
     this.auraFront.add(motes);
+  }
+
+  /** A player's title under their name ("" for none), in its rarity colour. The name moves up to make room. */
+  setTitle(text: string, color: string) {
+    const key = text && `${text}|${color}`;
+    if (key === this.titleKey) return;
+    const had = Boolean(this.titleKey);
+    this.titleKey = key;
+    if (text) {
+      if (!this.titleLabel) {
+        this.titleLabel = this.scene.add
+          .text(0, -51 + this.drop, "", { fontFamily: FONT, fontSize: "9px", fontStyle: "bold", stroke: "#10202b", strokeThickness: 3 })
+          .setOrigin(0.5, 1)
+          .setResolution(this.textRes());
+        this.container.add(this.titleLabel);
+      }
+      this.titleLabel.setText(text).setColor(color).setVisible(true);
+    } else this.titleLabel?.setVisible(false);
+    if (Boolean(text) === had) return;
+    // Same spacing as an NPC's title: the name 8 px higher, bubbles 10 px higher.
+    const up = text ? -1 : 1;
+    this.label.setY(this.label.y + 8 * up);
+    this.bubbleY += 10 * up;
+    this.bubble?.setY(this.bubble.y + 10 * up);
   }
 
   /** A quick step toward what you're hitting, and back. */
@@ -410,7 +462,8 @@ export class PlayerSprite {
     if (this.sprite.visible) this.sprite.setFrame(this.frameIndex());
     if (this.nightGlow) {
       const light = this.fainted ? 0 : PlayerSprite.nightLight;
-      this.nightGlow.setPosition(this.x, this.y - (this.aura >= 10 ? 12 : 4)).setAlpha(light * (this.aura >= 10 ? 0.55 : 0.75)).setVisible(light > 0.02);
+      const column = AURAS[this.aura]?.column;
+      this.nightGlow.setPosition(this.x, this.y - (column ? 12 : 4)).setAlpha(light * (column ? 0.55 : 0.75)).setVisible(light > 0.02);
     }
   }
 

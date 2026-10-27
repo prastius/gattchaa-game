@@ -49,6 +49,9 @@ export interface Progress {
   gear: string | null;
   /** Learned skills and their levels as JSON (null = none). Checked against the class and level when loaded. */
   skills: string | null;
+  /** What they've done (kills, cards found, upgrades…) and their titles, as JSON (null = nothing yet). */
+  deeds: string | null;
+  titles: string | null;
 }
 
 /** Each entry upgrades the schema by one version (PRAGMA user_version). Append only. */
@@ -102,10 +105,21 @@ const MIGRATIONS = [
    ALTER TABLE characters ADD COLUMN gear TEXT;`,
   // v5: jobs and skills. Skill levels are a small JSON document.
   `ALTER TABLE characters ADD COLUMN skills TEXT;`,
+  // v6: titles. Deeds and titles are small JSON documents; pioneers are the
+  // first few accounts to reach each level cap, numbered in order.
+  `ALTER TABLE characters ADD COLUMN deeds TEXT;
+   ALTER TABLE characters ADD COLUMN titles TEXT;
+   CREATE TABLE pioneers (
+     cap INTEGER NOT NULL,
+     account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+     rank INTEGER NOT NULL,
+     at INTEGER NOT NULL,
+     PRIMARY KEY (cap, account_id)
+   );`,
 ];
 
 const ACCOUNT_COLS = "id, gattchaa_id AS gattchaaId, display_name AS displayName, name, look";
-const PROGRESS_COLS = "class AS cls, level AS lv, exp, hp, mp, gold, bag, gear, skills";
+const PROGRESS_COLS = "class AS cls, level AS lv, exp, hp, mp, gold, bag, gear, skills, deeds, titles";
 const SHOP_COLS = "account_id AS accountId, id, x, y, title, opened_at AS openedAt, expires_at AS expiresAt";
 
 /** Sessions are stored hashed: a leaked database file doesn't sign anyone in. */
@@ -197,12 +211,27 @@ export class Db {
   saveProgress(accountId: number, p: Progress) {
     this.db
       .prepare(
-        `INSERT INTO characters (account_id, class, level, exp, hp, mp, gold, bag, gear, skills, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `INSERT INTO characters (account_id, class, level, exp, hp, mp, gold, bag, gear, skills, deeds, titles, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT(account_id) DO UPDATE SET class = excluded.class, level = excluded.level, exp = excluded.exp,
            hp = excluded.hp, mp = excluded.mp, gold = excluded.gold, bag = excluded.bag, gear = excluded.gear,
-           skills = excluded.skills, updated_at = excluded.updated_at`,
+           skills = excluded.skills, deeds = excluded.deeds, titles = excluded.titles, updated_at = excluded.updated_at`,
       )
-      .run(accountId, p.cls, p.lv, p.exp, p.hp, p.mp, p.gold, p.bag, p.gear, p.skills, Date.now());
+      .run(accountId, p.cls, p.lv, p.exp, p.hp, p.mp, p.gold, p.bag, p.gear, p.skills, p.deeds, p.titles, Date.now());
+  }
+
+  /**
+   * Makes an account one of the first `max` to reach a level cap, if there's
+   * still room. Returns its place (1 = first), or undefined when the places are taken.
+   */
+  claimPioneer(cap: number, accountId: number, max: number): number | undefined {
+    return this.transaction(() => {
+      const mine = this.db.prepare("SELECT rank FROM pioneers WHERE cap = ? AND account_id = ?").get(cap, accountId) as { rank: number } | undefined;
+      if (mine) return mine.rank;
+      const { n } = this.db.prepare("SELECT COUNT(*) AS n FROM pioneers WHERE cap = ?").get(cap) as { n: number };
+      if (n >= max) return undefined;
+      this.db.prepare("INSERT INTO pioneers (cap, account_id, rank, at) VALUES (?, ?, ?, ?)").run(cap, accountId, n + 1, Date.now());
+      return n + 1;
+    });
   }
 
   // ------------------------------------------------------------ shops

@@ -31,6 +31,7 @@ The game has three parts:
 | Drink a potion | **Q** | The potion button |
 | Bag and equipment | **I** | The bag button |
 | Skills window | **K** | The skills button |
+| Titles window | **T** | The medal button |
 | Sit down or stand up | **X** | The sit button |
 | Open your shop (in the Market Square) | **V** | The Open shop button |
 | Emotes | The smiley button | The smiley button |
@@ -253,7 +254,7 @@ Frozen monsters turn icy blue and can't move or attack. While a buff is running,
 | Uncommon | Green | |
 | Rare | Blue | You get a chat line when you find one |
 | Epic | Purple | You get a chat line when you find one |
-| Legendary | Orange | The whole town hears about it; it sends up a pillar of light on the ground |
+| Legendary | Orange | The whole town hears about it; it sends up a pillar of light on the ground. Wearing one gives you an aura |
 
 ### Loot
 
@@ -426,19 +427,67 @@ Because failures drop the gear back down, high upgrades take many tries. On aver
 
 ### Auras
 
-Wear any piece of gear at **+7 or higher** and everyone sees an aura around you:
+Wear any piece of gear at **+7 or higher**, or anything **legendary**, and everyone sees an aura around you. The best one you qualify for shows:
 
-| Best upgrade you wear | Aura |
+| What you wear | Aura |
 | --- | --- |
-| +7 or +8 | A blue ring at your feet, with a few sparks |
-| +9 | A violet double ring, with sparks rising |
-| +10 | A golden ring with ripples and a column of light |
+| Gear at +7 or +8 | A blue ring at your feet, with a few sparks |
+| Gear at +9 | A violet double ring, with sparks rising |
+| A legendary item, or gear with a legendary card in it (like the Meadow Crown or a Pumpking Card) | An orange double ring with rising embers |
+| Gear at +10 | A golden ring with ripples and a column of light |
 
-At night, auras glow like the street lamps. A successful **+9 or +10** is announced to the whole town.
+Some titles have their own aura too (see Titles). At night, auras glow like the street lamps. A successful **+9 or +10** is announced to the whole town.
 
 Upgraded gear shows its level in its name ("+7 Double Stinging Saber") and in the corner of its bag slot. It keeps its level if you drop it and pick it up again.
 
-## 10. Monster reference
+## 10. Titles
+
+Titles are earned by doing things in the game. Open your titles with **T** (or the medal button) to see every title, the ones you've earned, and how far along you are with the rest. Pick one to **show under your name**, in its rarity colour, for everyone to see, or hide it again.
+
+- When you earn a title, a banner pops up over your head and you get a chat line. **Epic and legendary titles are announced to the whole town.**
+- A badge on the medal button counts new titles you haven't looked at yet.
+- "Help defeat" means you hurt the monster before it fell: everyone in a fight gets the count, not just the one who landed the last hit.
+- Cards and legendary items only count when they're **fresh from a monster**, not when someone hands them to you.
+- Characters from before titles existed get their level titles straight away when they come back.
+
+| Title | Rarity | How to earn it |
+| --- | --- | --- |
+| **Levels** | | |
+| Adventurer | Uncommon | Reach level 10 |
+| Veteran | Uncommon | Reach level 20 |
+| Champion | Rare | Reach level 30 |
+| Hero | Epic | Reach level 40 |
+| Legend | Legendary | Reach level 50 |
+| Pioneer ✦ | Legendary | Be one of the first 10 players to reach the level cap (now 50). Signed-in players only |
+| **Hunting** | | |
+| Slime Squasher | Common | Help defeat 100 Slimes |
+| Monster Hunter | Uncommon | Help defeat 1,000 monsters |
+| Ghost Hunter | Rare | Help defeat 300 Ghosts |
+| Kingslayer ✦ | Epic | Help defeat the Pumpking 10 times |
+| Monster Slayer | Epic | Help defeat 10,000 monsters |
+| **Collecting** | | |
+| Card Finder | Rare | Find a monster card |
+| Card Collector | Epic | Find 5 different monster cards |
+| Card Master ✦ | Legendary | Find every kind of monster card (10 so far) |
+| Lucky | Epic | Find a legendary item |
+| **The forge** | | |
+| Shiny | Rare | Upgrade any gear to +7 |
+| Forge Master | Epic | Upgrade any gear to +10 |
+| Never Give Up | Rare | Fail 30 upgrades, and keep going |
+| **Town** | | |
+| Shopkeeper | Uncommon | Open your own shop in the Market Square |
+
+✦ **Titles with an aura.** While you show one of these, its aura replaces your gear's aura:
+
+| Title | Aura |
+| --- | --- |
+| Kingslayer | A crimson ring with ripples and red-orange sparks |
+| Card Master | A pink ring with a column of light and pink and violet sparks |
+| Pioneer | A pale starlight ring with ripples, a column of light and rainbow sparks |
+
+Pioneer places are counted per level cap: when the cap goes up, the first 10 players to reach the new cap become Pioneers too.
+
+## 11. Monster reference
 
 | Monster | Lv | HP | ATK | DEF | EXP | Gold | Notable drops |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -455,7 +504,7 @@ Upgraded gear shows its level in its name ("+7 Double Stinging Saber") and in th
 
 Every monster also drops its own card (see Monster cards) and often potions.
 
-## 11. A good path for new players
+## 12. A good path for new players
 
 1. **Level 1–4:** Slimes by the road, south of town. Buy a few Red Potions and a Dagger or Short Sword from Bram.
 2. **Level 4–7:** Grass Snakes in the west grass. Wear what you find.
@@ -463,13 +512,14 @@ Every monster also drops its own card (see Monster cards) and often potions.
 4. **Level 10:** Visit **Orin** just inside the south gate and choose your job. Spend your first skill point (K).
 5. **Level 10–14:** Snapper Flowers by the lake, or Grubs and Night Bats out of the **east gate**.
 6. **Level 14–20:** Rock Worms, Gazers and Ghosts deeper in Dusk Hollow. Use skills on Ghosts, since plain attacks often miss them.
-7. **Level 20+:** Team up for the **Pumpking**. Save your Mithril and Star Crystals for **Hilda**, and aim for your first aura at +7.
+7. **Level 20+:** Team up for the **Pumpking**. Save your Mithril and Star Crystals for **Hilda**, and aim for your first aura at +7. Ten Pumpking fights make you a **Kingslayer**.
+
+Along the way, open your titles (T) now and then: you'll have earned a few.
 
 Sell your monster loot to Bram whenever your bag fills up, and sit down (X) to heal faster between fights.
 
-## 12. Coming next
+## 13. Coming next
 
-- **Titles:** earned from achievements and shown under your name, like "Pioneer" for the first players to reach the level cap. Some titles will give their own aura.
 - **Duels and an arena** for player vs player.
 - **Trading in-game items for gold** in player shops, so cards, gear and ingots can change hands.
 - **New fields and monsters** above level 20, and a higher level cap.

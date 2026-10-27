@@ -24,8 +24,10 @@ export const Player = schema(
     gear: t.string().default(""),
     /** Novice, Knight, Mage or Archer (a ClassId). */
     cls: t.string().default("novice"),
-    /** Aura from upgraded gear: 0, 7, 9 or 10 (see auraOf in shared/items.ts). */
+    /** Aura: from gear (see auraOf in shared/items.ts) or the shown title (shared/titles.ts); 0 = none. */
     aura: t.uint8().default(0),
+    /** The title shown under the name (a TitleId, "" = none). */
+    title: t.string().default(""),
   },
   "Player",
 );

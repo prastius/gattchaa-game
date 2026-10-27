@@ -25,6 +25,7 @@ import {
 } from "../../shared/protocol";
 import type { BagMessage, ItemId, Slot } from "../../shared/items";
 import type { SkillId } from "../../shared/skills";
+import type { TitleId, TitleShowMessage, TitlesMessage } from "../../shared/titles";
 import type { Announcement, NpcSay } from "../../shared/gattchaa";
 import type { ChatUI } from "./ui/chat";
 import { audio } from "./audio";
@@ -57,10 +58,13 @@ export class Net {
   readonly onAnnounce = new Set<(a: Announcement) => void>();
   readonly onStats = new Set<(s: StatsMessage) => void>();
   readonly onBag = new Set<(b: BagMessage) => void>();
+  readonly onTitles = new Set<(t: TitlesMessage) => void>();
   /** Your latest character sheet. */
   stats?: StatsMessage;
   /** Your bag and equipment, as of the server's last word. */
   bag?: BagMessage;
+  /** Your titles and how far along the rest are. */
+  titles?: TitlesMessage;
 
   constructor(
     readonly room: Room,
@@ -95,6 +99,10 @@ export class Net {
     room.onMessage("bag", (b: BagMessage) => {
       this.bag = b;
       for (const fn of this.onBag) fn(b);
+    });
+    room.onMessage("titles", (t: TitlesMessage) => {
+      this.titles = t;
+      for (const fn of this.onTitles) fn(t);
     });
 
     room.onDrop((code, reason) => {
@@ -173,6 +181,11 @@ export class Net {
   /** Puts the card in a bag slot into equipment in the bag or worn. */
   insertCard(card: number, at: { bag: number } | { gear: Slot }) {
     this.room.send("item:card", { card, ...at } satisfies CardInsertMessage);
+  }
+
+  /** Shows an earned title under your name ("" hides it). */
+  showTitle(id: TitleId | "") {
+    this.room.send("title:show", { id } satisfies TitleShowMessage);
   }
 
   /** Asks the Blacksmith to upgrade equipment in the bag or worn. */

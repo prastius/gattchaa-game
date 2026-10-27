@@ -48,9 +48,11 @@ import {
   type Slot,
 } from "../../../shared/items";
 import { GLOBAL_COOLDOWN_MS, SKILLS, SKILL_MAX, cleanSkills, pointsLeft, type SkillDef, type SkillId, type SkillLevels } from "../../../shared/skills";
+import { TITLES, type TitleDef, type TitleId, type TitlesMessage } from "../../../shared/titles";
 import type { Progress } from "../db";
 import { Monster, type Player } from "./WorldState";
 import { Inventory, type GearAt } from "./Inventory";
+import { TitleBook } from "./Titles";
 import type { Drops } from "./Drops";
 
 /** Spawn groups with a player this close (px) think; the rest sleep, so empty fields cost nothing. */
@@ -102,6 +104,12 @@ export interface CombatHooks {
   found(id: string, item: ItemDef): void;
   /** The Blacksmith took someone's gear to +`up` (`item` is its plain name). */
   upgraded(id: string, item: string, up: number): void;
+  /** A player's titles changed (earned one, shown one, or got further along). */
+  titles(id: string, msg: TitlesMessage): void;
+  /** Someone earned a title (the room decides whether the town hears). */
+  titleEarned(id: string, title: TitleDef): void;
+  /** Someone reached the level cap: maybe a Pioneer (the room knows the accounts). */
+  reachedCap(id: string, cap: number): void;
 }
 
 interface Fighter {
@@ -139,6 +147,9 @@ interface Fighter {
   sheetDirty: boolean;
   /** …and their bag. */
   bagDirty: boolean;
+  /** Deeds and titles. */
+  book: TitleBook;
+  titlesDirty: boolean;
 }
 
 interface Mob {
@@ -216,6 +227,9 @@ export class Combat {
     if (worn && !canWear(cls, worn)) inv.unequip("weapon");
     if (inv.gear.weapon && ITEMS[inv.gear.weapon.id].twoHanded) inv.unequip("offhand");
     const s = statsFor(cls, lv, inv.bonus(), weaponRange(inv));
+    const book = TitleBook.load(progress?.deeds, progress?.titles);
+    // Titles earned before titles existed (by level, say) are simply there, no fanfare.
+    book.check(lv);
     const f: Fighter = {
       id,
       player,
@@ -240,11 +254,15 @@ export class Combat {
       dirty: false,
       sheetDirty: true,
       bagDirty: true,
+      book,
+      titlesDirty: true,
     };
     player.lv = lv;
     player.cls = cls;
     player.mhp = s.maxHp;
     player.gear = inv.visible();
+    player.aura = this.auraOf(f);
+    player.title = book.shown;
     // Knocked out when they left: they're back in town now, fully healed.
     const hp = progress?.hp ?? s.maxHp;
     player.hp = hp > 0 ? Math.min(s.maxHp, hp) : s.maxHp;
@@ -363,6 +381,10 @@ export class Combat {
         f.bagDirty = false;
         this.hooks.bag(f.id, f.inv.message());
       }
+      if (f.titlesDirty) {
+        f.titlesDirty = false;
+        this.hooks.titles(f.id, f.book.message(f.player.lv));
+      }
     }
   }
 
@@ -458,6 +480,9 @@ export class Combat {
     }
     const top = earners.reduce<{ f: Fighter; dmg: number } | undefined>((best, e) => (!best || e.dmg > best.dmg ? e : best), undefined);
     for (const { f, dmg } of earners) {
+      const kills = f.book.deeds.kills;
+      kills[mob.def.id] = (kills[mob.def.id] ?? 0) + 1;
+      this.deed(f);
       const exp = this.gainExp(f, Math.floor(mob.def.exp * (dmg / total) * expFactor(f.player.lv, mob.def.level)));
       const gold = f === top?.f ? randInt(mob.def.gold) : 0;
       if (gold) {
@@ -497,6 +522,8 @@ export class Combat {
       this.hooks.emit(f.pos.x, f.pos.y, { k: "lvup", t: f.id, lv });
       this.hooks.levelUp(f.id, lv);
     }
+    this.deed(f);
+    if (lv >= LEVEL_CAP) this.hooks.reachedCap(f.id, LEVEL_CAP);
     this.save(f);
   }
 
@@ -574,8 +601,13 @@ export class Combat {
     f.player.hp = Math.min(f.player.hp, f.stats.maxHp);
     f.mp = Math.min(f.mp, f.stats.maxMp);
     f.player.gear = f.inv.visible();
-    f.player.aura = f.inv.aura();
+    f.player.aura = this.auraOf(f);
     f.sheetDirty = true;
+  }
+
+  /** The shown title's aura, if it has one; otherwise the gear's. */
+  private auraOf(f: Fighter): number {
+    return f.book.aura() ?? f.inv.aura();
   }
 
   private save(f: Fighter) {
@@ -592,6 +624,7 @@ export class Combat {
       gold: f.gold,
       ...f.inv.save(),
       skills: Object.keys(f.skills).length ? JSON.stringify(f.skills) : null,
+      ...f.book.save(),
     });
   }
 
@@ -672,6 +705,11 @@ export class Combat {
     // A good find is saved straight away.
     this.save(f);
     if (!news) return;
+    // Fresh finds count toward titles (not cards passed from player to player).
+    const deeds = f.book.deeds;
+    if (item.kind === "card" && !deeds.cards.includes(item.id as ItemId)) deeds.cards.push(item.id as ItemId);
+    if (item.rarity === "legendary") deeds.legendary++;
+    this.deed(f);
     if (item.rarity === "legendary" || item.kind === "card") this.hooks.found(id, item);
     else if (item.rarity !== "uncommon") this.hooks.notice(id, `You found ${item.rarity === "epic" ? "an" : "a"} ${RARITY[item.rarity].name.toLowerCase()} item: ${item.name}!`);
   }
@@ -767,11 +805,56 @@ export class Combat {
     const up = ok ? from + 1 : from - 1;
     if (up > 0) s.up = up;
     else delete s.up;
+    if (ok) f.book.deeds.bestUp = Math.max(f.book.deeds.bestUp, up);
+    else f.book.deeds.upFails++;
     if ("gear" in at) this.restat(f);
     this.hooks.notice(id, ok ? `Success! Your ${it.name} is now +${up}.` : `The upgrade failed: your ${it.name} went down to +${up}.`);
     this.hooks.emit(f.pos.x, f.pos.y, { k: "forge", t: f.id, ok: ok ? 1 : 0, up, item: it.name });
     if (ok && up >= 9) this.hooks.upgraded(id, it.name, up);
+    this.deed(f);
     this.traded(f);
+  }
+
+  // ---------------------------------------------------------------- titles
+
+  /** Deeds changed: send the progress, and hand out any titles just earned. */
+  private deed(f: Fighter) {
+    f.dirty = f.titlesDirty = true;
+    const fresh = f.book.check(f.player.lv);
+    for (const t of fresh) this.earnedTitle(f, t);
+  }
+
+  private earnedTitle(f: Fighter, id: TitleId) {
+    const t = TITLES[id] as TitleDef;
+    f.titlesDirty = true;
+    this.hooks.notice(f.id, `You earned the title "${t.name}"! Show it under your name from your titles (T).`);
+    this.hooks.emit(f.pos.x, f.pos.y, { k: "title", t: f.id, title: id });
+    this.hooks.titleEarned(f.id, t);
+    this.save(f);
+  }
+
+  /** Gives a title outright (Pioneer: the room checked the places left). */
+  grantTitle(id: string, title: TitleId) {
+    const f = this.fighters.get(id);
+    if (f && f.book.grant(title)) this.earnedTitle(f, title);
+  }
+
+  /** Shows an earned title under your name ("" for none). */
+  showTitle(id: string, title: TitleId | "") {
+    const f = this.fighters.get(id);
+    if (!f || !f.book.show(title)) return;
+    f.player.title = title;
+    f.player.aura = this.auraOf(f);
+    f.dirty = f.titlesDirty = true;
+    this.save(f);
+  }
+
+  /** Opened a shop in the Market Square. */
+  shopOpened(id: string) {
+    const f = this.fighters.get(id);
+    if (!f || f.book.deeds.shop) return;
+    f.book.deeds.shop = true;
+    this.deed(f);
   }
 
   // ---------------------------------------------------------------- jobs and skills

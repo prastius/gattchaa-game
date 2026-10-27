@@ -90,6 +90,7 @@ shared/       Code used by both client and server
   rpg.ts          Leveling and fighting: classes, the EXP curve, monsters (and their drops), fields, damage rules
   items.ts        Every item and monster card: stats, prices, rarity, icon, card slots, who may wear it and how it looks when worn; the Outfitter's stock; the Blacksmith's upgrade table and auras
   skills.ts       Class skills: what each does per level, MP, cooldowns, and how it looks
+  titles.ts       Titles: how each is earned (deeds), its rarity and aura, and progress counting
 server/       Colyseus server
   src/rooms/WorldRoom.ts   Joins, interest management, movement validation, chat, emotes, wardrobe, sitting, shops, trading
   src/rooms/WorldState.ts  Synced state
@@ -182,7 +183,7 @@ Ragnarok and TibiaME style: click a monster and your character fights it. Everyt
 - **Fainting.** At 0 HP you faint and return to town fully healed. Novices lose no EXP; Knights, Mages and Archers lose 3 % of a level.
 - **Saving.** Signed-in players' progress is saved on every level-up and faint, every 30 s, and when they leave. Guests can fight too, but start over next visit.
 - **Server cost.** Monsters only think while a player is near their spawn area, and fight events go only to players close enough to see them. 20 bots fighting at once used about 5 % of one CPU core.
-- **Testing.** Outside production (`NODE_ENV` not `production`), chat commands help: `/level 25` jumps to a level, `/item saber` (or `/item redPotion 20`, `/item hornetCard`, `/item moonblade +10`) adds items, `/gold 1000` sets your gold, `/job archer` turns you into a class (from level 10; `/job novice` goes back). `/help` lists every item id.
+- **Testing.** Outside production (`NODE_ENV` not `production`), chat commands help: `/level 25` jumps to a level, `/item saber` (or `/item redPotion 20`, `/item hornetCard`, `/item moonblade +10`) adds items, `/gold 1000` sets your gold, `/job archer` turns you into a class (from level 10; `/job novice` goes back), `/title kingslayer` hands you a title. `/help` lists every item id.
 
 ## Jobs and skills
 
@@ -258,9 +259,19 @@ Hilda the Blacksmith works by her forge fire outside the south gate, west of Row
 - **Ingots.** Hilda sells Iron Ingots (100 gold); monsters drop them too. Mithril Ingots drop in Dusk Hollow (Rock Worms most often) and rarely from Snapper Flowers. Star Crystals come from Gazers and Ghosts (about 1 in 200 to 250) and from the Pumpking (one kill in two). The Pumpking also always carries a Mithril Ingot or two. Ingots are kept out of Bram's "sell all monster loot".
 - **The cost of luck.** Simulated over 20,000 tries, reaching +7 takes about 10 tries (6,000 gold, 4 Mithril), +9 about 29 tries (32,000 gold, 19 Mithril, 3 Star Crystals), and +10 about 74 tries (100,000 gold, 50 Mithril, 16 Star Crystals).
 - **Names.** Upgraded gear goes first in the name: "+7 Double Stinging Saber". The bag shows the level in the item's corner and what the upgrades add. Upgrades stay on gear that's dropped and picked up again; Bram won't buy upgraded gear.
-- **Auras.** Wear anything at +7 or higher and everyone sees an aura at your feet: a blue ring at +7, violet with rising sparks at +9, and gold with a column of light at +10. The best piece you wear decides it. At night auras glow like the street lamps.
+- **Auras.** Wear anything at +7 or higher and everyone sees an aura at your feet: a blue ring at +7, violet with rising sparks at +9, and gold with a column of light at +10. Legendary gear (or a legendary card in gear) gives an orange aura that ranks between +9 and +10. The best one you qualify for shows (`auraOf` in `shared/items.ts`), unless your shown title has its own. At night auras glow like the street lamps (a glow above the night tint).
 - **News.** A success at +9 or +10 is announced to the whole town.
 - Balance lives in `UPGRADE_TABLE`, `upgradeCost` and `upgradeStep` in `shared/items.ts`; the ingot drops are in each monster's table in `shared/rpg.ts`.
+
+## Titles
+
+Earned by doing things, one shown under your name. The list is `TITLES` in `shared/titles.ts`; each has a goal (level, kills of one monster or any, kinds of cards found, a legendary find, best upgrade, failed upgrades, opening a shop, or Pioneer), a rarity and sometimes an aura.
+
+- **Deeds.** The server counts what each character does (`Deeds`: kills by monster, card kinds found fresh from monsters, legendary finds, best upgrade, failed upgrades, shop opened) in `server/src/rooms/Titles.ts` and checks for new titles after each deed. Everyone who hurt a monster gets the kill. Deeds and titles are JSON columns on `characters` (migration v6), cleaned when loaded.
+- **Earning.** A new title gives a banner over the head (`title` fx), a chat line, and town news for epic and legendary ones. Characters saved before titles existed get their level titles quietly on join.
+- **Showing.** `title:show` picks an earned title; it syncs as `Player.title` and draws under the name in its rarity colour. A shown title with an aura (Kingslayer, Card Master, Pioneer) replaces the gear aura (`Player.aura`).
+- **Pioneer.** When a signed-in player reaches `LEVEL_CAP`, the room claims a place in the `pioneers` table (first `PIONEERS` = 10 accounts per cap, numbered in order) and grants the title. Raising the cap opens 10 new places.
+- **The window.** T (or the medal button) lists every title by group with progress bars; a badge counts titles earned since you last looked. The server sends `titles` (earned, shown, progress) whenever something changes.
 
 ## Gattchaa shop data
 

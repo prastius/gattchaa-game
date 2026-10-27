@@ -209,6 +209,8 @@ export type FxEvent =
   | { k: "card"; t: string }
   /** The Blacksmith upgraded someone's gear (ok) or failed; `up` is its level now, `item` its name. */
   | { k: "forge"; t: string; ok: 0 | 1; up: number; item: string }
+  /** Someone earned a title (a TitleId). */
+  | { k: "title"; t: string; title: string }
   /** Someone used a skill (at monster `t`, for the ones aimed at something). Its hits follow. */
   | { k: "cast"; a: string; s: SkillId; t?: string }
   /** A monster can't move or bite for `ms`. */
@@ -241,8 +243,10 @@ export interface PlayerView {
   gear?: string;
   /** Class id ("novice", "knight"…). */
   cls?: string;
-  /** Aura from upgraded gear: 0, or 7, 9 or 10 (see auraOf in items.ts). */
+  /** Aura from gear (see auraOf in items.ts) or the shown title (titles.ts); 0 = none. */
   aura?: number;
+  /** The title shown under the name (a TitleId; "" = none). */
+  title?: string;
 }
 
 /** Read-only shape of an item lying on the ground. */

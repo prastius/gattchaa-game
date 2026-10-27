@@ -28,6 +28,7 @@
         <symbol id="i-bag" viewBox="0 0 24 24"><path d="M8.5 8.5V7a3.5 3.5 0 0 1 7 0v1.5M4.5 8.5h15l-1.3 12H5.8zM9 12.5h6" /></symbol>
         <symbol id="i-potion" viewBox="0 0 24 24"><path d="M9.5 3.5h5M10.5 3.5v5L5.7 16.3A3 3 0 0 0 8.3 21h7.4a3 3 0 0 0 2.6-4.7L13.5 8.5v-5M7.6 14h8.8" /></symbol>
         <symbol id="i-skills" viewBox="0 0 24 24"><path d="M13.5 2.5 5 13.5h6l-1.5 8L19 10.5h-6z" /></symbol>
+        <symbol id="i-medal" viewBox="0 0 24 24"><path d="M7.5 2.5l3.2 6.6M16.5 2.5l-3.2 6.6" /><circle cx="12" cy="14.8" r="6" /><circle cx="12" cy="14.8" r="2.4" /></symbol>
         <symbol id="i-shirt" viewBox="0 0 24 24"><path d="M8.6 3.5 3 6.6l2 4.6 3-1.3v10.6h8V9.9l3 1.3 2-4.6-5.6-3.1a3.4 3.4 0 0 1-6.8 0z" /></symbol>
       </defs>
     </svg>
@@ -49,6 +50,7 @@
         <button id="potion-btn" class="hud-button hud-icon hud-counted" type="button" aria-label="Drink a potion" title="Drink a potion (Q)" hidden><svg><use href="#i-potion" /></svg><span id="potion-count" class="hud-count">0</span></button>
         <button id="bag-btn" class="hud-button hud-icon" type="button" aria-label="Bag" title="Bag (I)"><svg><use href="#i-bag" /></svg></button>
         <button id="skills-btn" class="hud-button hud-icon hud-counted" type="button" aria-label="Skills" title="Skills (K)"><svg><use href="#i-skills" /></svg><span id="skills-count" class="hud-count" hidden>0</span></button>
+        <button id="titles-btn" class="hud-button hud-icon hud-counted" type="button" aria-label="Titles" title="Titles (T)"><svg><use href="#i-medal" /></svg><span id="titles-new" class="hud-count" hidden>0</span></button>
         <button id="sit-btn" class="hud-button hud-icon" type="button" aria-label="Sit down or stand up" title="Sit (X)"><svg><use href="#i-sit" /></svg></button>
         <button id="emote-btn" class="hud-button hud-icon" type="button" aria-label="Emotes" aria-expanded="false" title="Emotes"><svg><use href="#i-smile" /></svg></button>
         <button id="shop-btn" class="hud-button hud-accent" type="button" title="Open a shop in the Market Square (V)"><svg><use href="#i-shop" /></svg><span id="shop-label">Open shop</span></button>
@@ -103,6 +105,15 @@
         <button id="skills-close" class="dialog-close" type="button" aria-label="Close">×</button>
       </header>
       <div id="skills-list" class="skills-list"></div>
+    </section>
+
+    <section id="titles" class="skills titles" hidden aria-label="Titles">
+      <header class="bag-head">
+        <h2>Titles</h2>
+        <span id="titles-earned" class="skills-points"></span>
+        <button id="titles-close" class="dialog-close" type="button" aria-label="Close">×</button>
+      </header>
+      <div id="titles-list" class="titles-list"></div>
     </section>
 
     <!-- The skill bar: keys 1, 2, 3… (only once you have a job). -->

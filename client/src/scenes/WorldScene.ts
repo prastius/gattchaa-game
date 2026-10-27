@@ -39,6 +39,8 @@ import type { HUD } from "../ui/hud";
 import type { StatusPanel } from "../ui/status";
 import type { BagPanel } from "../ui/bag";
 import type { SkillsUI } from "../ui/skills";
+import type { TitlesUI } from "../ui/titles";
+import { TITLES, isTitleId, type TitleDef } from "../../../shared/titles";
 import type { Net } from "../net";
 import type { Shop } from "../shop";
 import type { TownDialog } from "../ui/dialog";
@@ -56,6 +58,7 @@ export interface WorldSceneData {
   status: StatusPanel;
   bag: BagPanel;
   skills: SkillsUI;
+  titles: TitlesUI;
 }
 
 interface Chunk {
@@ -91,6 +94,8 @@ interface DropEntity {
 const ATLAS_KEY = "terrain-atlas";
 const SEND_INTERVAL = 1000 / NET_SEND_HZ;
 const HUD_INTERVAL = 250;
+/** Time between two new-title banners over the same head (a level-up's banner lasts about as long). */
+const TITLE_FX_GAP_MS = 1500;
 const ASSETS = `${import.meta.env.BASE_URL}assets/world/`;
 const TALK_RANGE = 72; // px from your feet to press E
 const CLICK_RANGE = 360; // px: click/tap something this close to use it
@@ -181,6 +186,7 @@ export class WorldScene extends Phaser.Scene {
   private status!: StatusPanel;
   private bag!: BagPanel;
   private skills!: SkillsUI;
+  private titles!: TitlesUI;
   /** A skill pressed while the target was out of range: cast once we've walked close enough. */
   private pendingSkill?: { id: SkillId; at: number };
   private skillHintAt = 0;
@@ -209,6 +215,8 @@ export class WorldScene extends Phaser.Scene {
   private pickTries = 0;
   /** Loot floats queue up so several pick-ups don't print over each other. */
   private nextLootFloat = 0;
+  /** …and so do new-title banners, per player (two titles at once, or one right after a level-up). */
+  private nextTitleFx = new Map<string, number>();
   private potionHintAt = 0;
   private hoveredDrop?: string;
   private fx!: Fx;
@@ -335,7 +343,9 @@ export class WorldScene extends Phaser.Scene {
     this.hud.onEmote((e) => this.emote(e));
     this.hud.onAttack(() => this.targetNearest());
     this.hud.onBag(() => this.bag.toggle());
-    this.hud.onSkills(() => this.skills.toggle());
+    this.hud.onSkills(() => this.toggleSkills());
+    this.hud.onTitles(() => this.toggleTitles());
+    this.titles.onUnseen = (n) => this.hud.setNewTitles(n);
     this.skills.onUse = (id) => this.castSkill(id);
     this.skills.onPoints = (n) => this.hud.setSkillPoints(n);
     this.dialog.openSkills = () => {
@@ -387,7 +397,8 @@ export class WorldScene extends Phaser.Scene {
       else if (e.key === "-" || e.key === "_") this.zoomBy(-1);
       else if (e.key === "i" || e.key === "I") this.bag.toggle();
       else if (e.key === "q" || e.key === "Q") this.drinkPotion();
-      else if (e.key === "k" || e.key === "K") this.skills.toggle();
+      else if (e.key === "k" || e.key === "K") this.toggleSkills();
+      else if (e.key === "t" || e.key === "T") this.toggleTitles();
       // 1-6: your skills, in skill-bar order (emotes are on the emote button).
       else if (/^[1-6]$/.test(e.key) && !e.repeat) {
         const skill = this.skills.mine[Number(e.key) - 1];
@@ -584,6 +595,7 @@ export class WorldScene extends Phaser.Scene {
       if (me) {
         this.self.setLook(appearanceKey(me.state.look, me.state.gear)); // wardrobe and gear changes come back via state
         this.self.setAura(me.state.aura ?? 0);
+        this.showTitle(this.self, me.state.title);
         this.updateHealth(me.state);
       }
       this.updateSelf(time, dt);
@@ -616,6 +628,7 @@ export class WorldScene extends Phaser.Scene {
       if (!e.npc) {
         sprite.dead = Boolean(s.dead);
         sprite.setAura(s.aura ?? 0);
+        this.showTitle(sprite, s.title);
         sprite.setHp(s.hp ?? 0, s.mhp ?? 0, (s.hp ?? 0) < (s.mhp ?? 0));
       }
       sprite.animate();
@@ -1257,6 +1270,19 @@ export class WorldScene extends Phaser.Scene {
         if (ev.t === me) audio.card();
         return;
       }
+      case "title": {
+        if (!isTitleId(ev.title)) return;
+        const t = TITLES[ev.title] as TitleDef;
+        const now = performance.now();
+        const at = Math.max(now + TITLE_FX_GAP_MS / 2, this.nextTitleFx.get(ev.t) ?? 0);
+        this.nextTitleFx.set(ev.t, at + TITLE_FX_GAP_MS);
+        this.time.delayedCall(at - now, () => {
+          const b = this.body(ev.t);
+          if (b) this.fx.levelUp(b.x, b.y, `${t.name.toUpperCase()}!`, Number.parseInt(RARITY[t.tier].color.slice(1), 16));
+          if (ev.t === me) audio.fanfare();
+        });
+        return;
+      }
       case "forge": {
         const b = this.body(ev.t);
         if (b) this.fx.forge(b.x, b.y, ev.ok === 1, ev.up);
@@ -1273,6 +1299,23 @@ export class WorldScene extends Phaser.Scene {
         return;
       }
     }
+  }
+
+  /** The skills and titles windows share a corner: opening one closes the other. */
+  private toggleSkills() {
+    this.titles.close();
+    this.skills.toggle();
+  }
+
+  private toggleTitles() {
+    this.skills.close();
+    this.titles.toggle();
+  }
+
+  /** A player's title under their name, in its rarity colour. */
+  private showTitle(sprite: PlayerSprite, id: string | undefined) {
+    const t = isTitleId(id) ? (TITLES[id] as TitleDef) : undefined;
+    sprite.setTitle(t?.name ?? "", t ? RARITY[t.tier].color : "");
   }
 
   /** Shows an emote over your head (the server allows one a second). */

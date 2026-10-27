@@ -39,6 +39,7 @@ import { DOORS, placeName } from "../../../shared/town";
 import type { DoorMessage } from "../../../shared/protocol";
 import { CLASSES, LEVEL_CAP, aClass, isClassId } from "../../../shared/rpg";
 import { isSkillId } from "../../../shared/skills";
+import { PIONEERS, TITLES, isTitleId, type TitleShowMessage } from "../../../shared/titles";
 import { BAG_SIZE, ITEMS, OUTFITTER_STOCK, SMITH_STOCK, cleanUpgrade, isItemId, isSlot } from "../../../shared/items";
 import { NPCS, type NpcKind } from "../../../shared/npcs";
 import { SHOP_AWAY_HOURS, inShopZone, sanitizeShopTitle, shopSpotProblem, type ShopOpenMessage, type ShopResult } from "../../../shared/vending";
@@ -173,6 +174,10 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     "item:pickup": (client: Client, msg: PickupMessage) => {
       if (this.itemOk(client) && typeof msg?.id === "string") this.combat.pickup(client.sessionId, msg.id.slice(0, 16));
     },
+    "title:show": (client: Client, msg: TitleShowMessage) => {
+      const id = msg?.id;
+      if (this.itemOk(client) && (id === "" || isTitleId(id))) this.combat.showTitle(client.sessionId, id);
+    },
     "smith:upgrade": (client: Client, msg: UpgradeMessage) => {
       if (!this.itemOk(client) || !this.npcNear(client, msg?.npc, "smith")) return;
       const at = this.bagSlot(msg.bag) ? { bag: msg.bag } : isSlot(msg.gear) ? { gear: msg.gear } : undefined;
@@ -240,6 +245,18 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       upgraded: (id, item, up) => {
         const name = this.state.players.get(id)?.name;
         if (name) this.system(`🔨 ${name} upgraded a ${item} to +${up}!`);
+      },
+      titles: (id, msg) => this.clients.getById(id)?.send("titles", msg),
+      titleEarned: (id, title) => {
+        const name = this.state.players.get(id)?.name;
+        if (name && (title.tier === "epic" || title.tier === "legendary")) this.system(`🏅 ${name} earned the title "${title.name}"!`);
+      },
+      reachedCap: (id, cap) => {
+        // Pioneers are counted per account, so only signed-in players can be one.
+        const account = this.meta.get(id)?.account;
+        if (!account || this.sessionOf.get(account.id) !== id) return;
+        const rank = db.claimPioneer(cap, account.id, PIONEERS);
+        if (rank) this.combat.grantTitle(id, "pioneer");
       },
     });
     this.clock.setInterval(() => {
@@ -662,6 +679,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     }
     this.shopOwners.set(id, account);
     this.state.shops.set(id, new PlayerShop({ name: player.name, look: player.look, title, x, y, owner: client.sessionId, cards: listings.length, rev: 0 }));
+    this.combat.shopOpened(client.sessionId);
 
     // Sit down on the rug, facing the street.
     meta.shop = id;
@@ -798,12 +816,16 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       this.combat.cheatGold(client.sessionId, n);
       return reply(`Test command: you now have ${Math.max(0, Math.floor(n))} gold.`);
     }
+    if (name === "title" && isTitleId(arg)) {
+      this.combat.grantTitle(client.sessionId, arg);
+      return reply(`Test command: you have the title "${TITLES[arg].name}". Show it from your titles (T).`);
+    }
     if (name === "job" && isClassId(arg)) {
       this.combat.cheatJob(client.sessionId, arg);
       return reply(`Test command: job set to ${CLASSES[arg].name} (jobs need level 10).`);
     }
     reply(
-      `Test commands: /level <1-${LEVEL_CAP}>, /item <id> [count or +upgrade], /gold <amount>, /job <novice|knight|mage|archer>. Item ids: ${Object.keys(ITEMS).join(", ")}`,
+      `Test commands: /level <1-${LEVEL_CAP}>, /item <id> [count or +upgrade], /gold <amount>, /job <novice|knight|mage|archer>, /title <id>. Item ids: ${Object.keys(ITEMS).join(", ")}. Title ids: ${Object.keys(TITLES).join(", ")}`,
     );
   }
 

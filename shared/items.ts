@@ -341,11 +341,17 @@ export function upgradeText(s: ItemStack): string {
 
 /** Upgrades this high give an aura (the best one worn shows). */
 export const AURA_LEVELS = [7, 9, 10] as const;
+/** The aura of legendary gear, or gear with a legendary card in it. */
+export const AURA_LEGENDARY = 20;
+/** Gear auras from weakest to best. Titles have their own (see titles.ts). */
+const GEAR_AURAS = [7, 9, AURA_LEGENDARY, 10];
 
-/** The aura someone has: the highest of AURA_LEVELS their best worn upgrade reaches, or 0. */
+/** The aura someone's gear gives them: the best of GEAR_AURAS they qualify for, or 0. */
 export function auraOf(gear: Partial<Record<Slot, ItemStack>>): number {
-  const best = Math.max(0, ...Object.values(gear).map((s) => s?.up ?? 0));
-  return [...AURA_LEVELS].reverse().find((lv) => best >= lv) ?? 0;
+  const worn = Object.values(gear).filter((s): s is ItemStack => Boolean(s));
+  const best = Math.max(0, ...worn.map((s) => s.up ?? 0));
+  const legendary = worn.some((s) => ITEMS[s.id].rarity === "legendary" || s.cards?.some((c) => ITEMS[c].rarity === "legendary"));
+  return [...GEAR_AURAS].reverse().find((a) => (a === AURA_LEGENDARY ? legendary : best >= a)) ?? 0;
 }
 
 // ---------------------------------------------------------------- bonuses
