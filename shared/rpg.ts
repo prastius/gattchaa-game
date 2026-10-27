@@ -10,9 +10,14 @@ import type { Bonus, ItemId } from "./items";
 /** Highest level for now; raised step by step. The EXP curve already continues past it. */
 export const LEVEL_CAP = 50;
 
-/** EXP needed to go from `level` to the next one. Gentle early, steeper past ~30. */
+/**
+ * EXP needed to go from `level` to the next one. Gentle through the Novice
+ * levels; from the job change it climbs to three times as much (level 13 on),
+ * so the job levels take a while; steeper again past ~30.
+ */
 export function expToNext(level: number): number {
-  return Math.round(25 * Math.pow(level, 1.8) * (1 + Math.pow(level / 30, 2)));
+  const job = 1 + 2 * Math.min(1, Math.max(0, (level - 9) / 4));
+  return Math.round(25 * Math.pow(level, 1.8) * (1 + Math.pow(level / 30, 2)) * job);
 }
 
 // ---------------------------------------------------------------- classes
@@ -84,6 +89,8 @@ export interface Stats {
   flee: number;
   /** Share of each monster hit sent back at it, 0..1. */
   reflect: number;
+  /** Share of the damage you deal that heals you, 0..1. */
+  drain: number;
 }
 
 /** A class at a level, plus whatever its equipment (and the cards in it) adds; a bow or staff sets the reach. */
@@ -100,12 +107,13 @@ export function statsFor(cls: ClassId, level: number, bonus?: Partial<Bonus>, we
     crit: CRIT_CHANCE + (bonus?.crit ?? 0) / 100,
     flee: Math.min(MAX_FLEE, (bonus?.flee ?? 0) / 100),
     reflect: (bonus?.reflect ?? 0) / 100,
+    drain: (bonus?.drain ?? 0) / 100,
   };
 }
 
 // ---------------------------------------------------------------- monsters
 
-export type MonsterId = "slime" | "snake" | "hornet" | "snapper";
+export type MonsterId = "slime" | "snake" | "hornet" | "snapper" | "grub" | "bat" | "rockworm" | "gazer" | "ghost" | "pumpking";
 
 export interface MonsterDef {
   id: MonsterId;
@@ -130,6 +138,12 @@ export interface MonsterDef {
   respawnMs: number;
   /** What it may leave on the ground: [item, chance 0..1], each rolled on its own. The last one is its card. */
   drops: [ItemId, number][];
+  /** A field boss (Ragnarok's MVP): one at a time, a long respawn, and the town hears when it rises and falls. */
+  boss?: boolean;
+  /** Share of max HP healed per second out of combat (default 5 %). */
+  regen?: number;
+  /** Extra chance (0..1) that auto-attacks miss it (ghosts). Skills always land. */
+  flee?: number;
 }
 
 export const MONSTERS: Record<MonsterId, MonsterDef> = {
@@ -153,6 +167,40 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
       ["recurveBow", 0.006], ["gnarledStaff", 0.006], ["crystalStaff", 0.0015], ["meadowCrown", 0.0005], ["snapperCard", 0.0012],
     ],
   },
+
+  // ---------------------------------------------------------------- Dusk Hollow (Lv 10–20), east of town
+  grub: {
+    id: "grub", name: "Grub", level: 11, hp: 380, atk: 20, def: 6, exp: 300, gold: [8, 14], speed: 30, chase: 60, aggro: 0, range: 36, attackMs: 1600, radius: 10, respawnMs: 14_000,
+    drops: [["silk", 0.65], ["redPotion", 0.06], ["orangePotion", 0.02], ["rangerHood", 0.006], ["wizardHat", 0.006], ["rapier", 0.003], ["grubCard", 0.001]],
+  },
+  bat: {
+    id: "bat", name: "Night Bat", level: 12, hp: 400, atk: 23, def: 7, exp: 330, gold: [10, 18], speed: 80, chase: 115, aggro: 120, range: 34, attackMs: 1200, radius: 10, respawnMs: 15_000,
+    drops: [["batFang", 0.6], ["orangePotion", 0.04], ["rangerHood", 0.008], ["vigorRing", 0.005], ["rapier", 0.005], ["batCard", 0.001]],
+  },
+  // Slow and armoured: only fights back.
+  rockworm: {
+    id: "rockworm", name: "Rock Worm", level: 14, hp: 950, atk: 30, def: 16, exp: 720, gold: [14, 24], speed: 22, chase: 55, aggro: 0, range: 42, attackMs: 1800, radius: 14, respawnMs: 18_000,
+    drops: [["rockShard", 0.6], ["orangePotion", 0.05], ["ironGreaves", 0.012], ["kiteShield", 0.007], ["hornedHelm", 0.006], ["guardTabard", 0.005], ["rockWormCard", 0.001]],
+  },
+  // Floats about and shoots a beam from afar.
+  gazer: {
+    id: "gazer", name: "Gazer", level: 16, hp: 800, atk: 34, def: 10, exp: 760, gold: [18, 30], speed: 40, chase: 70, aggro: 150, range: 170, attackMs: 2000, radius: 12, respawnMs: 18_000,
+    drops: [["gazerLens", 0.55], ["orangePotion", 0.06], ["sageTabard", 0.006], ["wizardHat", 0.008], ["emberStaff", 0.004], ["greatBow", 0.004], ["gazerCard", 0.001]],
+  },
+  // Hard to hit with plain attacks: skills always land.
+  ghost: {
+    id: "ghost", name: "Ghost", level: 18, hp: 1150, atk: 34, def: 12, exp: 1100, gold: [24, 40], speed: 55, chase: 105, aggro: 90, range: 36, attackMs: 1400, radius: 12, respawnMs: 20_000, flee: 0.15,
+    drops: [["ectoplasm", 0.55], ["orangePotion", 0.07], ["knightBlade", 0.005], ["greathelm", 0.004], ["crusaderShield", 0.004], ["sageTabard", 0.004], ["ghostCard", 0.001]],
+  },
+  // Dusk Hollow's boss, at the end of the east road. Breathes fire.
+  pumpking: {
+    id: "pumpking", name: "Pumpking", level: 22, hp: 12_000, atk: 58, def: 20, exp: 16_000, gold: [400, 800], speed: 30, chase: 75, aggro: 150, range: 150, attackMs: 1800, radius: 24, respawnMs: 600_000,
+    boss: true, regen: 0.005,
+    drops: [
+      ["kingsCandy", 1], ["orangePotion", 0.8], ["crusaderShield", 0.2], ["greathelm", 0.2], ["greatBow", 0.15], ["emberStaff", 0.15], ["knightBlade", 0.15],
+      ["moonblade", 0.08], ["pumpkingCard", 0.02],
+    ],
+  },
 };
 
 export const isMonsterId = (id: unknown): id is MonsterId => typeof id === "string" && Object.hasOwn(MONSTERS, id);
@@ -173,6 +221,8 @@ export interface Field {
   levels: string;
   /** Tiles. */
   area: Rect;
+  /** Left as the land is (trees and rocks stay). Otherwise the world generator thins the trees into open meadow. */
+  wild?: boolean;
   spawns: SpawnGroup[];
 }
 
@@ -191,6 +241,25 @@ export const FIELDS: Field[] = [
       { monster: "hornet", rect: { x: 216, y: 274, w: 62, h: 30 }, count: 8 },
       // Snapper flowers by the lake at the end of the road.
       { monster: "snapper", rect: { x: 172, y: 292, w: 40, h: 12 }, count: 5 },
+    ],
+  },
+  {
+    id: "dusk-hollow",
+    name: "Dusk Hollow",
+    levels: "Lv 10–20",
+    area: { x: 265, y: 136, w: 66, h: 120 },
+    wild: true,
+    spawns: [
+      // Grubs along the east road, right outside the gate; bats in the woods north of it.
+      { monster: "grub", rect: { x: 268, y: 176, w: 30, h: 22 }, count: 12 },
+      { monster: "bat", rect: { x: 270, y: 148, w: 40, h: 24 }, count: 12 },
+      // Rock worms south of the road.
+      { monster: "rockworm", rect: { x: 270, y: 204, w: 40, h: 22 }, count: 10 },
+      // Deeper in: gazers to the north-east, ghosts to the south-east.
+      { monster: "gazer", rect: { x: 304, y: 140, w: 24, h: 34 }, count: 8 },
+      { monster: "ghost", rect: { x: 304, y: 212, w: 24, h: 38 }, count: 8 },
+      // The Pumpking waits where the east road ends.
+      { monster: "pumpking", rect: { x: 314, y: 181, w: 10, h: 12 }, count: 1 },
     ],
   },
 ];

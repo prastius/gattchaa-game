@@ -1444,6 +1444,12 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://opengameart.org/content/lpc-crown>
 - <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
 
+### Crusader shield (shield/crusader)
+
+- Authors: bluecarrot16, Sander Frenken (castelonia)
+- Licenses: OGA-BY 3.0
+- <https://opengameart.org/content/lpc-shields>
+
 ### Crystal (weapon/magic/crystal)
 
 - Authors: bluecarrot16
@@ -1538,11 +1544,34 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://github.com/ElizaWy/LPC/tree/main/Characters/Head%20Accessories>
 - <https://opengameart.org/content/lpc-expanded-sit-run-jump-more>
 
+### Glowsword (weapon/sword/glowsword)
+
+- Authors: bluecarrot16, tskaufma, Johannes Sjölund (wulax)
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0
+- <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+- <https://opengameart.org/content/lpc-glow-sword>
+- <https://opengameart.org/content/lpc-extended-weapon-animations>
+
 ### Gnarled staff (weapon/magic/gnarled)
 
 - Authors: bluecarrot16
 - Licenses: OGA-BY 3.0+, GPL 3.0, CC-BY 4.0
 - <https://opengameart.org/content/lpc-more-weapons>
+
+### Great (weapon/ranged/bow/great)
+
+- Authors: Daniel Eddeland (daneeklu), gr3yh47, Johannes Sjölund (wulax), Pierre Vigier (pvigier)
+- Licenses: CC-BY-SA 3.0
+- Notes: modified by daneeklu, from "normal" bow by wulax; walk animations by pvigier; split into layers and tweaked for v3 character bases by bluecarrot16
+- <https://opengameart.org/content/lpc-weapons-two-bows-a-spear-and-a-trident>
+- <https://opengameart.org/content/lpc-walk-animations-for-bows>
+
+### Greathelm (hat/helmet/greathelm)
+
+- Authors: bluecarrot16
+- Licenses: OGA-BY 3.0, CC-BY 3.0, CC-BY 4.0, GPL 2.0, GPL 3.0
+- <https://opengameart.org/content/lpc-helmets>
+- <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
 
 ### Half up (hair/half_up)
 
@@ -1590,6 +1619,16 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
 - Notes: Brown hood by Wulax, original black/white recolors by ??, mapped to idle/run/jump/revised combat by JaidynReiman, along with additional recolors.
 - <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+- <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
+
+### Horned helmet (hat/helmet/horned)
+
+- Authors: bluecarrot16, Shaun Williams, Matthew Krohn (makrohn), Johannes Sjölund (wulax), Sander Frenken (castelonia)
+- Licenses: CC-BY-SA 3.0, GPL 3.0
+- <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+- <https://opengameart.org/content/lpc-full-plate-golden-armor>
+- <https://opengameart.org/content/lpc-full-plate-golden-armor-0>
+- <https://opengameart.org/content/lpc-helmets-mega-pack>
 - <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
 
 ### Human Female (head/heads/human/female)
@@ -1640,6 +1679,13 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Authors: JaidynReiman, Stephen Challener (Redshrike), Johannes Sjölund (wulax)
 - Licenses: OGA-BY 3.0+, CC-BY 3.0+, GPL 3.0
 - <https://opengameart.org/content/lpc-kimono-relm>
+
+### Kite (shield/kite)
+
+- Authors: DarkwallLKE, Tuomo Untinen (reemax), Michael Whitlock (bigbeargames)
+- Licenses: CC-BY-SA 3.0, GPL 2.0, GPL 3.0
+- <https://opengameart.org/content/lpc-kite-shield>
+- <https://opengameart.org/content/lpc-shields-pack>
 
 ### Large Curls (hair/curls_large)
 
@@ -1798,6 +1844,12 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Licenses: OGA-BY 3.0, CC-BY-SA 3.0
 - <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
 - <https://opengameart.org/content/lpc-extended-weapon-animations>
+
+### Longsword alt (weapon/sword/longsword_alt)
+
+- Authors: Pierre Vigier and DCSS artists (see https://github.com/crawl/tiles/blob/master/ARTISTS.md)
+- Licenses: OGA-BY 3.0
+- <https://opengameart.org/content/lpc-dcss-swords>
 
 ### Loose (hair/loose)
 
@@ -1962,6 +2014,13 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
 - <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
 - <https://opengameart.org/content/lpc-expanded-hair>
+
+### Rapier (weapon/sword/rapier)
+
+- Authors: Johannes Sjölund (wulax), bluecarrot16
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0
+- <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+- <https://opengameart.org/content/lpc-extended-weapon-animations>
 
 ### Recurve (weapon/ranged/bow/recurve)
 
@@ -2173,6 +2232,23 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
 - <https://opengameart.org/content/lpc-expanded-hair>
 
+### Tabard (torso/jacket/tabard)
+
+- Authors: bluecarrot16, Johannes Sjölund (wulax)
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+- Notes: original by wulax, edited to v3 base by bluecarrot16
+- <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+- <http://opengameart.org/content/lpc-clothing-updates>
+
+### Tabard (torso/jacket/tabard/female)
+
+- Authors: JaidynReiman, Matthew Krohn (makrohn), Johannes Sjölund (wulax)
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+- Notes: original by wulax, edited to female base by makrohn and JaidynReiman, edited to v3 base by bluecarrot16
+- <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+- <https://opengameart.org/content/lpc-combat-armor-for-women>
+- <http://opengameart.org/content/lpc-clothing-updates>
+
 ### Thick Headband (hat/headband/thick)
 
 - Authors: JaidynReiman
@@ -2255,6 +2331,15 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 2.0, GPL 3.0
 - <https://opengameart.org/content/3-hairs-for-lpc>
 - <https://opengameart.org/content/lpc-expanded-hair>
+
+### Wizard Hat Base (hat/magic/wizard)
+
+- Authors: Michael Whitlock (bigbeargames), Tuomo Untinen (reemax), JaidynReiman
+- Licenses: CC-BY-SA 3.0, GPL 2.0, GPL 3.0
+- Notes: Original Wizard Hat and Recolors by bigbeargames and reemax; split into separate layers with new recolors by JaidynReiman
+- <https://opengameart.org/content/lpc-items-and-game-effects>
+- <https://opengameart.org/content/lpc-pointed-hats>
+- <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
 
 ### XLong Wavy (hair/xlong_wavy)
 

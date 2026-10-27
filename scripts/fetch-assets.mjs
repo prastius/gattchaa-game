@@ -191,6 +191,20 @@ const GEAR = [
   ["gnarled", "Gnarled staff", "weapons/magic/weapon_magic_gnarled.json", { variant: "medium" }],
   ["crystal", "Crystal staff", "weapons/magic/weapon_magic_crystal.json", { variant: "blue" }],
   ["shield", "Heater shield", "weapons/shields/heater/shield_heater_wood.json"],
+  // Dusk Hollow's gear.
+  ["wizardHat", "Wizard hat", "headwear/hats/magic/hat_magic_wizard.json", { variant: "base_teal" }],
+  ["hood", "Cloth hood", "headwear/coverings/hoods/hat_hood_cloth.json"],
+  ["horned", "Horned helmet", "headwear/helmets/helmets/hat_helmet_horned.json"],
+  ["greathelm", "Greathelm", "headwear/helmets/helmets/hat_helmet_greathelm.json"],
+  ["tabardMaroon", "Tabard (maroon)", "torso/jacket/torso_jacket_tabard.json", { variant: "maroon" }],
+  ["tabardLavender", "Tabard (lavender)", "torso/jacket/torso_jacket_tabard.json", { variant: "lavender" }],
+  ["kite", "Kite shield", "weapons/shields/shield_kite.json", { variant: "kite_blue_gray" }],
+  ["crusader", "Crusader shield", "weapons/shields/engrailed/shield_crusader.json", { variant: "crusader" }],
+  ["rapier", "Rapier", "weapons/sword/weapon_sword_rapier.json"],
+  ["longswordAlt", "Longsword (alt)", "weapons/sword/weapon_sword_longsword_alt.json", { variant: "longsword_alt", walk128: true }],
+  ["glowsword", "Glowsword", "weapons/sword/weapon_sword_glowsword.json", { variant: "blue" }],
+  ["greatBow", "Great bow", "weapons/ranged/bow/weapon_ranged_bow_great.json", { variant: "red", walk128: true }],
+  ["crystalRed", "Crystal staff (red)", "weapons/magic/weapon_magic_crystal.json", { variant: "red" }],
 ].map(([id, label, def, opts]) => ["gear", id, label, def, B, opts]);
 
 const PALETTES = {
@@ -265,7 +279,7 @@ const TOWN_FILES = {
 
 /** Monsters from "[LPC] Monsters" on OpenGameArt (CC-BY-SA 3.0 or GPL 3.0), which ships as one zip. */
 const MONSTERS_ZIP = "https://opengameart.org/sites/default/files/lpc-monsters.zip";
-const MONSTER_FILES = ["slime.png", "snake.png", "bee.png", "man_eater_flower.png"];
+const MONSTER_FILES = ["slime.png", "snake.png", "bee.png", "man_eater_flower.png", "small_worm.png", "bat.png", "big_worm.png", "eyeball.png", "ghost.png", "pumpking.png"];
 const MONSTER_CREDIT = [
   '"[LPC] Monsters" by Charles Sanchez (CharlesGabriel), bagzie, and bluecarrot16.',
   "License: CC-BY-SA 3.0+ or GPL 3.0+.",

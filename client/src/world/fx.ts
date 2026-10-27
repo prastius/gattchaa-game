@@ -12,12 +12,12 @@ const SPARK = "spark";
 const ORB = "fx-orb";
 
 /** Things that fly from an attacker to a target. */
-export type Missile = "arrow" | "bolt" | "fire" | "seed";
+export type Missile = "arrow" | "bolt" | "fire" | "seed" | "beam";
 
 /** How long a missile takes to cover a distance (ms): quick, but long enough to see. */
 export const flightMs = (d: number) => Phaser.Math.Clamp(d / 0.9, 90, 320);
 
-const MISSILE_TINT: Record<Exclude<Missile, "arrow">, number[]> = {
+const MISSILE_TINT: Record<Exclude<Missile, "arrow" | "beam">, number[]> = {
   bolt: [0xb98cff, 0xffffff, 0x7f5cff],
   fire: [0xff8a2a, 0xffd27a, 0xff4a1a],
   seed: [0xf0e2a8, 0xb08a4a],
@@ -141,6 +141,16 @@ export class Fx {
   missile(x0: number, y0: number, x1: number, y1: number, kind: Missile): number {
     const ms = flightMs(Math.hypot(x1 - x0, y1 - y0));
     const angle = Math.atan2(y1 - y0, x1 - x0);
+    if (kind === "beam") {
+      // A Gazer's stare: a red line that flashes from eye to target.
+      const g = this.scene.add.graphics().setDepth(DEPTH);
+      g.lineStyle(5, 0xff3a5c, 0.55).lineBetween(x0, y0, x1, y1);
+      g.lineStyle(2, 0xffe0e6, 1).lineBetween(x0, y0, x1, y1);
+      g.setBlendMode(Phaser.BlendModes.ADD);
+      this.scene.tweens.add({ targets: g, alpha: 0, delay: 80, duration: 200, onComplete: () => g.destroy() });
+      this.burst(x1, y1, [0xff3a5c, 0xffffff], 8);
+      return 60;
+    }
     if (kind === "arrow") {
       const g = this.scene.add.graphics().setDepth(DEPTH).setPosition(x0, y0).setRotation(angle);
       g.lineStyle(2, 0x7a5532, 1).lineBetween(-9, 0, 6, 0);

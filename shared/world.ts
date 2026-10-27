@@ -416,8 +416,8 @@ export class World {
         const r = hash2(tx, ty, seed + 7);
         const r2 = hash2(tx, ty, seed + 8);
         const forest = fbm(tx / 28, ty / 28, seed + 999, 3);
-        // Hunting fields are open meadow: only the thickest woods stay, as small groves.
-        const meadow = FIELDS.some((f) => inRect(f.area, tx, ty));
+        // Meadow fields are open: only the thickest woods stay, as small groves. Wild fields stay as they are.
+        const meadow = FIELDS.some((f) => !f.wild && inRect(f.area, tx, ty));
         const e = this.elevation(tx, ty);
 
         // Blocking props keep a gap (checked against tiles already visited) so

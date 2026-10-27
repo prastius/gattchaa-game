@@ -70,6 +70,10 @@ export interface ItemDef {
   flee?: number;
   /** Share (percent) of every monster hit that bounces back at it. */
   reflect?: number;
+  /** Share (percent) of the damage you deal that heals you. */
+  drain?: number;
+  /** Worn: parts of your look it covers (a hood hides the hair). */
+  hides?: ("hair" | "beard")[];
   /** Equipment: how many cards it holds. */
   slots?: number;
   /** Weapons: what kind (who can use it, and arrows or magic bolts instead of a swing). */
@@ -108,6 +112,12 @@ export const ITEMS = def({
   scale: { name: "Snake Scale", kind: "loot", rarity: "common", sell: 6, icon: "gem_01a", desc: "A shiny green scale from a Grass Snake." },
   honey: { name: "Wild Honey", kind: "loot", rarity: "common", sell: 12, icon: "pearl_01e", desc: "Hornets guard it fiercely. Merchants love it." },
   bloom: { name: "Bloom Crystal", kind: "loot", rarity: "common", sell: 30, icon: "crystal_01f", desc: "Grows inside a Snapper Flower. Pretty, and worth a fair bit." },
+  silk: { name: "Sticky Silk", kind: "loot", rarity: "common", sell: 9, icon: "ingot_01c", desc: "Spun by Grubs. Tailors pay for it." },
+  batFang: { name: "Bat Fang", kind: "loot", rarity: "common", sell: 14, icon: "gem_01e", desc: "Small, sharp and a little bit spooky." },
+  rockShard: { name: "Rock Shard", kind: "loot", rarity: "common", sell: 22, icon: "gem_01h", desc: "Chipped off a Rock Worm's shell. Heavy for its size." },
+  gazerLens: { name: "Gazer Lens", kind: "loot", rarity: "common", sell: 35, icon: "pearl_01b", desc: "It still seems to be watching you." },
+  ectoplasm: { name: "Ectoplasm", kind: "loot", rarity: "common", sell: 48, icon: "potion_01c", desc: "Cold, glowing goo a Ghost left behind." },
+  kingsCandy: { name: "King's Candy", kind: "loot", rarity: "rare", sell: 600, icon: "candy_02e", desc: "The Pumpking's own sweets. Worth a small fortune." },
 
   // ------------------------------------------------------------ potions
   redPotion: { name: "Red Potion", kind: "use", rarity: "common", heal: 40, price: 12, icon: "potion_02a", desc: "Restores 40 HP." },
@@ -118,16 +128,23 @@ export const ITEMS = def({
   shortSword: { name: "Short Sword", kind: "equip", slot: "weapon", weapon: "sword", rarity: "common", lv: 3, slots: 1, atk: 6, price: 160, icon: "sword_02b", art: [{ id: "swordIron" }], desc: "A plain iron sword. Every adventurer starts with one." },
   bronzeSword: { name: "Bronze Sword", kind: "equip", slot: "weapon", weapon: "sword", rarity: "uncommon", lv: 6, slots: 2, atk: 10, sell: 150, icon: "sword_02d", art: [{ id: "swordBronze" }], desc: "Heavier than it looks. Hornets sometimes guard one." },
   saber: { name: "Saber", kind: "equip", slot: "weapon", weapon: "sword", rarity: "rare", lv: 9, slots: 2, atk: 15, sell: 400, icon: "sword_03b", art: [{ id: "saber" }], desc: "A curved blade found tangled in Snapper Flower roots." },
+  rapier: { name: "Rapier", kind: "equip", slot: "weapon", weapon: "sword", rarity: "uncommon", lv: 13, slots: 2, atk: 17, crit: 3, sell: 260, icon: "sword_01c", art: [{ id: "rapier" }], desc: "Thin and quick. Finds the gaps in any shell." },
+  knightBlade: { name: "Knight's Blade", kind: "equip", slot: "weapon", weapon: "sword", classes: ["knight"], rarity: "rare", lv: 17, slots: 2, atk: 25, sell: 700, icon: "sword_03a", art: [{ id: "longswordAlt" }], desc: "A broad blade for a knight's arm. Knights only." },
+  moonblade: { name: "Moonblade", kind: "equip", slot: "weapon", weapon: "sword", rarity: "epic", lv: 20, slots: 2, atk: 32, crit: 6, sell: 2500, icon: "sword_02c", art: [{ id: "glowsword" }], desc: "Glows a cold blue, even at noon. Only the Pumpking has ever dropped one." },
   // Class weapons: the Job Master gives one with the job; Bram sells them too.
   squireSword: { name: "Squire's Longsword", kind: "equip", slot: "weapon", weapon: "sword", classes: ["knight"], rarity: "common", lv: 10, slots: 1, atk: 12, price: 900, icon: "sword_03c", art: [{ id: "longsword" }], desc: "Long and heavy, balanced for a knight's arm. Knights only." },
   huntingBow: { name: "Hunting Bow", kind: "equip", slot: "weapon", weapon: "bow", twoHanded: true, rarity: "common", lv: 10, slots: 1, atk: 9, range: 170, price: 900, icon: "bow_01a", art: [{ id: "bow" }], desc: "Shoots from a safe distance. Needs both hands, so no shield." },
   recurveBow: { name: "Recurve Bow", kind: "equip", slot: "weapon", weapon: "bow", twoHanded: true, rarity: "uncommon", lv: 12, slots: 2, atk: 14, range: 190, sell: 300, icon: "bow_02d", art: [{ id: "recurve" }], desc: "Dark wood, bent back on itself. Snapper Flowers sometimes hide one." },
   apprenticeStaff: { name: "Apprentice Staff", kind: "equip", slot: "weapon", weapon: "staff", rarity: "common", lv: 10, slots: 1, atk: 9, mp: 15, range: 150, price: 900, icon: "staff_01a", art: [{ id: "staff" }], desc: "Plain ash wood that hums when you hold it. Casts bolts of magic from afar." },
   gnarledStaff: { name: "Gnarled Staff", kind: "equip", slot: "weapon", weapon: "staff", rarity: "uncommon", lv: 12, slots: 2, atk: 14, mp: 25, range: 160, sell: 300, icon: "staff_03a", art: [{ id: "gnarled" }], desc: "A twisted root from the lake shore, still a little green." },
+  greatBow: { name: "Great Bow", kind: "equip", slot: "weapon", weapon: "bow", twoHanded: true, rarity: "rare", lv: 16, slots: 2, atk: 23, range: 210, sell: 700, icon: "bow_03c", art: [{ id: "greatBow" }], desc: "Taller than you are. Its arrows fly the furthest." },
+  emberStaff: { name: "Ember Staff", kind: "equip", slot: "weapon", weapon: "staff", rarity: "rare", lv: 16, slots: 2, atk: 23, mp: 50, range: 180, sell: 700, icon: "staff_02e", art: [{ id: "crystalRed" }], desc: "A red crystal with a fire trapped inside." },
   crystalStaff: { name: "Crystal Staff", kind: "equip", slot: "weapon", weapon: "staff", rarity: "rare", lv: 15, slots: 2, atk: 19, mp: 40, range: 170, sell: 800, icon: "staff_03c", art: [{ id: "crystal" }], desc: "A blue crystal that never stops glowing." },
 
   // ------------------------------------------------------------ shields
   woodShield: { name: "Wooden Shield", kind: "equip", slot: "offhand", rarity: "common", lv: 1, slots: 1, def: 2, price: 60, icon: "shield_01a", art: [{ id: "shield" }], desc: "Solid maple. Stops a slime, mostly." },
+  kiteShield: { name: "Kite Shield", kind: "equip", slot: "offhand", rarity: "uncommon", lv: 14, slots: 1, def: 5, hp: 20, sell: 240, icon: "shield_03b", art: [{ id: "kite" }], desc: "Long and pointed: it covers you from shoulder to knee." },
+  crusaderShield: { name: "Crusader Shield", kind: "equip", slot: "offhand", rarity: "rare", lv: 18, slots: 1, def: 7, hp: 45, sell: 650, icon: "shield_02d", art: [{ id: "crusader" }], desc: "White, with a red cross. The Pumpking hoards them." },
   guardShield: { name: "Guard Shield", kind: "equip", slot: "offhand", rarity: "uncommon", lv: 5, slots: 1, def: 3, hp: 15, sell: 120, icon: "shield_02a", art: [{ id: "shield", colors: { wood: "walnut" } }], desc: "Dark walnut, made for the town guard." },
 
   // ------------------------------------------------------------ head
@@ -135,11 +152,17 @@ export const ITEMS = def({
   chainCoif: { name: "Chain Coif", kind: "equip", slot: "head", rarity: "common", lv: 4, slots: 1, def: 2, hp: 10, price: 180, art: [{ id: "coif", colors: { metal: "iron" } }], desc: "Iron rings, linked by hand." },
   kettleHelm: { name: "Kettle Helm", kind: "equip", slot: "head", rarity: "uncommon", lv: 7, slots: 1, def: 2, hp: 20, sell: 160, art: [{ id: "kettle" }], desc: "A wide steel brim. Rain runs right off it." },
   bronzeHelm: { name: "Bronze Helm", kind: "equip", slot: "head", rarity: "rare", lv: 9, slots: 1, def: 3, hp: 30, sell: 350, art: [{ id: "nasal", colors: { metal: "bronze" } }], desc: "Polished bronze with a nose guard." },
+  wizardHat: { name: "Wizard Hat", kind: "equip", slot: "head", rarity: "uncommon", lv: 12, slots: 1, def: 1, mp: 40, sell: 220, art: [{ id: "wizardHat" }], desc: "Tall and pointed. Your spells feel bigger already." },
+  rangerHood: { name: "Ranger Hood", kind: "equip", slot: "head", rarity: "uncommon", lv: 12, slots: 1, def: 2, atk: 2, sell: 220, art: [{ id: "hood", colors: { cloth: "forest" } }], hides: ["hair"], desc: "Green cloth for hiding in the shadows." },
+  hornedHelm: { name: "Horned Helm", kind: "equip", slot: "head", rarity: "uncommon", lv: 15, slots: 1, def: 4, hp: 35, sell: 300, art: [{ id: "horned", colors: { metal: "iron" } }], desc: "Two curved horns. Nobody remembers whose." },
+  greathelm: { name: "Greathelm", kind: "equip", slot: "head", rarity: "rare", lv: 18, slots: 1, def: 5, hp: 60, sell: 650, art: [{ id: "greathelm" }], desc: "A steel bucket with eye slits. Heavy, and very safe." },
   meadowCrown: { name: "Meadow Crown", kind: "equip", slot: "head", rarity: "legendary", lv: 10, slots: 1, atk: 4, def: 4, hp: 60, sell: 5000, art: [{ id: "crown" }], desc: "Said to belong to the first king of the meadow. Snapper Flowers hide it very, very rarely." },
 
   // ------------------------------------------------------------ body
   leatherArmor: { name: "Leather Armour", kind: "equip", slot: "body", rarity: "common", lv: 1, slots: 1, def: 2, price: 80, art: [{ id: "leatherArmor" }], desc: "Boiled leather with a brass buckle." },
   legionArmor: { name: "Legion Armour", kind: "equip", slot: "body", rarity: "uncommon", lv: 6, slots: 1, def: 4, hp: 15, sell: 200, art: [{ id: "legion" }], desc: "Overlapping steel bands. Old, but sturdy." },
+  guardTabard: { name: "Guard Tabard", kind: "equip", slot: "body", rarity: "uncommon", lv: 14, slots: 1, def: 4, hp: 30, sell: 280, art: [{ id: "tabardMaroon" }], desc: "A padded maroon tabard, like the town guard wears." },
+  sageTabard: { name: "Sage Tabard", kind: "equip", slot: "body", rarity: "uncommon", lv: 15, slots: 1, def: 2, mp: 50, atk: 2, sell: 300, art: [{ id: "tabardLavender" }], desc: "Lavender cloth stitched with tiny stars." },
   plateArmor: { name: "Plate Armour", kind: "equip", slot: "body", rarity: "rare", lv: 10, slots: 1, def: 6, hp: 40, sell: 600, art: [{ id: "plate" }, { id: "plateArms" }], desc: "Full steel plate. You clank, but you live." },
 
   // ------------------------------------------------------------ legs
@@ -162,6 +185,12 @@ export const ITEMS = def({
   slimeCard: { name: "Slime Card", kind: "card", rarity: "epic", monster: "slime", fits: ["body"], prefix: "Bouncy", hp: 30, sell: 0, desc: "A slime grins up from the card, wobbling slightly." },
   snakeCard: { name: "Grass Snake Card", kind: "card", rarity: "epic", monster: "snake", fits: ["feet"], prefix: "Slithering", flee: 8, sell: 0, desc: "Quick as a snake in the grass." },
   hornetCard: { name: "Hornet Card", kind: "card", rarity: "epic", monster: "hornet", fits: ["weapon"], prefix: "Stinging", atk: 2, crit: 8, sell: 0, desc: "Every hit might sting." },
+  grubCard: { name: "Grub Card", kind: "card", rarity: "epic", monster: "grub", fits: ["legs"], prefix: "Silken", hp: 40, sell: 0, desc: "A Grub curled up asleep." },
+  batCard: { name: "Night Bat Card", kind: "card", rarity: "epic", monster: "bat", fits: ["amulet"], prefix: "Vampiric", drain: 5, sell: 0, desc: "Its fangs glint in the dark." },
+  rockWormCard: { name: "Rock Worm Card", kind: "card", rarity: "epic", monster: "rockworm", fits: ["ring"], prefix: "Rocky", def: 3, sell: 0, desc: "Tough as the stone it eats." },
+  gazerCard: { name: "Gazer Card", kind: "card", rarity: "epic", monster: "gazer", fits: ["head"], prefix: "Gazing", atk: 3, mp: 30, sell: 0, desc: "The eye follows you around the room." },
+  ghostCard: { name: "Ghost Card", kind: "card", rarity: "epic", monster: "ghost", fits: ["body"], prefix: "Ghostly", def: 1, flee: 6, sell: 0, desc: "Half there, half not." },
+  pumpkingCard: { name: "Pumpking Card", kind: "card", rarity: "legendary", monster: "pumpking", fits: ["weapon"], prefix: "Royal", atk: 10, crit: 6, sell: 0, desc: "The king of Dusk Hollow, grinning on a gold card." },
   snapperCard: { name: "Snapper Flower Card", kind: "card", rarity: "epic", monster: "snapper", fits: ["offhand"], prefix: "Thorny", def: 1, reflect: 15, sell: 0, desc: "Bite it and it bites back." },
 });
 
@@ -275,11 +304,12 @@ export interface Bonus {
   crit: number;
   flee: number;
   reflect: number;
+  drain: number;
 }
 
 /** Bonuses from everything worn, and every card in it. */
 export function gearBonus(gear: Partial<Record<Slot, ItemStack>>): Bonus {
-  const out: Bonus = { atk: 0, def: 0, hp: 0, mp: 0, crit: 0, flee: 0, reflect: 0 };
+  const out: Bonus = { atk: 0, def: 0, hp: 0, mp: 0, crit: 0, flee: 0, reflect: 0, drain: 0 };
   const add = (it: ItemDef) => {
     out.atk += it.atk ?? 0;
     out.def += it.def ?? 0;
@@ -288,6 +318,7 @@ export function gearBonus(gear: Partial<Record<Slot, ItemStack>>): Bonus {
     out.crit += it.crit ?? 0;
     out.flee += it.flee ?? 0;
     out.reflect += it.reflect ?? 0;
+    out.drain += it.drain ?? 0;
   };
   for (const s of Object.values(gear)) {
     if (!s) continue;
@@ -326,6 +357,7 @@ export function bonusText(it: Partial<ItemDef>): string {
   if (it.crit) parts.push(`Critical +${it.crit}%`);
   if (it.flee) parts.push(`Evade +${it.flee}%`);
   if (it.reflect) parts.push(`Reflects ${it.reflect}% of damage`);
+  if (it.drain) parts.push(`Heals ${it.drain}% of damage dealt`);
   if (it.heal) parts.push(`Heals ${it.heal} HP`);
   return parts.join(" · ");
 }

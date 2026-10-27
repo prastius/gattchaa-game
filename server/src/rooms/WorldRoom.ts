@@ -218,6 +218,11 @@ export class WorldRoom extends Room<{ state: WorldState }> {
         const name = this.state.players.get(id)?.name;
         if (name && lv % 10 === 0) this.system(`${name} reached level ${lv}!`);
       },
+      boss: (def, event, field, by) => {
+        if (event === "rise") return this.system(`👑 The ${def.name} has risen in the ${field}!`);
+        const name = by && this.state.players.get(by)?.name;
+        this.system(name ? `🏆 ${name} defeated the ${def.name}!` : `🏆 The ${def.name} has fallen!`);
+      },
       jobChange: (id, cls) => {
         const name = this.state.players.get(id)?.name;
         if (name) this.system(`🎉 ${name} became ${aClass(cls)}!`);

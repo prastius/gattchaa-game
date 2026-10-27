@@ -72,6 +72,8 @@ const ROOTED_GAP_PX = 96;
 
 /** Every spawn group of every field, numbered. */
 const GROUPS = FIELDS.flatMap((f) => f.spawns);
+/** …and the field each group lives in. */
+const GROUP_FIELDS = FIELDS.flatMap((f) => f.spawns.map(() => f));
 
 export interface CombatHooks {
   /** Something happened at (x, y): tell the players who can see it. */
@@ -90,6 +92,8 @@ export interface CombatHooks {
   levelUp(id: string, lv: number): void;
   /** Someone became a Knight, Mage or Archer. */
   jobChange(id: string, cls: ClassId): void;
+  /** A field boss rose again (`field` is where), or fell (`by` did the most damage). */
+  boss(def: MonsterDef, event: "rise" | "down", field: string, by?: string): void;
   /** Someone picked up something legendary, or a monster card: worth telling the town. */
   found(id: string, item: ItemDef): void;
 }
@@ -329,7 +333,7 @@ export class Combat {
       if (now < this.respawns[i].at) continue;
       const { group } = this.respawns[i];
       this.respawns.splice(i, 1);
-      this.spawn(group);
+      this.spawn(group, true);
     }
 
     const awake = GROUPS.map((g) => this.anyoneNear(g.rect, WAKE_PX));
@@ -386,7 +390,8 @@ export class Combat {
     f.player.dir = dirTo(mob.x - f.pos.x, mob.y - f.pos.y);
     this.provoke(mob, f, now);
 
-    if (Math.random() >= hitChance(f.player.lv, mob.def.level)) {
+    // Ghosts are hard to hit (skills always land).
+    if (Math.random() >= hitChance(f.player.lv, mob.def.level) * (1 - (mob.def.flee ?? 0))) {
       this.hooks.emit(mob.x, mob.y, { k: "miss", a: f.id, t: mob.id });
       return;
     }
@@ -405,7 +410,15 @@ export class Combat {
 
   /** `f` deals damage to a monster (a hit, a skill, or thorns from a card); it may go down. */
   private hurt(mob: Mob, f: Fighter, damage: number, flags: { crit?: 1; thorn?: 1; skill?: SkillId }) {
-    mob.damage.set(f.id, (mob.damage.get(f.id) ?? 0) + Math.min(damage, mob.hp));
+    const dealt = Math.min(damage, mob.hp);
+    mob.damage.set(f.id, (mob.damage.get(f.id) ?? 0) + dealt);
+    // Night Bat Cards: a share of every hit (not thorns) comes back as HP.
+    if (f.stats.drain > 0 && !flags.thorn && !f.player.dead && f.player.hp < f.stats.maxHp) {
+      const healed = Math.min(Math.max(1, Math.round(dealt * f.stats.drain)), f.stats.maxHp - f.player.hp);
+      f.player.hp += healed;
+      f.dirty = true;
+      this.hooks.emit(f.pos.x, f.pos.y, { k: "heal", t: f.id, d: healed });
+    }
     mob.hp = Math.max(0, mob.hp - damage);
     mob.state.hp = mob.hp;
     this.hooks.emit(mob.x, mob.y, { k: "hit", a: f.id, t: mob.id, d: damage, ...flags });
@@ -415,6 +428,7 @@ export class Combat {
   private defeat(mob: Mob) {
     this.hooks.emit(mob.x, mob.y, { k: "down", t: mob.id });
     const top = this.reward(mob);
+    if (mob.def.boss) this.hooks.boss(mob.def, "down", GROUP_FIELDS[mob.group].name, top);
     // Each drop is rolled on its own; whoever did the most damage gets first pick.
     for (const [item, chance] of mob.def.drops) {
       if (Math.random() < chance) this.drops.spawn({ id: item, n: 1 }, mob.x, mob.y, { owner: top ?? "" });
@@ -863,7 +877,8 @@ export class Combat {
 
   // ---------------------------------------------------------------- monsters
 
-  private spawn(group: number) {
+  /** A monster of a group appears (`announce`: a boss coming back is news; the first spawn at start isn't). */
+  private spawn(group: number, announce = false) {
     const g = GROUPS[group];
     const def = MONSTERS[g.monster];
     const at = this.findSpot(group);
@@ -893,6 +908,7 @@ export class Combat {
       frozenUntil: 0,
     });
     this.monsters.set(id, state);
+    if (announce && def.boss) this.hooks.boss(def, "rise", GROUP_FIELDS[group].name);
   }
 
   private findSpot(group: number): { x: number; y: number } | undefined {
@@ -935,7 +951,7 @@ export class Combat {
     // Left alone: heal up, then wander (or walk home first).
     if (mob.hp < def.hp && now - mob.lastHitAt > COMBAT_MS && now >= mob.regenAt) {
       mob.regenAt = now + 1000;
-      mob.hp = Math.min(def.hp, mob.hp + Math.max(1, Math.round(def.hp * MOB_REGEN)));
+      mob.hp = Math.min(def.hp, mob.hp + Math.max(1, Math.round(def.hp * (def.regen ?? MOB_REGEN))));
       mob.state.hp = mob.hp;
       if (mob.hp >= def.hp) mob.damage.clear();
     }

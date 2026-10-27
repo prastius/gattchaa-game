@@ -122,8 +122,6 @@ const NO_TARGET_HINT_MS = 3000;
 /** A skill pressed out of range is cast on arrival, if you get there this soon. */
 const PENDING_SKILL_MS = 4000;
 const SKILL_HINT_MS = 900;
-/** A monster biting from further than this spits something (Snapper Flower seeds). */
-const MONSTER_SPIT_PX = 90;
 /** Double Shot: the second arrow leaves this long after the first. */
 const DOUBLE_SHOT_GAP_MS = 110;
 /** Arrow Rain's numbers show when the arrows land. */
@@ -883,7 +881,10 @@ export class WorldScene extends Phaser.Scene {
       const fx = SKILLS[ev.skill].fx;
       return fx === "fire" ? "fire" : fx === "arrows" ? "arrow" : undefined;
     }
-    if (a.mob) return Math.hypot(t.x - a.x, t.y - a.y) > MONSTER_SPIT_PX ? "seed" : undefined;
+    if (a.mob) {
+      const art = a.mob.art;
+      return art.missile && Math.hypot(t.x - a.x, t.y - a.y) > (art.missileFrom ?? 0) ? art.missile : undefined;
+    }
     // Players: by the weapon in their hand (the first part of their gear string).
     const weapon = this.entities.get(ev.a)?.state.gear?.split(".")[0];
     const kind = weapon && isItemId(weapon) ? ITEMS[weapon].weapon : undefined;

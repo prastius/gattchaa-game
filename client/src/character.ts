@@ -157,7 +157,7 @@ export async function composeCharacter(key: string, opts: { sit?: boolean } = {}
   const body = bodyName(look);
   const item = (category: string, id: string) => findItem(m, category, id);
   const gear = parseGear(gearStr);
-  const covered = new Set(gear.map((g) => g.slot && GEAR_COVERS[g.slot]).filter(Boolean));
+  const covered = new Set<string | undefined>(gear.flatMap((g) => [g.slot && GEAR_COVERS[g.slot], ...(g.hides ?? [])]));
 
   const cloth = CATALOG.clothColors;
   const hair = CATALOG.hairColors[look.hairColor];
@@ -348,6 +348,12 @@ const CARD_SKY: Record<MonsterId, [string, string]> = {
   snake: ["#efe6b4", "#c9b86a"],
   hornet: ["#ffe7b0", "#f2b54d"],
   snapper: ["#fbd3e3", "#e48ab0"],
+  grub: ["#e9dfc8", "#b9a27a"],
+  bat: ["#c9c3e6", "#6f62a8"],
+  rockworm: ["#e3d2b4", "#a07c52"],
+  gazer: ["#ffd9d9", "#d9707a"],
+  ghost: ["#dff3d0", "#8fb57a"],
+  pumpking: ["#ffe2a6", "#e8822a"],
 };
 
 /** A monster card: gold frame, the monster facing you, and a name plate (Ragnarok style). */

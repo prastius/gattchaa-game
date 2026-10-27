@@ -151,7 +151,7 @@ scripts/
 Ragnarok and TibiaME style: click a monster and your character fights it. Everything about a fight is decided on the server, and the numbers live in `shared/rpg.ts`.
 
 - **Classes.** Everyone starts as a Novice; at level 10 the Job Master makes you a Knight, Mage or Archer (see below). HP, MP, attack and defence grow by class as you level.
-- **Levels.** The cap is `LEVEL_CAP` (50 for now). The EXP curve (`expToNext`) keeps going past the cap, so raising it is a one-line change. At the cap, EXP stops filling.
+- **Levels.** The cap is `LEVEL_CAP` (50 for now). The EXP curve (`expToNext`) is gentle through the Novice levels, then climbs to three times as much from the job change to level 13, so job levels take a few minutes each (about 4 at level 12, about 8 at level 18, fighting on-level monsters). It keeps going past the cap, so raising it is a one-line change. At the cap, EXP stops filling.
 - **Fields.** Monsters live outside the walls. The town (and the palace) is always safe: monsters never come in, and nobody can attack from inside. The first field is the **South Meadow**, out of the south gate (Rowan the Gate Guard explains it):
 
   | Monster | Level | Where | Behaviour |
@@ -160,6 +160,19 @@ Ragnarok and TibiaME style: click a monster and your character fights it. Everyt
   | Grass Snake | 4 | West grass | Only fights back |
   | Hornet | 7 | East field | Attacks on sight |
   | Snapper Flower | 10 | By the lake | Rooted; bites anyone who comes close, and spits seeds at anyone shooting it from afar |
+
+  The second field is **Dusk Hollow** (Lv 10–20), out of the east gate: rocky ground with boulders and a few pines (Mara the Ranger explains it):
+
+  | Monster | Level | Where | Behaviour |
+  | --- | --- | --- | --- |
+  | Grub | 11 | Along the east road | Only fights back |
+  | Night Bat | 12 | North of the road | Fast; attacks on sight |
+  | Rock Worm | 14 | South of the road | Slow, thick shell; only fights back |
+  | Gazer | 16 | North-east | Shoots a beam from 170 px away; attacks on sight |
+  | Ghost | 18 | South-east | Plain attacks often miss it (skills always land); attacks on sight |
+  | **Pumpking** | 22 | Where the east road ends | Field boss (below) |
+
+- **Field boss.** The Pumpking is Dusk Hollow's boss, Ragnarok's MVP style: one at a time, 12,000 HP, breathes fire from 150 px, heals only slowly when left alone, and comes back 10 minutes after it falls. It's drawn bigger, with its name and health always showing. The whole town hears when it rises again and who brought it down. A level 20 Knight can just about beat it alone with plenty of potions; a party shares the EXP by damage. It always drops King's Candy (600 gold at Bram), often a good piece of gear, and very rarely the Moonblade or the Pumpking Card. Any monster can be a boss (`boss: true` in `MONSTERS`).
 
 - **Fighting.** You auto-attack once a second while the monster is in reach. Hits can miss (more often against higher levels), and 5 % are critical hits. The client only says what you're attacking and draws what the server reports: damage numbers, slashes, health bars.
 - **Rewards.** EXP is shared by everyone who hurt the monster, by how much damage they did. Monsters more than 5 levels below you give less (down to 10 %). Gold goes to whoever did the most damage. Level-ups heal you fully, and every 10th level is announced in chat.
@@ -197,6 +210,7 @@ Every item is in `shared/items.ts`: its stats, price, rarity, icon, and how it l
 - **Bag.** 30 slots. Potions and loot stack up to 99. Click an item for its details, double-click to wear or drink it. You can drop things on the ground, where anyone can pick them up.
 - **Potions.** Red Potions heal 40 HP, Orange Potions 100 HP, one every 0.8 s, even mid-fight. Q drinks the smallest one that heals you fully.
 - **The Outfitter.** Bram stands outside the south gate, across from Rowan. He sells potions and starter gear (Dagger, Short Sword, Wooden Shield, Leather Cap, Chain Coif, Leather Armour, Leather Pants and Boots, Copper Ring, Clover Charm) and buys anything with a price, with a one-click "sell all monster loot". Better gear only comes from monsters.
+- **Dusk Hollow gear.** Level 12–20 drops, all visible on the character: Wizard Hat, Ranger Hood (hides your hair), Horned Helm, Greathelm, Guard Tabard, Sage Tabard, Kite Shield, Crusader Shield, Rapier, Knight's Blade, Great Bow, Ember Staff, and the Pumpking's Moonblade. Each monster also has its own loot to sell (Sticky Silk, Bat Fang, Rock Shard, Gazer Lens, Ectoplasm).
 - **Saving.** The bag and equipment are saved with the rest of your progress, plus right away after buying, selling or finding something good. Guests keep their bag until they leave.
 - **Defence.** Damage is softened by defence rather than reduced by it (defence equal to the attack halves a hit), so armour always helps but never makes you untouchable.
 
@@ -210,8 +224,14 @@ Ragnarok style: every monster very rarely drops its own card, and a card goes in
 | Grass Snake Card | Grass Snake | Boots | Slithering | Evade +8% (monsters miss more) | 1 in 1,250 |
 | Hornet Card | Hornet | Weapon | Stinging | ATK +2, Critical +8% | 1 in 1,000 |
 | Snapper Flower Card | Snapper Flower | Shield | Thorny | DEF +1, reflects 15% of each monster hit (at least 1) | 1 in about 830 |
+| Grub Card | Grub | Legs | Silken | HP +40 | 1 in 1,000 |
+| Night Bat Card | Night Bat | Amulet | Vampiric | 5% of the damage you deal heals you | 1 in 1,000 |
+| Rock Worm Card | Rock Worm | Ring | Rocky | DEF +3 | 1 in 1,000 |
+| Gazer Card | Gazer | Helmet | Gazing | ATK +3, MP +30 | 1 in 1,000 |
+| Ghost Card | Ghost | Armour | Ghostly | DEF +1, Evade +6% | 1 in 1,000 |
+| Pumpking Card | Pumpking | Weapon | Royal | ATK +10, Critical +6% (legendary) | 1 in 50 kills |
 
-- **Card slots.** Most gear has one slot; the Bronze Sword and the Saber have two. Small dots in the corner of a bag cell show the slots: hollow when free, gold when a card is in. The Leather Cap, Leather Pants, Copper Ring and Clover Charm have none. Helmets, greaves, rings and amulets have slots, but no card fits them yet: they wait for new monsters.
+- **Card slots.** Most gear has one slot; the better weapons have two. Small dots in the corner of a bag cell show the slots: hollow when free, gold when a card is in. The Leather Cap, Leather Pants, Copper Ring and Clover Charm have none. Every kind of slot now has at least one card that fits it.
 - **Putting a card in.** In the bag, pick the card and press "Put in gear" (or double-click it). The gear it can go into lights up, worn or carried; pick one and confirm. Cards never come back out.
 - **Names.** Carded gear takes the card's word, Ragnarok style: Stinging Saber, Double Stinging Saber, Stinging Thorny… The bag shows each card and its bonus.
 - **Finding one.** A card fresh from a monster is announced to the whole town. Picking up a card someone put down is not.

@@ -267,7 +267,20 @@ export const NPCS: NpcDef[] = [
     dir: Dir.Down,
     greeting:
       "Off to the South Meadow? Slimes (Lv 1) by the road only fight back if you hit them. Grass Snakes (Lv 4) hide in the west grass. Hornets (Lv 7) in the east field sting on sight, and Snapper Flowers (Lv 10) guard the lake. Click a monster or press Space to attack. Hurt? Sit down (X) to heal faster, or rest inside the walls.",
-    chatter: ["Monsters past this gate. Stay sharp!", "Hornets in the east field sting first!", "Hurt? Sit down and rest a while.", "Level 10? Orin the Job Master is just inside the gate."],
+    chatter: ["Monsters past this gate. Stay sharp!", "Hornets in the east field sting first!", "Hurt? Sit down and rest a while.", "Level 10? Orin the Job Master is just inside the gate.", "Outgrown the meadow? Dusk Hollow is out the east gate."],
+  },
+  {
+    // Outside the east gate, where the road runs into Dusk Hollow.
+    id: "ranger",
+    name: "Mara",
+    title: "Ranger",
+    kind: "local",
+    look: look({ body: "female", hair: "braid", hairColor: "chestnut", skin: "light", top: "longsleeve", topColor: "forest", bottom: "pants", bottomColor: "brown", shoes: "boots", shoesColor: "brown", hat: "hood", hatColor: "forest" }),
+    ...at(260.5, 183.6),
+    dir: Dir.Down,
+    greeting:
+      "Dusk Hollow (Lv 10–20) starts here. Grubs (Lv 11) by the road only fight back, but Night Bats (Lv 12) swoop at anyone. Rock Worms (Lv 14) are slow and thick-shelled. Deeper in, Gazers (Lv 16) shoot from afar and Ghosts (Lv 18) are hard to hit: use your skills. And where the road ends lives the Pumpking (Lv 22). Don't face him alone.",
+    chatter: ["Dusk Hollow is no meadow. Be careful!", "Ghosts dodge plain attacks. Use your skills!", "Gazers shoot from afar. Close in fast!", "Something big lives where the road ends…"],
   },
   {
     // Just inside the south gate: Novices walk past him on their way out, and come back at level 10.

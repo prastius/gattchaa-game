@@ -5,6 +5,7 @@ import { MONSTER_ART, attackAnim, monsterTexture, moveAnim, type MonsterArt } fr
 
 const FONT = "system-ui, -apple-system, Segoe UI, sans-serif";
 const BAR_W = 30;
+const BOSS_BAR_W = 64;
 const FLASH_MS = 80;
 
 /**
@@ -27,6 +28,7 @@ export class MonsterSprite {
   private isTarget = false;
   private isHovered = false;
   private dying = false;
+  private barW: number;
   private frozen = false;
   private thaw?: Phaser.Time.TimerEvent;
 
@@ -51,7 +53,8 @@ export class MonsterSprite {
     this.ring = scene.add.graphics().setVisible(false);
     this.ring.lineStyle(2, 0xff5a4f, 1).strokeEllipse(0, 0, rx * 2, rx).lineStyle(1, 0xffd0c0, 0.7).strokeEllipse(0, 0, rx * 2 + 6, rx + 3);
 
-    this.sprite = scene.add.sprite(0, 0, monsterTexture(kind)).setOrigin(0.5, a.feet / a.frame);
+    this.sprite = scene.add.sprite(0, 0, monsterTexture(kind)).setOrigin(0.5, a.feet / a.frame).setScale(a.scale ?? 1);
+    this.barW = this.def.boss ? BOSS_BAR_W : BAR_W;
     this.bar = scene.add.graphics().setVisible(false);
     this.label = scene.add
       .text(0, -a.h - 6, `${this.def.name}  Lv ${this.def.level}`, {
@@ -64,9 +67,10 @@ export class MonsterSprite {
       })
       .setOrigin(0.5, 1)
       .setResolution(textRes())
-      .setVisible(false);
+      .setVisible(Boolean(this.def.boss));
 
     this.container = scene.add.container(x, y, [this.ring, this.sprite, this.bar, this.label]).setDepth(y);
+    this.drawBar();
     this.sprite.play({ key: moveAnim(kind, this.dir), startFrame: Math.floor(Math.random() * 3) });
   }
 
@@ -175,13 +179,14 @@ export class MonsterSprite {
     if (this.label.style.color !== color) this.label.setColor(color);
   }
 
+  /** Bosses always show their name and health. */
   private refreshLabel() {
-    this.label.setVisible(!this.dying && (this.isTarget || this.isHovered));
+    this.label.setVisible(!this.dying && (this.isTarget || this.isHovered || Boolean(this.def.boss)));
   }
 
   private drawBar() {
     const max = this.def.hp;
-    const show = !this.dying && (this.hp < max || this.isTarget);
+    const show = !this.dying && (this.hp < max || this.isTarget || Boolean(this.def.boss));
     const key = show ? `${this.hp}` : "";
     if (key === this.barKey) return;
     this.barKey = key;
@@ -192,9 +197,9 @@ export class MonsterSprite {
     this.bar
       .clear()
       .fillStyle(0x10202b, 0.85)
-      .fillRect(-BAR_W / 2 - 1, 4, BAR_W + 2, 6)
+      .fillRect(-this.barW / 2 - 1, 4, this.barW + 2, 6)
       .fillStyle(color, 1)
-      .fillRect(-BAR_W / 2, 5, Math.max(1, Math.round(BAR_W * r)), 4);
+      .fillRect(-this.barW / 2, 5, Math.max(1, Math.round(this.barW * r)), 4);
   }
 
   /** Defeated: flashes, shrinks into the ground and fades, then cleans itself up. */
