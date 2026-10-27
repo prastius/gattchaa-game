@@ -9,7 +9,27 @@ import {
   type ShopRoom,
 } from "../../../shared/gattchaa";
 import { SHOP_AWAY_HOURS, SHOP_TITLE_MAX, signText, type PlayerShopDetails, type PlayerShopView } from "../../../shared/vending";
-import { ITEMS, OUTFITTER_STOCK, RARITY, bonusText, itemName, sellPrice, wearersText, withArticle, type ItemDef, type ItemId } from "../../../shared/items";
+import {
+  AURA_LEVELS,
+  ITEMS,
+  MAX_UPGRADE,
+  OUTFITTER_STOCK,
+  RARITY,
+  SLOTS,
+  SMITH_STOCK,
+  bonusText,
+  canUpgrade,
+  itemName,
+  sellPrice,
+  upgradeCost,
+  upgradeStep,
+  wearersText,
+  withArticle,
+  type ItemDef,
+  type ItemId,
+  type ItemStack,
+  type Slot,
+} from "../../../shared/items";
 import { CLASSES, JOBS, JOB_LEVEL, JOB_WEAPON, aClass, isClassId, statsFor, type ClassId } from "../../../shared/rpg";
 import { skillsOf } from "../../../shared/skills";
 import { FRAME, composeCharacter, itemIcon } from "../character";
@@ -102,6 +122,10 @@ export class TownDialog {
   private tradeTab: "buy" | "sell" = "buy";
   /** The job you picked at the Job Master, waiting for "yes". */
   private jobConfirm?: ClassId;
+  /** Which side of the Blacksmith's window is showing. */
+  private smithTab: "upgrade" | "buy" = "upgrade";
+  /** How your last upgrade went, shown at the top of her window. */
+  private forgeNote?: { ok: boolean; up: number; item: string };
   /** Opens the skills window (from the Job Master). */
   openSkills?: () => void;
   /** Where the conversation is happening; walking away closes it. */
@@ -123,10 +147,9 @@ export class TownDialog {
     // Live data changes (stock, seats, shops opening) refresh whatever is open.
     shop.onChange(() => this.refresh(false));
     vending.onChange.add(() => this.refresh(true));
-    // Gold and bag changes redraw a merchant's counter; a new job redraws the Job Master.
+    // Gold and bag changes redraw a merchant's counter and the forge; a new job redraws the Job Master.
     const trade = () => {
-      const kind = this.isOpen && this.openTarget ? NPCS.find((n) => `npc:${n.id}` === this.openTarget)?.kind : undefined;
-      if (kind === "outfitter" || kind === "jobs") this.render(this.openTarget!, false);
+      if (this.openKind === "outfitter" || this.openKind === "jobs" || this.openKind === "smith") this.render(this.openTarget!, false);
     };
     net.onBag.add(trade);
     net.onStats.add(trade);
@@ -140,10 +163,23 @@ export class TownDialog {
     return this.openTarget;
   }
 
+  /** The kind of NPC you're talking to, if it's an NPC. */
+  private get openKind() {
+    return this.isOpen && this.openTarget ? NPCS.find((n) => `npc:${n.id}` === this.openTarget)?.kind : undefined;
+  }
+
+  /** The Blacksmith just finished with your gear. */
+  forged(ok: boolean, up: number, item: string) {
+    this.forgeNote = { ok, up, item };
+    if (this.openKind === "smith") this.render(this.openTarget!, false);
+  }
+
   open(target: string, at: { x: number; y: number }) {
     this.anchor = at;
     this.backTo = undefined;
     this.tradeTab = "buy";
+    this.smithTab = "upgrade";
+    this.forgeNote = undefined;
     this.jobConfirm = undefined;
     audio.blip();
     this.render(target, true);
@@ -245,6 +281,9 @@ export class TownDialog {
       case "jobs":
         this.jobs(npc);
         break;
+      case "smith":
+        this.forge(npc);
+        break;
       case "keeper":
         this.shopList();
         if (!this.vending.auth.signedIn) this.signInButton("Sign in to open your own shop");
@@ -311,42 +350,108 @@ export class TownDialog {
     this.body.append(cards);
   }
 
+  // ------------------------------------------------------------------ the Blacksmith
+
+  /** Upgrade what you wear or carry, or buy Iron Ingots. */
+  private forge(npc: NpcDef) {
+    const gold = this.net.stats?.gold ?? 0;
+    this.body.append(this.tabs(npc, [["upgrade", "Upgrade"], ["buy", "Buy ingots"]], this.smithTab, (tab) => (this.smithTab = tab), gold));
+    if (this.smithTab === "buy") {
+      const list = el("div", "ware-list");
+      for (const id of SMITH_STOCK) list.append(this.forSale(npc, id, gold));
+      this.body.append(list, el("p", "dialog-note", "Mithril Ingots and Star Crystals aren't for sale: monsters in Dusk Hollow drop them, and the Pumpking always carries some."));
+      return;
+    }
+
+    const note = this.forgeNote;
+    if (note) {
+      this.body.append(
+        el("p", `forge-note ${note.ok ? "ok" : "fail"}`, note.ok ? `Success! Your ${note.item} is now +${note.up}.` : `It failed: your ${note.item} went down to +${note.up}.`),
+      );
+    }
+    const bag = this.net.bag;
+    const count = (id: ItemId) => (bag?.bag ?? []).reduce((n, s) => n + (s?.id === id ? s.n : 0), 0);
+    const ores: ItemId[] = ["ironIngot", "mithril", "starCrystal"];
+    this.body.append(el("div", "forge-ores", `Your ingots: ${ores.map((id) => `${ITEMS[id].name} ×${count(id)}`).join(" · ")}`));
+
+    // What you wear first, then the bag.
+    const pieces: { s: ItemStack; at: { gear: Slot } | { bag: number } }[] = [];
+    for (const slot of SLOTS) {
+      const s = bag?.gear[slot];
+      if (s && canUpgrade(ITEMS[s.id])) pieces.push({ s, at: { gear: slot } });
+    }
+    bag?.bag.forEach((s, i) => {
+      if (s && canUpgrade(ITEMS[s.id])) pieces.push({ s, at: { bag: i } });
+    });
+    const list = el("div", "ware-list forge-list");
+    for (const { s, at } of pieces) {
+      const it = ITEMS[s.id];
+      const up = s.up ?? 0;
+      const step = upgradeStep(it);
+      const each = step.atk ? `ATK +${step.atk}` : `DEF +${step.def}`;
+      const worn = "gear" in at ? "Worn · " : "";
+      if (up >= MAX_UPGRADE) {
+        list.append(this.ware(it, `${worn}Fully upgraded (${each} ×${up})`, [this.wareButton(`+${MAX_UPGRADE}`, false, () => {})], itemName(s)));
+        continue;
+      }
+      const cost = upgradeCost(up + 1);
+      const ready = gold >= cost.gold && count(cost.ore) > 0;
+      const info = `${worn}To +${up + 1}: ${Math.round(cost.chance * 100)}% · ${cost.gold} gold + ${ITEMS[cost.ore].name} · each upgrade ${each}`;
+      list.append(this.ware(it, info, [this.wareButton(`Upgrade to +${up + 1}`, ready, () => this.net.upgrade(npc.id, at))], itemName(s)));
+    }
+    if (pieces.length === 0) this.body.append(el("p", "dialog-empty", "You have nothing I can upgrade. Bring me a weapon, a shield, a helmet, armour, legs or boots."));
+    else this.body.append(list);
+    const chances = Array.from({ length: MAX_UPGRADE - 4 }, (_, i) => `+${i + 5} ${Math.round(upgradeCost(i + 5).chance * 100)}%`).join(" · ");
+    this.body.append(
+      el("p", "dialog-note", `Up to +4 always works. After that: ${chances}. A failed upgrade drops it one level; it never breaks. Rings and amulets can't be upgraded.`),
+      el("p", "dialog-note", `Wear gear at +${AURA_LEVELS[0]} or higher and you get an aura: blue at +${AURA_LEVELS[0]}, violet at +${AURA_LEVELS[1]}, gold at +${AURA_LEVELS[2]}.`),
+    );
+  }
+
+  /** Tabs across the top of a merchant's window, with your gold at the end. */
+  private tabs<T extends string>(npc: NpcDef, tabs: [T, string][], current: T, pick: (tab: T) => void, gold: number) {
+    const row = el("div", "trade-tabs");
+    for (const [tab, label] of tabs) {
+      const b = el("button", `trade-tab${current === tab ? " on" : ""}`, label);
+      b.type = "button";
+      b.addEventListener("click", () => {
+        if (current === tab) return;
+        pick(tab);
+        audio.blip();
+        this.render(`npc:${npc.id}`, false);
+        this.body.scrollTop = 0;
+      });
+      row.append(b);
+    }
+    const purse = el("span", "gold trade-gold");
+    purse.append(el("span", "coin"), el("span", "", gold.toLocaleString("en-US")));
+    row.append(purse);
+    return row;
+  }
+
   // ------------------------------------------------------------------ NPC merchants (in-game gold)
 
   /** A merchant's counter: buy their stock, or sell them what's in your bag. */
   private counter(npc: NpcDef) {
     const gold = this.net.stats?.gold ?? 0;
-    const tabs = el("div", "trade-tabs");
-    for (const [tab, label] of [["buy", "Buy"], ["sell", "Sell"]] as const) {
-      const b = el("button", `trade-tab${this.tradeTab === tab ? " on" : ""}`, label);
-      b.type = "button";
-      b.addEventListener("click", () => {
-        if (this.tradeTab === tab) return;
-        this.tradeTab = tab;
-        audio.blip();
-        this.render(`npc:${npc.id}`, false);
-        this.body.scrollTop = 0;
-      });
-      tabs.append(b);
-    }
-    const purse = el("span", "gold trade-gold");
-    purse.append(el("span", "coin"), el("span", "", gold.toLocaleString("en-US")));
-    tabs.append(purse);
-    this.body.append(tabs);
+    this.body.append(this.tabs(npc, [["buy", "Buy"], ["sell", "Sell"]], this.tradeTab, (tab) => (this.tradeTab = tab), gold));
     if (this.tradeTab === "buy") this.wares(npc, gold);
     else this.buyBack(npc);
   }
 
   private wares(npc: NpcDef, gold: number) {
     const list = el("div", "ware-list");
-    for (const id of OUTFITTER_STOCK) {
-      const it = ITEMS[id];
-      const price = it.price ?? 0;
-      const buttons: HTMLButtonElement[] = [this.wareButton(`Buy · ${price}`, gold >= price, () => this.net.buy(npc.id, id, 1))];
-      if (it.kind === "use") buttons.push(this.wareButton(`×10 · ${price * 10}`, gold >= price * 10, () => this.net.buy(npc.id, id, 10)));
-      list.append(this.ware(it, this.wareInfo(it), buttons));
-    }
+    for (const id of OUTFITTER_STOCK) list.append(this.forSale(npc, id, gold));
     this.body.append(list);
+  }
+
+  /** One thing a merchant sells, with Buy (and ×10 for things that stack). */
+  private forSale(npc: NpcDef, id: ItemId, gold: number) {
+    const it = ITEMS[id];
+    const price = it.price ?? 0;
+    const buttons: HTMLButtonElement[] = [this.wareButton(`Buy · ${price}`, gold >= price, () => this.net.buy(npc.id, id, 1))];
+    if (it.kind === "use" || it.kind === "material") buttons.push(this.wareButton(`×10 · ${price * 10}`, gold >= price * 10, () => this.net.buy(npc.id, id, 10)));
+    return this.ware(it, this.wareInfo(it), buttons);
   }
 
   private buyBack(npc: NpcDef) {
@@ -376,9 +481,9 @@ export class TownDialog {
       const price = sellPrice(it);
       cards ||= it.kind === "card";
       if (price <= 0) return;
-      if (s.cards) {
-        // Selling it would throw the cards away; Bram won't do that to you.
-        list.append(this.ware(it, "Has cards in it: not for sale", [this.wareButton(`Sell · ${price}`, false, () => {})], itemName(s)));
+      if (s.cards || s.up) {
+        // Selling it would throw the cards (or the upgrades) away; Bram won't do that to you.
+        list.append(this.ware(it, `${s.cards ? "Has cards in it" : "Upgraded"}: not for sale`, [this.wareButton(`Sell · ${price}`, false, () => {})], itemName(s)));
         return;
       }
       const buttons = [this.wareButton(`Sell · ${price}`, true, () => this.net.sell(npc.id, slot, 1))];

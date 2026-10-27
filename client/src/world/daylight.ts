@@ -79,6 +79,8 @@ export class Daylight {
   private checkedAt = -Infinity;
   /** True when the current hour counts as night (for calmer music). */
   night = false;
+  /** How brightly lamps (and anything else that glows) shine right now, 0..1. */
+  lamps = 0;
 
   constructor(
     scene: Phaser.Scene,
@@ -108,6 +110,7 @@ export class Daylight {
     this.dirty = false;
     const { tint, lamps } = indoors ? { tint: 0xffffff, lamps: 0 } : sky(batamHour());
     this.night = !indoors && lamps > 0.5;
+    this.lamps = lamps;
     this.overlay.setFillStyle(tint).setVisible(tint !== 0xffffff);
     for (const g of this.glows) g.setAlpha(lamps * 0.75).setVisible(lamps > 0.02);
     for (const w of this.windows) w.setAlpha(lamps * 0.85).setVisible(lamps > 0.02);

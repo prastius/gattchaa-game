@@ -10,6 +10,7 @@ import {
   gearBonus,
   itemName,
   sellPrice,
+  upgradeText,
   type ItemDef,
   type ItemStack,
   type Slot,
@@ -187,7 +188,7 @@ export class BagPanel {
     const kind = ITEMS[s.id].kind;
     if ("gear" in sel) this.net.unequip(sel.gear);
     else if (kind === "card") return this.startInsert(sel.bag);
-    else if (kind !== "loot") this.net.useItem(sel.bag);
+    else if (kind === "equip" || kind === "use") this.net.useItem(sel.bag);
     audio.blip();
   }
 
@@ -239,7 +240,9 @@ export class BagPanel {
     cell.el.classList.toggle("selected", selected);
     cell.el.dataset.rarity = it?.rarity ?? "";
     cell.el.title = s ? itemName(s) : "";
-    cell.count.textContent = s && s.n > 1 ? String(s.n) : "";
+    // Equipment never stacks, so the corner shows its upgrade instead.
+    cell.count.textContent = s?.up ? `+${s.up}` : s && s.n > 1 ? String(s.n) : "";
+    cell.count.classList.toggle("up", Boolean(s?.up));
     const slots = it?.slots ?? 0;
     const used = s?.cards?.length ?? 0;
     cell.dots.replaceChildren(
@@ -315,7 +318,15 @@ export class BagPanel {
     const meta = document.createElement("div");
     meta.className = "bag-meta";
     const kind =
-      it.kind === "equip" ? SLOT_NAMES[it.slot!] : it.kind === "use" ? "Potion" : it.kind === "card" ? `Card · goes into ${(it.fits ?? []).map((f) => SLOT_NAMES[f]).join(" or ")}` : "Loot";
+      it.kind === "equip"
+        ? SLOT_NAMES[it.slot!]
+        : it.kind === "use"
+          ? "Potion"
+          : it.kind === "card"
+            ? `Card · goes into ${(it.fits ?? []).map((f) => SLOT_NAMES[f]).join(" or ")}`
+            : it.kind === "material"
+              ? "For the Blacksmith"
+              : "Loot";
     meta.textContent = `${RARITY[it.rarity].name} · ${kind}`;
     if (it.lv && it.lv > 1) {
       const lv = document.createElement("span");
@@ -328,10 +339,13 @@ export class BagPanel {
     const lines: HTMLElement[] = [name, meta];
     const bonus = bonusText(it);
     if (bonus) lines.push(this.p("bag-bonus", bonus));
+    const upgrade = upgradeText(s);
+    if (upgrade) lines.push(this.p("bag-bonus bag-upgrade", `Upgraded ${upgrade}`));
     if (it.slots) lines.push(this.cardList(s, it));
     lines.push(this.p("bag-desc", it.desc));
     const price = sellPrice(it);
     if (s.cards) lines.push(this.p("bag-price", "Merchants won't buy it: the cards would be lost."));
+    else if (s.up) lines.push(this.p("bag-price", "Merchants won't buy upgraded gear."));
     else if (price > 0) lines.push(this.p("bag-price", `Merchants pay ${price} gold${s.n > 1 ? " each" : ""}.`));
 
     const buttons = document.createElement("div");

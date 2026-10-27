@@ -33,12 +33,13 @@ import {
   type SitMessage,
   type TargetMessage,
   type UnequipMessage,
+  type UpgradeMessage,
 } from "../../../shared/protocol";
 import { DOORS, placeName } from "../../../shared/town";
 import type { DoorMessage } from "../../../shared/protocol";
 import { CLASSES, LEVEL_CAP, aClass, isClassId } from "../../../shared/rpg";
 import { isSkillId } from "../../../shared/skills";
-import { BAG_SIZE, ITEMS, OUTFITTER_STOCK, isItemId, isSlot } from "../../../shared/items";
+import { BAG_SIZE, ITEMS, OUTFITTER_STOCK, SMITH_STOCK, cleanUpgrade, isItemId, isSlot } from "../../../shared/items";
 import { NPCS, type NpcKind } from "../../../shared/npcs";
 import { SHOP_AWAY_HOURS, inShopZone, sanitizeShopTitle, shopSpotProblem, type ShopOpenMessage, type ShopResult } from "../../../shared/vending";
 import { Drop, Monster, Player, PlayerShop, WorldState } from "./WorldState";
@@ -172,6 +173,11 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     "item:pickup": (client: Client, msg: PickupMessage) => {
       if (this.itemOk(client) && typeof msg?.id === "string") this.combat.pickup(client.sessionId, msg.id.slice(0, 16));
     },
+    "smith:upgrade": (client: Client, msg: UpgradeMessage) => {
+      if (!this.itemOk(client) || !this.npcNear(client, msg?.npc, "smith")) return;
+      const at = this.bagSlot(msg.bag) ? { bag: msg.bag } : isSlot(msg.gear) ? { gear: msg.gear } : undefined;
+      if (at) this.combat.upgrade(client.sessionId, at);
+    },
     job: (client: Client, msg: JobMessage) => {
       if (this.itemOk(client) && this.npcNear(client, msg?.npc, "jobs") && isClassId(msg.cls)) this.combat.changeJob(client.sessionId, msg.cls);
     },
@@ -230,6 +236,10 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       found: (id, item) => {
         const name = this.state.players.get(id)?.name;
         if (name) this.system(item.kind === "card" ? `🃏 ${name} found a ${item.name}!` : `✨ ${name} found the legendary ${item.name}!`);
+      },
+      upgraded: (id, item, up) => {
+        const name = this.state.players.get(id)?.name;
+        if (name) this.system(`🔨 ${name} upgraded a ${item} to +${up}!`);
       },
     });
     this.clock.setInterval(() => {
@@ -490,7 +500,6 @@ export class WorldRoom extends Room<{ state: WorldState }> {
 
   private bagSlot = (slot: unknown): slot is number => Number.isInteger(slot) && (slot as number) >= 0 && (slot as number) < BAG_SIZE;
 
-  /** The merchant NPC you're trading with, if you're really standing at their counter. */
   /** The NPC of that kind, if you're standing with them. */
   private npcNear(client: Client, npcId: unknown, kind: NpcKind) {
     const meta = this.meta.get(client.sessionId);
@@ -505,10 +514,12 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     return this.npcNear(client, npcId, "outfitter");
   }
 
+  /** The Outfitter sells his stock, the Blacksmith her ingots. */
   private handleBuy(client: Client, msg: NpcBuyMessage) {
-    if (!this.itemOk(client) || !this.merchant(client, msg?.npc)) return;
-    const id = msg.item;
-    if (!isItemId(id) || !OUTFITTER_STOCK.includes(id)) return;
+    if (!this.itemOk(client)) return;
+    const stock = this.merchant(client, msg?.npc) ? OUTFITTER_STOCK : this.npcNear(client, msg?.npc, "smith") ? SMITH_STOCK : undefined;
+    const id = msg?.item;
+    if (!stock || !isItemId(id) || !stock.includes(id)) return;
     this.combat.buy(client.sessionId, id, Number(msg.n));
   }
 
@@ -776,9 +787,12 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       return reply(`Test command: you are now level ${lv}.`);
     }
     if (name === "item" && isItemId(arg)) {
-      const count = Number(text.split(" ")[2] ?? 1);
-      this.combat.cheatItem(client.sessionId, arg, Number.isFinite(count) ? count : 1);
-      return reply(`Test command: added ${ITEMS[arg].name}.`);
+      // "/item saber +7": already upgraded.
+      const extra = text.split(" ")[2] ?? "1";
+      const up = extra.startsWith("+") ? cleanUpgrade(arg, extra.slice(1)) : undefined;
+      const count = extra.startsWith("+") ? 1 : Number(extra);
+      this.combat.cheatItem(client.sessionId, arg, Number.isFinite(count) ? count : 1, up);
+      return reply(`Test command: added ${up ? `+${up} ` : ""}${ITEMS[arg].name}.`);
     }
     if (name === "gold" && Number.isFinite(n)) {
       this.combat.cheatGold(client.sessionId, n);
@@ -789,7 +803,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       return reply(`Test command: job set to ${CLASSES[arg].name} (jobs need level 10).`);
     }
     reply(
-      `Test commands: /level <1-${LEVEL_CAP}>, /item <id> [count], /gold <amount>, /job <novice|knight|mage|archer>. Item ids: ${Object.keys(ITEMS).join(", ")}`,
+      `Test commands: /level <1-${LEVEL_CAP}>, /item <id> [count or +upgrade], /gold <amount>, /job <novice|knight|mage|archer>. Item ids: ${Object.keys(ITEMS).join(", ")}`,
     );
   }
 

@@ -2,8 +2,10 @@ import {
   BAG_SIZE,
   ITEMS,
   SLOTS,
+  auraOf,
   canInsert,
   cleanCards,
+  cleanUpgrade,
   gearBonus,
   gearString,
   isItemId,
@@ -22,15 +24,25 @@ const parse = (json: string | null | undefined): unknown => {
   }
 };
 
-/** A saved stack, if it still makes sense (the item exists, the count fits, the cards belong). */
+/** What makes one piece of equipment different from another of the same kind. */
+export type Extras = Pick<ItemStack, "cards" | "up">;
+
+/** A stack with only the extras it really has (no empty `cards`, no `up: 0`). */
+function stack(id: ItemId, n: number, extras?: Extras): ItemStack {
+  const s: ItemStack = { id, n };
+  if (extras?.cards?.length) s.cards = [...extras.cards];
+  if (extras?.up) s.up = extras.up;
+  return s;
+}
+
+/** A saved stack, if it still makes sense (the item exists, the count fits, the cards and upgrade belong). */
 function readStack(raw: unknown): ItemStack | null {
   if (!raw || typeof raw !== "object") return null;
-  const { id, n, cards } = raw as { id?: unknown; n?: unknown; cards?: unknown };
+  const { id, n, cards, up } = raw as { id?: unknown; n?: unknown; cards?: unknown; up?: unknown };
   if (!isItemId(id)) return null;
   const count = Math.min(stackLimit(ITEMS[id]), Math.floor(Number(n)));
   if (!(count >= 1)) return null;
-  const c = cleanCards(id, cards);
-  return c ? { id, n: count, cards: c } : { id, n: count };
+  return stack(id, count, { cards: cleanCards(id, cards), up: cleanUpgrade(id, up) });
 }
 
 /** Where a piece of equipment is: a bag slot, or worn. */
@@ -79,6 +91,11 @@ export class Inventory {
     return gearString(this.gear);
   }
 
+  /** The aura your upgraded gear gives you (0 = none). */
+  aura(): number {
+    return auraOf(this.gear);
+  }
+
   count(id: ItemId): number {
     let n = 0;
     for (const s of this.bag) if (s?.id === id) n += s.n;
@@ -98,7 +115,7 @@ export class Inventory {
   }
 
   /** Adds up to `n` (topping up stacks first, then empty slots). Returns how many went in. */
-  add(id: ItemId, n: number, cards?: ItemId[]): number {
+  add(id: ItemId, n: number, extras?: Extras): number {
     const limit = stackLimit(ITEMS[id]);
     let left = n;
     for (const s of this.bag) {
@@ -111,7 +128,7 @@ export class Inventory {
     for (let i = 0; i < this.bag.length && left > 0; i++) {
       if (this.bag[i]) continue;
       const k = Math.min(left, limit);
-      this.bag[i] = cards?.length ? { id, n: k, cards: [...cards] } : { id, n: k };
+      this.bag[i] = stack(id, k, extras);
       left -= k;
     }
     return n - left;
@@ -124,7 +141,13 @@ export class Inventory {
     const k = Math.min(s.n, Math.floor(n));
     s.n -= k;
     if (s.n <= 0) this.bag[slot] = null;
-    return s.cards ? { id: s.id, n: k, cards: s.cards } : { id: s.id, n: k };
+    return stack(s.id, k, s);
+  }
+
+  /** Uses up one of an item from the bag (an ingot for the Blacksmith). False if there's none. */
+  spend(id: ItemId): boolean {
+    const slot = this.bag.findIndex((s) => s?.id === id);
+    return slot >= 0 && Boolean(this.take(slot, 1));
   }
 
   /** The equipment at a place (bag slot or worn), if there is any. */

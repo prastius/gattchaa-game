@@ -53,8 +53,8 @@ export interface GearArt {
 export interface ItemDef {
   id: string;
   name: string;
-  /** equip: worn in `slot`. use: used up (potions). loot: only worth selling. card: goes into equipment. */
-  kind: "equip" | "use" | "loot" | "card";
+  /** equip: worn in `slot`. use: used up (potions). loot: only worth selling. card: goes into equipment. material: the Blacksmith uses it. */
+  kind: "equip" | "use" | "loot" | "card" | "material";
   slot?: Slot;
   rarity: Rarity;
   /** Level needed to wear it. */
@@ -118,6 +118,11 @@ export const ITEMS = def({
   gazerLens: { name: "Gazer Lens", kind: "loot", rarity: "common", sell: 35, icon: "pearl_01b", desc: "It still seems to be watching you." },
   ectoplasm: { name: "Ectoplasm", kind: "loot", rarity: "common", sell: 48, icon: "potion_01c", desc: "Cold, glowing goo a Ghost left behind." },
   kingsCandy: { name: "King's Candy", kind: "loot", rarity: "rare", sell: 600, icon: "candy_02e", desc: "The Pumpking's own sweets. Worth a small fortune." },
+
+  // ------------------------------------------------------------ smithing (one is used up by every upgrade)
+  ironIngot: { name: "Iron Ingot", kind: "material", rarity: "common", price: 100, sell: 30, icon: "ingot_01a", desc: "Plain iron. The Blacksmith uses one for each upgrade up to +5." },
+  mithril: { name: "Mithril Ingot", kind: "material", rarity: "uncommon", sell: 80, icon: "ingot_01e", desc: "Light, blue and very hard. Upgrades to +6, +7 and +8 need one. Found in Dusk Hollow." },
+  starCrystal: { name: "Star Crystal", kind: "material", rarity: "rare", sell: 300, icon: "crystal_01b", desc: "A shard of a fallen star. Only this takes gear to +9 and +10." },
 
   // ------------------------------------------------------------ potions
   redPotion: { name: "Red Potion", kind: "use", rarity: "common", heal: 40, price: 12, icon: "potion_02a", desc: "Restores 40 HP." },
@@ -249,12 +254,14 @@ export const POTION_MS = 800;
 export const MAX_STACK = 99;
 export const stackLimit = (it: ItemDef) => (it.kind === "equip" ? 1 : MAX_STACK);
 
-/** Some of one item in a bag slot or worn. Room for upgrades later. */
+/** Some of one item in a bag slot or worn. */
 export interface ItemStack {
   id: ItemId;
   n: number;
   /** Equipment: the cards in it, in the order they went in. */
   cards?: ItemId[];
+  /** Equipment: how far the Blacksmith has upgraded it (+1 to +10). */
+  up?: number;
 }
 
 /** server -> client: your bag and what you're wearing (sent whole whenever it changes). */
@@ -283,14 +290,62 @@ export function cleanCards(gear: ItemId, raw: unknown): ItemId[] | undefined {
 export const cardString = (cards?: ItemId[]) => cards?.join(".") ?? "";
 export const parseCards = (gear: ItemId, s: string) => (s ? cleanCards(gear, s.split(".")) : undefined);
 
-/** The name with its cards in front, Ragnarok style: "Stinging Saber", "Double Stinging Saber". */
+/** The name with its upgrade and cards in front, Ragnarok style: "Stinging Saber", "+7 Double Stinging Saber". */
 export function itemName(s: ItemStack): string {
+  const up = s.up ? `+${s.up} ` : "";
   const name = ITEMS[s.id].name;
-  if (!s.cards?.length) return name;
+  if (!s.cards?.length) return `${up}${name}`;
   const counts = new Map<ItemId, number>();
   for (const c of s.cards) counts.set(c, (counts.get(c) ?? 0) + 1);
   const words = [...counts].map(([c, n]) => `${n === 2 ? "Double " : n === 3 ? "Triple " : n >= 4 ? "Quadruple " : ""}${ITEMS[c].prefix ?? ""}`);
-  return `${words.join(" ")} ${name}`;
+  return `${up}${words.join(" ")} ${name}`;
+}
+
+// ---------------------------------------------------------------- upgrades (the Blacksmith)
+
+/** The highest upgrade. */
+export const MAX_UPGRADE = 10;
+/** What the Blacksmith sells. */
+export const SMITH_STOCK: ItemId[] = ["ironIngot"];
+
+/** Upgrading to +1 … +10: the chance it works, and the Blacksmith's fee. Up to +4 it always works. */
+const UPGRADE_TABLE: [chance: number, gold: number][] = [
+  [1, 100], [1, 200], [1, 300], [1, 400], [0.9, 600], [0.75, 900], [0.6, 1200], [0.45, 1600], [0.35, 2000], [0.25, 2500],
+];
+
+/** Taking a piece of gear to +`to`: the chance, the fee, and the ingot it uses up. A failure drops it one level; it never breaks. */
+export function upgradeCost(to: number): { chance: number; gold: number; ore: ItemId } {
+  const [chance, gold] = UPGRADE_TABLE[Math.min(MAX_UPGRADE, Math.max(1, to)) - 1];
+  return { chance, gold, ore: to <= 5 ? "ironIngot" : to <= 8 ? "mithril" : "starCrystal" };
+}
+
+/** Everything that shows on the character can be upgraded; rings and amulets are too small. */
+export const canUpgrade = (it: ItemDef) => it.kind === "equip" && (VISIBLE_SLOTS as readonly (Slot | undefined)[]).includes(it.slot);
+
+/** What each upgrade adds: weapons ATK (more for stronger ones), everything else DEF +1. */
+export const upgradeStep = (it: ItemDef): { atk: number; def: number } =>
+  it.slot === "weapon" ? { atk: Math.max(1, Math.round((it.atk ?? 0) / 8)), def: 0 } : { atk: 0, def: 1 };
+
+/** A saved or dropped upgrade level, if it makes sense for that item. */
+export function cleanUpgrade(id: ItemId, raw: unknown): number | undefined {
+  const up = Math.floor(Number(raw));
+  return canUpgrade(ITEMS[id]) && up >= 1 ? Math.min(MAX_UPGRADE, up) : undefined;
+}
+
+/** "+7 · ATK +14" (what the upgrades add), or "" for +0. */
+export function upgradeText(s: ItemStack): string {
+  if (!s.up) return "";
+  const step = upgradeStep(ITEMS[s.id]);
+  return `+${s.up} · ${step.atk ? `ATK +${step.atk * s.up}` : `DEF +${step.def * s.up}`}`;
+}
+
+/** Upgrades this high give an aura (the best one worn shows). */
+export const AURA_LEVELS = [7, 9, 10] as const;
+
+/** The aura someone has: the highest of AURA_LEVELS their best worn upgrade reaches, or 0. */
+export function auraOf(gear: Partial<Record<Slot, ItemStack>>): number {
+  const best = Math.max(0, ...Object.values(gear).map((s) => s?.up ?? 0));
+  return [...AURA_LEVELS].reverse().find((lv) => best >= lv) ?? 0;
 }
 
 // ---------------------------------------------------------------- bonuses
@@ -307,7 +362,7 @@ export interface Bonus {
   drain: number;
 }
 
-/** Bonuses from everything worn, and every card in it. */
+/** Bonuses from everything worn, its upgrades, and every card in it. */
 export function gearBonus(gear: Partial<Record<Slot, ItemStack>>): Bonus {
   const out: Bonus = { atk: 0, def: 0, hp: 0, mp: 0, crit: 0, flee: 0, reflect: 0, drain: 0 };
   const add = (it: ItemDef) => {
@@ -323,6 +378,11 @@ export function gearBonus(gear: Partial<Record<Slot, ItemStack>>): Bonus {
   for (const s of Object.values(gear)) {
     if (!s) continue;
     add(ITEMS[s.id]);
+    if (s.up) {
+      const step = upgradeStep(ITEMS[s.id]);
+      out.atk += step.atk * s.up;
+      out.def += step.def * s.up;
+    }
     for (const c of s.cards ?? []) add(ITEMS[c]);
   }
   return out;

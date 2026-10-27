@@ -24,6 +24,8 @@ export const Player = schema(
     gear: t.string().default(""),
     /** Novice, Knight, Mage or Archer (a ClassId). */
     cls: t.string().default("novice"),
+    /** Aura from upgraded gear: 0, 7, 9 or 10 (see auraOf in shared/items.ts). */
+    aura: t.uint8().default(0),
   },
   "Player",
 );
@@ -89,6 +91,8 @@ export const Drop = schema(
     owner: t.string().default(""),
     /** Cards in a dropped piece of equipment ("hornetCard.hornetCard"). */
     cards: t.string().default(""),
+    /** How far a dropped piece of equipment was upgraded (0 = not). */
+    up: t.uint8().default(0),
   },
   "Drop",
 );

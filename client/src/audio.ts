@@ -388,6 +388,22 @@ export class SoundSystem {
     this.tone(midiHz(95), t + 0.3, 0.4, "sine", 0.05);
   }
 
+  /** The Blacksmith's hammer: two clangs, then a chime when the upgrade worked or a dull clunk when it didn't. */
+  forge(ok: boolean) {
+    const t = this.ready();
+    if (t === undefined) return;
+    for (const dt of [0, 0.22]) {
+      this.noiseHit(t + dt, "bandpass", 3200, 0.16, 0.05, this.sfxBus);
+      this.tone(1240, t + dt, 0.25, "square", 0.035);
+      this.tone(1860, t + dt, 0.2, "sine", 0.04);
+    }
+    if (ok) [79, 83, 86, 91].forEach((n, i) => this.tone(midiHz(n), t + 0.5 + i * 0.07, 0.3, "triangle", 0.1));
+    else {
+      this.tone(180, t + 0.5, 0.3, "square", 0.07, 90);
+      this.noiseHit(t + 0.5, "lowpass", 600, 0.18, 0.2, this.sfxBus);
+    }
+  }
+
   /** Gold changed hands. */
   coin() {
     const t = this.ready();

@@ -3,6 +3,7 @@ import {
   ROOM_NAME,
   sanitizeChat,
   type CardInsertMessage,
+  type UpgradeMessage,
   type JobMessage,
   type SkillLearnMessage,
   type SkillUseMessage,
@@ -172,6 +173,11 @@ export class Net {
   /** Puts the card in a bag slot into equipment in the bag or worn. */
   insertCard(card: number, at: { bag: number } | { gear: Slot }) {
     this.room.send("item:card", { card, ...at } satisfies CardInsertMessage);
+  }
+
+  /** Asks the Blacksmith to upgrade equipment in the bag or worn. */
+  upgrade(npc: string, at: { bag: number } | { gear: Slot }) {
+    this.room.send("smith:upgrade", { npc, ...at } satisfies UpgradeMessage);
   }
 
   /** Shows an emote over your head: locally right away, and to everyone nearby. */

@@ -8,6 +8,7 @@
 
 import {
   FLOORS,
+  FORGE_YARD,
   GARDENS,
   GROVES,
   INTERIOR_ZONE,
@@ -336,9 +337,9 @@ export class World {
     return { top: this.structTop[i], face: this.structFace[i], row: this.faceRow[i] };
   }
 
-  /** Trees and rocks stay out of town and off the roads. */
+  /** Trees and rocks stay out of town, the Blacksmith's yard and off the roads. */
   private isReserved(tx: number, ty: number): boolean {
-    if (inRect(TOWN_AREA, tx, ty) || tx < INTERIOR_ZONE.x + INTERIOR_ZONE.w + 2 && ty < INTERIOR_ZONE.y + INTERIOR_ZONE.h + 2) return true;
+    if (inRect(TOWN_AREA, tx, ty) || inRect(FORGE_YARD, tx, ty) || tx < INTERIOR_ZONE.x + INTERIOR_ZONE.w + 2 && ty < INTERIOR_ZONE.y + INTERIOR_ZONE.h + 2) return true;
     return ROADS.some((r) => tx >= r.x - 2 && ty >= r.y - 2 && tx < r.x + r.w + 1 && ty < r.y + r.h + 1);
   }
 

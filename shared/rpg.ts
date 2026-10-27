@@ -157,40 +157,40 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   hornet: {
     id: "hornet", name: "Hornet", level: 7, hp: 130, atk: 12, def: 4, exp: 80, gold: [6, 12], speed: 70, chase: 95, aggro: 120, range: 36, attackMs: 1400, radius: 8, respawnMs: 18_000,
-    drops: [["honey", 0.55], ["orangePotion", 0.03], ["kettleHelm", 0.006], ["legionArmor", 0.005], ["bronzeSword", 0.005], ["ironGreaves", 0.006], ["ironBoots", 0.006], ["stingerPendant", 0.003], ["hornetCard", 0.001]],
+    drops: [["honey", 0.55], ["orangePotion", 0.03], ["kettleHelm", 0.006], ["legionArmor", 0.005], ["bronzeSword", 0.005], ["ironGreaves", 0.006], ["ironBoots", 0.006], ["stingerPendant", 0.003], ["ironIngot", 0.02], ["hornetCard", 0.001]],
   },
   // Rooted, but it spits seeds at anyone who shoots it from afar.
   snapper: {
     id: "snapper", name: "Snapper Flower", level: 10, hp: 280, atk: 17, def: 5, exp: 240, gold: [18, 30], speed: 0, chase: 0, aggro: 110, range: 190, attackMs: 1600, radius: 22, respawnMs: 30_000,
     drops: [
       ["bloom", 0.6], ["orangePotion", 0.08], ["redPotion", 0.1], ["saber", 0.008], ["bronzeHelm", 0.008], ["guardShield", 0.01], ["plateArmor", 0.004],
-      ["recurveBow", 0.006], ["gnarledStaff", 0.006], ["crystalStaff", 0.0015], ["meadowCrown", 0.0005], ["snapperCard", 0.0012],
+      ["recurveBow", 0.006], ["gnarledStaff", 0.006], ["crystalStaff", 0.0015], ["meadowCrown", 0.0005], ["ironIngot", 0.04], ["mithril", 0.004], ["snapperCard", 0.0012],
     ],
   },
 
   // ---------------------------------------------------------------- Dusk Hollow (Lv 10–20), east of town
   grub: {
     id: "grub", name: "Grub", level: 11, hp: 380, atk: 20, def: 6, exp: 300, gold: [8, 14], speed: 30, chase: 60, aggro: 0, range: 36, attackMs: 1600, radius: 10, respawnMs: 14_000,
-    drops: [["silk", 0.65], ["redPotion", 0.06], ["orangePotion", 0.02], ["rangerHood", 0.006], ["wizardHat", 0.006], ["rapier", 0.003], ["grubCard", 0.001]],
+    drops: [["silk", 0.65], ["redPotion", 0.06], ["orangePotion", 0.02], ["rangerHood", 0.006], ["wizardHat", 0.006], ["rapier", 0.003], ["ironIngot", 0.04], ["mithril", 0.015], ["grubCard", 0.001]],
   },
   bat: {
     id: "bat", name: "Night Bat", level: 12, hp: 400, atk: 23, def: 7, exp: 330, gold: [10, 18], speed: 80, chase: 115, aggro: 120, range: 34, attackMs: 1200, radius: 10, respawnMs: 15_000,
-    drops: [["batFang", 0.6], ["orangePotion", 0.04], ["rangerHood", 0.008], ["vigorRing", 0.005], ["rapier", 0.005], ["batCard", 0.001]],
+    drops: [["batFang", 0.6], ["orangePotion", 0.04], ["rangerHood", 0.008], ["vigorRing", 0.005], ["rapier", 0.005], ["ironIngot", 0.04], ["mithril", 0.015], ["batCard", 0.001]],
   },
   // Slow and armoured: only fights back.
   rockworm: {
     id: "rockworm", name: "Rock Worm", level: 14, hp: 950, atk: 30, def: 16, exp: 720, gold: [14, 24], speed: 22, chase: 55, aggro: 0, range: 42, attackMs: 1800, radius: 14, respawnMs: 18_000,
-    drops: [["rockShard", 0.6], ["orangePotion", 0.05], ["ironGreaves", 0.012], ["kiteShield", 0.007], ["hornedHelm", 0.006], ["guardTabard", 0.005], ["rockWormCard", 0.001]],
+    drops: [["rockShard", 0.6], ["orangePotion", 0.05], ["ironGreaves", 0.012], ["kiteShield", 0.007], ["hornedHelm", 0.006], ["guardTabard", 0.005], ["ironIngot", 0.06], ["mithril", 0.04], ["rockWormCard", 0.001]],
   },
   // Floats about and shoots a beam from afar.
   gazer: {
     id: "gazer", name: "Gazer", level: 16, hp: 800, atk: 34, def: 10, exp: 760, gold: [18, 30], speed: 40, chase: 70, aggro: 150, range: 170, attackMs: 2000, radius: 12, respawnMs: 18_000,
-    drops: [["gazerLens", 0.55], ["orangePotion", 0.06], ["sageTabard", 0.006], ["wizardHat", 0.008], ["emberStaff", 0.004], ["greatBow", 0.004], ["gazerCard", 0.001]],
+    drops: [["gazerLens", 0.55], ["orangePotion", 0.06], ["sageTabard", 0.006], ["wizardHat", 0.008], ["emberStaff", 0.004], ["greatBow", 0.004], ["mithril", 0.025], ["starCrystal", 0.004], ["gazerCard", 0.001]],
   },
   // Hard to hit with plain attacks: skills always land.
   ghost: {
     id: "ghost", name: "Ghost", level: 18, hp: 1150, atk: 34, def: 12, exp: 1100, gold: [24, 40], speed: 55, chase: 105, aggro: 90, range: 36, attackMs: 1400, radius: 12, respawnMs: 20_000, flee: 0.15,
-    drops: [["ectoplasm", 0.55], ["orangePotion", 0.07], ["knightBlade", 0.005], ["greathelm", 0.004], ["crusaderShield", 0.004], ["sageTabard", 0.004], ["ghostCard", 0.001]],
+    drops: [["ectoplasm", 0.55], ["orangePotion", 0.07], ["knightBlade", 0.005], ["greathelm", 0.004], ["crusaderShield", 0.004], ["sageTabard", 0.004], ["mithril", 0.03], ["starCrystal", 0.005], ["ghostCard", 0.001]],
   },
   // Dusk Hollow's boss, at the end of the east road. Breathes fire.
   pumpking: {
@@ -198,7 +198,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
     boss: true, regen: 0.005,
     drops: [
       ["kingsCandy", 1], ["orangePotion", 0.8], ["crusaderShield", 0.2], ["greathelm", 0.2], ["greatBow", 0.15], ["emberStaff", 0.15], ["knightBlade", 0.15],
-      ["moonblade", 0.08], ["pumpkingCard", 0.02],
+      ["mithril", 1], ["mithril", 0.5], ["starCrystal", 0.5], ["moonblade", 0.08], ["pumpkingCard", 0.02],
     ],
   },
 };

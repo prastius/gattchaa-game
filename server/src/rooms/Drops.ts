@@ -1,6 +1,7 @@
 import type { MapSchema } from "@colyseus/schema";
 import type { World } from "../../../shared/world";
-import { cardString, parseCards, type ItemId, type ItemStack } from "../../../shared/items";
+import { cardString, cleanUpgrade, parseCards, type ItemId, type ItemStack } from "../../../shared/items";
+import type { Extras } from "./Inventory";
 import { Drop } from "./WorldState";
 
 /** Monster loot is only the top fighter's to take for this long; then anyone may. */
@@ -53,7 +54,7 @@ export class Drops {
     const owner = loot?.owner ?? "";
     while (this.entries.size >= MAX_DROPS) this.remove(this.entries.keys().next().value!);
     const id = String(++this.nextId);
-    const drop = new Drop({ item: stack.id, n: stack.n, x: Math.round(px), y: Math.round(py), owner, cards: cardString(stack.cards) });
+    const drop = new Drop({ item: stack.id, n: stack.n, x: Math.round(px), y: Math.round(py), owner, cards: cardString(stack.cards), up: stack.up ?? 0 });
     const now = Date.now();
     this.entries.set(id, { drop, ownerUntil: owner ? now + OWNER_MS : 0, expiresAt: now + EXPIRE_MS, loot: Boolean(loot) });
     this.drops.set(id, drop);
@@ -68,9 +69,10 @@ export class Drops {
     return this.entries.get(id)?.loot ?? false;
   }
 
-  /** The cards in a dropped piece of equipment, if any. */
-  cards(drop: Drop): ItemId[] | undefined {
-    return parseCards(drop.item as ItemId, drop.cards);
+  /** The cards and upgrade of a dropped piece of equipment. */
+  extras(drop: Drop): Extras {
+    const id = drop.item as ItemId;
+    return { cards: parseCards(id, drop.cards), up: cleanUpgrade(id, drop.up) };
   }
 
   remove(id: string) {

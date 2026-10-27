@@ -86,7 +86,7 @@ shared/       Code used by both client and server
   protocol.ts     Message types, name/chat sanitizing
   vending.ts      Player shop rules (where a shop may open) and messages
   rpg.ts          Leveling and fighting: classes, the EXP curve, monsters (and their drops), fields, damage rules
-  items.ts        Every item and monster card: stats, prices, rarity, icon, card slots, who may wear it and how it looks when worn; the Outfitter's stock
+  items.ts        Every item and monster card: stats, prices, rarity, icon, card slots, who may wear it and how it looks when worn; the Outfitter's stock; the Blacksmith's upgrade table and auras
   skills.ts       Class skills: what each does per level, MP, cooldowns, and how it looks
 server/       Colyseus server
   src/rooms/WorldRoom.ts   Joins, interest management, movement validation, chat, emotes, wardrobe, sitting, shops, trading
@@ -180,7 +180,7 @@ Ragnarok and TibiaME style: click a monster and your character fights it. Everyt
 - **Fainting.** At 0 HP you faint and return to town fully healed. Novices lose no EXP; Knights, Mages and Archers lose 3 % of a level.
 - **Saving.** Signed-in players' progress is saved on every level-up and faint, every 30 s, and when they leave. Guests can fight too, but start over next visit.
 - **Server cost.** Monsters only think while a player is near their spawn area, and fight events go only to players close enough to see them. 20 bots fighting at once used about 5 % of one CPU core.
-- **Testing.** Outside production (`NODE_ENV` not `production`), chat commands help: `/level 25` jumps to a level, `/item saber` (or `/item redPotion 20`, `/item hornetCard`) adds items, `/gold 1000` sets your gold, `/job archer` turns you into a class (from level 10; `/job novice` goes back). `/help` lists every item id.
+- **Testing.** Outside production (`NODE_ENV` not `production`), chat commands help: `/level 25` jumps to a level, `/item saber` (or `/item redPotion 20`, `/item hornetCard`, `/item moonblade +10`) adds items, `/gold 1000` sets your gold, `/job archer` turns you into a class (from level 10; `/job novice` goes back). `/help` lists every item id.
 
 ## Jobs and skills
 
@@ -237,6 +237,28 @@ Ragnarok style: every monster very rarely drops its own card, and a card goes in
 - **Finding one.** A card fresh from a monster is announced to the whole town. Picking up a card someone put down is not.
 - **Selling.** Bram won't buy cards (other players will pay far more) or gear with cards in it (the cards would be lost). Dropping carded gear keeps the cards in it.
 - Balance lives in two places: the card items at the bottom of `ITEMS` in `shared/items.ts`, and each monster's drop table in `shared/rpg.ts` (the card is the last entry).
+
+## The Blacksmith: upgrades and auras
+
+Hilda the Blacksmith works by her forge fire outside the south gate, west of Rowan. She upgrades gear from +0 to +10, Ragnarok style, except that a failed upgrade never breaks anything: it only drops the gear one level.
+
+| Upgrade to | Chance | Fee | Uses |
+| --- | --- | --- | --- |
+| +1 to +4 | always works | 100, 200, 300, 400 gold | Iron Ingot |
+| +5 | 90% | 600 gold | Iron Ingot |
+| +6 | 75% | 900 gold | Mithril Ingot |
+| +7 | 60% | 1,200 gold | Mithril Ingot |
+| +8 | 45% | 1,600 gold | Mithril Ingot |
+| +9 | 35% | 2,000 gold | Star Crystal |
+| +10 | 25% | 2,500 gold | Star Crystal |
+
+- **What it adds.** Weapons get ATK for every level: an eighth of their own ATK, at least 1 (Saber +2, Moonblade +4). Shields, helmets, armour, legs and boots get DEF +1 per level. Rings and amulets can't be upgraded. A worn upgrade counts straight away.
+- **Ingots.** Hilda sells Iron Ingots (100 gold); monsters drop them too. Mithril Ingots drop in Dusk Hollow (Rock Worms most often) and rarely from Snapper Flowers. Star Crystals come from Gazers and Ghosts (about 1 in 200 to 250) and from the Pumpking (one kill in two). The Pumpking also always carries a Mithril Ingot or two. Ingots are kept out of Bram's "sell all monster loot".
+- **The cost of luck.** Simulated over 20,000 tries, reaching +7 takes about 10 tries (6,000 gold, 4 Mithril), +9 about 29 tries (32,000 gold, 19 Mithril, 3 Star Crystals), and +10 about 74 tries (100,000 gold, 50 Mithril, 16 Star Crystals).
+- **Names.** Upgraded gear goes first in the name: "+7 Double Stinging Saber". The bag shows the level in the item's corner and what the upgrades add. Upgrades stay on gear that's dropped and picked up again; Bram won't buy upgraded gear.
+- **Auras.** Wear anything at +7 or higher and everyone sees an aura at your feet: a blue ring at +7, violet with rising sparks at +9, and gold with a column of light at +10. The best piece you wear decides it. At night auras glow like the street lamps.
+- **News.** A success at +9 or +10 is announced to the whole town.
+- Balance lives in `UPGRADE_TABLE`, `upgradeCost` and `upgradeStep` in `shared/items.ts`; the ingot drops are in each monster's table in `shared/rpg.ts`.
 
 ## Gattchaa shop data
 

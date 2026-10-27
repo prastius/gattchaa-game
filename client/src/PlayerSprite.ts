@@ -3,6 +3,7 @@ import { Dir } from "../../shared/protocol";
 import { bodyName, decodeLook } from "../../shared/appearance";
 import { splitAppearance } from "../../shared/items";
 import { FRAME, SHEET_COLS, SHEET_H, SIT_COL, WALK_COLS, composeCharacter, sitDrop } from "./character";
+import { ORB, SPARK } from "./world/fx";
 
 const BUBBLE_MS = 6000;
 const STRIDE_PX = 15; // distance walked per animation frame
@@ -69,12 +70,19 @@ const TAIL = 6;
 const EMOTE_MS = 2400;
 const HP_BAR_W = 30;
 const LUNGE_PX = 6;
+/** Aura colours by upgrade level: +7 a cool blue, +9 violet, +10 gold. */
+const AURA_TINT: Record<number, number> = { 7: 0x6fc3ff, 9: 0xc08bff, 10: 0xffcf5a };
+/** Above the night tint (with the lamp glows), so auras light up the dark. */
+const NIGHT_GLOW_DEPTH = 1e6 - 9;
 
 /**
  * A player (or NPC) avatar. The container's (x, y) is the player's feet, and its depth
  * equals y so everything in the world is drawn back-to-front ("2.5D" overlap).
  */
 export class PlayerSprite {
+  /** How dark it is (the lamps' brightness, 0..1); auras glow this much. Set by the game scene. */
+  static nightLight = 0;
+
   readonly container: Phaser.GameObjects.Container;
   private sprite: Phaser.GameObjects.Sprite;
   private label: Phaser.GameObjects.Text;
@@ -97,6 +105,12 @@ export class PlayerSprite {
   private hpKey = "";
   private fainted = false;
   private lungeTween?: Phaser.Tweens.Tween;
+  /** The aura, when there is one: on the ground behind the body, and motes rising in front of it. */
+  private auraBox: Phaser.GameObjects.Container;
+  private auraFront: Phaser.GameObjects.Container;
+  /** The aura's light at night: outside the container, above the night tint. */
+  private nightGlow?: Phaser.GameObjects.Image;
+  private aura = 0;
 
   moving = false;
   dir: number = Dir.Down;
@@ -126,7 +140,9 @@ export class PlayerSprite {
       })
       .setOrigin(0.5, 1)
       .setResolution(this.textRes());
-    const parts: Phaser.GameObjects.GameObject[] = [this.sprite, this.label];
+    this.auraBox = scene.add.container(0, 0);
+    this.auraFront = scene.add.container(0, 0);
+    const parts: Phaser.GameObjects.GameObject[] = [this.auraBox, this.sprite, this.auraFront, this.label];
     if (hasTitle) {
       this.titleLabel = scene.add
         .text(0, -51, opts.title!, {
@@ -214,7 +230,8 @@ export class PlayerSprite {
     }
     if (!this.hpBar) {
       this.hpBar = this.scene.add.graphics();
-      this.container.addAt(this.hpBar, 0);
+      // Over the aura, under the body.
+      this.container.addAt(this.hpBar, 1);
     }
     const r = Phaser.Math.Clamp(hp / max, 0, 1);
     const color = r > 0.5 ? 0x5fd36b : r > 0.25 ? 0xf2c14e : 0xe5534b;
@@ -225,6 +242,65 @@ export class PlayerSprite {
       .fillStyle(color, 1)
       .fillRect(-HP_BAR_W / 2, 4, Math.round(HP_BAR_W * r), 4)
       .setVisible(true);
+  }
+
+  /**
+   * The glow upgraded gear gives (0 = none): a coloured ring breathing at the
+   * feet and motes rising around the body; a second ring and more motes at +9;
+   * a column of light with rings rippling out at +10.
+   */
+  setAura(level: number) {
+    if (level === this.aura) return;
+    this.aura = level;
+    for (const box of [this.auraBox, this.auraFront]) {
+      this.scene.tweens.killTweensOf(box.list);
+      box.removeAll(true);
+    }
+    this.nightGlow?.destroy();
+    this.nightGlow = undefined;
+    const tint = AURA_TINT[level];
+    if (!tint) return;
+    const add = Phaser.BlendModes.ADD;
+    this.nightGlow = this.scene.add
+      .image(this.x, this.y - 6, ORB)
+      .setTint(tint)
+      .setBlendMode(add)
+      .setDepth(NIGHT_GLOW_DEPTH)
+      .setScale(level >= 10 ? 1.3 : 1.1, level >= 10 ? 1.1 : 0.6)
+      .setVisible(false);
+    // Additive light alone washes out to white on bright grass, so the ring and disc are solid colour.
+    const glow = this.scene.add.image(0, -1, ORB).setTint(tint).setBlendMode(add).setScale(1.1, 0.45).setAlpha(0.7);
+    const disc = this.scene.add.ellipse(0, 0, 44, 15, tint, 0.3);
+    const ring = this.scene.add.ellipse(0, 0, 44, 15).setStrokeStyle(2, tint, 1);
+    this.auraBox.add([glow, disc, ring]);
+    const breathe = { duration: 900, yoyo: true, repeat: -1, ease: "Sine.InOut" };
+    this.scene.tweens.add({ targets: [disc, ring], scaleX: 1.1, scaleY: 1.1, ...breathe });
+    this.scene.tweens.add({ targets: glow, alpha: 0.4, ...breathe });
+    if (level >= 9) {
+      const inner = this.scene.add.ellipse(0, 0, 28, 9).setStrokeStyle(1, 0xffffff, 0.8);
+      this.auraBox.add(inner);
+      this.scene.tweens.add({ targets: inner, scaleX: 1.2, scaleY: 1.2, ...breathe });
+    }
+    if (level >= 10) {
+      const column = this.scene.add.image(0, -24, ORB).setTint(tint).setBlendMode(add).setScale(0.7, 1.5).setAlpha(0.3);
+      const ripple = this.scene.add.ellipse(0, 0, 44, 15).setStrokeStyle(2, 0xffffff, 1);
+      this.auraBox.addAt(column, 0);
+      this.auraBox.add(ripple);
+      this.scene.tweens.add({ targets: column, alpha: 0.55, duration: 1100, yoyo: true, repeat: -1, ease: "Sine.InOut" });
+      this.scene.tweens.add({ targets: ripple, scaleX: 1.8, scaleY: 1.8, alpha: 0, duration: 1400, repeat: -1, ease: "Quad.Out" });
+    }
+    // A few motes at +7, more at +9, a stream at +10.
+    const motes = this.scene.add.particles(0, 0, SPARK, {
+      x: { min: -16, max: 16 },
+      y: { min: -6, max: 2 },
+      speedY: { min: -40, max: -18 },
+      lifespan: { min: 900, max: 1500 },
+      scale: { start: 1.3, end: 0 },
+      alpha: { start: 1, end: 0 },
+      tint: [tint, tint, 0xffffff],
+      frequency: level >= 10 ? 60 : level >= 9 ? 110 : 240,
+    });
+    this.auraFront.add(motes);
   }
 
   /** A quick step toward what you're hitting, and back. */
@@ -258,6 +334,8 @@ export class PlayerSprite {
     this.fainted = on;
     this.lungeTween?.complete();
     this.sprite.setPosition(0, 0).setAngle(on ? -90 : 0).setAlpha(on ? 0.75 : 1);
+    this.auraBox.setVisible(!on);
+    this.auraFront.setVisible(!on);
     if (on) this.sprite.setTint(0x8a8f96);
     else this.sprite.clearTint();
   }
@@ -330,6 +408,10 @@ export class PlayerSprite {
     if (!this.moving || this.seated) this.walked = 0;
     this.placeLabels();
     if (this.sprite.visible) this.sprite.setFrame(this.frameIndex());
+    if (this.nightGlow) {
+      const light = this.fainted ? 0 : PlayerSprite.nightLight;
+      this.nightGlow.setPosition(this.x, this.y - (this.aura >= 10 ? 12 : 4)).setAlpha(light * (this.aura >= 10 ? 0.55 : 0.75)).setVisible(light > 0.02);
+    }
   }
 
   /** Big jumps (respawn, reconnect) shouldn't count as walking distance. */
@@ -340,6 +422,8 @@ export class PlayerSprite {
   destroy() {
     this.destroyed = true;
     this.lungeTween?.remove();
+    this.scene.tweens.killTweensOf([...this.auraBox.list, ...this.auraFront.list]);
+    this.nightGlow?.destroy();
     this.bubbleTimer?.remove();
     this.emoteTimer?.remove();
     if (this.look) this.textures.release(this.look);

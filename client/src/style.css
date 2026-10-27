@@ -590,6 +590,11 @@ button {
   pointer-events: none;
 }
 
+/* An upgraded piece of equipment shows its level in the corner. */
+.slot-count.up {
+  color: #8fd0ff;
+}
+
 /* Empty equipment slots say what goes there. */
 .slot-label {
   position: absolute;
@@ -694,6 +699,10 @@ button {
 .bag-bonus {
   color: #9fe58f;
   font-weight: 700;
+}
+
+.bag-bonus.bag-upgrade {
+  color: #8fd0ff;
 }
 
 .bag-desc {
@@ -1737,6 +1746,39 @@ button.dialog-link:disabled {
 .sell-all {
   width: 100%;
   margin-bottom: 8px;
+}
+
+/* ---------- The Blacksmith: upgrades ---------- */
+
+.forge-note {
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.forge-note.ok {
+  background: rgba(125, 219, 110, 0.14);
+  border: 1px solid rgba(125, 219, 110, 0.5);
+  color: #9ff08f;
+}
+
+.forge-note.fail {
+  background: rgba(229, 83, 75, 0.12);
+  border: 1px solid rgba(229, 83, 75, 0.45);
+  color: #ff9a8a;
+}
+
+.forge-ores {
+  margin: 0 0 8px;
+  color: var(--ink-dim);
+  font-size: 12px;
+}
+
+/* Upgrade lines are long: let them wrap. */
+.forge-list .ware-info {
+  white-space: normal;
 }
 
 .ware-list {

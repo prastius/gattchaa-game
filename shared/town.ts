@@ -81,6 +81,9 @@ export const PARK_WANDER: Rect = { x: 131, y: 193, w: 22, h: 54 };
 /** …and the Market Square. */
 export const MARKET_WANDER: Rect = { x: 158, y: 213, w: 68, h: 29 };
 
+/** Outside the south gate, west of the road: kept clear of trees so the Blacksmith and her forge can be seen. */
+export const FORGE_YARD: Rect = { x: 174, y: 258, w: 13, h: 5 };
+
 /** Dirt roads (vertex rectangles) leading out of the three gates. */
 export const ROADS: Rect[] = [
   { x: 189, y: 252, w: 6, h: 44 }, // south
@@ -476,6 +479,11 @@ const props: Prop[] = [
   ...pair({ type: "pottedTree", x: 156, y: 243 }),
   ...pair({ type: "barrels", x: 157, y: 239 }),
   ...pair({ type: "crate", x: 157, y: 241, variant: 1 }),
+
+  // ---- Outside the south gate: the Blacksmith's forge fire, barrels and a crate.
+  { type: "campfire", x: 179, y: 257 },
+  { type: "barrels", x: 177, y: 255 },
+  { type: "crate", x: 179, y: 255 },
 
   // ---- The park: benches by the pond, a campfire in the clearing, lamps where the trails start.
   { type: "bench", x: 141, y: 201, variant: 3 },

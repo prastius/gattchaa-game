@@ -28,16 +28,20 @@ import {
 import {
   ITEMS,
   MAX_STACK,
+  MAX_UPGRADE,
   PICKUP_RANGE,
   POTION_MS,
   RARITY,
   SLOT_NAMES,
   WEAPON_NAMES,
+  canUpgrade,
   canWear,
   cardFits,
   itemName,
   sellPrice,
+  upgradeCost,
   wearersText,
+  withArticle,
   type BagMessage,
   type ItemDef,
   type ItemId,
@@ -96,6 +100,8 @@ export interface CombatHooks {
   boss(def: MonsterDef, event: "rise" | "down", field: string, by?: string): void;
   /** Someone picked up something legendary, or a monster card: worth telling the town. */
   found(id: string, item: ItemDef): void;
+  /** The Blacksmith took someone's gear to +`up` (`item` is its plain name). */
+  upgraded(id: string, item: string, up: number): void;
 }
 
 interface Fighter {
@@ -299,10 +305,10 @@ export class Combat {
   }
 
   /** Testing only: conjure items and gold. */
-  cheatItem(id: string, item: ItemId, n: number) {
+  cheatItem(id: string, item: ItemId, n: number, up?: number) {
     const f = this.fighters.get(id);
     if (!f) return;
-    if (f.inv.add(item, Math.min(MAX_STACK, Math.max(1, Math.floor(n)))) > 0) this.changed(f);
+    if (f.inv.add(item, Math.min(MAX_STACK, Math.max(1, Math.floor(n))), { up }) > 0) this.changed(f);
   }
 
   /** Testing only: back to Novice, then (from level 10) straight into a job. */
@@ -568,6 +574,7 @@ export class Combat {
     f.player.hp = Math.min(f.player.hp, f.stats.maxHp);
     f.mp = Math.min(f.mp, f.stats.maxMp);
     f.player.gear = f.inv.visible();
+    f.player.aura = f.inv.aura();
     f.sheetDirty = true;
   }
 
@@ -653,7 +660,7 @@ export class Combat {
     if (d.owner && d.owner !== id) return this.hooks.notice(id, "That's someone else's loot for a few more seconds.");
     const item = ITEMS[d.item as ItemId];
     if (!item) return this.drops.remove(dropId);
-    const got = f.inv.add(item.id as ItemId, d.n, this.drops.cards(d));
+    const got = f.inv.add(item.id as ItemId, d.n, this.drops.extras(d));
     if (got <= 0) return this.hooks.notice(id, "Your bag is full. Sell or drop something first.");
     // Only news when it's fresh from a monster, not something a player put down.
     const news = this.drops.isLoot(dropId);
@@ -690,6 +697,10 @@ export class Combat {
     const one = slot >= 0 ? f.inv.bag[slot] : undefined;
     if (one?.cards) {
       this.hooks.notice(id, `The cards in your ${itemName(one)} would be lost, so the Outfitter won't buy it.`);
+      return 0;
+    }
+    if (one?.up) {
+      this.hooks.notice(id, `The Outfitter won't buy upgraded gear: your ${itemName(one)} is worth far more than he could pay.`);
       return 0;
     }
     let gold = 0;
@@ -732,6 +743,34 @@ export class Combat {
     if ("gear" in at) this.restat(f);
     this.hooks.notice(id, `The ${c.name} is now part of your ${itemName(target)}.`);
     this.hooks.emit(f.pos.x, f.pos.y, { k: "card", t: f.id });
+    this.traded(f);
+  }
+
+  /**
+   * The Blacksmith upgrades a piece of equipment (the room checked you're at
+   * the forge): one ingot and a fee per try. From +5 a try can fail, and then
+   * the gear drops one level. It never breaks.
+   */
+  upgrade(id: string, at: GearAt, roll = Math.random()) {
+    const f = this.fighters.get(id);
+    const s = f?.inv.gearAt(at);
+    if (!f || !s || f.player.dead) return;
+    const it = ITEMS[s.id];
+    if (!canUpgrade(it)) return this.hooks.notice(id, "Rings and amulets are too small to upgrade.");
+    const from = s.up ?? 0;
+    if (from >= MAX_UPGRADE) return this.hooks.notice(id, `Your ${itemName(s)} can't go any higher.`);
+    const cost = upgradeCost(from + 1);
+    if (f.gold < cost.gold) return this.hooks.notice(id, `Upgrading to +${from + 1} costs ${cost.gold} gold.`);
+    if (!f.inv.spend(cost.ore)) return this.hooks.notice(id, `Upgrading to +${from + 1} needs ${withArticle(ITEMS[cost.ore].name)}.`);
+    f.gold -= cost.gold;
+    const ok = roll < cost.chance;
+    const up = ok ? from + 1 : from - 1;
+    if (up > 0) s.up = up;
+    else delete s.up;
+    if ("gear" in at) this.restat(f);
+    this.hooks.notice(id, ok ? `Success! Your ${it.name} is now +${up}.` : `The upgrade failed: your ${it.name} went down to +${up}.`);
+    this.hooks.emit(f.pos.x, f.pos.y, { k: "forge", t: f.id, ok: ok ? 1 : 0, up, item: it.name });
+    if (ok && up >= 9) this.hooks.upgraded(id, it.name, up);
     this.traded(f);
   }
 

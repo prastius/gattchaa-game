@@ -8,7 +8,7 @@ import { MARKET_WANDER, PARK_WANDER, STORE_WANDER, TILE, WANDER_AREA, type Rect 
 import type { ShopProduct } from "./gattchaa";
 import { Dir } from "./protocol";
 
-export type NpcKind = "guide" | "shop" | "kuji" | "rooms" | "market" | "grading" | "pickup" | "crier" | "keeper" | "outfitter" | "jobs" | "local";
+export type NpcKind = "guide" | "shop" | "kuji" | "rooms" | "market" | "grading" | "pickup" | "crier" | "keeper" | "outfitter" | "jobs" | "smith" | "local";
 
 export interface NpcDef {
   id: string;
@@ -311,6 +311,26 @@ export const NPCS: NpcDef[] = [
       "A sharp blade and good boots. That's all you need.",
       "Bring me what the monsters drop!",
       "Every monster out there carries its own card. Find one, and your gear will never be the same!",
+      "Want your gear stronger? Hilda the Blacksmith is just west of the gate.",
+    ],
+  },
+  {
+    // West of the south gate, by her forge fire.
+    id: "blacksmith",
+    name: "Hilda",
+    title: "Blacksmith",
+    kind: "smith",
+    look: look({ body: "female", hair: "bun", hairColor: "black", skin: "bronze", top: "sleeveless", topColor: "charcoal", bottom: "pants", bottomColor: "brown", shoes: "boots", shoesColor: "black", hat: "bandana", hatColor: "maroon" }),
+    ...at(181.5, 257.6),
+    dir: Dir.Down,
+    greeting:
+      "Bring me your gear and I'll make it stronger. Up to +4 never fails. After that it gets risky: a failed upgrade knocks it down one level, but my work never breaks anything. Gear at +7 and above glows for everyone to see.",
+    chatter: [
+      "Iron Ingots! One for every upgrade!",
+      "Mithril from Dusk Hollow takes gear past +5.",
+      "A +10? Only with Star Crystals… and luck.",
+      "My upgrades never break your gear. Promise!",
+      "See that glow? Somebody's gear is +7 or better.",
     ],
   },
   {

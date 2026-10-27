@@ -18,7 +18,7 @@ import {
 } from "../../../shared/protocol";
 import { CLASSES, JOB_LEVEL, aClass, isClassId, isMonsterId, reach } from "../../../shared/rpg";
 import { SKILLS, type SkillId } from "../../../shared/skills";
-import { ITEMS, PICKUP_RANGE, RARITY, appearanceKey, isItemId, parseCards } from "../../../shared/items";
+import { ITEMS, PICKUP_RANGE, RARITY, appearanceKey, cleanUpgrade, isItemId, parseCards } from "../../../shared/items";
 import { NPCS, type NpcDef } from "../../../shared/npcs";
 import { DOORS, INTERIOR_ZONE, PROPS, TOWN_AREA, inRect } from "../../../shared/town";
 import { CharacterTextures, PlayerSprite } from "../PlayerSprite";
@@ -538,7 +538,7 @@ export class WorldScene extends Phaser.Scene {
       const id = key as string;
       if (!isItemId(state.item)) return;
       this.drops.get(id)?.sprite.destroy();
-      const stack = { id: state.item, n: state.n, cards: parseCards(state.item, state.cards ?? "") };
+      const stack = { id: state.item, n: state.n, cards: parseCards(state.item, state.cards ?? ""), up: cleanUpgrade(state.item, state.up) };
       const sprite = new DropSprite(this, stack, state.x, state.y, () => this.textRes);
       this.drops.set(id, { sprite, state });
     });
@@ -583,6 +583,7 @@ export class WorldScene extends Phaser.Scene {
       const me = this.entities.get(this.room.sessionId);
       if (me) {
         this.self.setLook(appearanceKey(me.state.look, me.state.gear)); // wardrobe and gear changes come back via state
+        this.self.setAura(me.state.aura ?? 0);
         this.updateHealth(me.state);
       }
       this.updateSelf(time, dt);
@@ -614,6 +615,7 @@ export class WorldScene extends Phaser.Scene {
       sprite.setLook(appearanceKey(s.look, s.gear));
       if (!e.npc) {
         sprite.dead = Boolean(s.dead);
+        sprite.setAura(s.aura ?? 0);
         sprite.setHp(s.hp ?? 0, s.mhp ?? 0, (s.hp ?? 0) < (s.mhp ?? 0));
       }
       sprite.animate();
@@ -653,6 +655,7 @@ export class WorldScene extends Phaser.Scene {
 
     this.updateIndoors();
     this.daylight.update(time, this.indoors);
+    PlayerSprite.nightLight = this.daylight.lamps;
     this.critters.update(time, dt, this.cameras.main.worldView, this.daylight.night, this.indoors);
     audio.calm = this.indoors || this.daylight.night;
     if (this.doorPendingUntil && performance.now() > this.doorPendingUntil) {
@@ -1252,6 +1255,15 @@ export class WorldScene extends Phaser.Scene {
         const b = this.body(ev.t);
         if (b) this.fx.card(b.x, b.y);
         if (ev.t === me) audio.card();
+        return;
+      }
+      case "forge": {
+        const b = this.body(ev.t);
+        if (b) this.fx.forge(b.x, b.y, ev.ok === 1, ev.up);
+        if (ev.t === me) {
+          audio.forge(ev.ok === 1);
+          this.dialog.forged(ev.ok === 1, ev.up, ev.item);
+        }
         return;
       }
       case "heal": {

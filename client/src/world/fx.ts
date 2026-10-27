@@ -7,9 +7,9 @@ import { GLOW, makeGlowTexture } from "./daylight";
 const FONT = "system-ui, -apple-system, Segoe UI, sans-serif";
 const DEPTH = 1e6 - 5;
 /** 3x3 white pixel made by the world scene. */
-const SPARK = "spark";
+export const SPARK = "spark";
 /** A soft white dot, tinted for magic and fire. */
-const ORB = "fx-orb";
+export const ORB = "fx-orb";
 
 /** Things that fly from an attacker to a target. */
 export type Missile = "arrow" | "bolt" | "fire" | "seed" | "beam";
@@ -316,6 +316,34 @@ export class Fx {
       .setDepth(DEPTH);
     this.scene.time.delayedCall(450, () => sparks.stop());
     this.scene.time.delayedCall(1200, () => sparks.destroy());
+  }
+
+  /**
+   * The Blacksmith at work on someone's gear: two hammer blows (sparks), then
+   * the result. +7 and up gets the full column of light.
+   */
+  forge(x: number, y: number, ok: boolean, up: number) {
+    for (const delay of [0, 220]) this.scene.time.delayedCall(delay, () => this.burst(x + 10, y - 22, [0xffd27a, 0xff8a2a, 0xffffff], 10));
+    this.scene.time.delayedCall(500, () => {
+      if (ok && up >= 7) return this.levelUp(x, y, `+${up}!`, 0x8fd0ff);
+      if (!ok) this.poof(x, y - 6);
+      this.burst(x, y - 28, ok ? [0xffd27a, 0xffffff] : [0x8a8f96, 0xc9ced6], ok ? 16 : 8);
+      const t = this.scene.add
+        .text(Math.round(x), Math.round(y - 70), ok ? `+${up}!` : `Failed · +${up}`, {
+          fontFamily: FONT,
+          fontSize: ok ? "15px" : "13px",
+          fontStyle: "bold",
+          color: ok ? "#ffd84a" : "#ff9a8a",
+          stroke: "#10202b",
+          strokeThickness: 4,
+        })
+        .setOrigin(0.5, 1)
+        .setResolution(this.textRes())
+        .setDepth(DEPTH)
+        .setScale(0.5);
+      this.scene.tweens.add({ targets: t, scale: 1, duration: 220, ease: "Back.Out" });
+      this.scene.tweens.add({ targets: t, y: y - 92, alpha: 0, delay: 1100, duration: 450, onComplete: () => t.destroy() });
+    });
   }
 
   /** A column of golden light, rising sparks and "LEVEL UP!" (or a new job) over someone's head. */

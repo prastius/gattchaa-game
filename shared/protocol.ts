@@ -149,6 +149,13 @@ export interface CardInsertMessage {
   gear?: Slot;
 }
 
+/** client -> server: ask the Blacksmith to upgrade a piece of equipment, in the bag (`bag`) or worn (`gear`). */
+export interface UpgradeMessage {
+  npc: string;
+  bag?: number;
+  gear?: Slot;
+}
+
 /** client -> server: become a Knight, Mage or Archer (at the Job Master, from level 10). */
 export interface JobMessage {
   npc: string;
@@ -200,6 +207,8 @@ export type FxEvent =
   | { k: "heal"; t: string; d: number }
   /** Someone put a card into their equipment. */
   | { k: "card"; t: string }
+  /** The Blacksmith upgraded someone's gear (ok) or failed; `up` is its level now, `item` its name. */
+  | { k: "forge"; t: string; ok: 0 | 1; up: number; item: string }
   /** Someone used a skill (at monster `t`, for the ones aimed at something). Its hits follow. */
   | { k: "cast"; a: string; s: SkillId; t?: string }
   /** A monster can't move or bite for `ms`. */
@@ -232,6 +241,8 @@ export interface PlayerView {
   gear?: string;
   /** Class id ("novice", "knight"…). */
   cls?: string;
+  /** Aura from upgraded gear: 0, or 7, 9 or 10 (see auraOf in items.ts). */
+  aura?: number;
 }
 
 /** Read-only shape of an item lying on the ground. */
@@ -244,6 +255,8 @@ export interface DropView {
   owner: string;
   /** Cards in a dropped piece of equipment (see cardString in items.ts). */
   cards?: string;
+  /** How far a dropped piece of equipment was upgraded (0 = not). */
+  up?: number;
 }
 
 /** Read-only shape of a synced monster. Its max HP and name come from MONSTERS. */
