@@ -1,3 +1,5 @@
+import type { SkillFx } from "../../shared/skills";
+
 // Music and sound effects, synthesised with Web Audio: no audio files to load
 // or license. The music is a gentle, slowly varying lo-fi chiptune loop (drums
 // drop out at night and indoors); effects are tiny one-shot synths.
@@ -301,6 +303,55 @@ export class SoundSystem {
     if (t === undefined) return;
     this.noiseHit(t, "lowpass", 1400, 0.16, 0.07, this.sfxBus);
     this.tone(crit ? 420 : 240, t, 0.08, "square", 0.07, crit ? 180 : 110);
+  }
+
+  /** A bow string, or a bolt of magic leaving a staff. */
+  shoot(magic = false) {
+    const t = this.ready();
+    if (t === undefined) return;
+    if (magic) this.tone(880, t, 0.14, "sine", 0.06, 1500);
+    else this.tone(420, t, 0.07, "triangle", 0.1, 140);
+  }
+
+  /** A skill going off, by how it looks. */
+  skill(fx: SkillFx) {
+    const t = this.ready();
+    if (t === undefined) return;
+    switch (fx) {
+      case "bash":
+        this.noiseHit(t, "lowpass", 900, 0.3, 0.16, this.sfxBus);
+        this.tone(130, t, 0.16, "square", 0.1, 60);
+        break;
+      case "whirl":
+        this.noiseHit(t, "bandpass", 1800, 0.22, 0.3, this.sfxBus);
+        this.tone(300, t, 0.3, "sawtooth", 0.04, 900);
+        break;
+      case "guard":
+        [60, 67, 72].forEach((n, i) => this.tone(midiHz(n), t + i * 0.05, 0.35, "square", 0.05));
+        break;
+      case "fire":
+        this.noiseHit(t, "lowpass", 1400, 0.25, 0.32, this.sfxBus);
+        this.tone(240, t, 0.25, "sawtooth", 0.05, 110);
+        break;
+      case "nova":
+        [88, 91, 95, 100].forEach((n, i) => this.tone(midiHz(n), t + i * 0.03, 0.4, "sine", 0.05));
+        this.noiseHit(t, "highpass", 5000, 0.1, 0.45, this.sfxBus);
+        break;
+      case "heal":
+        [72, 76, 79, 84].forEach((n, i) => this.tone(midiHz(n), t + i * 0.06, 0.3, "triangle", 0.07));
+        break;
+      case "arrows":
+        this.tone(420, t, 0.07, "triangle", 0.1, 140);
+        this.tone(460, t + 0.09, 0.07, "triangle", 0.1, 150);
+        break;
+      case "rain":
+        for (let i = 0; i < 5; i++) this.noiseHit(t + 0.12 + i * 0.05, "highpass", 3000, 0.07, 0.05, this.sfxBus);
+        break;
+      case "eagle":
+        this.tone(1200, t, 0.12, "sine", 0.06, 1800);
+        this.tone(1500, t + 0.12, 0.25, "sine", 0.05, 2200);
+        break;
+    }
   }
 
   /** Something hits you. */

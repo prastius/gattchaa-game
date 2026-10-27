@@ -1444,6 +1444,12 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://opengameart.org/content/lpc-crown>
 - <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
 
+### Crystal (weapon/magic/crystal)
+
+- Authors: bluecarrot16
+- Licenses: OGA-BY 3.0+, GPL 3.0, CC-BY 4.0
+- <https://opengameart.org/content/lpc-more-weapons>
+
 ### Cuffed Pants (legs/cuffed)
 
 - Authors: ElizaWy, JaidynReiman, Johannes Sjölund (wulax), Stephen Challener (Redshrike)
@@ -1531,6 +1537,12 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Licenses: OGA-BY 3.0
 - <https://github.com/ElizaWy/LPC/tree/main/Characters/Head%20Accessories>
 - <https://opengameart.org/content/lpc-expanded-sit-run-jump-more>
+
+### Gnarled staff (weapon/magic/gnarled)
+
+- Authors: bluecarrot16
+- Licenses: OGA-BY 3.0+, GPL 3.0, CC-BY 4.0
+- <https://opengameart.org/content/lpc-more-weapons>
 
 ### Half up (hair/half_up)
 
@@ -1780,6 +1792,13 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://opengameart.org/content/lpc-expanded-sit-run-jump-more>
 - <https://opengameart.org/content/lpc-expanded-simple-shirts>
 
+### Longsword (weapon/sword/longsword)
+
+- Authors: Johannes Sjölund (wulax), bluecarrot16
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0
+- <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+- <https://opengameart.org/content/lpc-extended-weapon-animations>
+
 ### Loose (hair/loose)
 
 - Authors: JaidynReiman, Manuel Riecke (MrBeast)
@@ -1846,6 +1865,14 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Licenses: CC-BY-SA 3.0, GPL 3.0
 - Notes: Original by Pennomi, repositioning and recolors by JaidynReiman.
 - <https://opengameart.org/content/lpc-base-character-expressions>
+
+### Normal (weapon/ranged/bow/normal)
+
+- Authors: Johannes Sjölund (wulax), Pierre Vigier (pvigier)
+- Licenses: OGA-BY 3.0+, GPL 3.0, CC-BY 4.0
+- Notes: original by wulax, walk animations by pvigier, split into layers and tweaked for v3 character bases by bluecarrot16. pvigier has agreed to license this sheet as OGA-BY 3.0+.
+- <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+- <https://opengameart.org/content/lpc-walk-animations-for-bows>
 
 ### Pants (legs/pants/male)
 
@@ -1935,6 +1962,14 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
 - <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
 - <https://opengameart.org/content/lpc-expanded-hair>
+
+### Recurve (weapon/ranged/bow/recurve)
+
+- Authors: Daniel Eddeland (daneeklu), gr3yh47, Johannes Sjölund (wulax), Pierre Vigier (pvigier)
+- Licenses: CC-BY-SA 3.0
+- Notes: modified by daneeklu, from "normal" bow by wulax; walk animations by pvigier; split into layers and tweaked for v3 character bases by bluecarrot16
+- <https://opengameart.org/content/lpc-weapons-two-bows-a-spear-and-a-trident>
+- <https://opengameart.org/content/lpc-walk-animations-for-bows>
 
 ### Revised Shoes (feet/shoes/revised)
 
@@ -2060,6 +2095,13 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing>
 - <https://opengameart.org/content/lpc-expanded-sit-run-jump-more>
 - <https://opengameart.org/content/lpc-expanded-simple-shirts>
+
+### Simple staff (weapon/magic/simple)
+
+- Authors: bluecarrot16, Dr. Jamgo
+- Licenses: CC0
+- Notes: original by DrJamgo, hands switched and split into to layers by bluecarrot16
+- <https://opengameart.org/content/lpc-simple-staff>
 
 ### Sleeveless 2 (torso/clothes/sleeveless/sleeveless2)
 

@@ -47,6 +47,8 @@ export interface Progress {
   /** The bag and worn equipment as JSON (null = nothing yet). Checked item by item when loaded. */
   bag: string | null;
   gear: string | null;
+  /** Learned skills and their levels as JSON (null = none). Checked against the class and level when loaded. */
+  skills: string | null;
 }
 
 /** Each entry upgrades the schema by one version (PRAGMA user_version). Append only. */
@@ -98,10 +100,12 @@ const MIGRATIONS = [
   // v4: items. The bag and equipment are small JSON documents.
   `ALTER TABLE characters ADD COLUMN bag TEXT;
    ALTER TABLE characters ADD COLUMN gear TEXT;`,
+  // v5: jobs and skills. Skill levels are a small JSON document.
+  `ALTER TABLE characters ADD COLUMN skills TEXT;`,
 ];
 
 const ACCOUNT_COLS = "id, gattchaa_id AS gattchaaId, display_name AS displayName, name, look";
-const PROGRESS_COLS = "class AS cls, level AS lv, exp, hp, mp, gold, bag, gear";
+const PROGRESS_COLS = "class AS cls, level AS lv, exp, hp, mp, gold, bag, gear, skills";
 const SHOP_COLS = "account_id AS accountId, id, x, y, title, opened_at AS openedAt, expires_at AS expiresAt";
 
 /** Sessions are stored hashed: a leaked database file doesn't sign anyone in. */
@@ -193,12 +197,12 @@ export class Db {
   saveProgress(accountId: number, p: Progress) {
     this.db
       .prepare(
-        `INSERT INTO characters (account_id, class, level, exp, hp, mp, gold, bag, gear, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `INSERT INTO characters (account_id, class, level, exp, hp, mp, gold, bag, gear, skills, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT(account_id) DO UPDATE SET class = excluded.class, level = excluded.level, exp = excluded.exp,
            hp = excluded.hp, mp = excluded.mp, gold = excluded.gold, bag = excluded.bag, gear = excluded.gear,
-           updated_at = excluded.updated_at`,
+           skills = excluded.skills, updated_at = excluded.updated_at`,
       )
-      .run(accountId, p.cls, p.lv, p.exp, p.hp, p.mp, p.gold, p.bag, p.gear, Date.now());
+      .run(accountId, p.cls, p.lv, p.exp, p.hp, p.mp, p.gold, p.bag, p.gear, p.skills, Date.now());
   }
 
   // ------------------------------------------------------------ shops

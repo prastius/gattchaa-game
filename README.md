@@ -26,9 +26,11 @@ Open the page in two browser windows to see multiplayer and chat.
 | Click / tap loot on the ground | Walk over and pick it up |
 | I / bag button | Bag: wear gear, drink potions, put monster cards into gear, see your ATK and DEF |
 | Q / potion button | Drink a potion (the smallest one that heals you fully) |
+| 1–6 / skill buttons | Use your skills (once you're a Knight, Mage or Archer); aimed skills pick your target, or the nearest monster |
+| K / lightning button | Skills: learn and level them with skill points |
 | X / chair button | Sit down where you stand; walking gets you up |
 | V / Open shop | Open your shop where you stand in the Market Square (signed-in players); while it's open: see it, or close it |
-| 1–9, 0 / smiley button | Emotes over your head: wave, happy, LOL, love, wow, sad, angry, nice, !, ? |
+| Smiley button | Emotes over your head: wave, happy, LOL, love, wow, sad, angry, nice, !, ? |
 | Enter | Open chat, then Enter again to send. Esc cancels. |
 | Wardrobe | Change your outfit at any time; everyone sees it |
 | Scroll / + − | Zoom |
@@ -63,7 +65,7 @@ PM2 settings are in `ecosystem.config.cjs`.
 
 ### Saved data
 
-Accounts (players who signed in with Gattchaa), their characters' progress (class, level, EXP, HP/MP, gold, bag and equipment) and open shops are kept in one SQLite file, `server/data/town.db`, using Node's built-in `node:sqlite`. There's no database server to run. Deploys and restarts leave the file alone; open shops come back after a restart. Back it up with a copy while the server is stopped, or live with `sqlite3 server/data/town.db ".backup town-backup.db"`. Set `DB_PATH` to keep it somewhere else.
+Accounts (players who signed in with Gattchaa), their characters' progress (class, level, EXP, HP/MP, gold, bag, equipment and skills) and open shops are kept in one SQLite file, `server/data/town.db`, using Node's built-in `node:sqlite`. There's no database server to run. Deploys and restarts leave the file alone; open shops come back after a restart. Back it up with a copy while the server is stopped, or live with `sqlite3 server/data/town.db ".backup town-backup.db"`. Set `DB_PATH` to keep it somewhere else.
 
 ### Load testing
 
@@ -84,11 +86,12 @@ shared/       Code used by both client and server
   protocol.ts     Message types, name/chat sanitizing
   vending.ts      Player shop rules (where a shop may open) and messages
   rpg.ts          Leveling and fighting: classes, the EXP curve, monsters (and their drops), fields, damage rules
-  items.ts        Every item and monster card: stats, prices, rarity, icon, card slots and how it looks when worn; the Outfitter's stock
+  items.ts        Every item and monster card: stats, prices, rarity, icon, card slots, who may wear it and how it looks when worn; the Outfitter's stock
+  skills.ts       Class skills: what each does per level, MP, cooldowns, and how it looks
 server/       Colyseus server
   src/rooms/WorldRoom.ts   Joins, interest management, movement validation, chat, emotes, wardrobe, sitting, shops, trading
   src/rooms/WorldState.ts  Synced state
-  src/rooms/Combat.ts      Monsters (spawning, AI), auto-attacks, EXP, level-ups, knockouts, loot, using items
+  src/rooms/Combat.ts      Monsters (spawning, AI), auto-attacks, EXP, level-ups, knockouts, loot, using items, jobs and skills
   src/rooms/Inventory.ts   A character's bag and equipment
   src/rooms/Drops.ts       Items on the ground: first pick for the top fighter, then anyone; they fade after 90 s
   src/db.ts                SQLite: accounts, sessions, characters, open shops
@@ -110,9 +113,9 @@ client/       Phaser game
   src/world/daylight.ts    Day and night (Batam time), lamp and fire glow
   src/world/ambience.ts    Butterflies by day, fireflies at night
   src/world/monsterArt.ts  Monster sprite sheets and their animations
-  src/world/fx.ts          Damage numbers, slashes, level-up light
+  src/world/fx.ts          Damage numbers, slashes, level-up light, arrows and magic bolts, skill effects
   src/scenes/WorldScene.ts   Chunk streaming, water glints, input, camera, interpolation
-  src/ui/                  Creator, chat, HUD + minimap + emote picker, status panel (HP/MP/EXP), bag, NPC and shop panels
+  src/ui/                  Creator, chat, HUD + minimap + emote picker, status panel (HP/MP/EXP), bag, skills (bar and window), NPC and shop panels
   public/assets/           Downloaded art + manifest (committed)
 scripts/
   fetch-assets.mjs   Re-downloads the art from pinned commits and regenerates catalog + credits
@@ -147,7 +150,7 @@ scripts/
 
 Ragnarok and TibiaME style: click a monster and your character fights it. Everything about a fight is decided on the server, and the numbers live in `shared/rpg.ts`.
 
-- **Classes.** Everyone starts as a Novice. Knight, Mage and Archer will come with a job change at level 10. HP, MP, attack and defence grow by class as you level.
+- **Classes.** Everyone starts as a Novice; at level 10 the Job Master makes you a Knight, Mage or Archer (see below). HP, MP, attack and defence grow by class as you level.
 - **Levels.** The cap is `LEVEL_CAP` (50 for now). The EXP curve (`expToNext`) keeps going past the cap, so raising it is a one-line change. At the cap, EXP stops filling.
 - **Fields.** Monsters live outside the walls. The town (and the palace) is always safe: monsters never come in, and nobody can attack from inside. The first field is the **South Meadow**, out of the south gate (Rowan the Gate Guard explains it):
 
@@ -156,15 +159,33 @@ Ragnarok and TibiaME style: click a monster and your character fights it. Everyt
   | Slime | 1 | By the road | Only fights back |
   | Grass Snake | 4 | West grass | Only fights back |
   | Hornet | 7 | East field | Attacks on sight |
-  | Snapper Flower | 10 | By the lake | Rooted; bites anyone who comes close |
+  | Snapper Flower | 10 | By the lake | Rooted; bites anyone who comes close, and spits seeds at anyone shooting it from afar |
 
 - **Fighting.** You auto-attack once a second while the monster is in reach. Hits can miss (more often against higher levels), and 5 % are critical hits. The client only says what you're attacking and draws what the server reports: damage numbers, slashes, health bars.
 - **Rewards.** EXP is shared by everyone who hurt the monster, by how much damage they did. Monsters more than 5 levels below you give less (down to 10 %). Gold goes to whoever did the most damage. Level-ups heal you fully, and every 10th level is announced in chat.
 - **Healing.** Out of combat you regain HP and MP slowly. Sitting (X) is 3 times faster, and resting inside the walls doubles that again.
-- **Fainting.** At 0 HP you faint and return to town fully healed. Novices lose no EXP (the classes will lose a little).
+- **Fainting.** At 0 HP you faint and return to town fully healed. Novices lose no EXP; Knights, Mages and Archers lose 3 % of a level.
 - **Saving.** Signed-in players' progress is saved on every level-up and faint, every 30 s, and when they leave. Guests can fight too, but start over next visit.
 - **Server cost.** Monsters only think while a player is near their spawn area, and fight events go only to players close enough to see them. 20 bots fighting at once used about 5 % of one CPU core.
-- **Testing.** Outside production (`NODE_ENV` not `production`), chat commands help: `/level 25` jumps to a level, `/item saber` (or `/item redPotion 20`, `/item hornetCard`) adds items, `/gold 1000` sets your gold. `/help` lists every item id.
+- **Testing.** Outside production (`NODE_ENV` not `production`), chat commands help: `/level 25` jumps to a level, `/item saber` (or `/item redPotion 20`, `/item hornetCard`) adds items, `/gold 1000` sets your gold, `/job archer` turns you into a class (from level 10; `/job novice` goes back). `/help` lists every item id.
+
+## Jobs and skills
+
+TibiaME style: three jobs, each with its own weapons and skills on the number keys. The jobs are in `shared/rpg.ts` (`CLASSES`), the skills in `shared/skills.ts`.
+
+- **The Job Master.** Orin stands just inside the south gate. From level 10 a Novice can become a Knight, Mage or Archer, for good. The job comes with its weapon, worn straight away (unless you already hold one the job can use): a Squire's Longsword, an Apprentice Staff or a Hunting Bow.
+
+  | Job | Strengths | Weapons | Skills (keys 1, 2, 3) |
+  | --- | --- | --- | --- |
+  | Knight | Most HP and DEF | Swords, daggers | Bash (a heavy blow), Whirlwind (hits everything around you), Guard (DEF up for 20 s) |
+  | Mage | Most MP and ATK, little HP | Staves (reach 150–170 px), daggers | Fire Bolt (from 220 px), Frost Nova (hits and freezes everything around you), Heal |
+  | Archer | In between | Bows (reach 170–190 px, both hands: no shield), daggers | Double Shot, Arrow Rain (hits everything around the target), Eagle Eye (ATK and critical chance up for 20 s) |
+
+- **Weapons.** Swords are for Novices and Knights, staves for Mages, bows for Archers; daggers for everyone. Bows and staves shoot from a distance: arrows and magic bolts fly to the target, and the damage shows when they land. Bram sells the three job weapons; the Recurve Bow, Gnarled Staff and Crystal Staff drop from Snapper Flowers.
+- **Skill points.** One at the job change and one every level after (`skillPoints` in `shared/rpg.ts`). Spend them in the skills window (K): each skill goes up to level 10, getting stronger every level. There are 3 skills per job so far; slots 4–6 wait for more.
+- **Using skills.** Keys 1–6 or the skill buttons (bottom of the screen; above the chat on phones). Aimed skills use your target, or pick the nearest monster and walk into range first. Each skill costs MP and has a cooldown, shown as a curtain on its button, and there's a short pause (0.7 s) between any two skills. Skills never miss. Attack skills don't work inside the town.
+- **Effects.** Frozen monsters turn icy blue and can't move or bite. Buffs make their skill button glow while they last.
+- **Saving.** Learned skills are saved with your progress (migration v5). If saved skills ever add up to more points than your level gives, all the points come back to spend again.
 
 ## Items and equipment
 
@@ -220,6 +241,7 @@ The stalls, machines, Rooms tables, big-pull announcements, signing in and playe
 - **Add a hairstyle or clothing item:** add its `sheet_definitions` path to `ITEMS`. Browse the options at <https://liberatedpixelcup.github.io/Universal-LPC-Spritesheet-Character-Generator/>.
 - **Monsters:** `MONSTER_FILES` lists the sheets taken from "[LPC] Monsters" (OpenGameArt). `client/src/world/monsterArt.ts` says how each sheet is laid out.
 - **Equipment art:** `GEAR` lists the armour and weapon sheets. Items in `shared/items.ts` pick pieces by id and recolour them (`colors: { metal: "bronze" }`).
+- **Bows:** LPC bows only walk in 128px frames. `fetch-assets` marks those layers `frame: 128`, and `client/src/character.ts` cuts the middle 64px out of each frame when it loads them.
 - **Item icons:** every icon from Kyrise's 16x16 RPG Icon Pack (CC-BY 4.0) is in `client/public/assets/items/`; an item names one with `icon`. Items without one get an icon cut from their gear art. Monster cards are drawn in `client/src/character.ts`: a gold card with the monster's own sprite on it.
 - **Change the season:** swap `terrain_summer.png` / `trees_summer.png` for the spring, autumn or winter versions in the same repo.
 

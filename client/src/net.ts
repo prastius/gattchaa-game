@@ -3,6 +3,9 @@ import {
   ROOM_NAME,
   sanitizeChat,
   type CardInsertMessage,
+  type JobMessage,
+  type SkillLearnMessage,
+  type SkillUseMessage,
   type ChatMessage,
   type ChatSend,
   type CorrectMessage,
@@ -20,6 +23,7 @@ import {
   type UnequipMessage,
 } from "../../shared/protocol";
 import type { BagMessage, ItemId, Slot } from "../../shared/items";
+import type { SkillId } from "../../shared/skills";
 import type { Announcement, NpcSay } from "../../shared/gattchaa";
 import type { ChatUI } from "./ui/chat";
 import { audio } from "./audio";
@@ -149,6 +153,20 @@ export class Net {
 
   sellLoot(npc: string) {
     this.room.send("npc:sell", { npc, loot: true } satisfies NpcSellMessage);
+  }
+
+  /** Asks the Job Master for a job. */
+  chooseJob(npc: string, cls: string) {
+    this.room.send("job", { npc, cls } satisfies JobMessage);
+  }
+
+  learnSkill(id: SkillId) {
+    this.room.send("skill:learn", { id } satisfies SkillLearnMessage);
+  }
+
+  /** Uses a skill on monster `t` (or your target), or on yourself. */
+  useSkill(id: SkillId, t?: string) {
+    this.room.send("skill:use", { id, ...(t && { t }) } satisfies SkillUseMessage);
   }
 
   /** Puts the card in a bag slot into equipment in the bag or worn. */

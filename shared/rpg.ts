@@ -17,17 +17,19 @@ export function expToNext(level: number): number {
 
 // ---------------------------------------------------------------- classes
 
-export type ClassId = "novice";
+export type ClassId = "novice" | "knight" | "mage" | "archer";
 
 export interface ClassDef {
   id: ClassId;
   name: string;
+  /** What the Job Master says about it. */
+  blurb: string;
   /** [at level 1, gained per level] */
   hp: [number, number];
   mp: [number, number];
   atk: [number, number];
   def: [number, number];
-  /** Melee reach in pixels, feet to feet (plus the monster's size). */
+  /** Reach without a bow or staff, in pixels, feet to feet (plus the monster's size). */
   range: number;
   /** Time between auto-attacks. */
   attackMs: number;
@@ -35,12 +37,40 @@ export interface ClassDef {
   deathExpLoss: number;
 }
 
-/** Everyone starts as a Novice. Knight, Mage and Archer arrive with the job change at level 10. */
+/** Everyone starts as a Novice; at level 10 the Job Master makes you a Knight, Mage or Archer. */
 export const CLASSES: Record<ClassId, ClassDef> = {
-  novice: { id: "novice", name: "Novice", hp: [40, 12], mp: [10, 3], atk: [6, 2], def: [1, 0.5], range: 40, attackMs: 1000, deathExpLoss: 0 },
+  novice: {
+    id: "novice", name: "Novice", blurb: "Everyone starts here.",
+    hp: [40, 12], mp: [10, 3], atk: [6, 2], def: [1, 0.5], range: 40, attackMs: 1000, deathExpLoss: 0,
+  },
+  knight: {
+    id: "knight", name: "Knight", blurb: "Sword and shield at the front. The most health and defence, and heavy blows up close.",
+    hp: [60, 16], mp: [14, 3], atk: [8, 2.3], def: [2, 0.75], range: 40, attackMs: 1000, deathExpLoss: 0.03,
+  },
+  mage: {
+    id: "mage", name: "Mage", blurb: "Fire and frost from a distance. Fragile, but the strongest spells, and heals itself.",
+    hp: [34, 9], mp: [30, 8], atk: [7, 2.5], def: [1, 0.3], range: 40, attackMs: 1200, deathExpLoss: 0.03,
+  },
+  archer: {
+    id: "archer", name: "Archer", blurb: "A bow and quick feet. Hits from far away and picks the fight.",
+    hp: [44, 11], mp: [18, 4], atk: [7, 2.3], def: [1, 0.45], range: 40, attackMs: 1000, deathExpLoss: 0.03,
+  },
 };
 
 export const isClassId = (id: unknown): id is ClassId => typeof id === "string" && Object.hasOwn(CLASSES, id);
+
+/** "a Knight", "an Archer". */
+export const aClass = (cls: ClassId) => `${/^[AEIOU]/.test(CLASSES[cls].name) ? "an" : "a"} ${CLASSES[cls].name}`;
+
+/** A Novice can choose a job from this level. */
+export const JOB_LEVEL = 10;
+/** What the Job Master offers, in his order. */
+export const JOBS: ClassId[] = ["knight", "mage", "archer"];
+/** The weapon each job starts with, a gift from the Job Master. */
+export const JOB_WEAPON: Partial<Record<ClassId, ItemId>> = { knight: "squireSword", mage: "apprenticeStaff", archer: "huntingBow" };
+
+/** Skill points earned so far: one at the job change and one more every level after. */
+export const skillPoints = (cls: ClassId, level: number) => (cls === "novice" ? 0 : Math.max(0, level - JOB_LEVEL + 1));
 
 export interface Stats {
   maxHp: number;
@@ -56,8 +86,8 @@ export interface Stats {
   reflect: number;
 }
 
-/** A class at a level, plus whatever its equipment (and the cards in it) adds. */
-export function statsFor(cls: ClassId, level: number, bonus?: Partial<Bonus>): Stats {
+/** A class at a level, plus whatever its equipment (and the cards in it) adds; a bow or staff sets the reach. */
+export function statsFor(cls: ClassId, level: number, bonus?: Partial<Bonus>, weaponRange?: number): Stats {
   const c = CLASSES[cls];
   const at = ([base, per]: [number, number]) => Math.floor(base + per * (level - 1));
   return {
@@ -65,7 +95,7 @@ export function statsFor(cls: ClassId, level: number, bonus?: Partial<Bonus>): S
     maxMp: at(c.mp) + (bonus?.mp ?? 0),
     atk: at(c.atk) + (bonus?.atk ?? 0),
     def: at(c.def) + (bonus?.def ?? 0),
-    range: c.range,
+    range: weaponRange ?? c.range,
     attackMs: c.attackMs,
     crit: CRIT_CHANCE + (bonus?.crit ?? 0) / 100,
     flee: Math.min(MAX_FLEE, (bonus?.flee ?? 0) / 100),
@@ -115,9 +145,13 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
     id: "hornet", name: "Hornet", level: 7, hp: 130, atk: 12, def: 4, exp: 80, gold: [6, 12], speed: 70, chase: 95, aggro: 120, range: 36, attackMs: 1400, radius: 8, respawnMs: 18_000,
     drops: [["honey", 0.55], ["orangePotion", 0.03], ["kettleHelm", 0.006], ["legionArmor", 0.005], ["bronzeSword", 0.005], ["ironGreaves", 0.006], ["ironBoots", 0.006], ["stingerPendant", 0.003], ["hornetCard", 0.001]],
   },
+  // Rooted, but it spits seeds at anyone who shoots it from afar.
   snapper: {
-    id: "snapper", name: "Snapper Flower", level: 10, hp: 280, atk: 17, def: 5, exp: 240, gold: [18, 30], speed: 0, chase: 0, aggro: 110, range: 64, attackMs: 1600, radius: 22, respawnMs: 30_000,
-    drops: [["bloom", 0.6], ["orangePotion", 0.08], ["redPotion", 0.1], ["saber", 0.008], ["bronzeHelm", 0.008], ["guardShield", 0.01], ["plateArmor", 0.004], ["meadowCrown", 0.0005], ["snapperCard", 0.0012]],
+    id: "snapper", name: "Snapper Flower", level: 10, hp: 280, atk: 17, def: 5, exp: 240, gold: [18, 30], speed: 0, chase: 0, aggro: 110, range: 190, attackMs: 1600, radius: 22, respawnMs: 30_000,
+    drops: [
+      ["bloom", 0.6], ["orangePotion", 0.08], ["redPotion", 0.1], ["saber", 0.008], ["bronzeHelm", 0.008], ["guardShield", 0.01], ["plateArmor", 0.004],
+      ["recurveBow", 0.006], ["gnarledStaff", 0.006], ["crystalStaff", 0.0015], ["meadowCrown", 0.0005], ["snapperCard", 0.0012],
+    ],
   },
 };
 

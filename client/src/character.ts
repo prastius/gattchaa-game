@@ -27,6 +27,8 @@ export const sitDrop = (body: string, dir: number) => (SIT_DROP[body] ?? SIT_DRO
 interface LayerDef {
   z: number;
   files: Record<string, { walk?: string; sit?: string }>;
+  /** 128: the walk sheet uses big frames with the usual 64px frame in the middle (bows). */
+  frame?: number;
 }
 interface ItemDef {
   category: string;
@@ -90,12 +92,28 @@ function colorMap(m: Manifest, item: ItemDef, choice: Record<string, string>): M
   return map;
 }
 
+/** A walk sheet in big frames, cut down to the usual 64px frames (the middle of each). */
+function normalize(img: HTMLImageElement, frame: number): HTMLCanvasElement {
+  const canvas = document.createElement("canvas");
+  canvas.width = WALK_COLS * FRAME;
+  canvas.height = SHEET_H;
+  const ctx = canvas.getContext("2d")!;
+  const pad = (frame - FRAME) / 2;
+  for (let row = 0; row < 4; row++) {
+    for (let col = 0; col < WALK_COLS; col++) {
+      ctx.drawImage(img, col * frame + pad, row * frame + pad, FRAME, FRAME, col * FRAME, row * FRAME, FRAME, FRAME);
+    }
+  }
+  return canvas;
+}
+
 const recolored = new Map<string, Promise<CanvasImageSource>>();
-function recolor(file: string, map: Map<number, number>): Promise<CanvasImageSource> {
+function recolor(file: string, map: Map<number, number>, frame = FRAME): Promise<CanvasImageSource> {
   const key = `${file}|${[...map].join(",")}`;
   let p = recolored.get(key);
   if (!p) {
-    p = loadImage(file).then((img) => {
+    p = loadImage(file).then((loaded) => {
+      const img = frame === FRAME ? loaded : normalize(loaded, frame);
       if (map.size === 0) return img;
       const canvas = document.createElement("canvas");
       canvas.width = img.width;
@@ -173,7 +191,7 @@ export async function composeCharacter(key: string, opts: { sit?: boolean } = {}
     const map = colorMap(m, it, choice);
     for (const layer of it.layers) {
       const file = layer.files[body]?.walk;
-      if (file) layers.push({ z: layer.z, src: recolor(file, map) });
+      if (file) layers.push({ z: layer.z, src: recolor(file, map, layer.frame) });
     }
     if (!opts.sit) continue;
     for (const layer of it.sitLayers ?? it.layers) {
@@ -210,6 +228,25 @@ export async function preloadCharacterArt(): Promise<void> {
 /** Item icons are drawn at this size (the 16px icon pack at 2x). */
 export const ICON = 32;
 const icons = new Map<string, Promise<HTMLCanvasElement>>();
+const packIcons = new Map<string, Promise<HTMLCanvasElement>>();
+
+/** An icon from the icon pack (assets/items) at 2x, on a 32x32 canvas (cached). Skills use these too. */
+export function packIcon(name: string): Promise<HTMLCanvasElement> {
+  let p = packIcons.get(name);
+  if (!p) {
+    p = loadImage(`items/${name}.png`)
+      .then((img) => {
+        const out = blankIcon();
+        const ctx = out.getContext("2d")!;
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(img, 0, 0, img.width, img.height, (ICON - img.width * 2) / 2, (ICON - img.height * 2) / 2, img.width * 2, img.height * 2);
+        return out;
+      })
+      .catch(() => blankIcon());
+    packIcons.set(name, p);
+  }
+  return p;
+}
 
 /**
  * An item's icon on a 32x32 canvas (cached): from the icon pack, a little card
@@ -240,8 +277,7 @@ async function drawIcon(id: ItemId): Promise<HTMLCanvasElement> {
   const ctx = out.getContext("2d")!;
   ctx.imageSmoothingEnabled = false;
   if (it.icon) {
-    const img = await loadImage(`items/${it.icon}.png`);
-    ctx.drawImage(img, 0, 0, img.width, img.height, (ICON - img.width * 2) / 2, (ICON - img.height * 2) / 2, img.width * 2, img.height * 2);
+    ctx.drawImage(await packIcon(it.icon), 0, 0);
     return out;
   }
   if (it.kind === "card" && it.monster) {
@@ -263,7 +299,7 @@ async function drawIcon(id: ItemId): Promise<HTMLCanvasElement> {
     const map = colorMap(m, def, choice);
     for (const layer of def.layers) {
       const file = layer.files.male?.walk;
-      if (file) layers.push({ z: layer.z, src: await recolor(file, map) });
+      if (file) layers.push({ z: layer.z, src: await recolor(file, map, layer.frame) });
     }
   }
   layers.sort((a, b) => a.z - b.z);

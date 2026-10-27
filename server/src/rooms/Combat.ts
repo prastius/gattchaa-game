@@ -4,7 +4,11 @@ import { Dir, MONSTER_ID_PREFIX, type FxEvent, type StatsMessage } from "../../.
 import {
   CLASSES,
   FIELDS,
+  JOBS,
+  JOB_LEVEL,
+  JOB_WEAPON,
   LEVEL_CAP,
+  aClass,
   MONSTERS,
   REGEN_RATE,
   SIT_REGEN,
@@ -21,7 +25,25 @@ import {
   type MonsterDef,
   type Stats,
 } from "../../../shared/rpg";
-import { ITEMS, MAX_STACK, PICKUP_RANGE, POTION_MS, RARITY, SLOT_NAMES, cardFits, itemName, sellPrice, type BagMessage, type ItemDef, type ItemId, type Slot } from "../../../shared/items";
+import {
+  ITEMS,
+  MAX_STACK,
+  PICKUP_RANGE,
+  POTION_MS,
+  RARITY,
+  SLOT_NAMES,
+  WEAPON_NAMES,
+  canWear,
+  cardFits,
+  itemName,
+  sellPrice,
+  wearersText,
+  type BagMessage,
+  type ItemDef,
+  type ItemId,
+  type Slot,
+} from "../../../shared/items";
+import { GLOBAL_COOLDOWN_MS, SKILLS, SKILL_MAX, cleanSkills, pointsLeft, type SkillDef, type SkillId, type SkillLevels } from "../../../shared/skills";
 import type { Progress } from "../db";
 import { Monster, type Player } from "./WorldState";
 import { Inventory, type GearAt } from "./Inventory";
@@ -66,6 +88,8 @@ export interface CombatHooks {
   /** A monster is about to be removed from the state: take it out of every view first. */
   despawn(mob: Monster): void;
   levelUp(id: string, lv: number): void;
+  /** Someone became a Knight, Mage or Archer. */
+  jobChange(id: string, cls: ClassId): void;
   /** Someone picked up something legendary, or a monster card: worth telling the town. */
   found(id: string, item: ItemDef): void;
 }
@@ -84,6 +108,12 @@ interface Fighter {
   stats: Stats;
   /** No potion before this. */
   potionAt: number;
+  skills: SkillLevels;
+  /** When each skill is ready again, and when any skill is (the global cooldown). */
+  cooldowns: Map<SkillId, number>;
+  gcdAt: number;
+  /** Buffs running: the skill's level when cast, and when it wears off. */
+  buffs: Map<SkillId, { lv: number; until: number }>;
   /** Signed in: progress goes to the database. */
   saved: boolean;
   target?: string;
@@ -122,11 +152,22 @@ interface Mob {
   stuckFor: number;
   /** Damage taken from each player, so the EXP is shared by who did the work. */
   damage: Map<string, number>;
+  /** Frozen (Frost Nova) until then: no moving, no biting. */
+  frozenUntil: number;
 }
 
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
 const randInt = ([a, b]: [number, number]) => a + Math.floor(Math.random() * (b - a + 1));
 const dist = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.hypot(a.x - b.x, a.y - b.y);
+/** A bow's or staff's reach, if one is in hand. */
+const weaponRange = (inv: Inventory) => (inv.gear.weapon ? ITEMS[inv.gear.weapon.id].range : undefined);
+const parse = (json: string | null | undefined): unknown => {
+  try {
+    return json ? JSON.parse(json) : null;
+  } catch {
+    return null;
+  }
+};
 const dirTo = (dx: number, dy: number) => (Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? Dir.Left : Dir.Right) : dy < 0 ? Dir.Up : Dir.Down);
 
 /**
@@ -160,7 +201,11 @@ export class Combat {
     const cls = isClassId(progress?.cls) ? progress.cls : "novice";
     const lv = Math.min(LEVEL_CAP, Math.max(1, Math.floor(progress?.lv ?? 1)));
     const inv = Inventory.load(progress?.bag, progress?.gear);
-    const s = statsFor(cls, lv, inv.bonus());
+    // Gear the class can't use (saved before a rule changed) goes back in the bag.
+    const worn = inv.gear.weapon && ITEMS[inv.gear.weapon.id];
+    if (worn && !canWear(cls, worn)) inv.unequip("weapon");
+    if (inv.gear.weapon && ITEMS[inv.gear.weapon.id].twoHanded) inv.unequip("offhand");
+    const s = statsFor(cls, lv, inv.bonus(), weaponRange(inv));
     const f: Fighter = {
       id,
       player,
@@ -172,6 +217,10 @@ export class Combat {
       inv,
       stats: s,
       potionAt: 0,
+      skills: cleanSkills(cls, lv, parse(progress?.skills)),
+      cooldowns: new Map(),
+      gcdAt: 0,
+      buffs: new Map(),
       saved,
       nextAttackAt: 0,
       lastCombatAt: 0,
@@ -183,6 +232,7 @@ export class Combat {
       bagDirty: true,
     };
     player.lv = lv;
+    player.cls = cls;
     player.mhp = s.maxHp;
     player.gear = inv.visible();
     // Knocked out when they left: they're back in town now, fully healed.
@@ -251,6 +301,19 @@ export class Combat {
     if (f.inv.add(item, Math.min(MAX_STACK, Math.max(1, Math.floor(n)))) > 0) this.changed(f);
   }
 
+  /** Testing only: back to Novice, then (from level 10) straight into a job. */
+  cheatJob(id: string, cls: ClassId) {
+    const f = this.fighters.get(id);
+    if (!f) return;
+    f.cls = "novice";
+    f.player.cls = "novice";
+    f.skills = {};
+    f.buffs.clear();
+    this.restat(f);
+    f.dirty = true;
+    if (cls !== "novice") this.changeJob(id, cls);
+  }
+
   cheatGold(id: string, gold: number) {
     const f = this.fighters.get(id);
     if (!f) return;
@@ -274,6 +337,7 @@ export class Combat {
     for (const f of this.fighters.values()) {
       this.fight(f, now);
       this.regen(f, now);
+      this.expireBuffs(f, now);
     }
 
     if (now >= this.saveAt) {
@@ -320,13 +384,7 @@ export class Combat {
     f.lastCombatAt = now;
     f.player.sit = false;
     f.player.dir = dirTo(mob.x - f.pos.x, mob.y - f.pos.y);
-    mob.lastHitAt = now;
-    // Even shy monsters fight back.
-    if (!mob.target) {
-      mob.target = f.id;
-      mob.returning = false;
-      mob.nextAttackAt = Math.max(mob.nextAttackAt, now + FIRST_BITE_MS);
-    }
+    this.provoke(mob, f, now);
 
     if (Math.random() >= hitChance(f.player.lv, mob.def.level)) {
       this.hooks.emit(mob.x, mob.y, { k: "miss", a: f.id, t: mob.id });
@@ -336,8 +394,17 @@ export class Combat {
     this.hurt(mob, f, damage, crit ? { crit: 1 } : {});
   }
 
-  /** `f` deals damage to a monster (a hit, or thorns from a card); it may go down. */
-  private hurt(mob: Mob, f: Fighter, damage: number, flags: { crit?: 1; thorn?: 1 }) {
+  /** `f` attacked it: even shy monsters fight back. */
+  private provoke(mob: Mob, f: Fighter, now: number) {
+    mob.lastHitAt = now;
+    if (mob.target) return;
+    mob.target = f.id;
+    mob.returning = false;
+    mob.nextAttackAt = Math.max(mob.nextAttackAt, now + FIRST_BITE_MS);
+  }
+
+  /** `f` deals damage to a monster (a hit, a skill, or thorns from a card); it may go down. */
+  private hurt(mob: Mob, f: Fighter, damage: number, flags: { crit?: 1; thorn?: 1; skill?: SkillId }) {
     mob.damage.set(f.id, (mob.damage.get(f.id) ?? 0) + Math.min(damage, mob.hp));
     mob.hp = Math.max(0, mob.hp - damage);
     mob.state.hp = mob.hp;
@@ -400,6 +467,8 @@ export class Combat {
   /** New level: new max HP/MP, fully healed, and a burst of light for everyone nearby. */
   private setLevel(f: Fighter, lv: number, announce: boolean) {
     f.player.lv = lv;
+    // Only a test jump down can leave more skills than points: then they all come back.
+    if (pointsLeft(f.cls, lv, f.skills) < 0) f.skills = {};
     this.restat(f);
     f.player.hp = f.stats.maxHp;
     f.mp = f.stats.maxMp;
@@ -453,12 +522,34 @@ export class Combat {
 
   private sheet(f: Fighter): StatsMessage {
     const s = f.stats;
-    return { cls: f.cls, lv: f.player.lv, exp: f.exp, mp: f.mp, mmp: s.maxMp, gold: f.gold, atk: s.atk, def: s.def, saved: f.saved };
+    const now = Date.now();
+    return {
+      cls: f.cls,
+      lv: f.player.lv,
+      exp: f.exp,
+      mp: f.mp,
+      mmp: s.maxMp,
+      gold: f.gold,
+      atk: s.atk,
+      def: s.def,
+      range: s.range,
+      skills: f.skills,
+      points: pointsLeft(f.cls, f.player.lv, f.skills),
+      buffs: [...f.buffs].map(([id, b]) => ({ id, ms: Math.max(0, b.until - now) })),
+      saved: f.saved,
+    };
   }
 
-  /** After a level or equipment change: new totals, with HP and MP kept under the new maximums. */
+  /** After a level, equipment or buff change: new totals, with HP and MP kept under the new maximums. */
   private restat(f: Fighter) {
-    f.stats = statsFor(f.cls, f.player.lv, f.inv.bonus());
+    const st = statsFor(f.cls, f.player.lv, f.inv.bonus(), weaponRange(f.inv));
+    for (const [id, b] of f.buffs) {
+      const buff = SKILLS[id].buff;
+      if (buff?.atk) st.atk = Math.round(st.atk * (1 + buff.atk(b.lv)));
+      if (buff?.def) st.def = Math.round(st.def * (1 + buff.def(b.lv)));
+      if (buff?.crit) st.crit += buff.crit(b.lv);
+    }
+    f.stats = st;
     f.player.mhp = f.stats.maxHp;
     f.player.hp = Math.min(f.player.hp, f.stats.maxHp);
     f.mp = Math.min(f.mp, f.stats.maxMp);
@@ -479,6 +570,7 @@ export class Combat {
       mp: f.mp >= s.maxMp ? null : f.mp,
       gold: f.gold,
       ...f.inv.save(),
+      skills: Object.keys(f.skills).length ? JSON.stringify(f.skills) : null,
     });
   }
 
@@ -498,6 +590,11 @@ export class Combat {
     if (it.kind === "use") return this.drink(f, slot, it);
     if (it.kind !== "equip") return;
     if (f.player.lv < (it.lv ?? 1)) return this.hooks.notice(id, `You need to be level ${it.lv} to wear the ${it.name}.`);
+    if (!canWear(f.cls, it)) return this.hooks.notice(id, `The ${it.name} is for ${wearersText(it).replace(" only", "")}: ${aClass(f.cls)} can't use it.`);
+    const weapon = f.inv.gear.weapon && ITEMS[f.inv.gear.weapon.id];
+    if (it.slot === "offhand" && weapon?.twoHanded) return this.hooks.notice(id, `You need both hands for your ${weapon.name}.`);
+    // A bow needs both hands: the shield goes into the bag first.
+    if (it.twoHanded && f.inv.gear.offhand && !f.inv.unequip("offhand")) return this.hooks.notice(id, "Your bag is full: no room to put your shield away.");
     f.inv.equip(slot);
     this.restat(f);
     this.changed(f);
@@ -624,6 +721,146 @@ export class Combat {
     this.traded(f);
   }
 
+  // ---------------------------------------------------------------- jobs and skills
+
+  /**
+   * Novice -> Knight, Mage or Archer, for good (the room checked you're with
+   * the Job Master): the class's stats, its weapon, and a first skill point.
+   */
+  changeJob(id: string, cls: ClassId) {
+    const f = this.fighters.get(id);
+    if (!f || f.player.dead || !JOBS.includes(cls)) return;
+    if (f.cls !== "novice") return this.hooks.notice(id, `You're already ${aClass(f.cls)}.`);
+    if (f.player.lv < JOB_LEVEL) return this.hooks.notice(id, `Come back at level ${JOB_LEVEL}.`);
+
+    // The gift is worn straight away, unless you hold a weapon the new job can still use.
+    const gift = JOB_WEAPON[cls];
+    const giftDef = gift && ITEMS[gift];
+    const worn = f.inv.gear.weapon && ITEMS[f.inv.gear.weapon.id];
+    const wearGift = Boolean(giftDef) && !(worn && canWear(cls, worn));
+    const toBag = (wearGift ? (worn ? 1 : 0) + (giftDef?.twoHanded && f.inv.gear.offhand ? 1 : 0) : giftDef ? 1 : 0);
+    if (f.inv.bag.filter((s) => !s).length < toBag) {
+      return this.hooks.notice(id, `Make room in your bag first: you need ${toBag} free slot${toBag === 1 ? "" : "s"}.`);
+    }
+    if (gift && wearGift) {
+      if (worn) f.inv.unequip("weapon");
+      if (giftDef?.twoHanded) f.inv.unequip("offhand");
+      f.inv.gear.weapon = { id: gift, n: 1 };
+    } else if (gift) f.inv.add(gift, 1);
+
+    f.cls = cls;
+    f.player.cls = cls;
+    f.skills = {};
+    f.buffs.clear();
+    f.cooldowns.clear();
+    this.restat(f);
+    f.player.hp = f.stats.maxHp;
+    f.mp = f.stats.maxMp;
+    this.changed(f);
+    this.hooks.emit(f.pos.x, f.pos.y, { k: "job", t: f.id, cls });
+    this.hooks.jobChange(id, cls);
+    if (giftDef) this.hooks.tell(id, { k: "loot", item: giftDef.id, n: 1 });
+    this.save(f);
+  }
+
+  /** Spends a skill point. */
+  learnSkill(id: string, skill: SkillId) {
+    const f = this.fighters.get(id);
+    const s = SKILLS[skill];
+    if (!f || s.cls !== f.cls) return;
+    const lv = f.skills[skill] ?? 0;
+    if (lv >= SKILL_MAX) return;
+    if (pointsLeft(f.cls, f.player.lv, f.skills) <= 0) return this.hooks.notice(id, "No skill points left. You get one every level.");
+    f.skills[skill] = lv + 1;
+    f.dirty = f.sheetDirty = true;
+    this.save(f);
+  }
+
+  /** Uses a skill: on `targetId` (or your target) for the ones aimed at a monster. */
+  useSkill(id: string, skill: SkillId, targetId?: string) {
+    const f = this.fighters.get(id);
+    const s = SKILLS[skill];
+    if (!f || f.player.dead || s.cls !== f.cls) return;
+    const lv = f.skills[skill] ?? 0;
+    if (lv < 1) return this.fail(f, `Learn ${s.name} first (K)`);
+    const now = Date.now();
+    // Too soon: the client shows the cooldowns, so this is only key mashing.
+    if (now < f.gcdAt || now < (f.cooldowns.get(skill) ?? 0)) return;
+    const weapon = f.inv.gear.weapon && ITEMS[f.inv.gear.weapon.id];
+    if (s.weapon && weapon?.weapon !== s.weapon) return this.fail(f, `${s.name} needs a ${WEAPON_NAMES[s.weapon]}`);
+    const attack = s.kind !== "self";
+    if (attack && inSafeZone(f.pos.x, f.pos.y)) return this.fail(f, "No fighting in town");
+    let mob: Mob | undefined;
+    if (s.kind === "strike" || s.kind === "rain") {
+      mob = this.mobs.get(targetId || f.target || "");
+      if (!mob) return this.fail(f, "No target");
+      if (dist(f.pos, mob) > (s.range ?? f.stats.range) + mob.def.radius + REACH_SLACK) return this.fail(f, "Too far away");
+    }
+    const mp = s.mp(lv);
+    if (f.mp < mp) return this.fail(f, "Not enough MP");
+    if (s.heal && !s.buff && f.player.hp >= f.stats.maxHp) return this.fail(f, "Already at full health");
+
+    f.mp -= mp;
+    f.dirty = f.sheetDirty = true;
+    f.gcdAt = now + GLOBAL_COOLDOWN_MS;
+    f.cooldowns.set(skill, now + s.cooldownMs);
+    f.player.sit = false;
+    if (attack) f.lastCombatAt = now;
+    if (mob) {
+      f.target = mob.id;
+      f.player.dir = dirTo(mob.x - f.pos.x, mob.y - f.pos.y);
+    }
+    this.hooks.emit(f.pos.x, f.pos.y, { k: "cast", a: f.id, s: skill, ...(mob && { t: mob.id }) });
+
+    if (s.kind === "strike" && mob) {
+      for (let i = 0; i < (s.hits ?? 1) && this.mobs.has(mob.id); i++) this.skillHit(f, mob, s, lv, now);
+    } else if (s.kind === "burst" || s.kind === "rain") {
+      const at = mob ? { x: mob.x, y: mob.y } : f.pos;
+      for (const m of [...this.mobs.values()]) {
+        if (dist(at, m) > (s.radius ?? 0) + m.def.radius) continue;
+        this.skillHit(f, m, s, lv, now);
+        if (s.freezeMs && this.mobs.has(m.id)) {
+          const ms = s.freezeMs(lv);
+          m.frozenUntil = now + ms;
+          this.halt(m);
+          this.hooks.emit(m.x, m.y, { k: "freeze", t: m.id, ms });
+        }
+      }
+    } else {
+      if (s.heal) {
+        const healed = Math.min(Math.round(f.stats.maxHp * s.heal(lv)), f.stats.maxHp - f.player.hp);
+        f.player.hp += healed;
+        this.hooks.emit(f.pos.x, f.pos.y, { k: "heal", t: f.id, d: healed });
+      }
+      if (s.buff) {
+        f.buffs.set(skill, { lv, until: now + s.buff.ms });
+        this.restat(f);
+      }
+    }
+  }
+
+  /** One hit of a skill: skills never miss, and every monster they touch fights back. */
+  private skillHit(f: Fighter, mob: Mob, s: SkillDef, lv: number, now: number) {
+    this.provoke(mob, f, now);
+    const { damage, crit } = rollDamage(Math.round(f.stats.atk * (s.power?.(lv) ?? 1)), mob.def.def, f.stats.crit);
+    this.hurt(mob, f, damage, { ...(crit && { crit: 1 as const }), skill: s.id as SkillId });
+  }
+
+  /** Why a skill didn't go off, floated over your head. */
+  private fail(f: Fighter, why: string) {
+    this.hooks.tell(f.id, { k: "fail", why });
+  }
+
+  private expireBuffs(f: Fighter, now: number) {
+    let changed = false;
+    for (const [id, b] of f.buffs) {
+      if (now < b.until) continue;
+      f.buffs.delete(id);
+      changed = true;
+    }
+    if (changed) this.restat(f);
+  }
+
   // ---------------------------------------------------------------- monsters
 
   private spawn(group: number) {
@@ -653,6 +890,7 @@ export class Combat {
       restUntil: Date.now() + rand(500, 4000),
       stuckFor: 0,
       damage: new Map(),
+      frozenUntil: 0,
     });
     this.monsters.set(id, state);
   }
@@ -672,6 +910,11 @@ export class Combat {
 
   private think(mob: Mob, dtMs: number, now: number) {
     const def = mob.def;
+    // Frozen solid: no moving, no biting, until it thaws.
+    if (now < mob.frozenUntil) {
+      this.halt(mob);
+      return;
+    }
     let target = mob.target ? this.fighters.get(mob.target) : undefined;
     if (mob.target && (!target || !this.canChase(mob, target))) {
       this.giveUp(mob);

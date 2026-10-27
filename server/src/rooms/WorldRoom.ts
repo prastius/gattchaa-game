@@ -13,6 +13,9 @@ import {
   sanitizeName,
   type AuthInfo,
   type CardInsertMessage,
+  type JobMessage,
+  type SkillLearnMessage,
+  type SkillUseMessage,
   type ChatMessage,
   type ChatSend,
   type CorrectMessage,
@@ -33,9 +36,10 @@ import {
 } from "../../../shared/protocol";
 import { DOORS, placeName } from "../../../shared/town";
 import type { DoorMessage } from "../../../shared/protocol";
-import { LEVEL_CAP } from "../../../shared/rpg";
+import { CLASSES, LEVEL_CAP, aClass, isClassId } from "../../../shared/rpg";
+import { isSkillId } from "../../../shared/skills";
 import { BAG_SIZE, ITEMS, OUTFITTER_STOCK, isItemId, isSlot } from "../../../shared/items";
-import { NPCS } from "../../../shared/npcs";
+import { NPCS, type NpcKind } from "../../../shared/npcs";
 import { SHOP_AWAY_HOURS, inShopZone, sanitizeShopTitle, shopSpotProblem, type ShopOpenMessage, type ShopResult } from "../../../shared/vending";
 import { Drop, Monster, Player, PlayerShop, WorldState } from "./WorldState";
 import { NpcBrain } from "./NpcBrain";
@@ -168,6 +172,16 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     "item:pickup": (client: Client, msg: PickupMessage) => {
       if (this.itemOk(client) && typeof msg?.id === "string") this.combat.pickup(client.sessionId, msg.id.slice(0, 16));
     },
+    job: (client: Client, msg: JobMessage) => {
+      if (this.itemOk(client) && this.npcNear(client, msg?.npc, "jobs") && isClassId(msg.cls)) this.combat.changeJob(client.sessionId, msg.cls);
+    },
+    "skill:learn": (client: Client, msg: SkillLearnMessage) => {
+      if (this.itemOk(client) && isSkillId(msg?.id)) this.combat.learnSkill(client.sessionId, msg.id);
+    },
+    "skill:use": (client: Client, msg: SkillUseMessage) => {
+      if (!this.itemOk(client) || !isSkillId(msg?.id)) return;
+      this.combat.useSkill(client.sessionId, msg.id, typeof msg.t === "string" ? msg.t.slice(0, 16) : undefined);
+    },
     "npc:buy": (client: Client, msg: NpcBuyMessage) => this.handleBuy(client, msg),
     "npc:sell": (client: Client, msg: NpcSellMessage) => this.handleSell(client, msg),
     "shop:open": (client: Client, msg: ShopOpenMessage) => {
@@ -203,6 +217,10 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       levelUp: (id, lv) => {
         const name = this.state.players.get(id)?.name;
         if (name && lv % 10 === 0) this.system(`${name} reached level ${lv}!`);
+      },
+      jobChange: (id, cls) => {
+        const name = this.state.players.get(id)?.name;
+        if (name) this.system(`🎉 ${name} became ${aClass(cls)}!`);
       },
       found: (id, item) => {
         const name = this.state.players.get(id)?.name;
@@ -468,13 +486,18 @@ export class WorldRoom extends Room<{ state: WorldState }> {
   private bagSlot = (slot: unknown): slot is number => Number.isInteger(slot) && (slot as number) >= 0 && (slot as number) < BAG_SIZE;
 
   /** The merchant NPC you're trading with, if you're really standing at their counter. */
-  private merchant(client: Client, npcId: unknown) {
+  /** The NPC of that kind, if you're standing with them. */
+  private npcNear(client: Client, npcId: unknown, kind: NpcKind) {
     const meta = this.meta.get(client.sessionId);
     const def = NPCS.find((n) => n.id === npcId);
     const npc = def && this.state.npcs.get(def.id);
-    if (!meta || !def || !npc || def.kind !== "outfitter") return undefined;
+    if (!meta || !def || !npc || def.kind !== kind) return undefined;
     if (Math.hypot(npc.x - meta.x, npc.y - meta.y) > TRADE_RANGE) return undefined;
     return def;
+  }
+
+  private merchant(client: Client, npcId: unknown) {
+    return this.npcNear(client, npcId, "outfitter");
   }
 
   private handleBuy(client: Client, msg: NpcBuyMessage) {
@@ -756,7 +779,13 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       this.combat.cheatGold(client.sessionId, n);
       return reply(`Test command: you now have ${Math.max(0, Math.floor(n))} gold.`);
     }
-    reply(`Test commands: /level <1-${LEVEL_CAP}>, /item <id> [count], /gold <amount>. Item ids: ${Object.keys(ITEMS).join(", ")}`);
+    if (name === "job" && isClassId(arg)) {
+      this.combat.cheatJob(client.sessionId, arg);
+      return reply(`Test command: job set to ${CLASSES[arg].name} (jobs need level 10).`);
+    }
+    reply(
+      `Test commands: /level <1-${LEVEL_CAP}>, /item <id> [count], /gold <amount>, /job <novice|knight|mage|archer>. Item ids: ${Object.keys(ITEMS).join(", ")}`,
+    );
   }
 
   private system(text: string) {

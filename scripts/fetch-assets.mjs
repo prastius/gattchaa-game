@@ -183,6 +183,13 @@ const GEAR = [
   ["swordIron", "Iron arming sword", "weapons/sword/weapon_sword_arming.json", { variant: "iron" }],
   ["swordBronze", "Bronze arming sword", "weapons/sword/weapon_sword_arming.json", { variant: "bronze" }],
   ["saber", "Saber", "weapons/sword/weapon_sword_saber.json"],
+  ["longsword", "Longsword", "weapons/sword/weapon_sword_longsword.json"],
+  // Bows only walk in big 128px frames; the client cuts the middle 64px out of each.
+  ["bow", "Bow", "weapons/ranged/bow/weapon_ranged_bow_normal.json", { variant: "medium", walk128: true }],
+  ["recurve", "Recurve bow", "weapons/ranged/bow/weapon_ranged_bow_recurve.json", { variant: "dark", walk128: true }],
+  ["staff", "Simple staff", "weapons/magic/weapon_magic_simple.json"],
+  ["gnarled", "Gnarled staff", "weapons/magic/weapon_magic_gnarled.json", { variant: "medium" }],
+  ["crystal", "Crystal staff", "weapons/magic/weapon_magic_crystal.json", { variant: "blue" }],
   ["shield", "Heater shield", "weapons/shields/heater/shield_heater_wood.json"],
 ].map(([id, label, def, opts]) => ["gear", id, label, def, B, opts]);
 
@@ -362,6 +369,14 @@ function basesOf(def) {
   return out;
 }
 
+/** A bow's walking layers: drawn in 128px frames, as their own "walk_128" animation. */
+const walk128LayersOf = (def) =>
+  Object.keys(def)
+    .filter((k) => /^layer_\d+$/.test(k))
+    .sort()
+    .map((k) => def[k])
+    .filter((l) => l.custom_animation === "walk_128");
+
 /** URL of one animation sheet ("walk", "sit"…) for a layer directory. */
 const sheetUrl = (dir, anim, variant) =>
   variant ? `${ULPC}/spritesheets/${dir}${anim}/${variant}.png` : `${ULPC}/spritesheets/${dir}${anim}.png`;
@@ -378,15 +393,16 @@ async function fetchItem([category, id, label, defPath, bodies, opts = {}]) {
   const item = { ...base, materials, ...(Object.keys(bases).length && { bases }) };
   const hasSit = (def.animations ?? []).includes("sit");
 
-  const layers = layersOf(def);
+  const layers = opts.walk128 ? walk128LayersOf(def) : layersOf(def);
   for (const [li, layer] of layers.entries()) {
-    const out = { z: layer.zPos, files: {} };
+    const out = { z: layer.zPos, files: {}, ...(opts.walk128 && { frame: 128 }) };
     for (const body of bodies) {
       const dir = layer[body];
       if (!dir) continue;
       const rel = `lpc/${category}/${id}/${li}_${body}.png`;
+      const url = opts.walk128 ? `${ULPC}/spritesheets/${dir}${variant}.png` : sheetUrl(dir, "walk", variant);
       try {
-        await save(rel, await get(sheetUrl(dir, "walk", variant), "bin"));
+        await save(rel, await get(url, "bin"));
         out.files[body] = { walk: rel };
       } catch (err) {
         console.warn(`  ${category}/${id} layer ${li} ${body}: ${err.message}`);
@@ -447,7 +463,8 @@ async function main() {
   await fs.rm(path.join(OUT, "lpc"), { recursive: true, force: true });
   // v3: layers carry "sit" sheets too; items without them list stand-in sitLayers.
   // v4: equipment art (category "gear"), metal and wood palettes, per-item palette bases.
-  const manifest = { version: 4, frame: 64, items: [], palettes: {} };
+  // v5: a layer may say `frame: 128` (bows): its walk sheet uses big frames with the usual 64px one in the middle.
+  const manifest = { version: 5, frame: 64, items: [], palettes: {} };
   const credits = new Map();
 
   for (const [mat, file] of Object.entries(PALETTES)) {

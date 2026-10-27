@@ -9,7 +9,9 @@ import {
   type ShopRoom,
 } from "../../../shared/gattchaa";
 import { SHOP_AWAY_HOURS, SHOP_TITLE_MAX, signText, type PlayerShopDetails, type PlayerShopView } from "../../../shared/vending";
-import { ITEMS, OUTFITTER_STOCK, RARITY, bonusText, itemName, sellPrice, type ItemDef, type ItemId } from "../../../shared/items";
+import { ITEMS, OUTFITTER_STOCK, RARITY, bonusText, itemName, sellPrice, wearersText, withArticle, type ItemDef, type ItemId } from "../../../shared/items";
+import { CLASSES, JOBS, JOB_LEVEL, JOB_WEAPON, aClass, isClassId, statsFor, type ClassId } from "../../../shared/rpg";
+import { skillsOf } from "../../../shared/skills";
 import { FRAME, composeCharacter, itemIcon } from "../character";
 import type { Shop } from "../shop";
 import type { Vending } from "../vending";
@@ -98,6 +100,10 @@ export class TownDialog {
   private spotTimer?: number;
   /** Which side of a merchant's counter is showing. */
   private tradeTab: "buy" | "sell" = "buy";
+  /** The job you picked at the Job Master, waiting for "yes". */
+  private jobConfirm?: ClassId;
+  /** Opens the skills window (from the Job Master). */
+  openSkills?: () => void;
   /** Where the conversation is happening; walking away closes it. */
   anchor = { x: 0, y: 0 };
   /** Where your character stands right now (set by the game scene). */
@@ -117,11 +123,10 @@ export class TownDialog {
     // Live data changes (stock, seats, shops opening) refresh whatever is open.
     shop.onChange(() => this.refresh(false));
     vending.onChange.add(() => this.refresh(true));
-    // Gold and bag changes redraw a merchant's counter.
+    // Gold and bag changes redraw a merchant's counter; a new job redraws the Job Master.
     const trade = () => {
-      if (this.isOpen && this.openTarget && NPCS.find((n) => `npc:${n.id}` === this.openTarget)?.kind === "outfitter") {
-        this.render(this.openTarget, false);
-      }
+      const kind = this.isOpen && this.openTarget ? NPCS.find((n) => `npc:${n.id}` === this.openTarget)?.kind : undefined;
+      if (kind === "outfitter" || kind === "jobs") this.render(this.openTarget!, false);
     };
     net.onBag.add(trade);
     net.onStats.add(trade);
@@ -139,6 +144,7 @@ export class TownDialog {
     this.anchor = at;
     this.backTo = undefined;
     this.tradeTab = "buy";
+    this.jobConfirm = undefined;
     audio.blip();
     this.render(target, true);
     this.root.hidden = false;
@@ -236,6 +242,9 @@ export class TownDialog {
       case "outfitter":
         this.counter(npc);
         break;
+      case "jobs":
+        this.jobs(npc);
+        break;
       case "keeper":
         this.shopList();
         if (!this.vending.auth.signedIn) this.signInButton("Sign in to open your own shop");
@@ -244,6 +253,62 @@ export class TownDialog {
       default:
         break;
     }
+  }
+
+  // ------------------------------------------------------------------ the Job Master
+
+  /** Knight, Mage or Archer: what each is like, and (from level 10) the choice, for good. */
+  private jobs(npc: NpcDef) {
+    const st = this.net.stats;
+    const lv = st?.lv ?? 1;
+    if (st && st.cls !== "novice" && isClassId(st.cls)) {
+      this.body.append(el("p", "dialog-empty", `You are ${aClass(st.cls)} now. Every level brings a skill point: spend them in your skills (K).`));
+      this.button("Open my skills", "K", () => this.openSkills?.(), "primary");
+      return;
+    }
+    const pick = this.jobConfirm;
+    if (pick) {
+      const gift = JOB_WEAPON[pick];
+      this.body.append(el("p", "job-confirm", `Become ${aClass(pick)}? A job is for life: you can't change it later.`));
+      this.button(`Yes, make me ${aClass(pick)}`, gift ? `You get ${withArticle(ITEMS[gift].name)}` : undefined, () => {
+        this.jobConfirm = undefined;
+        this.net.chooseJob(npc.id, pick);
+      }, "primary");
+      this.button("Let me think again", undefined, () => {
+        this.jobConfirm = undefined;
+        this.render(`npc:${npc.id}`, false);
+      });
+      return;
+    }
+    const ready = lv >= JOB_LEVEL;
+    if (!ready) this.body.append(el("p", "dialog-note", `You're level ${lv}. Come back at level ${JOB_LEVEL}: the South Meadow outside the gate is the place to train.`));
+    const at = Math.max(lv, JOB_LEVEL);
+    const cards = el("div", "job-cards");
+    for (const id of JOBS) {
+      const c = CLASSES[id];
+      const s = statsFor(id, at);
+      const card = el("div", `job-card job-${id}`);
+      card.append(
+        el("div", "job-name", c.name),
+        el("p", "job-blurb", c.blurb),
+        el("div", "job-stats", `At level ${at}: HP ${s.maxHp} · MP ${s.maxMp} · ATK ${s.atk} · DEF ${s.def}`),
+        el("div", "job-skills", `Skills: ${skillsOf(id).map((k) => k.name).join(", ")}`),
+      );
+      const gift = JOB_WEAPON[id];
+      if (gift) card.append(el("div", "job-gift", `Starts with ${withArticle(ITEMS[gift].name)} (${wearersText(ITEMS[gift]).toLowerCase() || "anyone"})`));
+      const b = el("button", "job-choose", ready ? `Become ${aClass(id)}` : `Level ${JOB_LEVEL} needed`);
+      b.type = "button";
+      b.disabled = !ready;
+      b.addEventListener("click", () => {
+        audio.blip();
+        this.jobConfirm = id;
+        this.render(`npc:${npc.id}`, false);
+        this.body.scrollTop = 0;
+      });
+      card.append(b);
+      cards.append(card);
+    }
+    this.body.append(cards);
   }
 
   // ------------------------------------------------------------------ NPC merchants (in-game gold)
@@ -330,6 +395,8 @@ export class TownDialog {
   private wareInfo(it: ItemDef): string {
     const parts = [bonusText(it) || it.desc];
     if (it.lv && it.lv > 1) parts.unshift(`Lv ${it.lv}+`);
+    const who = wearersText(it);
+    if (who) parts.unshift(who);
     return parts.join(" · ");
   }
 

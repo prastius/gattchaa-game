@@ -1,6 +1,7 @@
 // Message contract between client and server.
 
 import type { Slot } from "./items";
+import type { SkillId, SkillLevels } from "./skills";
 
 export const ROOM_NAME = "world";
 
@@ -108,9 +109,16 @@ export interface StatsMessage {
   mp: number;
   mmp: number;
   gold: number;
-  /** Attack and defence, equipment included. */
+  /** Attack and defence, equipment and buffs included. */
   atk: number;
   def: number;
+  /** How close (px, feet to feet, plus the monster's size) you hit from: more with a bow or staff. */
+  range: number;
+  /** Learned skills, and skill points not spent yet. */
+  skills: SkillLevels;
+  points: number;
+  /** Buffs running on you, and how long each has left (ms). */
+  buffs: { id: SkillId; ms: number }[];
   /** Signed in, so progress is saved. Guests start over next visit. */
   saved: boolean;
 }
@@ -141,6 +149,23 @@ export interface CardInsertMessage {
   gear?: Slot;
 }
 
+/** client -> server: become a Knight, Mage or Archer (at the Job Master, from level 10). */
+export interface JobMessage {
+  npc: string;
+  cls: string;
+}
+
+/** client -> server: spend a skill point. */
+export interface SkillLearnMessage {
+  id: string;
+}
+
+/** client -> server: use a skill (on `t`, a monster id, or your current target). */
+export interface SkillUseMessage {
+  id: string;
+  t?: string;
+}
+
 /** client -> server: pick up an item lying on the ground. */
 export interface PickupMessage {
   id: string;
@@ -161,8 +186,8 @@ export type NpcSellMessage = { npc: string; slot: number; n: number } | { npc: s
  * Ids are player session ids or monster ids (see MONSTER_ID_PREFIX).
  */
 export type FxEvent =
-  /** thorn: damage reflected back by a card (no swing, no slash). */
-  | { k: "hit"; a: string; t: string; d: number; crit?: 1; thorn?: 1 }
+  /** thorn: damage reflected back by a card (no swing, no slash). skill: a skill's hit (drawn its way). */
+  | { k: "hit"; a: string; t: string; d: number; crit?: 1; thorn?: 1; skill?: SkillId }
   | { k: "miss"; a: string; t: string }
   /** A monster was defeated, or a player was knocked out. */
   | { k: "down"; t: string }
@@ -174,7 +199,15 @@ export type FxEvent =
   /** A potion (or anything else) healed someone. */
   | { k: "heal"; t: string; d: number }
   /** Someone put a card into their equipment. */
-  | { k: "card"; t: string };
+  | { k: "card"; t: string }
+  /** Someone used a skill (at monster `t`, for the ones aimed at something). Its hits follow. */
+  | { k: "cast"; a: string; s: SkillId; t?: string }
+  /** A monster can't move or bite for `ms`. */
+  | { k: "freeze"; t: string; ms: number }
+  /** Someone became a Knight, Mage or Archer. */
+  | { k: "job"; t: string; cls: string }
+  /** Only to you: why a skill didn't go off ("Not enough MP"). */
+  | { k: "fail"; why: string };
 
 /** Monster ids start with this; player session ids never do. */
 export const MONSTER_ID_PREFIX = "~";
@@ -197,6 +230,8 @@ export interface PlayerView {
   dead?: boolean;
   /** Visible equipment (see gearString in items.ts). */
   gear?: string;
+  /** Class id ("novice", "knight"…). */
+  cls?: string;
 }
 
 /** Read-only shape of an item lying on the ground. */

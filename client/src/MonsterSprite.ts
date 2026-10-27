@@ -27,6 +27,8 @@ export class MonsterSprite {
   private isTarget = false;
   private isHovered = false;
   private dying = false;
+  private frozen = false;
+  private thaw?: Phaser.Time.TimerEvent;
 
   moving = false;
   dir: number = Dir.Down;
@@ -97,7 +99,7 @@ export class MonsterSprite {
 
   /** Per frame: the idle/move loop for the way it faces (quicker while moving). */
   animate() {
-    if (this.dying) return;
+    if (this.dying || this.frozen) return;
     this.sprite.anims.timeScale = this.moving ? 1.6 : 1;
     if (this.attacking) return;
     const key = moveAnim(this.kind, this.dir);
@@ -106,7 +108,7 @@ export class MonsterSprite {
 
   /** Lunges/bites toward `dir`, then goes back to its loop. */
   attack(dir: number) {
-    if (this.dying) return;
+    if (this.dying || this.frozen) return;
     this.dir = dir;
     this.attacking = true;
     this.sprite.play(attackAnim(this.kind, dir));
@@ -121,8 +123,30 @@ export class MonsterSprite {
     if (this.dying) return;
     this.sprite.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL);
     this.scene.time.delayedCall(FLASH_MS, () => {
-      if (!this.dying) this.sprite.clearTint();
+      if (!this.dying) this.restTint();
     });
+  }
+
+  /** Frost Nova: ice blue and stock still for `ms`. */
+  freeze(ms: number) {
+    if (this.dying) return;
+    this.frozen = true;
+    this.sprite.anims.pause();
+    this.restTint();
+    this.thaw?.remove();
+    this.thaw = this.scene.time.delayedCall(ms, () => {
+      this.frozen = false;
+      if (this.dying) return;
+      this.sprite.anims.resume();
+      this.restTint();
+    });
+  }
+
+  /** Its colour between flashes: ice blue while frozen, its own otherwise. */
+  private restTint() {
+    // Screen lightens toward the tint: an icy blue-white whatever the monster's colour.
+    if (this.frozen) this.sprite.setTint(0x5fa8ff).setTintMode(Phaser.TintModes.SCREEN);
+    else this.sprite.clearTint();
   }
 
   setHp(hp: number) {
@@ -198,6 +222,7 @@ export class MonsterSprite {
 
   destroy() {
     this.dying = true;
+    this.thaw?.remove();
     this.ringTween?.remove();
     this.container.destroy();
   }

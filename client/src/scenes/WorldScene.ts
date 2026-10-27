@@ -16,7 +16,8 @@ import {
   type SitMessage,
   type TargetMessage,
 } from "../../../shared/protocol";
-import { isClassId, isMonsterId, reach, statsFor } from "../../../shared/rpg";
+import { CLASSES, JOB_LEVEL, aClass, isClassId, isMonsterId, reach } from "../../../shared/rpg";
+import { SKILLS, type SkillId } from "../../../shared/skills";
 import { ITEMS, PICKUP_RANGE, RARITY, appearanceKey, isItemId, parseCards } from "../../../shared/items";
 import { NPCS, type NpcDef } from "../../../shared/npcs";
 import { DOORS, INTERIOR_ZONE, PROPS, TOWN_AREA, inRect } from "../../../shared/town";
@@ -24,7 +25,7 @@ import { CharacterTextures, PlayerSprite } from "../PlayerSprite";
 import { MonsterSprite } from "../MonsterSprite";
 import { DropSprite } from "../DropSprite";
 import { createMonsterAnims, levelColor, preloadMonsters } from "../world/monsterArt";
-import { Fx, type NumberKind } from "../world/fx";
+import { Fx, flightMs, type Missile, type NumberKind } from "../world/fx";
 import { ATLAS_MARGIN, ATLAS_SPACING, FLOOR_TEX, buildTerrainAtlas, floorCell, structKey, tileCells, type TerrainAtlas } from "../world/terrainTiles";
 import { WORLD_TEX, createDecor, registerDecorFrames, type DecorSprite } from "../world/decorSprites";
 import { Town, preloadTown, type Hotspot } from "../world/town";
@@ -37,6 +38,7 @@ import type { ChatUI } from "../ui/chat";
 import type { HUD } from "../ui/hud";
 import type { StatusPanel } from "../ui/status";
 import type { BagPanel } from "../ui/bag";
+import type { SkillsUI } from "../ui/skills";
 import type { Net } from "../net";
 import type { Shop } from "../shop";
 import type { TownDialog } from "../ui/dialog";
@@ -53,6 +55,7 @@ export interface WorldSceneData {
   vending: Vending;
   status: StatusPanel;
   bag: BagPanel;
+  skills: SkillsUI;
 }
 
 interface Chunk {
@@ -116,6 +119,17 @@ const TARGET_DROP_RANGE = 700;
 const CHASE_MARGIN = 8;
 const NO_TARGET_HINT_MS = 3000;
 /** Loot further than this (px) can't be clicked from where you stand. */
+/** A skill pressed out of range is cast on arrival, if you get there this soon. */
+const PENDING_SKILL_MS = 4000;
+const SKILL_HINT_MS = 900;
+/** A monster biting from further than this spits something (Snapper Flower seeds). */
+const MONSTER_SPIT_PX = 90;
+/** Double Shot: the second arrow leaves this long after the first. */
+const DOUBLE_SHOT_GAP_MS = 110;
+/** Arrow Rain's numbers show when the arrows land. */
+const RAIN_LAND_MS = 260;
+/** Flight time of a missile between two bodies (same as Fx.missile). */
+const flightMsFor = (a: { x: number; mid: number }, t: { x: number; mid: number }) => flightMs(Math.hypot(t.x - a.x, t.mid - a.mid));
 const LOOT_CLICK_RANGE = 420;
 /** Ask again if the server hasn't answered a pick-up by then (it was a step ahead of us). */
 const PICKUP_RETRY_MS = 500;
@@ -168,6 +182,12 @@ export class WorldScene extends Phaser.Scene {
   private vending!: Vending;
   private status!: StatusPanel;
   private bag!: BagPanel;
+  private skills!: SkillsUI;
+  /** A skill pressed while the target was out of range: cast once we've walked close enough. */
+  private pendingSkill?: { id: SkillId; at: number };
+  private skillHintAt = 0;
+  /** The last missile each attacker fired, so a Double Shot's arrows fly one after the other. */
+  private lastShot = new Map<string, number>();
 
   private charTextures!: CharacterTextures;
   private atlas!: TerrainAtlas;
@@ -317,6 +337,13 @@ export class WorldScene extends Phaser.Scene {
     this.hud.onEmote((e) => this.emote(e));
     this.hud.onAttack(() => this.targetNearest());
     this.hud.onBag(() => this.bag.toggle());
+    this.hud.onSkills(() => this.skills.toggle());
+    this.skills.onUse = (id) => this.castSkill(id);
+    this.skills.onPoints = (n) => this.hud.setSkillPoints(n);
+    this.dialog.openSkills = () => {
+      this.dialog.close();
+      this.skills.open();
+    };
     this.hud.onPotion(() => this.drinkPotion());
     this.bag.appearance = () => {
       const me = this.entities.get(this.room.sessionId)?.state;
@@ -362,8 +389,12 @@ export class WorldScene extends Phaser.Scene {
       else if (e.key === "-" || e.key === "_") this.zoomBy(-1);
       else if (e.key === "i" || e.key === "I") this.bag.toggle();
       else if (e.key === "q" || e.key === "Q") this.drinkPotion();
-      // 1-9 and 0: the emotes, in picker order.
-      else if (/^[0-9]$/.test(e.key)) this.emote((Number(e.key) + 9) % 10);
+      else if (e.key === "k" || e.key === "K") this.skills.toggle();
+      // 1-6: your skills, in skill-bar order (emotes are on the emote button).
+      else if (/^[1-6]$/.test(e.key) && !e.repeat) {
+        const skill = this.skills.mine[Number(e.key) - 1];
+        if (skill) this.castSkill(skill.id as SkillId);
+      }
     });
     this.hud.onZoom((step) => this.zoomBy(step));
     this.input.on("pointerup", () => (this.pointerUsed = false));
@@ -619,6 +650,7 @@ export class WorldScene extends Phaser.Scene {
     }
     for (const d of this.drops.values()) d.sprite.locked = Boolean(d.state.owner) && d.state.owner !== this.room.sessionId;
     this.updateTarget();
+    this.updatePendingSkill(now);
     this.clock.update(dt, starved);
 
     this.updateIndoors();
@@ -785,10 +817,77 @@ export class WorldScene extends Phaser.Scene {
     return this.entities.get(this.room.sessionId)?.state.lv ?? 1;
   }
 
-  /** How close (feet to feet) you must be to hit this monster. */
+  /** How close (feet to feet) you must be to hit this monster: further with a bow or staff. */
   private myReach(mob: MobEntity): number {
-    const cls = this.net.stats?.cls;
-    return reach(statsFor(isClassId(cls) ? cls : "novice", this.myLevel).range, mob.sprite.def);
+    return reach(this.net.stats?.range ?? CLASSES.novice.range, mob.sprite.def);
+  }
+
+  /** How close you must be for a skill (its own range, or your weapon's reach). */
+  private skillReach(id: SkillId, mob: MobEntity): number {
+    const s = SKILLS[id];
+    return s.range !== undefined ? s.range + mob.sprite.def.radius : this.myReach(mob);
+  }
+
+  /**
+   * A skill key or button: self and burst skills go off at once; aimed ones
+   * pick your target (or the nearest monster) and walk into range first.
+   */
+  private castSkill(id: SkillId) {
+    const self = this.self;
+    if (!self || self.dead) return;
+    const why = this.skills.notReady(id);
+    if (why === "cooldown") return;
+    if (why) return this.skillHint(why);
+    const s = SKILLS[id];
+    if (s.kind === "self" || s.kind === "burst") {
+      this.net.useSkill(id);
+      return;
+    }
+    if (!this.target || !this.monsters.has(this.target)) this.targetNearest();
+    const mob = this.target ? this.monsters.get(this.target) : undefined;
+    if (!mob) return;
+    if (Math.hypot(mob.sprite.x - self.x, mob.sprite.y - self.y) <= this.skillReach(id, mob) - CHASE_MARGIN) this.net.useSkill(id, this.target);
+    else {
+      this.pendingSkill = { id, at: performance.now() };
+      this.chasing = true;
+    }
+  }
+
+  /** Walking into range for a skill: cast it on arrival (or forget it after a few seconds). */
+  private updatePendingSkill(now: number) {
+    const p = this.pendingSkill;
+    const self = this.self;
+    if (!p || !self) return;
+    const mob = this.target ? this.monsters.get(this.target) : undefined;
+    if (!mob || self.dead || now - p.at > PENDING_SKILL_MS) {
+      this.pendingSkill = undefined;
+      return;
+    }
+    if (Math.hypot(mob.sprite.x - self.x, mob.sprite.y - self.y) > this.skillReach(p.id, mob) - CHASE_MARGIN) return;
+    this.pendingSkill = undefined;
+    if (!this.skills.notReady(p.id)) this.net.useSkill(p.id, this.target);
+  }
+
+  /** Why a skill didn't go off, floated over your head (not too often). */
+  private skillHint(text: string) {
+    const self = this.self;
+    const now = performance.now();
+    if (!self || now - this.skillHintAt < SKILL_HINT_MS) return;
+    this.skillHintAt = now;
+    this.fx.float(self.x, self.y - 84, text, "#ffb3a8");
+  }
+
+  /** What flies from an attacker to its target, if anything: arrows, bolts, fire or seeds. */
+  private missileFor(ev: Extract<FxEvent, { k: "hit" | "miss" }>, a: { x: number; y: number; mob?: MonsterSprite }, t: { x: number; y: number }): Missile | undefined {
+    if (ev.k === "hit" && ev.skill) {
+      const fx = SKILLS[ev.skill].fx;
+      return fx === "fire" ? "fire" : fx === "arrows" ? "arrow" : undefined;
+    }
+    if (a.mob) return Math.hypot(t.x - a.x, t.y - a.y) > MONSTER_SPIT_PX ? "seed" : undefined;
+    // Players: by the weapon in their hand (the first part of their gear string).
+    const weapon = this.entities.get(ev.a)?.state.gear?.split(".")[0];
+    const kind = weapon && isItemId(weapon) ? ITEMS[weapon].weapon : undefined;
+    return kind === "bow" ? "arrow" : kind === "staff" ? "bolt" : undefined;
   }
 
   /** Your own HP bar, the status panel, and fainting. */
@@ -1003,24 +1102,101 @@ export class WorldScene extends Phaser.Scene {
           this.fx.number(t.x, t.top, String(ev.d), ev.a === me ? "thorn" : "other");
           return;
         }
+        const missile = a && t ? this.missileFor(ev, a, t) : undefined;
+        const skill = ev.k === "hit" && ev.skill ? SKILLS[ev.skill] : undefined;
         if (a && t) {
           if (a.mob) a.mob.attack(dirTo(t.x - a.x, t.y - a.y));
-          else a.player?.lunge(t.x - a.x, t.y - a.y);
+          // Swords swing; bows, staves and spells don't.
+          else if (!missile && (!skill || skill.fx === "bash")) a.player?.lunge(t.x - a.x, t.y - a.y);
           if (ev.a === me && this.self) this.self.dir = dirTo(t.x - a.x, t.y - a.y);
         }
         if (!t) return;
-        if (ev.k === "miss") {
-          this.fx.number(t.x, t.top, "Miss", "miss");
-          if (ev.a === me) audio.swing();
-          return;
+        // Missiles land a moment later; the number shows when they do.
+        let delay = 0;
+        if (missile && a) {
+          const now = performance.now();
+          const stagger = now - (this.lastShot.get(ev.a) ?? 0) < 40 ? DOUBLE_SHOT_GAP_MS : 0;
+          this.lastShot.set(ev.a, now + stagger);
+          const fly = () => this.fx.missile(a.x, a.mid, t.x, t.mid, missile);
+          if (stagger) this.time.delayedCall(stagger, fly);
+          delay = stagger + (stagger ? flightMsFor(a, t) : fly());
+          if (ev.a === me && !skill) audio.shoot(missile !== "arrow");
+        } else if (skill?.fx === "rain") delay = RAIN_LAND_MS;
+        const land = () => {
+          const tb = this.body(ev.t) ?? t;
+          if (ev.k === "miss") {
+            this.fx.number(tb.x, tb.top, "Miss", "miss");
+            if (ev.a === me && !missile) audio.swing();
+            return;
+          }
+          tb.mob?.flash();
+          tb.player?.flash();
+          if (skill?.fx === "nova") this.fx.burst(tb.x, tb.mid, [0xffffff, 0xbfe9ff], 8);
+          else if (!a?.mob && !missile && skill?.fx !== "rain") this.fx.slash(tb.x, tb.mid);
+          const kind: NumberKind = ev.t === me ? "taken" : ev.a === me ? (ev.crit ? "crit" : "dealt") : "other";
+          this.fx.number(tb.x, tb.top, ev.crit && kind !== "taken" ? `${ev.d}!` : String(ev.d), kind);
+          if (ev.a === me) audio.hit(Boolean(ev.crit));
+          else if (ev.t === me) audio.hurt();
+        };
+        if (delay > 0) this.time.delayedCall(delay, land);
+        else land();
+        return;
+      }
+      case "cast": {
+        const a = this.body(ev.a);
+        const s = SKILLS[ev.s];
+        if (!a || !s) return;
+        const t = ev.t ? this.body(ev.t) : undefined;
+        if (ev.a === me) {
+          this.skills.started(ev.s);
+          audio.skill(s.fx);
         }
-        t.mob?.flash();
-        t.player?.flash();
-        if (!a?.mob) this.fx.slash(t.x, t.mid);
-        const kind: NumberKind = ev.t === me ? "taken" : ev.a === me ? (ev.crit ? "crit" : "dealt") : "other";
-        this.fx.number(t.x, t.top, ev.crit && kind !== "taken" ? `${ev.d}!` : String(ev.d), kind);
-        if (ev.a === me) audio.hit(Boolean(ev.crit));
-        else if (ev.t === me) audio.hurt();
+        if (t && a.player && ev.a === me && this.self) this.self.dir = dirTo(t.x - a.x, t.y - a.y);
+        switch (s.fx) {
+          case "whirl":
+            this.fx.whirl(a.x, a.y, s.radius ?? 72);
+            break;
+          case "nova":
+            this.fx.nova(a.x, a.y, s.radius ?? 100);
+            break;
+          case "rain":
+            if (t) this.fx.rain(t.x, t.y, s.radius ?? 80);
+            break;
+          case "guard":
+            this.fx.aura(a.x, a.y, 0xffd27a);
+            break;
+          case "eagle":
+            this.fx.aura(a.x, a.y, 0x9fe8ff);
+            break;
+          case "heal":
+            this.fx.aura(a.x, a.y, 0x7cf08a);
+            break;
+          case "bash":
+            if (t) this.fx.burst(t.x, t.mid, [0xffffff, 0xffd27a], 12);
+            break;
+          default:
+            break;
+        }
+        return;
+      }
+      case "freeze": {
+        this.monsters.get(ev.t)?.sprite.freeze(ev.ms);
+        return;
+      }
+      case "job": {
+        const b = this.body(ev.t);
+        if (!isClassId(ev.cls)) return;
+        const cls = CLASSES[ev.cls];
+        const tint = ev.cls === "knight" ? 0xff8a5c : ev.cls === "mage" ? 0xb98cff : 0x7ddb6e;
+        if (b) this.fx.levelUp(b.x, b.y, `${cls.name.toUpperCase()}!`, tint);
+        if (ev.t === me) {
+          audio.levelUp();
+          this.chat.addSystem(`You are now ${aClass(ev.cls)}! You have a skill point: open your skills (K) and learn one, then use it with key 1, 2 or 3.`);
+        }
+        return;
+      }
+      case "fail": {
+        this.skillHint(ev.why);
         return;
       }
       case "down": {
@@ -1041,7 +1217,14 @@ export class WorldScene extends Phaser.Scene {
         if (b) this.fx.levelUp(b.x, b.y);
         if (ev.t === me) {
           audio.levelUp();
-          this.chat.addSystem(`Level up! You are now level ${ev.lv}.${ev.lv === 10 ? " Soon the Job Master will let you become a Knight, Mage or Archer." : ""}`);
+          const cls = this.net.stats?.cls;
+          const extra =
+            cls === "novice" || !cls
+              ? ev.lv === JOB_LEVEL
+                ? " Visit Orin the Job Master, just inside the south gate, to become a Knight, Mage or Archer!"
+                : ""
+              : " +1 skill point (K).";
+          this.chat.addSystem(`Level up! You are now level ${ev.lv}.${extra}`);
         }
         return;
       }

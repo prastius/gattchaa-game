@@ -8,7 +8,7 @@ import { MARKET_WANDER, PARK_WANDER, STORE_WANDER, TILE, WANDER_AREA, type Rect 
 import type { ShopProduct } from "./gattchaa";
 import { Dir } from "./protocol";
 
-export type NpcKind = "guide" | "shop" | "kuji" | "rooms" | "market" | "grading" | "pickup" | "crier" | "keeper" | "outfitter" | "local";
+export type NpcKind = "guide" | "shop" | "kuji" | "rooms" | "market" | "grading" | "pickup" | "crier" | "keeper" | "outfitter" | "jobs" | "local";
 
 export interface NpcDef {
   id: string;
@@ -267,7 +267,20 @@ export const NPCS: NpcDef[] = [
     dir: Dir.Down,
     greeting:
       "Off to the South Meadow? Slimes (Lv 1) by the road only fight back if you hit them. Grass Snakes (Lv 4) hide in the west grass. Hornets (Lv 7) in the east field sting on sight, and Snapper Flowers (Lv 10) guard the lake. Click a monster or press Space to attack. Hurt? Sit down (X) to heal faster, or rest inside the walls.",
-    chatter: ["Monsters past this gate. Stay sharp!", "Hornets in the east field sting first!", "Hurt? Sit down and rest a while.", "Train hard, and one day you'll be a Knight."],
+    chatter: ["Monsters past this gate. Stay sharp!", "Hornets in the east field sting first!", "Hurt? Sit down and rest a while.", "Level 10? Orin the Job Master is just inside the gate."],
+  },
+  {
+    // Just inside the south gate: Novices walk past him on their way out, and come back at level 10.
+    id: "job-master",
+    name: "Orin",
+    title: "Job Master",
+    kind: "jobs",
+    look: look({ body: "male", hair: "long", hairColor: "white", beard: "beard", skin: "light", top: "cardigan", topColor: "navy", bottom: "longPants", bottomColor: "charcoal", shoes: "boots", shoesColor: "brown", hat: "hood", hatColor: "navy" }),
+    ...at(198.5, 241.6),
+    dir: Dir.Left,
+    greeting:
+      "Every hero starts as a Novice. Reach level 10 out in the meadow and come back to me: I'll make you a Knight, a Mage or an Archer. Choose well, for a job is for life.",
+    chatter: ["Knight, Mage or Archer… which will you be?", "Level 10, and not a day before!", "A job is for life. Choose well.", "Your skills grow with every level."],
   },
   {
     id: "outfitter",

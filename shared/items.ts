@@ -4,7 +4,7 @@
 // draws icons, gear on characters and the shop lists). Item ids are saved in
 // the database, so never rename one; retire it instead.
 
-import type { MonsterId } from "./rpg";
+import type { ClassId, MonsterId } from "./rpg";
 
 /** Equipment slots, in the order the bag window shows them. */
 export const SLOTS = ["weapon", "offhand", "head", "body", "legs", "feet", "ring", "amulet"] as const;
@@ -34,6 +34,16 @@ export const RARITY: Record<Rarity, { name: string; color: string }> = {
   legendary: { name: "Legendary", color: "#ffad42" },
 };
 
+/** What kind of weapon it is decides who can use it and how it attacks. */
+export type WeaponType = "dagger" | "sword" | "bow" | "staff";
+export const WEAPON_USERS: Record<WeaponType, readonly ClassId[]> = {
+  dagger: ["novice", "knight", "mage", "archer"],
+  sword: ["novice", "knight"],
+  bow: ["archer"],
+  staff: ["mage"],
+};
+export const WEAPON_NAMES: Record<WeaponType, string> = { dagger: "dagger", sword: "sword", bow: "bow", staff: "staff" };
+
 /** One piece of character art (a "gear" item in the LPC manifest) and its colours by material. */
 export interface GearArt {
   id: string;
@@ -62,6 +72,14 @@ export interface ItemDef {
   reflect?: number;
   /** Equipment: how many cards it holds. */
   slots?: number;
+  /** Weapons: what kind (who can use it, and arrows or magic bolts instead of a swing). */
+  weapon?: WeaponType;
+  /** Bows and staves: reach in pixels (feet to feet, plus the monster's size). */
+  range?: number;
+  /** Needs both hands: no shield with it. */
+  twoHanded?: boolean;
+  /** Only these classes may wear it (on top of what the weapon type allows). */
+  classes?: ClassId[];
   /** Cards: the equipment slots it goes into... */
   fits?: Slot[];
   /** ...the word it puts in front of that equipment's name ("Stinging Saber")... */
@@ -96,10 +114,17 @@ export const ITEMS = def({
   orangePotion: { name: "Orange Potion", kind: "use", rarity: "common", heal: 100, price: 40, icon: "potion_02f", desc: "Restores 100 HP." },
 
   // ------------------------------------------------------------ weapons
-  dagger: { name: "Dagger", kind: "equip", slot: "weapon", rarity: "common", lv: 1, slots: 1, atk: 3, price: 50, icon: "sword_01b", art: [{ id: "dagger" }], desc: "Short, light and better than your fists." },
-  shortSword: { name: "Short Sword", kind: "equip", slot: "weapon", rarity: "common", lv: 3, slots: 1, atk: 6, price: 160, icon: "sword_02b", art: [{ id: "swordIron" }], desc: "A plain iron sword. Every adventurer starts with one." },
-  bronzeSword: { name: "Bronze Sword", kind: "equip", slot: "weapon", rarity: "uncommon", lv: 6, slots: 2, atk: 10, sell: 150, icon: "sword_02d", art: [{ id: "swordBronze" }], desc: "Heavier than it looks. Hornets sometimes guard one." },
-  saber: { name: "Saber", kind: "equip", slot: "weapon", rarity: "rare", lv: 9, slots: 2, atk: 15, sell: 400, icon: "sword_03b", art: [{ id: "saber" }], desc: "A curved blade found tangled in Snapper Flower roots." },
+  dagger: { name: "Dagger", kind: "equip", slot: "weapon", weapon: "dagger", rarity: "common", lv: 1, slots: 1, atk: 3, price: 50, icon: "sword_01b", art: [{ id: "dagger" }], desc: "Short, light and better than your fists." },
+  shortSword: { name: "Short Sword", kind: "equip", slot: "weapon", weapon: "sword", rarity: "common", lv: 3, slots: 1, atk: 6, price: 160, icon: "sword_02b", art: [{ id: "swordIron" }], desc: "A plain iron sword. Every adventurer starts with one." },
+  bronzeSword: { name: "Bronze Sword", kind: "equip", slot: "weapon", weapon: "sword", rarity: "uncommon", lv: 6, slots: 2, atk: 10, sell: 150, icon: "sword_02d", art: [{ id: "swordBronze" }], desc: "Heavier than it looks. Hornets sometimes guard one." },
+  saber: { name: "Saber", kind: "equip", slot: "weapon", weapon: "sword", rarity: "rare", lv: 9, slots: 2, atk: 15, sell: 400, icon: "sword_03b", art: [{ id: "saber" }], desc: "A curved blade found tangled in Snapper Flower roots." },
+  // Class weapons: the Job Master gives one with the job; Bram sells them too.
+  squireSword: { name: "Squire's Longsword", kind: "equip", slot: "weapon", weapon: "sword", classes: ["knight"], rarity: "common", lv: 10, slots: 1, atk: 12, price: 900, icon: "sword_03c", art: [{ id: "longsword" }], desc: "Long and heavy, balanced for a knight's arm. Knights only." },
+  huntingBow: { name: "Hunting Bow", kind: "equip", slot: "weapon", weapon: "bow", twoHanded: true, rarity: "common", lv: 10, slots: 1, atk: 9, range: 170, price: 900, icon: "bow_01a", art: [{ id: "bow" }], desc: "Shoots from a safe distance. Needs both hands, so no shield." },
+  recurveBow: { name: "Recurve Bow", kind: "equip", slot: "weapon", weapon: "bow", twoHanded: true, rarity: "uncommon", lv: 12, slots: 2, atk: 14, range: 190, sell: 300, icon: "bow_02d", art: [{ id: "recurve" }], desc: "Dark wood, bent back on itself. Snapper Flowers sometimes hide one." },
+  apprenticeStaff: { name: "Apprentice Staff", kind: "equip", slot: "weapon", weapon: "staff", rarity: "common", lv: 10, slots: 1, atk: 9, mp: 15, range: 150, price: 900, icon: "staff_01a", art: [{ id: "staff" }], desc: "Plain ash wood that hums when you hold it. Casts bolts of magic from afar." },
+  gnarledStaff: { name: "Gnarled Staff", kind: "equip", slot: "weapon", weapon: "staff", rarity: "uncommon", lv: 12, slots: 2, atk: 14, mp: 25, range: 160, sell: 300, icon: "staff_03a", art: [{ id: "gnarled" }], desc: "A twisted root from the lake shore, still a little green." },
+  crystalStaff: { name: "Crystal Staff", kind: "equip", slot: "weapon", weapon: "staff", rarity: "rare", lv: 15, slots: 2, atk: 19, mp: 40, range: 170, sell: 800, icon: "staff_03c", art: [{ id: "crystal" }], desc: "A blue crystal that never stops glowing." },
 
   // ------------------------------------------------------------ shields
   woodShield: { name: "Wooden Shield", kind: "equip", slot: "offhand", rarity: "common", lv: 1, slots: 1, def: 2, price: 60, icon: "shield_01a", art: [{ id: "shield" }], desc: "Solid maple. Stops a slime, mostly." },
@@ -150,6 +175,9 @@ export const OUTFITTER_STOCK: ItemId[] = [
   "orangePotion",
   "dagger",
   "shortSword",
+  "squireSword",
+  "huntingBow",
+  "apprenticeStaff",
   "woodShield",
   "leatherCap",
   "chainCoif",
@@ -159,6 +187,23 @@ export const OUTFITTER_STOCK: ItemId[] = [
   "copperRing",
   "cloverCharm",
 ];
+
+/** "a Dagger", "an Apprentice Staff". */
+export const withArticle = (name: string) => `${/^[AEIOU]/i.test(name) ? "an" : "a"} ${name}`;
+
+/** Whether a class may wear this. */
+export function canWear(cls: ClassId, it: ItemDef): boolean {
+  if (it.classes && !it.classes.includes(cls)) return false;
+  return !it.weapon || WEAPON_USERS[it.weapon].includes(cls);
+}
+
+/** Who may wear it, when not everyone may ("Knights only"). */
+export function wearersText(it: ItemDef): string {
+  const who = it.classes ?? (it.weapon ? WEAPON_USERS[it.weapon] : undefined);
+  if (!who || who.length >= 4) return "";
+  const names: Record<ClassId, string> = { novice: "Novices", knight: "Knights", mage: "Mages", archer: "Archers" };
+  return `${who.map((c) => names[c]).join(" and ")} only`;
+}
 
 /** What a merchant pays for one. */
 export const sellPrice = (it: ItemDef) => it.sell ?? Math.floor((it.price ?? 0) / 2);

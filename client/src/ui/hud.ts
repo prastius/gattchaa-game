@@ -43,6 +43,8 @@ export class HUD {
   private potionBtn = document.getElementById("potion-btn") as HTMLButtonElement;
   private potionCount = document.getElementById("potion-count")!;
   private bagBtn = document.getElementById("bag-btn") as HTMLButtonElement;
+  private skillsBtn = document.getElementById("skills-btn") as HTMLButtonElement;
+  private skillsCount = document.getElementById("skills-count")!;
   private shopBtn = document.getElementById("shop-btn") as HTMLButtonElement;
   private shopLabel = document.getElementById("shop-label")!;
   private emoteBtn = document.getElementById("emote-btn") as HTMLButtonElement;
@@ -112,6 +114,16 @@ export class HUD {
     this.bagBtn.addEventListener("click", fn);
   }
 
+  onSkills(fn: () => void) {
+    this.skillsBtn.addEventListener("click", fn);
+  }
+
+  /** Unspent skill points: a badge on the skills button. */
+  setSkillPoints(n: number) {
+    this.skillsCount.hidden = n <= 0;
+    this.skillsCount.textContent = String(n);
+  }
+
   onSit(fn: () => void) {
     this.sitBtn.addEventListener("click", fn);
   }
@@ -123,14 +135,11 @@ export class HUD {
   /** The emote picker under the buttons: pick one to show it over your head. */
   onEmote(fn: (e: number) => void) {
     EMOTES.forEach((glyph, i) => {
-      const key = String((i + 1) % 10);
       const b = document.createElement("button");
       b.type = "button";
-      b.title = `${EMOTE_NAMES[i]} (${key})`;
+      b.title = EMOTE_NAMES[i];
       b.setAttribute("aria-label", EMOTE_NAMES[i]);
-      const kbd = document.createElement("kbd");
-      kbd.textContent = key;
-      b.append(glyph, kbd);
+      b.append(glyph);
       b.addEventListener("click", () => {
         fn(i);
         this.toggleEmotes(false);

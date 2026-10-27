@@ -220,14 +220,6 @@ button {
   outline: none;
 }
 
-.emote-picker kbd {
-  position: absolute;
-  right: 4px;
-  bottom: 2px;
-  color: var(--ink-dim);
-  font: 600 9px/1 system-ui, sans-serif;
-}
-
 /* "Open shop" / "My shop": the one orange button. */
 .hud-accent {
   background: var(--accent);
@@ -802,6 +794,255 @@ button {
   .bag-top,
   .bag-grid {
     justify-content: center;
+  }
+}
+
+/* ---------- Skills ---------- */
+
+/* The skill bar: bottom centre, clear of the chat; on phones, right above the chat. */
+.skillbar {
+  position: fixed;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  z-index: 4;
+}
+
+.skill-slot {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border-radius: 10px;
+  border: 1px solid rgba(235, 130, 36, 0.55);
+  background: radial-gradient(circle at 50% 45%, #4d463d, #2c2925 72%);
+  cursor: pointer;
+  overflow: hidden;
+  touch-action: manipulation;
+}
+
+.skill-slot:hover {
+  border-color: var(--accent);
+}
+
+.skill-slot:active {
+  transform: scale(0.94);
+}
+
+.skill-slot canvas {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 32px;
+  height: 32px;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.skill-key,
+.skill-lv {
+  position: absolute;
+  font: 700 11px/1 system-ui, sans-serif;
+  text-shadow: 0 1px 2px #000, 0 0 2px #000;
+  pointer-events: none;
+}
+
+.skill-key {
+  left: 4px;
+  top: 3px;
+  color: #fff;
+}
+
+.skill-lv {
+  right: 4px;
+  bottom: 3px;
+  color: #ffd27a;
+  font-size: 10px;
+}
+
+/* Cooldown: a dark curtain that drops away as the skill gets ready. */
+.skill-cd {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0;
+  background: rgba(8, 10, 14, 0.7);
+  pointer-events: none;
+}
+
+@keyframes skill-cd {
+  from {
+    height: 100%;
+  }
+  to {
+    height: 0;
+  }
+}
+
+.skill-slot.locked {
+  border-color: var(--line);
+}
+
+.skill-slot.locked canvas {
+  filter: grayscale(1) brightness(0.5);
+}
+
+.skill-slot.no-mp canvas {
+  filter: saturate(0.35) brightness(0.7);
+}
+
+.skill-slot.no-mp {
+  border-color: rgba(92, 140, 255, 0.8);
+}
+
+.skill-slot.buffed {
+  border-color: #ffd27a;
+  box-shadow: 0 0 10px rgba(255, 210, 122, 0.75), inset 0 0 8px rgba(255, 210, 122, 0.4);
+}
+
+/* The skills window (K), beside the bag. */
+.skills {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  width: min(360px, calc(100vw - 24px));
+  max-height: calc(100vh - 24px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px 14px;
+  border-radius: 14px;
+  background: var(--panel-solid);
+  border: 1px solid rgba(235, 130, 36, 0.45);
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.55);
+  z-index: 6;
+  animation: bag-in 0.14s ease-out;
+}
+
+.skills-points {
+  margin-left: auto;
+  color: var(--ink-dim);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.skills-points.has-points {
+  color: #ffd27a;
+}
+
+.skills-list {
+  display: grid;
+  gap: 8px;
+}
+
+.skill-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--panel-raised);
+  border: 1px solid var(--line);
+}
+
+.skill-icon {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  image-rendering: pixelated;
+}
+
+.skill-row.unlearned .skill-icon {
+  filter: grayscale(1) brightness(0.65);
+}
+
+.skill-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.skill-name {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.skill-level {
+  margin-left: auto;
+  color: var(--ink-dim);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.skill-cost {
+  color: #9fc4ff;
+  font-size: 12px;
+}
+
+.skill-next {
+  color: #9fe58f;
+  font-size: 12px;
+}
+
+.skill-learn {
+  flex: none;
+  align-self: center;
+  min-width: 56px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.skill-learn:disabled {
+  background: #333;
+  border-color: var(--line);
+  color: var(--ink-dim);
+  cursor: default;
+}
+
+.skills-empty,
+.skills-hint {
+  margin: 2px 0 0;
+  color: var(--ink-dim);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+@media (max-width: 600px) {
+  .skillbar {
+    left: auto;
+    right: 12px;
+    bottom: 176px;
+    transform: none;
+    padding: 4px;
+    gap: 4px;
+  }
+  .skills {
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    max-height: 82vh;
+    border-radius: 14px 14px 0 0;
   }
 }
 
@@ -1565,6 +1806,90 @@ button.dialog-link:disabled {
 .ware-button:disabled {
   opacity: 0.4;
   cursor: default;
+}
+
+/* ---------- The Job Master: Knight, Mage, Archer ---------- */
+
+.job-cards {
+  display: grid;
+  gap: 8px;
+}
+
+.job-card {
+  --job: #ffb35c;
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--panel-raised);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--job);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.job-knight {
+  --job: #ff8a5c;
+}
+
+.job-mage {
+  --job: #b98cff;
+}
+
+.job-archer {
+  --job: #7ddb6e;
+}
+
+.job-name {
+  color: var(--job);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.job-blurb {
+  margin: 0;
+}
+
+.job-stats {
+  color: #9fc4ff;
+}
+
+.job-skills {
+  color: var(--ink-dim);
+}
+
+.job-gift {
+  color: #ffd27a;
+}
+
+.job-choose {
+  justify-self: start;
+  margin-top: 4px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--job);
+  background: transparent;
+  color: var(--job);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.job-choose:hover:not(:disabled) {
+  background: var(--job);
+  color: #1b1b1b;
+}
+
+.job-choose:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.job-confirm {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
 }
 
 /* ---------- Player shops: open-a-shop form, shop list ---------- */

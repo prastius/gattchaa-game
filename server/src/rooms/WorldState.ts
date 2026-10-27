@@ -22,6 +22,8 @@ export const Player = schema(
     dead: t.boolean().default(false),
     /** What they're wearing, for drawing them (see gearString in shared/items.ts). */
     gear: t.string().default(""),
+    /** Novice, Knight, Mage or Archer (a ClassId). */
+    cls: t.string().default("novice"),
   },
   "Player",
 );
