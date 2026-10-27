@@ -85,6 +85,8 @@ export const Drop = schema(
     y: t.uint16(),
     /** Session id of whoever gets first pick; cleared when anyone may take it. */
     owner: t.string().default(""),
+    /** Cards in a dropped piece of equipment ("hornetCard.hornetCard"). */
+    cards: t.string().default(""),
   },
   "Drop",
 );

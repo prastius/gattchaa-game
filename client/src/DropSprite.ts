@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { ITEMS, RARITY, type ItemDef, type ItemId } from "../../shared/items";
+import { ITEMS, RARITY, itemName, type ItemDef, type ItemId, type ItemStack } from "../../shared/items";
 import { ICON, itemIcon } from "./character";
 
 const FONT = "system-ui, -apple-system, Segoe UI, sans-serif";
@@ -31,12 +31,12 @@ export class DropSprite {
 
   constructor(
     private scene: Phaser.Scene,
-    id: ItemId,
-    n: number,
+    stack: ItemStack,
     readonly x: number,
     readonly y: number,
     textRes: () => number,
   ) {
+    const { id, n } = stack;
     this.item = ITEMS[id];
     const rarity = RARITY[this.item.rarity];
     const color = Phaser.Display.Color.HexStringToColor(rarity.color).color;
@@ -56,7 +56,7 @@ export class DropSprite {
       }
     }
     this.label = scene.add
-      .text(0, -ICON * SCALE - 8, n > 1 ? `${this.item.name} ×${n}` : this.item.name, {
+      .text(0, -ICON * SCALE - 8, n > 1 ? `${this.item.name} ×${n}` : itemName(stack), {
         fontFamily: FONT,
         fontSize: "10px",
         fontStyle: "bold",

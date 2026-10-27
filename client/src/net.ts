@@ -2,6 +2,7 @@ import { Client, type Room } from "@colyseus/sdk";
 import {
   ROOM_NAME,
   sanitizeChat,
+  type CardInsertMessage,
   type ChatMessage,
   type ChatSend,
   type CorrectMessage,
@@ -148,6 +149,11 @@ export class Net {
 
   sellLoot(npc: string) {
     this.room.send("npc:sell", { npc, loot: true } satisfies NpcSellMessage);
+  }
+
+  /** Puts the card in a bag slot into equipment in the bag or worn. */
+  insertCard(card: number, at: { bag: number } | { gear: Slot }) {
+    this.room.send("item:card", { card, ...at } satisfies CardInsertMessage);
   }
 
   /** Shows an emote over your head: locally right away, and to everyone nearby. */

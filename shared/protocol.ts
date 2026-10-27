@@ -131,6 +131,16 @@ export interface ItemDropMessage {
   n?: number;
 }
 
+/**
+ * client -> server: put the card in bag slot `card` into a piece of equipment,
+ * in the bag (`bag`) or worn (`gear`). For good: cards never come back out.
+ */
+export interface CardInsertMessage {
+  card: number;
+  bag?: number;
+  gear?: Slot;
+}
+
 /** client -> server: pick up an item lying on the ground. */
 export interface PickupMessage {
   id: string;
@@ -151,7 +161,8 @@ export type NpcSellMessage = { npc: string; slot: number; n: number } | { npc: s
  * Ids are player session ids or monster ids (see MONSTER_ID_PREFIX).
  */
 export type FxEvent =
-  | { k: "hit"; a: string; t: string; d: number; crit?: 1 }
+  /** thorn: damage reflected back by a card (no swing, no slash). */
+  | { k: "hit"; a: string; t: string; d: number; crit?: 1; thorn?: 1 }
   | { k: "miss"; a: string; t: string }
   /** A monster was defeated, or a player was knocked out. */
   | { k: "down"; t: string }
@@ -161,7 +172,9 @@ export type FxEvent =
   /** Only to the player who picked it up (or bought it). */
   | { k: "loot"; item: string; n: number }
   /** A potion (or anything else) healed someone. */
-  | { k: "heal"; t: string; d: number };
+  | { k: "heal"; t: string; d: number }
+  /** Someone put a card into their equipment. */
+  | { k: "card"; t: string };
 
 /** Monster ids start with this; player session ids never do. */
 export const MONSTER_ID_PREFIX = "~";
@@ -194,6 +207,8 @@ export interface DropView {
   y: number;
   /** Session id of whoever has first pick ("" = anyone may take it). */
   owner: string;
+  /** Cards in a dropped piece of equipment (see cardString in items.ts). */
+  cards?: string;
 }
 
 /** Read-only shape of a synced monster. Its max HP and name come from MONSTERS. */

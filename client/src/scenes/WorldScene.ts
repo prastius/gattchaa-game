@@ -17,7 +17,7 @@ import {
   type TargetMessage,
 } from "../../../shared/protocol";
 import { isClassId, isMonsterId, reach, statsFor } from "../../../shared/rpg";
-import { ITEMS, PICKUP_RANGE, RARITY, appearanceKey, isItemId } from "../../../shared/items";
+import { ITEMS, PICKUP_RANGE, RARITY, appearanceKey, isItemId, parseCards } from "../../../shared/items";
 import { NPCS, type NpcDef } from "../../../shared/npcs";
 import { DOORS, INTERIOR_ZONE, PROPS, TOWN_AREA, inRect } from "../../../shared/town";
 import { CharacterTextures, PlayerSprite } from "../PlayerSprite";
@@ -509,7 +509,8 @@ export class WorldScene extends Phaser.Scene {
       const id = key as string;
       if (!isItemId(state.item)) return;
       this.drops.get(id)?.sprite.destroy();
-      const sprite = new DropSprite(this, state.item, state.n, state.x, state.y, () => this.textRes);
+      const stack = { id: state.item, n: state.n, cards: parseCards(state.item, state.cards ?? "") };
+      const sprite = new DropSprite(this, stack, state.x, state.y, () => this.textRes);
       this.drops.set(id, { sprite, state });
     });
 
@@ -995,6 +996,13 @@ export class WorldScene extends Phaser.Scene {
       case "miss": {
         const a = this.body(ev.a);
         const t = this.body(ev.t);
+        if (ev.k === "hit" && ev.thorn) {
+          // A card biting back: no swing, just the number on the monster.
+          if (!t) return;
+          t.mob?.flash();
+          this.fx.number(t.x, t.top, String(ev.d), ev.a === me ? "thorn" : "other");
+          return;
+        }
         if (a && t) {
           if (a.mob) a.mob.attack(dirTo(t.x - a.x, t.y - a.y));
           else a.player?.lunge(t.x - a.x, t.y - a.y);
@@ -1053,7 +1061,13 @@ export class WorldScene extends Phaser.Scene {
         const delay = Math.max(0, this.nextLootFloat - now);
         this.nextLootFloat = now + delay + 260;
         this.fx.float(self.x, self.y - 84, `+ ${it.name}${ev.n > 1 ? ` ×${ev.n}` : ""}`, RARITY[it.rarity].color, delay);
-        this.time.delayedCall(delay, () => audio.pickup(it.rarity !== "common"));
+        this.time.delayedCall(delay, () => (it.kind === "card" ? audio.card() : audio.pickup(it.rarity !== "common")));
+        return;
+      }
+      case "card": {
+        const b = this.body(ev.t);
+        if (b) this.fx.card(b.x, b.y);
+        if (ev.t === me) audio.card();
         return;
       }
       case "heal": {

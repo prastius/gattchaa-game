@@ -24,7 +24,7 @@ Open the page in two browser windows to see multiplayer and chat.
 | Space / sword button | Attack the nearest monster (outside the town walls) |
 | Esc | Stop attacking |
 | Click / tap loot on the ground | Walk over and pick it up |
-| I / bag button | Bag: wear gear, drink potions, see your ATK and DEF |
+| I / bag button | Bag: wear gear, drink potions, put monster cards into gear, see your ATK and DEF |
 | Q / potion button | Drink a potion (the smallest one that heals you fully) |
 | X / chair button | Sit down where you stand; walking gets you up |
 | V / Open shop | Open your shop where you stand in the Market Square (signed-in players); while it's open: see it, or close it |
@@ -84,7 +84,7 @@ shared/       Code used by both client and server
   protocol.ts     Message types, name/chat sanitizing
   vending.ts      Player shop rules (where a shop may open) and messages
   rpg.ts          Leveling and fighting: classes, the EXP curve, monsters (and their drops), fields, damage rules
-  items.ts        Every item: stats, prices, rarity, icon and how it looks when worn; the Outfitter's stock
+  items.ts        Every item and monster card: stats, prices, rarity, icon, card slots and how it looks when worn; the Outfitter's stock
 server/       Colyseus server
   src/rooms/WorldRoom.ts   Joins, interest management, movement validation, chat, emotes, wardrobe, sitting, shops, trading
   src/rooms/WorldState.ts  Synced state
@@ -164,7 +164,7 @@ Ragnarok and TibiaME style: click a monster and your character fights it. Everyt
 - **Fainting.** At 0 HP you faint and return to town fully healed. Novices lose no EXP (the classes will lose a little).
 - **Saving.** Signed-in players' progress is saved on every level-up and faint, every 30 s, and when they leave. Guests can fight too, but start over next visit.
 - **Server cost.** Monsters only think while a player is near their spawn area, and fight events go only to players close enough to see them. 20 bots fighting at once used about 5 % of one CPU core.
-- **Testing.** Outside production (`NODE_ENV` not `production`), chat commands help: `/level 25` jumps to a level, `/item saber` (or `/item redPotion 20`) adds items, `/gold 1000` sets your gold. `/help` lists every item id.
+- **Testing.** Outside production (`NODE_ENV` not `production`), chat commands help: `/level 25` jumps to a level, `/item saber` (or `/item redPotion 20`, `/item hornetCard`) adds items, `/gold 1000` sets your gold. `/help` lists every item id.
 
 ## Items and equipment
 
@@ -178,6 +178,24 @@ Every item is in `shared/items.ts`: its stats, price, rarity, icon, and how it l
 - **The Outfitter.** Bram stands outside the south gate, across from Rowan. He sells potions and starter gear (Dagger, Short Sword, Wooden Shield, Leather Cap, Chain Coif, Leather Armour, Leather Pants and Boots, Copper Ring, Clover Charm) and buys anything with a price, with a one-click "sell all monster loot". Better gear only comes from monsters.
 - **Saving.** The bag and equipment are saved with the rest of your progress, plus right away after buying, selling or finding something good. Guests keep their bag until they leave.
 - **Defence.** Damage is softened by defence rather than reduced by it (defence equal to the attack halves a hit), so armour always helps but never makes you untouchable.
+
+## Monster cards
+
+Ragnarok style: every monster very rarely drops its own card, and a card goes into a free card slot on equipment for good.
+
+| Card | Dropped by | Goes into | Name it gives | Bonus | Chance |
+| --- | --- | --- | --- | --- | --- |
+| Slime Card | Slime | Armour | Bouncy | HP +30 | 1 in 1,250 |
+| Grass Snake Card | Grass Snake | Boots | Slithering | Evade +8% (monsters miss more) | 1 in 1,250 |
+| Hornet Card | Hornet | Weapon | Stinging | ATK +2, Critical +8% | 1 in 1,000 |
+| Snapper Flower Card | Snapper Flower | Shield | Thorny | DEF +1, reflects 15% of each monster hit (at least 1) | 1 in about 830 |
+
+- **Card slots.** Most gear has one slot; the Bronze Sword and the Saber have two. Small dots in the corner of a bag cell show the slots: hollow when free, gold when a card is in. The Leather Cap, Leather Pants, Copper Ring and Clover Charm have none. Helmets, greaves, rings and amulets have slots, but no card fits them yet: they wait for new monsters.
+- **Putting a card in.** In the bag, pick the card and press "Put in gear" (or double-click it). The gear it can go into lights up, worn or carried; pick one and confirm. Cards never come back out.
+- **Names.** Carded gear takes the card's word, Ragnarok style: Stinging Saber, Double Stinging Saber, Stinging Thorny… The bag shows each card and its bonus.
+- **Finding one.** A card fresh from a monster is announced to the whole town. Picking up a card someone put down is not.
+- **Selling.** Bram won't buy cards (other players will pay far more) or gear with cards in it (the cards would be lost). Dropping carded gear keeps the cards in it.
+- Balance lives in two places: the card items at the bottom of `ITEMS` in `shared/items.ts`, and each monster's drop table in `shared/rpg.ts` (the card is the last entry).
 
 ## Gattchaa shop data
 
@@ -202,7 +220,7 @@ The stalls, machines, Rooms tables, big-pull announcements, signing in and playe
 - **Add a hairstyle or clothing item:** add its `sheet_definitions` path to `ITEMS`. Browse the options at <https://liberatedpixelcup.github.io/Universal-LPC-Spritesheet-Character-Generator/>.
 - **Monsters:** `MONSTER_FILES` lists the sheets taken from "[LPC] Monsters" (OpenGameArt). `client/src/world/monsterArt.ts` says how each sheet is laid out.
 - **Equipment art:** `GEAR` lists the armour and weapon sheets. Items in `shared/items.ts` pick pieces by id and recolour them (`colors: { metal: "bronze" }`).
-- **Item icons:** every icon from Kyrise's 16x16 RPG Icon Pack (CC-BY 4.0) is in `client/public/assets/items/`; an item names one with `icon`. Items without one get an icon cut from their gear art.
+- **Item icons:** every icon from Kyrise's 16x16 RPG Icon Pack (CC-BY 4.0) is in `client/public/assets/items/`; an item names one with `icon`. Items without one get an icon cut from their gear art. Monster cards are drawn in `client/src/character.ts`: a gold card with the monster's own sprite on it.
 - **Change the season:** swap `terrain_summer.png` / `trees_summer.png` for the spring, autumn or winter versions in the same repo.
 
 ## License note

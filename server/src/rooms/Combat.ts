@@ -21,10 +21,10 @@ import {
   type MonsterDef,
   type Stats,
 } from "../../../shared/rpg";
-import { ITEMS, MAX_STACK, PICKUP_RANGE, POTION_MS, RARITY, sellPrice, type BagMessage, type ItemDef, type ItemId, type Slot } from "../../../shared/items";
+import { ITEMS, MAX_STACK, PICKUP_RANGE, POTION_MS, RARITY, SLOT_NAMES, cardFits, itemName, sellPrice, type BagMessage, type ItemDef, type ItemId, type Slot } from "../../../shared/items";
 import type { Progress } from "../db";
 import { Monster, type Player } from "./WorldState";
-import { Inventory } from "./Inventory";
+import { Inventory, type GearAt } from "./Inventory";
 import type { Drops } from "./Drops";
 
 /** Spawn groups with a player this close (px) think; the rest sleep, so empty fields cost nothing. */
@@ -66,7 +66,7 @@ export interface CombatHooks {
   /** A monster is about to be removed from the state: take it out of every view first. */
   despawn(mob: Monster): void;
   levelUp(id: string, lv: number): void;
-  /** Someone picked up something legendary. */
+  /** Someone picked up something legendary, or a monster card: worth telling the town. */
   found(id: string, item: ItemDef): void;
 }
 
@@ -332,11 +332,16 @@ export class Combat {
       this.hooks.emit(mob.x, mob.y, { k: "miss", a: f.id, t: mob.id });
       return;
     }
-    const { damage, crit } = rollDamage(s.atk, mob.def.def);
+    const { damage, crit } = rollDamage(s.atk, mob.def.def, s.crit);
+    this.hurt(mob, f, damage, crit ? { crit: 1 } : {});
+  }
+
+  /** `f` deals damage to a monster (a hit, or thorns from a card); it may go down. */
+  private hurt(mob: Mob, f: Fighter, damage: number, flags: { crit?: 1; thorn?: 1 }) {
     mob.damage.set(f.id, (mob.damage.get(f.id) ?? 0) + Math.min(damage, mob.hp));
     mob.hp = Math.max(0, mob.hp - damage);
     mob.state.hp = mob.hp;
-    this.hooks.emit(mob.x, mob.y, { k: "hit", a: f.id, t: mob.id, d: damage, ...(crit && { crit: 1 as const }) });
+    this.hooks.emit(mob.x, mob.y, { k: "hit", a: f.id, t: mob.id, d: damage, ...flags });
     if (mob.hp <= 0) this.defeat(mob);
   }
 
@@ -345,7 +350,7 @@ export class Combat {
     const top = this.reward(mob);
     // Each drop is rolled on its own; whoever did the most damage gets first pick.
     for (const [item, chance] of mob.def.drops) {
-      if (Math.random() < chance) this.drops.spawn(item, 1, mob.x, mob.y, top ?? "");
+      if (Math.random() < chance) this.drops.spawn({ id: item, n: 1 }, mob.x, mob.y, { owner: top ?? "" });
     }
     this.hooks.despawn(mob.state);
     this.monsters.delete(mob.id);
@@ -524,7 +529,7 @@ export class Combat {
     if (!f || f.player.dead) return;
     const taken = f.inv.take(slot, n);
     if (!taken) return;
-    this.drops.spawn(taken.id, taken.n, f.pos.x, f.pos.y);
+    this.drops.spawn(taken, f.pos.x, f.pos.y);
     this.changed(f);
   }
 
@@ -537,8 +542,10 @@ export class Combat {
     if (d.owner && d.owner !== id) return this.hooks.notice(id, "That's someone else's loot for a few more seconds.");
     const item = ITEMS[d.item as ItemId];
     if (!item) return this.drops.remove(dropId);
-    const got = f.inv.add(item.id as ItemId, d.n);
+    const got = f.inv.add(item.id as ItemId, d.n, this.drops.cards(d));
     if (got <= 0) return this.hooks.notice(id, "Your bag is full. Sell or drop something first.");
+    // Only news when it's fresh from a monster, not something a player put down.
+    const news = this.drops.isLoot(dropId);
     if (got < d.n) d.n -= got;
     else this.drops.remove(dropId);
     this.hooks.tell(id, { k: "loot", item: item.id, n: got });
@@ -546,8 +553,9 @@ export class Combat {
     if (item.rarity === "common") return;
     // A good find is saved straight away.
     this.save(f);
-    if (item.rarity === "legendary") this.hooks.found(id, item);
-    else if (item.rarity !== "uncommon") this.hooks.notice(id, `You found a ${RARITY[item.rarity].name.toLowerCase()} item: ${item.name}!`);
+    if (!news) return;
+    if (item.rarity === "legendary" || item.kind === "card") this.hooks.found(id, item);
+    else if (item.rarity !== "uncommon") this.hooks.notice(id, `You found ${item.rarity === "epic" ? "an" : "a"} ${RARITY[item.rarity].name.toLowerCase()} item: ${item.name}!`);
   }
 
   /** Buys from a merchant (the room checked you're at their counter and they sell it). */
@@ -568,6 +576,11 @@ export class Combat {
   sell(id: string, slot: number, n: number): number {
     const f = this.fighters.get(id);
     if (!f || f.player.dead) return 0;
+    const one = slot >= 0 ? f.inv.bag[slot] : undefined;
+    if (one?.cards) {
+      this.hooks.notice(id, `The cards in your ${itemName(one)} would be lost, so the Outfitter won't buy it.`);
+      return 0;
+    }
     let gold = 0;
     const slots = slot < 0 ? f.inv.bag.flatMap((s, i) => (s && ITEMS[s.id].kind === "loot" ? [i] : [])) : [slot];
     for (const i of slots) {
@@ -577,7 +590,10 @@ export class Combat {
       const taken = f.inv.take(i, slot < 0 ? s.n : n);
       if (taken) gold += price * taken.n;
     }
-    if (gold <= 0) return 0;
+    if (gold <= 0) {
+      this.hooks.notice(id, slot < 0 ? "You have no monster loot to sell." : one && ITEMS[one.id].kind === "card" ? "Keep your cards: other adventurers will pay far more for them." : "The Outfitter won't buy that.");
+      return 0;
+    }
     f.gold += gold;
     this.hooks.tell(id, { k: "gain", exp: 0, gold });
     this.traded(f);
@@ -589,6 +605,23 @@ export class Combat {
     this.changed(f);
     f.sheetDirty = true;
     this.save(f);
+  }
+
+  /** Puts a card from the bag into a piece of equipment (in the bag or worn), for good. */
+  insertCard(id: string, cardSlot: number, at: GearAt) {
+    const f = this.fighters.get(id);
+    const card = f?.inv.bag[cardSlot];
+    const target = f?.inv.gearAt(at);
+    if (!f || !card || !target || f.player.dead) return;
+    const c = ITEMS[card.id];
+    const g = ITEMS[target.id];
+    if (c.kind !== "card") return;
+    if (!cardFits(c, g)) return this.hooks.notice(id, `The ${c.name} only goes into: ${(c.fits ?? []).map((s) => SLOT_NAMES[s]).join(", ")}.`);
+    if (!f.inv.insert(cardSlot, at)) return this.hooks.notice(id, `The ${g.name} has no free card slot.`);
+    if ("gear" in at) this.restat(f);
+    this.hooks.notice(id, `The ${c.name} is now part of your ${itemName(target)}.`);
+    this.hooks.emit(f.pos.x, f.pos.y, { k: "card", t: f.id });
+    this.traded(f);
   }
 
   // ---------------------------------------------------------------- monsters
@@ -716,7 +749,8 @@ export class Combat {
     if (now < mob.nextAttackAt) return;
     mob.nextAttackAt = now + def.attackMs;
     f.lastCombatAt = now;
-    if (Math.random() >= hitChance(def.level, f.player.lv)) {
+    // Grass Snake Cards make monsters miss more often.
+    if (Math.random() >= hitChance(def.level, f.player.lv) * (1 - f.stats.flee)) {
       this.hooks.emit(f.pos.x, f.pos.y, { k: "miss", a: mob.id, t: f.id });
       return;
     }
@@ -724,7 +758,9 @@ export class Combat {
     f.player.hp = Math.max(0, f.player.hp - damage);
     f.dirty = true;
     this.hooks.emit(f.pos.x, f.pos.y, { k: "hit", a: mob.id, t: f.id, d: damage, ...(crit && { crit: 1 as const }) });
-    if (f.player.hp <= 0) this.knockOut(f);
+    if (f.player.hp <= 0) return this.knockOut(f);
+    // Snapper Flower Cards bite back (always at least 1, so they matter against weak monsters too).
+    if (f.stats.reflect > 0) this.hurt(mob, f, Math.max(1, Math.round(damage * f.stats.reflect)), { thorn: 1 });
   }
 
   /** Inside its home area, plus `pad` pixels. */

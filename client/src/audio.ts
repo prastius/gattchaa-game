@@ -329,6 +329,14 @@ export class SoundSystem {
     if (rare) this.tone(1976, t + 0.14, 0.2, "triangle", 0.07);
   }
 
+  /** A monster card: a bright little fanfare. */
+  card() {
+    const t = this.ready();
+    if (t === undefined) return;
+    [76, 79, 83, 88].forEach((n, i) => this.tone(midiHz(n), t + i * 0.07, 0.28, "triangle", 0.1));
+    this.tone(midiHz(95), t + 0.3, 0.4, "sine", 0.05);
+  }
+
   /** Gold changed hands. */
   coin() {
     const t = this.ready();

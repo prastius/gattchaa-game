@@ -9,7 +9,7 @@ import {
   type ShopRoom,
 } from "../../../shared/gattchaa";
 import { SHOP_AWAY_HOURS, SHOP_TITLE_MAX, signText, type PlayerShopDetails, type PlayerShopView } from "../../../shared/vending";
-import { ITEMS, OUTFITTER_STOCK, RARITY, bonusText, sellPrice, type ItemDef, type ItemId } from "../../../shared/items";
+import { ITEMS, OUTFITTER_STOCK, RARITY, bonusText, itemName, sellPrice, type ItemDef, type ItemId } from "../../../shared/items";
 import { FRAME, composeCharacter, itemIcon } from "../character";
 import type { Shop } from "../shop";
 import type { Vending } from "../vending";
@@ -304,11 +304,18 @@ export class TownDialog {
       this.body.append(all);
     }
     const list = el("div", "ware-list");
+    let cards = false;
     bag.forEach((s, slot) => {
       if (!s) return;
       const it = ITEMS[s.id];
       const price = sellPrice(it);
+      cards ||= it.kind === "card";
       if (price <= 0) return;
+      if (s.cards) {
+        // Selling it would throw the cards away; Bram won't do that to you.
+        list.append(this.ware(it, "Has cards in it: not for sale", [this.wareButton(`Sell · ${price}`, false, () => {})], itemName(s)));
+        return;
+      }
       const buttons = [this.wareButton(`Sell · ${price}`, true, () => this.net.sell(npc.id, slot, 1))];
       if (s.n > 1) buttons.push(this.wareButton(`All · ${price * s.n}`, true, () => this.net.sell(npc.id, slot, s.n)));
       list.append(this.ware(it, `${s.n > 1 ? `×${s.n} · ` : ""}${this.wareInfo(it)}`, buttons));
@@ -317,6 +324,7 @@ export class TownDialog {
       this.body.append(el("p", "dialog-empty", "Nothing in your bag to sell. Monsters outside the gate drop loot I'll gladly buy!"));
     } else this.body.append(list);
     this.body.append(el("p", "dialog-note", "Worn equipment isn't for sale: take it off in your bag (I) first."));
+    if (cards) this.body.append(el("p", "dialog-note", "Monster cards? Keep those! Put them into your gear, or hold on to them: other adventurers will pay far more than I can."));
   }
 
   private wareInfo(it: ItemDef): string {
@@ -325,13 +333,13 @@ export class TownDialog {
     return parts.join(" · ");
   }
 
-  private ware(it: ItemDef, info: string, buttons: HTMLButtonElement[]) {
+  private ware(it: ItemDef, info: string, buttons: HTMLButtonElement[], title = it.name) {
     const row = el("div", "ware");
     const icon = el("canvas", "ware-icon");
     icon.width = icon.height = 32;
     itemIcon(it.id as ItemId).then((c) => icon.getContext("2d")!.drawImage(c, 0, 0));
     const text = el("div", "ware-text");
-    const name = el("div", "ware-name", it.name);
+    const name = el("div", "ware-name", title);
     name.style.color = RARITY[it.rarity].color;
     text.append(name, el("div", "ware-info", info));
     const actions = el("div", "ware-actions");

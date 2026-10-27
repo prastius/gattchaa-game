@@ -1,6 +1,8 @@
 import { CATALOG } from "../../shared/catalog";
 import { ITEM_FIELDS, bodyName, decodeLook, isHidden, type ItemField } from "../../shared/appearance";
 import { ITEMS, parseGear, splitAppearance, type GearArt, type ItemId, type Slot } from "../../shared/items";
+import type { MonsterId } from "../../shared/rpg";
+import { MONSTER_ART } from "./world/monsterArt";
 
 // Builds a character sprite sheet from LPC layers (body, head, hair, clothes...)
 // recoloured with palette swaps. One sheet per distinct appearance, cached.
@@ -210,8 +212,9 @@ export const ICON = 32;
 const icons = new Map<string, Promise<HTMLCanvasElement>>();
 
 /**
- * An item's icon on a 32x32 canvas (cached): from the icon pack, or cut from
- * its gear art (the standing, facing-down frame, trimmed and centred).
+ * An item's icon on a 32x32 canvas (cached): from the icon pack, a little card
+ * with its monster on it, or cut from its gear art (the standing, facing-down
+ * frame, trimmed and centred).
  */
 export function itemIcon(id: ItemId): Promise<HTMLCanvasElement> {
   let p = icons.get(id);
@@ -241,6 +244,10 @@ async function drawIcon(id: ItemId): Promise<HTMLCanvasElement> {
     ctx.drawImage(img, 0, 0, img.width, img.height, (ICON - img.width * 2) / 2, (ICON - img.height * 2) / 2, img.width * 2, img.height * 2);
     return out;
   }
+  if (it.kind === "card" && it.monster) {
+    await drawCard(ctx, it.monster);
+    return out;
+  }
 
   // The art alone, on the male body's standing frame: facing down, or sideways
   // for boots (one boot side-on reads better than two specks).
@@ -262,29 +269,88 @@ async function drawIcon(id: ItemId): Promise<HTMLCanvasElement> {
   layers.sort((a, b) => a.z - b.z);
   for (const l of layers) fctx.drawImage(l.src, 0, row * FRAME, FRAME, FRAME, 0, 0, FRAME, FRAME);
 
-  // Trim to the drawn pixels, then fill the icon with them (up to 2x) in the middle.
-  const px = fctx.getImageData(0, 0, FRAME, FRAME).data;
-  let x0 = FRAME;
-  let y0 = FRAME;
+  // Fill the icon with the drawn pixels (up to 2x), in the middle.
+  fit(ctx, frame, { x: 0, y: 0, w: ICON, h: ICON }, 2, 1);
+  return out;
+}
+
+/** The box around a canvas's drawn (non-transparent) pixels. */
+function trim(c: HTMLCanvasElement): { x: number; y: number; w: number; h: number } | undefined {
+  const px = c.getContext("2d", { willReadFrequently: true })!.getImageData(0, 0, c.width, c.height).data;
+  let x0 = c.width;
+  let y0 = c.height;
   let x1 = -1;
   let y1 = -1;
-  for (let y = 0; y < FRAME; y++) {
-    for (let x = 0; x < FRAME; x++) {
-      if (px[(y * FRAME + x) * 4 + 3] === 0) continue;
+  for (let y = 0; y < c.height; y++) {
+    for (let x = 0; x < c.width; x++) {
+      if (px[(y * c.width + x) * 4 + 3] === 0) continue;
       x0 = Math.min(x0, x);
       y0 = Math.min(y0, y);
       x1 = Math.max(x1, x);
       y1 = Math.max(y1, y);
     }
   }
-  if (x1 < 0) return out;
-  const w = x1 - x0 + 1;
-  const h = y1 - y0 + 1;
-  const scale = Math.min(2, (ICON - 2) / Math.max(w, h));
-  const dw = Math.round(w * scale);
-  const dh = Math.round(h * scale);
-  ctx.drawImage(frame, x0, y0, w, h, Math.floor((ICON - dw) / 2), Math.floor((ICON - dh) / 2), dw, dh);
-  return out;
+  return x1 < 0 ? undefined : { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 };
+}
+
+/** Draws the drawn part of `src` as big as fits in `box` (at most `max` times), centred. */
+function fit(ctx: CanvasRenderingContext2D, src: HTMLCanvasElement, box: { x: number; y: number; w: number; h: number }, max: number, pad: number) {
+  const t = trim(src);
+  if (!t) return;
+  const scale = Math.min(max, (box.w - 2 * pad) / t.w, (box.h - 2 * pad) / t.h);
+  const dw = Math.round(t.w * scale);
+  const dh = Math.round(t.h * scale);
+  // Shrinking big sprites reads better smoothed; pixel art grows crisp.
+  ctx.imageSmoothingEnabled = scale < 1;
+  ctx.drawImage(src, t.x, t.y, t.w, t.h, box.x + Math.floor((box.w - dw) / 2), box.y + Math.floor((box.h - dh) / 2), dw, dh);
+  ctx.imageSmoothingEnabled = false;
+}
+
+/** Behind the monster on its card. */
+const CARD_SKY: Record<MonsterId, [string, string]> = {
+  slime: ["#cdeccf", "#8fcf9a"],
+  snake: ["#efe6b4", "#c9b86a"],
+  hornet: ["#ffe7b0", "#f2b54d"],
+  snapper: ["#fbd3e3", "#e48ab0"],
+};
+
+/** A monster card: gold frame, the monster facing you, and a name plate (Ragnarok style). */
+async function drawCard(ctx: CanvasRenderingContext2D, monster: MonsterId) {
+  const art = MONSTER_ART[monster];
+  const sheet = await loadImage(`monsters/${art.file}`);
+  // Its standing frame, facing down.
+  const frame = document.createElement("canvas");
+  frame.width = frame.height = art.frame;
+  frame.getContext("2d", { willReadFrequently: true })!.drawImage(sheet, 0, 2 * art.frame, art.frame, art.frame, 0, 0, art.frame, art.frame);
+
+  const x = 6;
+  const y = 1;
+  const w = 20;
+  const h = 30;
+  ctx.fillStyle = "#3a230c";
+  ctx.fillRect(x, y, w, h);
+  ctx.fillStyle = "#e9c25c";
+  ctx.fillRect(x + 1, y + 1, w - 2, h - 2);
+  ctx.fillStyle = "#fff4d8";
+  ctx.fillRect(x + 2, y + 2, w - 4, h - 4);
+  // The picture window.
+  const win = { x: x + 3, y: y + 3, w: w - 6, h: 16 };
+  const [top, bottom] = CARD_SKY[monster];
+  const sky = ctx.createLinearGradient(0, win.y, 0, win.y + win.h);
+  sky.addColorStop(0, top);
+  sky.addColorStop(1, bottom);
+  ctx.fillStyle = sky;
+  ctx.fillRect(win.x, win.y, win.w, win.h);
+  fit(ctx, frame, win, 1, 0);
+  ctx.fillStyle = "#7a5a2a";
+  ctx.fillRect(win.x, win.y + win.h, win.w, 1);
+  // The name plate and a line of rules text.
+  ctx.fillStyle = "#b08a4a";
+  ctx.fillRect(x + 4, y + 22, w - 8, 1);
+  ctx.fillRect(x + 4, y + 24, w - 10, 1);
+  ctx.fillRect(x + 4, y + 26, w - 9, 1);
+  // Rounded corners.
+  for (const [cx, cy] of [[x, y], [x + w - 1, y], [x, y + h - 1], [x + w - 1, y + h - 1]]) ctx.clearRect(cx, cy, 1, 1);
 }
 
 /** Mid-tone swatch colour for a palette entry (for the UI). */

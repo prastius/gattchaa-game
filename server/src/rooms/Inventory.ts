@@ -2,6 +2,8 @@ import {
   BAG_SIZE,
   ITEMS,
   SLOTS,
+  canInsert,
+  cleanCards,
   gearBonus,
   gearString,
   isItemId,
@@ -20,14 +22,19 @@ const parse = (json: string | null | undefined): unknown => {
   }
 };
 
-/** A saved stack, if it still makes sense (the item exists, the count fits). */
+/** A saved stack, if it still makes sense (the item exists, the count fits, the cards belong). */
 function readStack(raw: unknown): ItemStack | null {
   if (!raw || typeof raw !== "object") return null;
-  const { id, n } = raw as { id?: unknown; n?: unknown };
+  const { id, n, cards } = raw as { id?: unknown; n?: unknown; cards?: unknown };
   if (!isItemId(id)) return null;
   const count = Math.min(stackLimit(ITEMS[id]), Math.floor(Number(n)));
-  return count >= 1 ? { id, n: count } : null;
+  if (!(count >= 1)) return null;
+  const c = cleanCards(id, cards);
+  return c ? { id, n: count, cards: c } : { id, n: count };
 }
+
+/** Where a piece of equipment is: a bag slot, or worn. */
+export type GearAt = { bag: number } | { gear: Slot };
 
 /**
  * A character's bag and what they're wearing. Only bookkeeping: Combat
@@ -46,7 +53,7 @@ export class Inventory {
     if (gear && typeof gear === "object") {
       for (const slot of SLOTS) {
         const s = readStack(gear[slot]);
-        if (s && ITEMS[s.id].slot === slot) inv.gear[slot] = { id: s.id, n: 1 };
+        if (s && ITEMS[s.id].slot === slot) inv.gear[slot] = { ...s, n: 1 };
       }
     }
     return inv;
@@ -91,7 +98,7 @@ export class Inventory {
   }
 
   /** Adds up to `n` (topping up stacks first, then empty slots). Returns how many went in. */
-  add(id: ItemId, n: number): number {
+  add(id: ItemId, n: number, cards?: ItemId[]): number {
     const limit = stackLimit(ITEMS[id]);
     let left = n;
     for (const s of this.bag) {
@@ -104,7 +111,7 @@ export class Inventory {
     for (let i = 0; i < this.bag.length && left > 0; i++) {
       if (this.bag[i]) continue;
       const k = Math.min(left, limit);
-      this.bag[i] = { id, n: k };
+      this.bag[i] = cards?.length ? { id, n: k, cards: [...cards] } : { id, n: k };
       left -= k;
     }
     return n - left;
@@ -117,7 +124,23 @@ export class Inventory {
     const k = Math.min(s.n, Math.floor(n));
     s.n -= k;
     if (s.n <= 0) this.bag[slot] = null;
-    return { id: s.id, n: k };
+    return s.cards ? { id: s.id, n: k, cards: s.cards } : { id: s.id, n: k };
+  }
+
+  /** The equipment at a place (bag slot or worn), if there is any. */
+  gearAt(at: GearAt): ItemStack | undefined {
+    const s = "bag" in at ? this.bag[at.bag] : this.gear[at.gear];
+    return s && ITEMS[s.id].kind === "equip" ? s : undefined;
+  }
+
+  /** Puts one card from a bag slot into a piece of equipment, for good. Returns it, or undefined if it won't go. */
+  insert(cardSlot: number, at: GearAt): ItemStack | undefined {
+    const card = this.bag[cardSlot];
+    const target = this.gearAt(at);
+    if (!card || !target || !canInsert(ITEMS[card.id], target)) return undefined;
+    this.take(cardSlot, 1);
+    target.cards = [...(target.cards ?? []), card.id];
+    return target;
   }
 
   /** Wears the item in a bag slot, swapping out whatever was worn there. */

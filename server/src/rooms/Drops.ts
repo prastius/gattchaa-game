@@ -1,6 +1,6 @@
 import type { MapSchema } from "@colyseus/schema";
 import type { World } from "../../../shared/world";
-import type { ItemId } from "../../../shared/items";
+import { cardString, parseCards, type ItemId, type ItemStack } from "../../../shared/items";
 import { Drop } from "./WorldState";
 
 /** Monster loot is only the top fighter's to take for this long; then anyone may. */
@@ -16,6 +16,8 @@ interface Entry {
   drop: Drop;
   ownerUntil: number;
   expiresAt: number;
+  /** Fresh from a monster (not put down by a player), so a great find is news. */
+  loot: boolean;
 }
 
 /** Items lying on the ground: monster loot, and anything players put down. */
@@ -30,33 +32,45 @@ export class Drops {
     private despawn: (drop: Drop) => void,
   ) {}
 
-  /** Puts `n` of an item on the ground near (x, y); `owner` gets first pick for a while. */
-  spawn(item: ItemId, n: number, x: number, y: number, owner = "", scatter = true) {
+  /**
+   * Puts a stack on the ground near (x, y). Monster loot passes `loot`, whose
+   * owner (the top fighter) gets first pick for a while.
+   */
+  spawn(stack: ItemStack, x: number, y: number, loot?: { owner: string }) {
     let px = x;
     let py = y;
-    if (scatter) {
-      for (let i = 0; i < 6; i++) {
-        const a = Math.random() * Math.PI * 2;
-        const r = 6 + Math.random() * (SCATTER_PX - 6);
-        const tx = x + Math.cos(a) * r;
-        const ty = y + Math.sin(a) * r * 0.7;
-        if (this.world.canStand(tx, ty)) {
-          px = tx;
-          py = ty;
-          break;
-        }
+    for (let i = 0; i < 6; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const r = 6 + Math.random() * (SCATTER_PX - 6);
+      const tx = x + Math.cos(a) * r;
+      const ty = y + Math.sin(a) * r * 0.7;
+      if (this.world.canStand(tx, ty)) {
+        px = tx;
+        py = ty;
+        break;
       }
     }
+    const owner = loot?.owner ?? "";
     while (this.entries.size >= MAX_DROPS) this.remove(this.entries.keys().next().value!);
     const id = String(++this.nextId);
-    const drop = new Drop({ item, n, x: Math.round(px), y: Math.round(py), owner });
+    const drop = new Drop({ item: stack.id, n: stack.n, x: Math.round(px), y: Math.round(py), owner, cards: cardString(stack.cards) });
     const now = Date.now();
-    this.entries.set(id, { drop, ownerUntil: owner ? now + OWNER_MS : 0, expiresAt: now + EXPIRE_MS });
+    this.entries.set(id, { drop, ownerUntil: owner ? now + OWNER_MS : 0, expiresAt: now + EXPIRE_MS, loot: Boolean(loot) });
     this.drops.set(id, drop);
   }
 
   get(id: string): Drop | undefined {
     return this.entries.get(id)?.drop;
+  }
+
+  /** Whether it came straight from a monster. */
+  isLoot(id: string): boolean {
+    return this.entries.get(id)?.loot ?? false;
+  }
+
+  /** The cards in a dropped piece of equipment, if any. */
+  cards(drop: Drop): ItemId[] | undefined {
+    return parseCards(drop.item as ItemId, drop.cards);
   }
 
   remove(id: string) {

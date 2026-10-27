@@ -5,7 +5,7 @@
 // tuning a monster or raising the level cap is a one-line change.
 
 import { TILE, TOWN_AREA, INTERIOR_ZONE, inRect, type Rect } from "./town";
-import type { ItemId } from "./items";
+import type { Bonus, ItemId } from "./items";
 
 /** Highest level for now; raised step by step. The EXP curve already continues past it. */
 export const LEVEL_CAP = 50;
@@ -49,10 +49,15 @@ export interface Stats {
   def: number;
   range: number;
   attackMs: number;
+  /** Chances, 0..1: landing a critical hit, a monster missing you. */
+  crit: number;
+  flee: number;
+  /** Share of each monster hit sent back at it, 0..1. */
+  reflect: number;
 }
 
-/** A class at a level, plus whatever its equipment adds. */
-export function statsFor(cls: ClassId, level: number, bonus?: { atk: number; def: number; hp: number; mp: number }): Stats {
+/** A class at a level, plus whatever its equipment (and the cards in it) adds. */
+export function statsFor(cls: ClassId, level: number, bonus?: Partial<Bonus>): Stats {
   const c = CLASSES[cls];
   const at = ([base, per]: [number, number]) => Math.floor(base + per * (level - 1));
   return {
@@ -62,6 +67,9 @@ export function statsFor(cls: ClassId, level: number, bonus?: { atk: number; def
     def: at(c.def) + (bonus?.def ?? 0),
     range: c.range,
     attackMs: c.attackMs,
+    crit: CRIT_CHANCE + (bonus?.crit ?? 0) / 100,
+    flee: Math.min(MAX_FLEE, (bonus?.flee ?? 0) / 100),
+    reflect: (bonus?.reflect ?? 0) / 100,
   };
 }
 
@@ -90,26 +98,26 @@ export interface MonsterDef {
   /** Body radius: players reach it from this much further away. */
   radius: number;
   respawnMs: number;
-  /** What it may leave on the ground: [item, chance 0..1], each rolled on its own. */
+  /** What it may leave on the ground: [item, chance 0..1], each rolled on its own. The last one is its card. */
   drops: [ItemId, number][];
 }
 
 export const MONSTERS: Record<MonsterId, MonsterDef> = {
   slime: {
     id: "slime", name: "Slime", level: 1, hp: 30, atk: 4, def: 0, exp: 8, gold: [1, 3], speed: 38, chase: 70, aggro: 0, range: 36, attackMs: 2000, radius: 10, respawnMs: 12_000,
-    drops: [["jelly", 0.7], ["redPotion", 0.05], ["leatherCap", 0.015], ["leatherPants", 0.015], ["leatherBoots", 0.01], ["copperRing", 0.003], ["cloverCharm", 0.003]],
+    drops: [["jelly", 0.7], ["redPotion", 0.05], ["leatherCap", 0.015], ["leatherPants", 0.015], ["leatherBoots", 0.01], ["copperRing", 0.003], ["cloverCharm", 0.003], ["slimeCard", 0.0008]],
   },
   snake: {
     id: "snake", name: "Grass Snake", level: 4, hp: 85, atk: 9, def: 2, exp: 32, gold: [3, 7], speed: 45, chase: 80, aggro: 0, range: 40, attackMs: 1700, radius: 12, respawnMs: 15_000,
-    drops: [["scale", 0.6], ["redPotion", 0.06], ["leatherArmor", 0.012], ["leatherBoots", 0.015], ["woodShield", 0.012], ["guardShield", 0.004], ["vigorRing", 0.002]],
+    drops: [["scale", 0.6], ["redPotion", 0.06], ["leatherArmor", 0.012], ["leatherBoots", 0.015], ["woodShield", 0.012], ["guardShield", 0.004], ["vigorRing", 0.002], ["snakeCard", 0.0008]],
   },
   hornet: {
     id: "hornet", name: "Hornet", level: 7, hp: 130, atk: 12, def: 4, exp: 80, gold: [6, 12], speed: 70, chase: 95, aggro: 120, range: 36, attackMs: 1400, radius: 8, respawnMs: 18_000,
-    drops: [["honey", 0.55], ["orangePotion", 0.03], ["kettleHelm", 0.006], ["legionArmor", 0.005], ["bronzeSword", 0.005], ["ironGreaves", 0.006], ["ironBoots", 0.006], ["stingerPendant", 0.003]],
+    drops: [["honey", 0.55], ["orangePotion", 0.03], ["kettleHelm", 0.006], ["legionArmor", 0.005], ["bronzeSword", 0.005], ["ironGreaves", 0.006], ["ironBoots", 0.006], ["stingerPendant", 0.003], ["hornetCard", 0.001]],
   },
   snapper: {
     id: "snapper", name: "Snapper Flower", level: 10, hp: 280, atk: 17, def: 5, exp: 240, gold: [18, 30], speed: 0, chase: 0, aggro: 110, range: 64, attackMs: 1600, radius: 22, respawnMs: 30_000,
-    drops: [["bloom", 0.6], ["orangePotion", 0.08], ["redPotion", 0.1], ["saber", 0.008], ["bronzeHelm", 0.008], ["guardShield", 0.01], ["plateArmor", 0.004], ["meadowCrown", 0.0005]],
+    drops: [["bloom", 0.6], ["orangePotion", 0.08], ["redPotion", 0.1], ["saber", 0.008], ["bronzeHelm", 0.008], ["guardShield", 0.01], ["plateArmor", 0.004], ["meadowCrown", 0.0005], ["snapperCard", 0.0012]],
   },
 };
 
@@ -177,16 +185,19 @@ export function hitChance(attackerLevel: number, defenderLevel: number): number 
   return Math.min(0.95, Math.max(0.6, 0.95 - 0.04 * Math.max(0, defenderLevel - attackerLevel)));
 }
 
+/** Everyone's chance to land a critical hit; Hornet Cards add to it. */
 export const CRIT_CHANCE = 0.05;
+/** Evading never gets better than this, however many Grass Snake Cards you stack. */
+export const MAX_FLEE = 0.5;
 
 /**
  * One hit: attack spread ±15 %, softened by defence (defence equal to the
  * attack halves it, so armour always helps but never makes you untouchable).
  * Crits ignore defence and hit 1.5x. At least 1.
  */
-export function rollDamage(atk: number, def: number, rand: () => number = Math.random): { damage: number; crit: boolean } {
+export function rollDamage(atk: number, def: number, critChance = CRIT_CHANCE, rand: () => number = Math.random): { damage: number; crit: boolean } {
   const base = atk * (0.85 + rand() * 0.3);
-  const crit = rand() < CRIT_CHANCE;
+  const crit = rand() < critChance;
   const soft = atk + Math.max(0, def) > 0 ? atk / (atk + Math.max(0, def)) : 1;
   return { damage: Math.max(1, Math.round(crit ? base * 1.5 : base * soft)), crit };
 }

@@ -279,7 +279,13 @@ export const NPCS: NpcDef[] = [
     dir: Dir.Down,
     greeting:
       "Potions, blades and good leather! Gear up before you head out, and bring me whatever the monsters drop. I pay fair. Wear your gear from your bag (I), and keep a few Red Potions handy (Q drinks one).",
-    chatter: ["Red Potions! Don't leave town without them!", "Got slime jelly? I'll buy it!", "A sharp blade and good boots. That's all you need.", "Bring me what the monsters drop!"],
+    chatter: [
+      "Red Potions! Don't leave town without them!",
+      "Got slime jelly? I'll buy it!",
+      "A sharp blade and good boots. That's all you need.",
+      "Bring me what the monsters drop!",
+      "Every monster out there carries its own card. Find one, and your gear will never be the same!",
+    ],
   },
   {
     id: "ivy",

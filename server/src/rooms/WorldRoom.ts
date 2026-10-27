@@ -12,6 +12,7 @@ import {
   sanitizeChat,
   sanitizeName,
   type AuthInfo,
+  type CardInsertMessage,
   type ChatMessage,
   type ChatSend,
   type CorrectMessage,
@@ -159,6 +160,11 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       if (!this.itemOk(client) || !this.bagSlot(msg?.slot) || this.meta.get(client.sessionId)?.shop) return;
       this.combat.dropItem(client.sessionId, msg.slot, Number.isInteger(msg.n) ? msg.n! : Infinity);
     },
+    "item:card": (client: Client, msg: CardInsertMessage) => {
+      if (!this.itemOk(client) || !this.bagSlot(msg?.card)) return;
+      const at = this.bagSlot(msg.bag) ? { bag: msg.bag } : isSlot(msg.gear) ? { gear: msg.gear } : undefined;
+      if (at) this.combat.insertCard(client.sessionId, msg.card, at);
+    },
     "item:pickup": (client: Client, msg: PickupMessage) => {
       if (this.itemOk(client) && typeof msg?.id === "string") this.combat.pickup(client.sessionId, msg.id.slice(0, 16));
     },
@@ -200,7 +206,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       },
       found: (id, item) => {
         const name = this.state.players.get(id)?.name;
-        if (name) this.system(`✨ ${name} found the legendary ${item.name}!`);
+        if (name) this.system(item.kind === "card" ? `🃏 ${name} found a ${item.name}!` : `✨ ${name} found the legendary ${item.name}!`);
       },
     });
     this.clock.setInterval(() => {
@@ -480,13 +486,8 @@ export class WorldRoom extends Room<{ state: WorldState }> {
 
   private handleSell(client: Client, msg: NpcSellMessage) {
     if (!this.itemOk(client) || !this.merchant(client, msg?.npc)) return;
-    if ("loot" in msg) {
-      if (!this.combat.sell(client.sessionId, -1, 0)) client.send("chat", this.makeMessage("", "System", "You have no monster loot to sell.", true));
-      return;
-    }
-    if (!this.bagSlot(msg.slot)) return;
-    const n = Number.isInteger(msg.n) && msg.n > 0 ? msg.n : 1;
-    if (!this.combat.sell(client.sessionId, msg.slot, n)) client.send("chat", this.makeMessage("", "System", "The Outfitter won't buy that.", true));
+    if ("loot" in msg) this.combat.sell(client.sessionId, -1, 0);
+    else if (this.bagSlot(msg.slot)) this.combat.sell(client.sessionId, msg.slot, Number.isInteger(msg.n) && msg.n > 0 ? msg.n : 1);
   }
 
   private queueFx(id: string, ev: FxEvent) {

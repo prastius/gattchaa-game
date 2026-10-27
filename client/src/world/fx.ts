@@ -9,8 +9,8 @@ const DEPTH = 1e6 - 5;
 /** 3x3 white pixel made by the world scene. */
 const SPARK = "spark";
 
-/** dealt: your hits; taken: hits on you; other: everyone else's; miss: a whiff; heal: potions. */
-export type NumberKind = "dealt" | "crit" | "taken" | "other" | "miss" | "heal";
+/** dealt: your hits; taken: hits on you; other: everyone else's; miss: a whiff; heal: potions; thorn: a card biting back. */
+export type NumberKind = "dealt" | "crit" | "taken" | "other" | "miss" | "heal" | "thorn";
 
 const NUMBER_STYLE: Record<NumberKind, { size: number; color: string }> = {
   dealt: { size: 14, color: "#ffffff" },
@@ -19,6 +19,7 @@ const NUMBER_STYLE: Record<NumberKind, { size: number; color: string }> = {
   other: { size: 11, color: "#d9dde2" },
   miss: { size: 11, color: "#9fd3ff" },
   heal: { size: 14, color: "#7cf08a" },
+  thorn: { size: 13, color: "#ff9fd0" },
 };
 
 export class Fx {
@@ -86,6 +87,27 @@ export class Fx {
       .setDepth(DEPTH);
     p.explode(14);
     this.scene.time.delayedCall(700, () => p.destroy());
+  }
+
+  /** A card going into someone's equipment: a ring of violet sparks drawn in. */
+  card(x: number, y: number) {
+    const glow = this.scene.add.image(x, y - 22, GLOW).setBlendMode(Phaser.BlendModes.ADD).setTint(0xc88bff).setDepth(DEPTH).setScale(0.2).setAlpha(0);
+    this.scene.tweens.add({ targets: glow, alpha: 0.9, scale: 0.7, duration: 220, ease: "Quad.Out", yoyo: true, hold: 260, onComplete: () => glow.destroy() });
+    const sparks = this.scene.add
+      .particles(x, y - 22, SPARK, {
+        emitZone: { type: "edge", source: new Phaser.Geom.Circle(0, 0, 26), quantity: 18 },
+        moveToX: 0,
+        moveToY: 0,
+        lifespan: 420,
+        scale: { start: 1.6, end: 0.4 },
+        alpha: { start: 1, end: 0.2 },
+        tint: [0xc88bff, 0xffffff, 0xe9c25c],
+        blendMode: Phaser.BlendModes.ADD,
+        emitting: false,
+      })
+      .setDepth(DEPTH);
+    sparks.explode(18);
+    this.scene.time.delayedCall(500, () => sparks.destroy());
   }
 
   /** A column of golden light, rising sparks and "LEVEL UP!" over someone's head. */
