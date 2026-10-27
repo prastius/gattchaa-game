@@ -10,6 +10,7 @@ import { WorldScene, type WorldSceneData } from "./scenes/WorldScene";
 import { CharacterCreator } from "./ui/creator";
 import { ChatUI } from "./ui/chat";
 import { HUD } from "./ui/hud";
+import { StatusPanel } from "./ui/status";
 import { Diagnostics } from "./ui/diagnostics";
 import { TownDialog } from "./ui/dialog";
 import { Announcer } from "./ui/announce";
@@ -79,9 +80,9 @@ function renderAccount() {
   if (auth.signedIn) {
     const who = document.createElement("strong");
     who.textContent = auth.displayName || "your Gattchaa account";
-    accountStatus.replaceChildren("Signed in as ", who, ". You can open a shop in the Market Square, and it stays open while you're away.");
+    accountStatus.replaceChildren("Signed in as ", who, ". Your level is saved, and you can open a shop in the Market Square that stays open while you're away.");
   } else {
-    accountStatus.textContent = "Playing as a guest. Sign in with your Gattchaa account to open your own shop in town.";
+    accountStatus.textContent = "Playing as a guest. Sign in with your Gattchaa account to keep your level and open your own shop in town.";
   }
 }
 signInBtn.addEventListener("click", () => (location.href = auth.signInUrl));
@@ -142,11 +143,13 @@ $("login-form").addEventListener("submit", async (e) => {
 function start(room: Awaited<ReturnType<typeof joinWorld>>, name: string) {
   world ??= new World();
   const hud = new HUD(world);
+  const status = new StatusPanel(name);
   const chat = new ChatUI((text): boolean => net.sendChat(text));
   const net = new Net(room, name, chat, hud, (reason) => {
     $("disconnected-reason").textContent = reason;
     $("disconnected").hidden = false;
   });
+  net.onStats.add((s) => status.setSheet(s));
   room.onMessage("auth", (info: AuthInfo) => {
     if (!info.expired) return;
     auth.forget();
@@ -162,6 +165,7 @@ function start(room: Awaited<ReturnType<typeof joinWorld>>, name: string) {
 
   $("login").hidden = true;
   hud.show();
+  status.show();
   chat.show();
   setupWardrobe(net, chat);
   setupSoundButtons();
@@ -188,7 +192,7 @@ function start(room: Awaited<ReturnType<typeof joinWorld>>, name: string) {
     game.scale.resize(nw, nh);
     game.scale.setZoom(1 / dpr);
   });
-  const data: WorldSceneData = { world, room, net, chat, hud, shop, dialog, vending };
+  const data: WorldSceneData = { world, room, net, chat, hud, shop, dialog, vending, status };
   game.scene.add("world", WorldScene, true, data);
   game.events.once(Phaser.Core.Events.READY, () => {
     const scene = game.scene.getScene("world") as WorldScene;

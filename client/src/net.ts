@@ -7,8 +7,10 @@ import {
   type CorrectMessage,
   type EmoteEvent,
   type EmoteMessage,
+  type FxEvent,
   type JoinOptions,
   type LookMessage,
+  type StatsMessage,
 } from "../../shared/protocol";
 import type { Announcement, NpcSay } from "../../shared/gattchaa";
 import type { ChatUI } from "./ui/chat";
@@ -37,7 +39,12 @@ export class Net {
   onCorrect?: (pos: CorrectMessage) => void;
   onNpcSay?: (msg: NpcSay) => void;
   onEmote?: (sessionId: string, e: number) => void;
+  /** Fighting nearby (only once the scene is listening; earlier events don't matter). */
+  onFx?: (events: FxEvent[]) => void;
   readonly onAnnounce = new Set<(a: Announcement) => void>();
+  readonly onStats = new Set<(s: StatsMessage) => void>();
+  /** Your latest character sheet. */
+  stats?: StatsMessage;
 
   constructor(
     readonly room: Room,
@@ -64,6 +71,11 @@ export class Net {
     room.onMessage("announce", (a: Announcement) => {
       for (const fn of this.onAnnounce) fn(a);
     });
+    room.onMessage("me", (s: StatsMessage) => {
+      this.stats = s;
+      for (const fn of this.onStats) fn(s);
+    });
+    room.onMessage("fx", (events: FxEvent[]) => this.onFx?.(events));
 
     room.onDrop((code, reason) => {
       console.warn("connection dropped", code, reason);

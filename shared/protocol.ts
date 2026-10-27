@@ -93,6 +93,39 @@ export interface DoorMessage {
   id: string;
 }
 
+/** client -> server: auto-attack this monster while it's in reach ("" stops). */
+export interface TargetMessage {
+  id: string;
+}
+
+/** server -> client: your own character sheet (nobody else gets it). HP is in the synced state. */
+export interface StatsMessage {
+  cls: string;
+  lv: number;
+  exp: number;
+  mp: number;
+  mmp: number;
+  gold: number;
+  /** Signed in, so progress is saved. Guests start over next visit. */
+  saved: boolean;
+}
+
+/**
+ * server -> client: fighting near you, batched once per server tick.
+ * Ids are player session ids or monster ids (see MONSTER_ID_PREFIX).
+ */
+export type FxEvent =
+  | { k: "hit"; a: string; t: string; d: number; crit?: 1 }
+  | { k: "miss"; a: string; t: string }
+  /** A monster was defeated, or a player was knocked out. */
+  | { k: "down"; t: string }
+  | { k: "lvup"; t: string; lv: number }
+  /** Only to the player who earned it. */
+  | { k: "gain"; exp: number; gold: number };
+
+/** Monster ids start with this; player session ids never do. */
+export const MONSTER_ID_PREFIX = "~";
+
 /** Read-only shape of a synced player as seen by the client. */
 export interface PlayerView {
   name: string;
@@ -103,6 +136,23 @@ export interface PlayerView {
   moving: boolean;
   /** Players only (NPCs never sit). */
   sit?: boolean;
+  /** Players only: level and health. */
+  lv?: number;
+  hp?: number;
+  mhp?: number;
+  /** Knocked out, waiting to return to town. */
+  dead?: boolean;
+}
+
+/** Read-only shape of a synced monster. Its max HP and name come from MONSTERS. */
+export interface MonsterView {
+  kind: string;
+  x: number;
+  y: number;
+  dir: number;
+  moving: boolean;
+  ts: number;
+  hp: number;
 }
 
 export function sanitizeName(raw: unknown): string {

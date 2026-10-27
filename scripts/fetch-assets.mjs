@@ -12,6 +12,7 @@
 
 import fs from "node:fs/promises";
 import path from "node:path";
+import zlib from "node:zlib";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -215,6 +216,18 @@ const TOWN_FILES = {
   "campfire.png": "Objects/Small Items/Fire, Camp.png",
   "water-fx.png": "FX/Water Reflections.png",
 };
+
+/** Monsters from "[LPC] Monsters" on OpenGameArt (CC-BY-SA 3.0 or GPL 3.0), which ships as one zip. */
+const MONSTERS_ZIP = "https://opengameart.org/sites/default/files/lpc-monsters.zip";
+const MONSTER_FILES = ["slime.png", "snake.png", "bee.png", "man_eater_flower.png"];
+const MONSTER_CREDIT = [
+  '"[LPC] Monsters" by Charles Sanchez (CharlesGabriel), bagzie, and bluecarrot16.',
+  "License: CC-BY-SA 3.0+ or GPL 3.0+.",
+  "https://opengameart.org/content/lpc-monsters",
+  "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
+  "https://opengameart.org/content/bat-sprite",
+].join("\n");
+
 const TOWN_CREDIT_DIRS = [
   "Structure/Structures",
   "Structure/Misc",
@@ -239,6 +252,27 @@ async function get(url, kind = "text") {
     if (res.status === 404 || attempt >= 3) throw new Error(`${res.status} ${url}`);
     await new Promise((r) => setTimeout(r, 1000 * attempt));
   }
+}
+
+/** Files in a zip (stored or deflated entries), by name. Enough for the art packs; no dependency. */
+function unzip(buf) {
+  const files = new Map();
+  let end = buf.length - 22;
+  while (end >= 0 && buf.readUInt32LE(end) !== 0x06054b50) end--;
+  if (end < 0) throw new Error("not a zip file");
+  let p = buf.readUInt32LE(end + 16);
+  for (let i = buf.readUInt16LE(end + 10); i > 0; i--) {
+    const method = buf.readUInt16LE(p + 10);
+    const size = buf.readUInt32LE(p + 20);
+    const nameLen = buf.readUInt16LE(p + 28);
+    const local = buf.readUInt32LE(p + 42);
+    const name = buf.toString("utf8", p + 46, p + 46 + nameLen);
+    const at = local + 30 + buf.readUInt16LE(local + 26) + buf.readUInt16LE(local + 28);
+    const data = buf.subarray(at, at + size);
+    files.set(name, method === 8 ? zlib.inflateRawSync(data) : data);
+    p += 46 + nameLen + buf.readUInt16LE(p + 30) + buf.readUInt16LE(p + 32);
+  }
+  return files;
 }
 
 async function save(rel, data) {
@@ -391,6 +425,13 @@ async function main() {
     townCredits.push(`== ${dir} ==\n${(await get(elizaUrl(`${dir}/Credits.txt`))).trim()}`);
   }
 
+  const monsters = unzip(await get(MONSTERS_ZIP, "bin"));
+  for (const name of MONSTER_FILES) {
+    const data = monsters.get(`lpc-monsters/${name}`);
+    if (!data) throw new Error(`lpc-monsters.zip has no ${name}`);
+    await save(`monsters/${name}`, data);
+  }
+
   await save("lpc/manifest.json", JSON.stringify(manifest));
   await fs.writeFile(path.join(ROOT, "shared/catalog.ts"), renderCatalog(manifest));
   const creditsText = renderCredits([...credits.values()], terrainCredits, townCredits.join("\n\n"));
@@ -469,6 +510,14 @@ function renderCredits(entries, terrainCredits, townCredits) {
     "",
     "```",
     townCredits,
+    "```",
+    "",
+    "## Monsters",
+    "",
+    "Slime, Grass Snake (snake), Hornet (bee) and Snapper Flower (man-eater flower):",
+    "",
+    "```",
+    MONSTER_CREDIT,
     "```",
     "",
     "## Gattchaa logo",

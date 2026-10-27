@@ -13,6 +13,13 @@ export const Player = schema(
     ts: t.uint32(),
     /** Sitting on the ground: resting, or minding a shop. */
     sit: t.boolean().default(false),
+    // Level and health are filled in by Combat.join.
+    lv: t.uint8().default(1),
+    hp: t.uint16().default(0),
+    /** Max HP, so others can draw your health bar. */
+    mhp: t.uint16().default(0),
+    /** Knocked out, until they return to town. */
+    dead: t.boolean().default(false),
   },
   "Player",
 );
@@ -52,11 +59,28 @@ export const Npc = schema(
 );
 export type Npc = SchemaType<typeof Npc>;
 
+/** A monster in a field. Its name, level and max HP come from MONSTERS[kind]. */
+export const Monster = schema(
+  {
+    kind: t.string(),
+    x: t.uint16(),
+    y: t.uint16(),
+    dir: t.uint8().default(2),
+    moving: t.boolean().default(false),
+    ts: t.uint32(),
+    hp: t.uint16(),
+  },
+  "Monster",
+);
+export type Monster = SchemaType<typeof Monster>;
+
 export const WorldState = schema(
   {
     // .view(): each client only receives the players its StateView contains
     // (the ones near it), so 100+ players don't flood everyone.
     players: t.map(Player).view(),
+    // Monsters out in the fields; like players, each client only gets the ones near it.
+    monsters: t.map(Monster).view(),
     // A dozen townspeople; everyone gets all of them.
     npcs: t.map(Npc),
     // Open player shops. Everyone gets all of them: the Market Keeper lists them, and the minimap shows them.

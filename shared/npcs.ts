@@ -257,6 +257,19 @@ export const NPCS: NpcDef[] = [
     chatter: ["Grab a table, stay a while!", "Who pulled something good today?", "Best spot in town to talk cards."],
   },
   {
+    // Outside the south gate, where the road leads into the South Meadow.
+    id: "gate-guard",
+    name: "Rowan",
+    title: "Gate Guard",
+    kind: "local",
+    look: look({ body: "male", hair: "highTight", hairColor: "chestnut", beard: "trimmed", skin: "olive", top: "longPolo", topColor: "red", bottom: "formal", bottomColor: "black", shoes: "boots", shoesColor: "brown", hat: "headband", hatColor: "black" }),
+    ...at(187.5, 257.6),
+    dir: Dir.Down,
+    greeting:
+      "Off to the South Meadow? Slimes (Lv 1) by the road only fight back if you hit them. Grass Snakes (Lv 4) hide in the west grass. Hornets (Lv 7) in the east field sting on sight, and Snapper Flowers (Lv 10) guard the lake. Click a monster or press Space to attack. Hurt? Sit down (X) to heal faster, or rest inside the walls.",
+    chatter: ["Monsters past this gate. Stay sharp!", "Hornets in the east field sting first!", "Hurt? Sit down and rest a while.", "Train hard, and one day you'll be a Knight."],
+  },
+  {
     id: "ivy",
     name: "Ivy",
     title: "",

@@ -1,6 +1,7 @@
 import { DECOR, TILE_SIZE, Terrain, type World } from "../../../shared/world";
 import { Floor } from "../../../shared/town";
 import { EMOTES, EMOTE_NAMES } from "../../../shared/protocol";
+import { fieldAt, inSafeZone } from "../../../shared/rpg";
 
 export interface Dot {
   x: number;
@@ -29,6 +30,8 @@ export class HUD {
   private root = document.getElementById("hud")!;
   private online = document.getElementById("online")!;
   private coords = document.getElementById("coords")!;
+  /** The field you're in (or the palace); phones show this instead of the coordinates. */
+  private place = document.getElementById("place")!;
   private connDot = document.getElementById("conn-dot")!;
   private minimap = document.getElementById("minimap") as HTMLCanvasElement;
   private ctx = this.minimap.getContext("2d")!;
@@ -36,12 +39,15 @@ export class HUD {
   private zoomIn = document.getElementById("zoom-in-btn") as HTMLButtonElement;
   private zoomOut = document.getElementById("zoom-out-btn") as HTMLButtonElement;
   private sitBtn = document.getElementById("sit-btn") as HTMLButtonElement;
+  private attackBtn = document.getElementById("attack-btn") as HTMLButtonElement;
   private shopBtn = document.getElementById("shop-btn") as HTMLButtonElement;
   private shopLabel = document.getElementById("shop-label")!;
   private emoteBtn = document.getElementById("emote-btn") as HTMLButtonElement;
   private emotePicker = document.getElementById("emotes")!;
   /** Open player shops, shown on the minimap. */
   private shops: readonly Dot[] = [];
+  /** Outside the town walls, where monsters roam. */
+  inField = false;
 
   constructor(private world: World) {
     // Pre-render the whole map once at 1px per tile.
@@ -82,6 +88,11 @@ export class HUD {
   setZoomLimits(canZoomOut: boolean, canZoomIn: boolean) {
     this.zoomOut.disabled = !canZoomOut;
     this.zoomIn.disabled = !canZoomIn;
+  }
+
+  /** The sword button (phones): attack the nearest monster. Only shown outside the walls. */
+  onAttack(fn: () => void) {
+    this.attackBtn.addEventListener("click", fn);
   }
 
   onSit(fn: () => void) {
@@ -147,7 +158,14 @@ export class HUD {
   update(self: Dot | undefined, others: Iterable<Dot>, onlineCount: number, siteOnline = 0) {
     this.online.textContent = siteOnline > 0 ? `${onlineCount} in town · ${siteOnline} on Gattchaa` : `${onlineCount} in town`;
     if (self) {
-      this.coords.textContent = this.indoors ? "Gattchaa Palace" : `${Math.floor(self.x / TILE_SIZE)}, ${Math.floor(self.y / TILE_SIZE)}`;
+      const field = fieldAt(self.x, self.y);
+      const place = this.indoors ? "Gattchaa Palace" : field ? `${field.name} (${field.levels})` : "";
+      if (this.place.textContent !== place) this.place.textContent = place;
+      this.place.hidden = !place;
+      this.coords.hidden = this.indoors;
+      this.coords.textContent = `${Math.floor(self.x / TILE_SIZE)}, ${Math.floor(self.y / TILE_SIZE)}`;
+      this.inField = !this.indoors && !inSafeZone(self.x, self.y);
+      this.attackBtn.hidden = !this.inField;
     }
     if (this.indoors) return;
 

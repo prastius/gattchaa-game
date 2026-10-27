@@ -24,6 +24,7 @@ import {
   inRect,
   type Rect,
 } from "./town";
+import { FIELDS } from "./rpg";
 
 export const TILE_SIZE = 32;
 export const WORLD_TILES_W = 384;
@@ -415,6 +416,8 @@ export class World {
         const r = hash2(tx, ty, seed + 7);
         const r2 = hash2(tx, ty, seed + 8);
         const forest = fbm(tx / 28, ty / 28, seed + 999, 3);
+        // Hunting fields are open meadow: only the thickest woods stay, as small groves.
+        const meadow = FIELDS.some((f) => inRect(f.area, tx, ty));
         const e = this.elevation(tx, ty);
 
         // Blocking props keep a gap (checked against tiles already visited) so
@@ -432,7 +435,7 @@ export class World {
 
         let d: number = Decor.none;
         if (allGrass) {
-          if (free && forest > 0.56 && r < 0.6) {
+          if (free && forest > (meadow ? 0.74 : 0.56) && r < (meadow ? 0.4 : 0.6)) {
             d =
               e > 0.58
                 ? r2 < 0.5
@@ -443,7 +446,7 @@ export class World {
             d = [Decor.oak, Decor.oakTall, Decor.cypress, Decor.bush][Math.floor(r2 * 4)];
           } else if (r < 0.06) {
             d = r2 < 0.55 ? Decor.tallGrass : Decor.fern;
-          } else if (r < 0.1 && forest < 0.45) {
+          } else if (r < 0.1 && forest < (meadow ? 0.6 : 0.45)) {
             d = Decor.flowers;
           }
         } else if (allDirt) {

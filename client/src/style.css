@@ -75,7 +75,10 @@ button {
   font-variant-numeric: tabular-nums;
 }
 
-.hud-box .sep {
+/* "· South Meadow (Lv 1–10) · 190, 268" after the online count. */
+.hud-place::before {
+  content: "·";
+  margin-right: 8px;
   color: var(--ink-dim);
 }
 
@@ -235,6 +238,193 @@ button {
 
 .hud-accent:hover {
   background: var(--accent-soft);
+}
+
+/* ---------- Character status (top left) and target ---------- */
+
+#status-area {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  width: 212px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.status,
+.target {
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.status-head,
+.target-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.status-name {
+  font-weight: 700;
+  font-size: 13px;
+  color: #ffe680;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-level,
+#target-level {
+  flex: none;
+  color: var(--ink-dim);
+  font-weight: 600;
+}
+
+#target-name {
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A bar: the fill (i) behind a label (b) and the numbers (span). */
+.bar {
+  position: relative;
+  height: 15px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.5);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5px;
+  font-size: 10.5px;
+  line-height: 1;
+  pointer-events: auto;
+}
+
+.bar i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  transition: width 0.25s ease-out;
+}
+
+.bar b,
+.bar span {
+  position: relative;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.8);
+}
+
+.bar b {
+  font-size: 9.5px;
+  letter-spacing: 0.4px;
+  opacity: 0.85;
+}
+
+.bar-hp i {
+  background: linear-gradient(#6ee07a, #3fae51);
+}
+
+.bar-hp i.low {
+  background: linear-gradient(#f06a62, #c63f38);
+}
+
+.bar-mp i {
+  background: linear-gradient(#6bb4ff, #3d82d6);
+}
+
+.bar-exp {
+  height: 11px;
+}
+
+.bar-exp i {
+  background: linear-gradient(#ffd27a, #eb8224);
+}
+
+.bar-target {
+  height: 8px;
+}
+
+.bar-target i {
+  background: linear-gradient(#f06a62, #c63f38);
+}
+
+.status-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 1px;
+}
+
+.gold {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+  color: #ffd27a;
+}
+
+.coin {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff2b0, #f2c14e 45%, #b9791c);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.status-note {
+  color: var(--ink-dim);
+  font-size: 10.5px;
+  text-align: right;
+}
+
+@media (max-width: 600px) {
+  /* Room for the status panel on the left: no coordinates, and the place wraps under the count. */
+  .hud-box {
+    max-width: calc(100vw - 250px);
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    row-gap: 2px;
+  }
+  #coords {
+    display: none;
+  }
+  #place {
+    flex-basis: 100%;
+    text-align: right;
+  }
+  #place::before {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  #status-area {
+    width: 150px;
+  }
+  .hud-box {
+    max-width: calc(100vw - 186px);
+  }
+  .status-level {
+    font-size: 11px;
+  }
+  .status-note {
+    display: none;
+  }
 }
 
 /* ---------- Chat ---------- */

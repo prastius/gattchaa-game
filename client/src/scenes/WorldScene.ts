@@ -1,10 +1,27 @@
 import Phaser from "phaser";
 import { Callbacks, type Room } from "@colyseus/sdk";
 import { CHUNK_TILES, PLAYER_SPEED, TILE_SIZE, WORLD_PX_H, WORLD_PX_W, hash2, isWet, type World } from "../../../shared/world";
-import { Dir, EMOTES, EMOTE_COOLDOWN_MS, NET_SEND_HZ, VIEW_RADIUS, type MoveMessage, type PlayerView, type SitMessage } from "../../../shared/protocol";
+import {
+  Dir,
+  EMOTES,
+  EMOTE_COOLDOWN_MS,
+  MONSTER_ID_PREFIX,
+  NET_SEND_HZ,
+  VIEW_RADIUS,
+  type FxEvent,
+  type MonsterView,
+  type MoveMessage,
+  type PlayerView,
+  type SitMessage,
+  type TargetMessage,
+} from "../../../shared/protocol";
+import { isClassId, isMonsterId, reach, statsFor } from "../../../shared/rpg";
 import { NPCS, type NpcDef } from "../../../shared/npcs";
 import { DOORS, INTERIOR_ZONE, PROPS, TOWN_AREA, inRect } from "../../../shared/town";
 import { CharacterTextures, PlayerSprite } from "../PlayerSprite";
+import { MonsterSprite } from "../MonsterSprite";
+import { createMonsterAnims, levelColor, preloadMonsters } from "../world/monsterArt";
+import { Fx, type NumberKind } from "../world/fx";
 import { ATLAS_MARGIN, ATLAS_SPACING, FLOOR_TEX, buildTerrainAtlas, floorCell, structKey, tileCells, type TerrainAtlas } from "../world/terrainTiles";
 import { WORLD_TEX, createDecor, registerDecorFrames, type DecorSprite } from "../world/decorSprites";
 import { Town, preloadTown, type Hotspot } from "../world/town";
@@ -15,6 +32,7 @@ import { Critters } from "../world/ambience";
 import { audio } from "../audio";
 import type { ChatUI } from "../ui/chat";
 import type { HUD } from "../ui/hud";
+import type { StatusPanel } from "../ui/status";
 import type { Net } from "../net";
 import type { Shop } from "../shop";
 import type { TownDialog } from "../ui/dialog";
@@ -29,6 +47,7 @@ export interface WorldSceneData {
   shop: Shop;
   dialog: TownDialog;
   vending: Vending;
+  status: StatusPanel;
 }
 
 interface Chunk {
@@ -47,6 +66,13 @@ interface Entity {
   interp: Interpolator;
   lastTs: number;
   npc?: NpcDef;
+}
+
+interface MobEntity {
+  sprite: MonsterSprite;
+  state: MonsterView;
+  interp: Interpolator;
+  lastTs: number;
 }
 
 const ATLAS_KEY = "terrain-atlas";
@@ -72,6 +98,16 @@ const VENDING_HINT_MS = 4000;
 const WATER_FX = "water-fx";
 /** Share of open-water tiles with a glint. */
 const GLINT_CHANCE = 0.045;
+/** Space / the sword button picks the nearest monster within this many px. */
+const TARGET_RANGE = 420;
+/** A target further away than this is let go. */
+const TARGET_DROP_RANGE = 700;
+/** Chasing stops this far inside reach, so the server (which sees you a moment late) agrees. */
+const CHASE_MARGIN = 8;
+const NO_TARGET_HINT_MS = 3000;
+
+const dirTo = (dx: number, dy: number) => (Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? Dir.Left : Dir.Right) : dy < 0 ? Dir.Up : Dir.Down);
+const isMonster = (id: string) => id.startsWith(MONSTER_ID_PREFIX);
 
 /**
  * Integer zoom keeps every art pixel the same size (no shimmer when scrolling).
@@ -116,6 +152,7 @@ export class WorldScene extends Phaser.Scene {
   private shop!: Shop;
   private dialog!: TownDialog;
   private vending!: Vending;
+  private status!: StatusPanel;
 
   private charTextures!: CharacterTextures;
   private atlas!: TerrainAtlas;
@@ -130,6 +167,16 @@ export class WorldScene extends Phaser.Scene {
   private wasVending = false;
   private entities = new Map<string, Entity>();
   private npcs = new Map<string, Entity>();
+  private monsters = new Map<string, MobEntity>();
+  private fx!: Fx;
+  /** The monster you're attacking (auto-attacks while it's in reach). */
+  private target?: string;
+  /** Walking to the target by itself; any manual step stops it. */
+  private chasing = false;
+  private hovered?: string;
+  private wasDead = false;
+  private noTargetHintAt = 0;
+  private sitTipShown = false;
   private clock = new ServerClock();
   private self?: PlayerSprite;
   private chunks = new Map<string, Chunk>();
@@ -166,6 +213,7 @@ export class WorldScene extends Phaser.Scene {
     this.load.image(WORLD_TEX.flowers, `${ASSETS}flowers.png`);
     this.load.image(WORLD_TEX.rocks, `${ASSETS}rocks.png`);
     preloadTown(this);
+    preloadMonsters(this);
     this.load.spritesheet(WATER_FX, `${import.meta.env.BASE_URL}assets/town/water-fx.png`, { frameWidth: 32, frameHeight: 32 });
     this.load.setCORS("anonymous"); // product thumbnails come from the shop (needs CORS there)
   }
@@ -193,6 +241,8 @@ export class WorldScene extends Phaser.Scene {
       this.anims.create({ key: "glint-b", frames: this.anims.generateFrameNumbers(WATER_FX, { start: 4, end: 7 }), frameRate: 7, repeat: -1 });
     }
     this.critters = new Critters(this, this.world);
+    createMonsterAnims(this);
+    this.fx = new Fx(this, () => this.textRes);
 
     const cam = this.cameras.main;
     cam.setBounds(0, 0, WORLD_PX_W, WORLD_PX_H);
@@ -240,12 +290,14 @@ export class WorldScene extends Phaser.Scene {
     this.hud.onSit(() => this.toggleSit());
     this.hud.onShop(() => this.openShopPanel());
     this.hud.onEmote((e) => this.emote(e));
+    this.hud.onAttack(() => this.targetNearest());
+    this.status.onReturn(() => this.room.send("revive"));
     this.input.on("pointerdown", (p: Phaser.Input.Pointer) => {
       this.chat.blur();
       // Clicking the world leaves any text box (a shop title…), so the game keys work again.
       if (this.typing()) (document.activeElement as HTMLElement | null)?.blur();
-      // Only a left click or a tap uses things; right/middle click does nothing.
-      this.pointerUsed = p.button === 0 && this.tryUse(p);
+      // Only a left click or a tap uses things; right/middle click does nothing. Monsters first.
+      this.pointerUsed = p.button === 0 && (this.tryTarget(p) || this.tryUse(p));
     });
     this.input.on("wheel", (_p: Phaser.Input.Pointer, _over: unknown, _dx: number, dy: number) => {
       // Collect small trackpad deltas into whole steps; reset when direction flips.
@@ -258,7 +310,13 @@ export class WorldScene extends Phaser.Scene {
     this.input.keyboard!.on("keydown", (e: KeyboardEvent) => {
       // Ctrl/Cmd +/- stays the browser's page zoom.
       if (this.typing() || e.ctrlKey || e.metaKey || e.altKey) return;
-      if (e.key === "+" || e.key === "=") this.zoomBy(1);
+      if (e.code === "Space") {
+        // Not "press the button that has focus" (the last HUD button clicked).
+        e.preventDefault();
+        if (document.activeElement instanceof HTMLButtonElement) document.activeElement.blur();
+        if (!e.repeat) this.targetNearest();
+      } else if (e.key === "Escape" && this.target && !this.dialog.isOpen) this.clearTarget();
+      else if (e.key === "+" || e.key === "=") this.zoomBy(1);
       else if (e.key === "-" || e.key === "_") this.zoomBy(-1);
       // 1-9 and 0: the emotes, in picker order.
       else if (/^[0-9]$/.test(e.key)) this.emote((Number(e.key) + 9) % 10);
@@ -381,6 +439,27 @@ export class WorldScene extends Phaser.Scene {
       this.npcs.delete(key as string);
     });
 
+    callbacks.onAdd("monsters", (value, key) => {
+      const state = value as MonsterView;
+      const id = key as string;
+      if (!isMonsterId(state.kind)) return;
+      this.monsters.get(id)?.sprite.destroy();
+      const sprite = new MonsterSprite(this, state.kind, state.x, state.y, state.hp, () => this.textRes);
+      sprite.dir = state.dir;
+      this.monsters.set(id, { sprite, state, interp: new Interpolator(), lastTs: -1 });
+    });
+
+    // Out of view (a defeated one already went in a puff, see "down").
+    callbacks.onRemove("monsters", (_value, key) => {
+      const id = key as string;
+      this.monsters.get(id)?.sprite.destroy();
+      this.monsters.delete(id);
+      if (this.target === id) this.clearTarget();
+    });
+
+    this.net.onFx = (events) => {
+      for (const ev of events) this.onFx(ev);
+    };
     this.net.onBubble = (sessionId, text) => this.entities.get(sessionId)?.sprite.say(text);
     this.net.onNpcSay = ({ id, text }) => this.npcs.get(id)?.sprite.say(text);
     this.net.onEmote = (sessionId, e) => this.entities.get(sessionId)?.sprite.emote(EMOTES[e] ?? "❓");
@@ -406,9 +485,12 @@ export class WorldScene extends Phaser.Scene {
     const dt = Math.min(delta, 100); // avoid huge jumps after a tab was hidden
 
     if (this.self) {
-      this.updateSelf(time, dt);
       const me = this.entities.get(this.room.sessionId);
-      if (me) this.self.setLook(me.state.look); // wardrobe changes come back via state
+      if (me) {
+        this.self.setLook(me.state.look); // wardrobe changes come back via state
+        this.updateHealth(me.state);
+      }
+      this.updateSelf(time, dt);
     }
 
     // Everyone else is drawn slightly in the past, blended between server snapshots.
@@ -435,6 +517,10 @@ export class WorldScene extends Phaser.Scene {
       // Sit once they've arrived (the sit flag can land a frame before the last step).
       sprite.sitting = Boolean(s.sit) && !sprite.moving;
       sprite.setLook(s.look);
+      if (!e.npc) {
+        sprite.dead = Boolean(s.dead);
+        sprite.setHp(s.hp ?? 0, s.mhp ?? 0, (s.hp ?? 0) < (s.mhp ?? 0));
+      }
       sprite.animate();
     };
     for (const [id, e] of this.entities) {
@@ -446,6 +532,26 @@ export class WorldScene extends Phaser.Scene {
       drive(e);
       this.faceVisitor(e);
     }
+    for (const m of this.monsters.values()) {
+      const s = m.state;
+      if (s.ts !== m.lastTs) {
+        m.lastTs = s.ts;
+        m.interp.push({ t: s.ts, x: s.x, y: s.y, dir: s.dir, moving: s.moving });
+        this.clock.observe(s.ts, now);
+      }
+      const p = m.interp.sample(renderT);
+      if (!p) continue;
+      starved ||= p.starved;
+      const sprite = m.sprite;
+      const step = Math.hypot(p.x - sprite.x, p.y - sprite.y);
+      if (step > 300) sprite.teleport(p.x, p.y);
+      else sprite.setPosition(p.x, p.y);
+      sprite.dir = p.dir;
+      sprite.moving = step > (8 * dt) / 1000;
+      sprite.setHp(s.hp);
+      sprite.animate();
+    }
+    this.updateTarget();
     this.clock.update(dt, starved);
 
     this.updateIndoors();
@@ -488,6 +594,12 @@ export class WorldScene extends Phaser.Scene {
     const self = this.self!;
     let dx = 0;
     let dy = 0;
+    if (self.dead) {
+      // Knocked out: lying there until you return to town.
+      self.moving = false;
+      self.animate();
+      return;
+    }
 
     if (!this.typing()) {
       const k = this.keys;
@@ -525,6 +637,20 @@ export class WorldScene extends Phaser.Scene {
         this.chat.addSystem("You're minding your shop. Close it (My shop, or V) to walk around.");
       }
       return;
+    }
+
+    // Walk to the monster you clicked until it's in reach; any manual step takes over.
+    if (dx || dy) this.chasing = false;
+    else if (this.chasing && this.target) {
+      const mob = this.monsters.get(this.target);
+      if (mob) {
+        const ox = mob.sprite.x - self.x;
+        const oy = mob.sprite.y - self.y;
+        if (Math.hypot(ox, oy) > this.myReach(mob) - CHASE_MARGIN) {
+          dx = ox;
+          dy = oy;
+        }
+      }
     }
 
     const len = Math.hypot(dx, dy);
@@ -568,6 +694,208 @@ export class WorldScene extends Phaser.Scene {
     return this.chat.isFocused() || Boolean(el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)));
   }
 
+  // ---------------------------------------------------------------- fighting
+
+  /** Your level, from your synced state. */
+  private get myLevel(): number {
+    return this.entities.get(this.room.sessionId)?.state.lv ?? 1;
+  }
+
+  /** How close (feet to feet) you must be to hit this monster. */
+  private myReach(mob: MobEntity): number {
+    const cls = this.net.stats?.cls;
+    return reach(statsFor(isClassId(cls) ? cls : "novice", this.myLevel).range, mob.sprite.def);
+  }
+
+  /** Your own HP bar, the status panel, and fainting. */
+  private updateHealth(state: Synced) {
+    const self = this.self!;
+    const hp = state.hp ?? 0;
+    const mhp = state.mhp ?? 0;
+    const dead = Boolean(state.dead);
+    this.status.setHp(hp, mhp);
+    self.setHp(hp, mhp, mhp > 0 && (hp < mhp || this.hud.inField));
+    self.dead = dead;
+    if (dead !== this.wasDead) {
+      this.wasDead = dead;
+      this.status.setKnockedOut(dead);
+      if (dead) {
+        this.clearTarget(false);
+        this.dialog.close();
+      }
+    }
+    if (!this.sitTipShown && !dead && mhp > 0 && hp < mhp * 0.4) {
+      this.sitTipShown = true;
+      this.chat.addSystem("Tip: sit down (X) to heal three times faster, or rest inside the town walls.");
+    }
+  }
+
+  /** Space or the sword button: the nearest monster around you. */
+  private targetNearest() {
+    const self = this.self;
+    if (!self || self.dead) return;
+    let best: string | undefined;
+    let bestD = TARGET_RANGE;
+    for (const [id, m] of this.monsters) {
+      const d = Math.hypot(m.sprite.x - self.x, m.sprite.y - self.y);
+      if (d < bestD) {
+        bestD = d;
+        best = id;
+      }
+    }
+    if (best) this.setTarget(best);
+    else if (performance.now() - this.noTargetHintAt > NO_TARGET_HINT_MS) {
+      this.noTargetHintAt = performance.now();
+      this.chat.addSystem("No monsters nearby. They live in the fields outside the town walls (try the South Meadow, out the south gate).");
+    }
+  }
+
+  /** Click/tap on a monster attacks it. */
+  private tryTarget(p: Phaser.Input.Pointer): boolean {
+    const id = this.monsterAt(p);
+    if (!id) return false;
+    this.setTarget(id);
+    return true;
+  }
+
+  /** The monster under the pointer, front-most first. */
+  private monsterAt(p: Phaser.Input.Pointer): string | undefined {
+    const wp = p.positionToCamera(this.cameras.main) as Phaser.Math.Vector2;
+    let best: string | undefined;
+    let bestY = -Infinity;
+    for (const [id, m] of this.monsters) {
+      if (m.sprite.y > bestY && m.sprite.hitBox().contains(wp.x, wp.y)) {
+        bestY = m.sprite.y;
+        best = id;
+      }
+    }
+    return best;
+  }
+
+  private setTarget(id: string) {
+    const self = this.self;
+    if (!self || self.dead || !this.monsters.has(id)) return;
+    if (this.vending.myShop) {
+      this.chat.addSystem("You're minding your shop. Close it first to go fighting.");
+      return;
+    }
+    if (this.target !== id) {
+      const before = this.target ? this.monsters.get(this.target) : undefined;
+      if (before) before.sprite.targeted = false;
+      this.target = id;
+      this.room.send("target", { id } satisfies TargetMessage);
+    }
+    this.monsters.get(id)!.sprite.targeted = true;
+    this.chasing = true;
+    if (self.sitting) this.toggleSit();
+  }
+
+  private clearTarget(send = true) {
+    const mob = this.target ? this.monsters.get(this.target) : undefined;
+    if (mob) mob.sprite.targeted = false;
+    this.target = undefined;
+    this.chasing = false;
+    this.status.hideTarget();
+    if (send) this.room.send("target", { id: "" } satisfies TargetMessage);
+  }
+
+  /** The target frame, names on hover, and letting go of targets you walked away from. */
+  private updateTarget() {
+    const self = this.self;
+    const mob = this.target ? this.monsters.get(this.target) : undefined;
+    if (this.target && (!mob || !self || Math.hypot(mob.sprite.x - self.x, mob.sprite.y - self.y) > TARGET_DROP_RANGE)) this.clearTarget();
+    else if (mob) {
+      const color = levelColor(this.myLevel, mob.sprite.kind);
+      mob.sprite.setNameColor(color);
+      this.status.showTarget(mob.sprite.def.name, mob.sprite.def.level, mob.state.hp, mob.sprite.def.hp, color);
+    }
+
+    // Desktop: point at a monster to see its name.
+    const pointer = this.input.activePointer;
+    const hovered = pointer.wasTouch ? undefined : this.monsterAt(pointer);
+    if (hovered !== this.hovered) {
+      const before = this.hovered ? this.monsters.get(this.hovered) : undefined;
+      if (before) before.sprite.hovered = false;
+      this.hovered = hovered;
+      this.game.canvas.style.cursor = hovered ? "pointer" : "";
+    }
+    const now = hovered ? this.monsters.get(hovered) : undefined;
+    if (now) {
+      now.sprite.setNameColor(levelColor(this.myLevel, now.sprite.kind));
+      now.sprite.hovered = true;
+    }
+  }
+
+  /** Where an id (player or monster) is: its feet, its middle (slashes) and just above its name (numbers). */
+  private body(id: string): { x: number; y: number; mid: number; top: number; mob?: MonsterSprite; player?: PlayerSprite } | undefined {
+    if (isMonster(id)) {
+      const mob = this.monsters.get(id)?.sprite;
+      return mob && { x: mob.x, y: mob.y, mid: mob.y - mob.art.h / 2, top: mob.head.y - 16, mob };
+    }
+    const player = id === this.room.sessionId ? this.self : this.entities.get(id)?.sprite;
+    return player && { x: player.x, y: player.y, mid: player.y - 28, top: player.y - 68, player };
+  }
+
+  private onFx(ev: FxEvent) {
+    const me = this.room.sessionId;
+    switch (ev.k) {
+      case "hit":
+      case "miss": {
+        const a = this.body(ev.a);
+        const t = this.body(ev.t);
+        if (a && t) {
+          if (a.mob) a.mob.attack(dirTo(t.x - a.x, t.y - a.y));
+          else a.player?.lunge(t.x - a.x, t.y - a.y);
+          if (ev.a === me && this.self) this.self.dir = dirTo(t.x - a.x, t.y - a.y);
+        }
+        if (!t) return;
+        if (ev.k === "miss") {
+          this.fx.number(t.x, t.top, "Miss", "miss");
+          if (ev.a === me) audio.swing();
+          return;
+        }
+        t.mob?.flash();
+        t.player?.flash();
+        if (!a?.mob) this.fx.slash(t.x, t.mid);
+        const kind: NumberKind = ev.t === me ? "taken" : ev.a === me ? (ev.crit ? "crit" : "dealt") : "other";
+        this.fx.number(t.x, t.top, ev.crit && kind !== "taken" ? `${ev.d}!` : String(ev.d), kind);
+        if (ev.a === me) audio.hit(Boolean(ev.crit));
+        else if (ev.t === me) audio.hurt();
+        return;
+      }
+      case "down": {
+        // A defeated monster goes in a puff; the removal that follows finds nothing left to do.
+        const m = this.monsters.get(ev.t);
+        if (!m) return;
+        this.fx.poof(m.sprite.x, m.sprite.y);
+        m.sprite.die();
+        this.monsters.delete(ev.t);
+        if (this.target === ev.t) {
+          this.clearTarget(false);
+          audio.defeat();
+        }
+        return;
+      }
+      case "lvup": {
+        const b = this.body(ev.t);
+        if (b) this.fx.levelUp(b.x, b.y);
+        if (ev.t === me) {
+          audio.levelUp();
+          this.chat.addSystem(`Level up! You are now level ${ev.lv}.${ev.lv === 10 ? " Soon the Job Master will let you become a Knight, Mage or Archer." : ""}`);
+        }
+        return;
+      }
+      case "gain": {
+        const self = this.self;
+        if (!self) return;
+        // Above the name tag, one line each.
+        if (ev.exp) this.fx.float(self.x, self.y - 84, `+${ev.exp} EXP`, "#ffe2a0", 250);
+        if (ev.gold) this.fx.float(self.x, self.y - 70, `+${ev.gold} gold`, "#ffd27a", 450);
+        return;
+      }
+    }
+  }
+
   /** Shows an emote over your head (the server allows one a second). */
   private emote(e: number) {
     const now = performance.now();
@@ -581,7 +909,7 @@ export class WorldScene extends Phaser.Scene {
   private toggleSit() {
     const self = this.self;
     const now = performance.now();
-    if (!self || this.vending.myShop || now - this.sitToggledAt < SIT_TOGGLE_MS) return;
+    if (!self || self.dead || this.vending.myShop || now - this.sitToggledAt < SIT_TOGGLE_MS) return;
     this.sitToggledAt = now;
     self.sitting = !self.sitting;
     self.moving = false;

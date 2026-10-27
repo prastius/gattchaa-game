@@ -1158,6 +1158,18 @@ Water Ripple
   NOTES: The water-ripple is meant to sandwich around the characters' feet as they walk through water.
 ```
 
+## Monsters
+
+Slime, Grass Snake (snake), Hornet (bee) and Snapper Flower (man-eater flower):
+
+```
+"[LPC] Monsters" by Charles Sanchez (CharlesGabriel), bagzie, and bluecarrot16.
+License: CC-BY-SA 3.0+ or GPL 3.0+.
+https://opengameart.org/content/lpc-monsters
+https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles
+https://opengameart.org/content/bat-sprite
+```
+
 ## Gattchaa logo
 
 The Gattchaa logo and product images are property of Gattchaa Hobby Store and are not covered by the licenses above.

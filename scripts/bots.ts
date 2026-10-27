@@ -42,6 +42,8 @@ async function runBot(i: number) {
 
   room.onMessage("chat:history", () => {});
   room.onMessage("chat", () => stats.chatsIn++);
+  room.onMessage("me", () => {});
+  room.onMessage("fx", () => {});
   room.onMessage("correct", (p: { x: number; y: number }) => {
     stats.corrections++;
     x = p.x;

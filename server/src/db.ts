@@ -6,7 +6,7 @@ import { DatabaseSync } from "node:sqlite";
 
 // Saved game data, in one SQLite file: no database server to run, and a backup
 // is a copy of the file. Holds Gattchaa-linked accounts, their sign-in
-// sessions, and the player shops open in town.
+// sessions, their characters' progress, and the player shops open in town.
 //
 // Default file: server/data/town.db (same relative path from src/ and build/).
 // DB_PATH overrides it. Live backup: sqlite3 server/data/town.db ".backup town-backup.db"
@@ -33,6 +33,17 @@ export interface ShopRow {
   openedAt: number;
   /** When the shop closes because its owner is away; null while they're in town. */
   expiresAt: number | null;
+}
+
+/** A character's progress: class, level and what they carry. */
+export interface Progress {
+  cls: string;
+  lv: number;
+  exp: number;
+  /** null = full (a fresh character, or saved at full health). */
+  hp: number | null;
+  mp: number | null;
+  gold: number;
 }
 
 /** Each entry upgrades the schema by one version (PRAGMA user_version). Append only. */
@@ -70,9 +81,21 @@ const MIGRATIONS = [
      opened_at INTEGER NOT NULL,
      expires_at INTEGER
    );`,
+  // v3: leveling. One character per account.
+  `CREATE TABLE characters (
+     account_id INTEGER PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,
+     class TEXT NOT NULL DEFAULT 'novice',
+     level INTEGER NOT NULL DEFAULT 1,
+     exp INTEGER NOT NULL DEFAULT 0,
+     hp INTEGER,
+     mp INTEGER,
+     gold INTEGER NOT NULL DEFAULT 0,
+     updated_at INTEGER NOT NULL
+   );`,
 ];
 
 const ACCOUNT_COLS = "id, gattchaa_id AS gattchaaId, display_name AS displayName, name, look";
+const PROGRESS_COLS = "class AS cls, level AS lv, exp, hp, mp, gold";
 const SHOP_COLS = "account_id AS accountId, id, x, y, title, opened_at AS openedAt, expires_at AS expiresAt";
 
 /** Sessions are stored hashed: a leaked database file doesn't sign anyone in. */
@@ -152,6 +175,23 @@ export class Db {
 
   saveCharacter(accountId: number, name: string, look: string) {
     this.db.prepare("UPDATE accounts SET name = ?, look = ?, seen_at = ? WHERE id = ?").run(name, look, Date.now(), accountId);
+  }
+
+  // ------------------------------------------------------------ characters
+
+  /** Saved progress, or undefined for an account that has never fought. */
+  progress(accountId: number): Progress | undefined {
+    return this.db.prepare(`SELECT ${PROGRESS_COLS} FROM characters WHERE account_id = ?`).get(accountId) as Progress | undefined;
+  }
+
+  saveProgress(accountId: number, p: Progress) {
+    this.db
+      .prepare(
+        `INSERT INTO characters (account_id, class, level, exp, hp, mp, gold, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT(account_id) DO UPDATE SET class = excluded.class, level = excluded.level, exp = excluded.exp,
+           hp = excluded.hp, mp = excluded.mp, gold = excluded.gold, updated_at = excluded.updated_at`,
+      )
+      .run(accountId, p.cls, p.lv, p.exp, p.hp, p.mp, p.gold, Date.now());
   }
 
   // ------------------------------------------------------------ shops

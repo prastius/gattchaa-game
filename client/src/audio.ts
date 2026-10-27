@@ -288,6 +288,45 @@ export class SoundSystem {
     this.tone(110, t + 0.05, 0.18, "sine", 0.3, 70);
   }
 
+  /** Your attack: a short whoosh. */
+  swing() {
+    const t = this.ready();
+    if (t === undefined) return;
+    this.noiseHit(t, "bandpass", 2400, 0.07, 0.09, this.sfxBus);
+  }
+
+  /** Your hit lands. */
+  hit(crit = false) {
+    const t = this.ready();
+    if (t === undefined) return;
+    this.noiseHit(t, "lowpass", 1400, 0.16, 0.07, this.sfxBus);
+    this.tone(crit ? 420 : 240, t, 0.08, "square", 0.07, crit ? 180 : 110);
+  }
+
+  /** Something hits you. */
+  hurt() {
+    const t = this.ready();
+    if (t === undefined) return;
+    this.tone(330, t, 0.12, "sawtooth", 0.06, 150);
+    this.noiseHit(t, "lowpass", 700, 0.12, 0.08, this.sfxBus);
+  }
+
+  /** A monster you fought is defeated. */
+  defeat() {
+    const t = this.ready();
+    if (t === undefined) return;
+    this.tone(523, t, 0.07, "triangle", 0.1);
+    this.tone(784, t + 0.07, 0.12, "triangle", 0.1);
+  }
+
+  /** Level up: a rising arpeggio with a shimmer. */
+  levelUp() {
+    const t = this.ready();
+    if (t === undefined) return;
+    [60, 64, 67, 72, 76, 79, 84].forEach((n, i) => this.tone(midiHz(n), t + i * 0.06, 0.4, "triangle", 0.13));
+    this.noiseHit(t + 0.35, "highpass", 7000, 0.05, 0.8, this.sfxBus);
+  }
+
   /** A big pull on Gattchaa: a bright little fanfare. */
   fanfare() {
     const t = this.ready();

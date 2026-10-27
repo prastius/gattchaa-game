@@ -66,6 +66,8 @@ const EMOJI_FONT = "Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-se
 /** Speech and emote bubbles have a tail this long under them. */
 const TAIL = 6;
 const EMOTE_MS = 2400;
+const HP_BAR_W = 30;
+const LUNGE_PX = 6;
 
 /**
  * A player (or NPC) avatar. The container's (x, y) is the player's feet, and its depth
@@ -90,6 +92,10 @@ export class PlayerSprite {
   private body = "male";
   /** How far the name, title and bubble are shifted down right now, following a seated head. */
   private drop = 0;
+  private hpBar?: Phaser.GameObjects.Graphics;
+  private hpKey = "";
+  private fainted = false;
+  private lungeTween?: Phaser.Tweens.Tween;
 
   moving = false;
   dir: number = Dir.Down;
@@ -196,6 +202,69 @@ export class PlayerSprite {
     this.container.setDepth(y);
   }
 
+  /** Health bar under the feet (hidden when `show` is false). */
+  setHp(hp: number, max: number, show: boolean) {
+    const key = show && max > 0 ? `${hp}/${max}` : "";
+    if (key === this.hpKey) return;
+    this.hpKey = key;
+    if (!key) {
+      this.hpBar?.setVisible(false);
+      return;
+    }
+    if (!this.hpBar) {
+      this.hpBar = this.scene.add.graphics();
+      this.container.addAt(this.hpBar, 0);
+    }
+    const r = Phaser.Math.Clamp(hp / max, 0, 1);
+    const color = r > 0.5 ? 0x5fd36b : r > 0.25 ? 0xf2c14e : 0xe5534b;
+    this.hpBar
+      .clear()
+      .fillStyle(0x10202b, 0.85)
+      .fillRect(-HP_BAR_W / 2 - 1, 3, HP_BAR_W + 2, 6)
+      .fillStyle(color, 1)
+      .fillRect(-HP_BAR_W / 2, 4, Math.round(HP_BAR_W * r), 4)
+      .setVisible(true);
+  }
+
+  /** A quick step toward what you're hitting, and back. */
+  lunge(dx: number, dy: number) {
+    if (this.fainted) return;
+    const d = Math.hypot(dx, dy) || 1;
+    this.lungeTween?.complete();
+    this.sprite.setPosition(0, 0);
+    this.lungeTween = this.scene.tweens.add({
+      targets: this.sprite,
+      x: Math.round((dx / d) * LUNGE_PX),
+      y: Math.round((dy / d) * LUNGE_PX),
+      duration: 80,
+      yoyo: true,
+      ease: "Quad.Out",
+    });
+  }
+
+  /** Flashes red when hurt. */
+  flash() {
+    if (this.fainted) return;
+    this.sprite.setTint(0xff5c57).setTintMode(Phaser.TintModes.FILL);
+    this.scene.time.delayedCall(90, () => {
+      if (!this.fainted) this.sprite.clearTint();
+    });
+  }
+
+  /** Knocked out: lying on the ground, greyed out. */
+  set dead(on: boolean) {
+    if (on === this.fainted) return;
+    this.fainted = on;
+    this.lungeTween?.complete();
+    this.sprite.setPosition(0, 0).setAngle(on ? -90 : 0).setAlpha(on ? 0.75 : 1);
+    if (on) this.sprite.setTint(0x8a8f96);
+    else this.sprite.clearTint();
+  }
+
+  get dead() {
+    return this.fainted;
+  }
+
   /** A speech bubble over the head: rounded, with a little tail pointing down at the speaker. */
   say(text: string) {
     this.bubble?.destroy();
@@ -269,6 +338,7 @@ export class PlayerSprite {
 
   destroy() {
     this.destroyed = true;
+    this.lungeTween?.remove();
     this.bubbleTimer?.remove();
     this.emoteTimer?.remove();
     if (this.look) this.textures.release(this.look);

@@ -17,18 +17,22 @@ import {
   type CorrectMessage,
   type EmoteEvent,
   type EmoteMessage,
+  type FxEvent,
   type JoinOptions,
   type LookMessage,
   type MoveMessage,
   type SitMessage,
+  type TargetMessage,
 } from "../../../shared/protocol";
 import { DOORS, placeName } from "../../../shared/town";
 import type { DoorMessage } from "../../../shared/protocol";
+import { LEVEL_CAP } from "../../../shared/rpg";
 import { SHOP_AWAY_HOURS, inShopZone, sanitizeShopTitle, shopSpotProblem, type ShopOpenMessage, type ShopResult } from "../../../shared/vending";
-import { Player, PlayerShop, WorldState } from "./WorldState";
+import { Monster, Player, PlayerShop, WorldState } from "./WorldState";
 import { NpcBrain } from "./NpcBrain";
+import { Combat } from "./Combat";
 import { feed } from "../gattchaa";
-import { db, type Account } from "../db";
+import { db, type Account, type Progress } from "../db";
 import type { Announcement, NpcSay } from "../../../shared/gattchaa";
 
 // Generated once per process; every room instance shares the same map.
@@ -61,6 +65,9 @@ const AWAY_MS = SHOP_AWAY_HOURS * 3_600_000;
 /** "X opened a shop" goes to chat at most this often per seller, so reopening isn't spam. */
 const OPEN_NEWS_EVERY_MS = 10 * 60_000;
 const TAKEN_OVER = 4001;
+/** Fights are sent to players this close (px, per axis): everyone who has the fighters in view. */
+const FX_X = VIEW_ENTER_X + VIEW_EXIT_PAD;
+const FX_Y = VIEW_ENTER_Y + VIEW_EXIT_PAD;
 
 /** After a restart nobody is in town yet, so every shop's away timer starts then (once per process). */
 let shopsMarkedAway = false;
@@ -101,6 +108,9 @@ export class WorldRoom extends Room<{ state: WorldState }> {
   private nextChatId = 1;
   private startedAt = Date.now();
   private brain!: NpcBrain;
+  private combat!: Combat;
+  /** Fight events waiting to go out, per session; sent once per tick. */
+  private fx = new Map<string, FxEvent[]>();
   private stopAnnouncements?: () => void;
   private stopListings?: () => void;
   /** Owner of each open shop, by shop id. */
@@ -120,6 +130,8 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     door: (client: Client, msg: DoorMessage) => this.handleDoor(client, msg),
     sit: (client: Client, msg: SitMessage) => this.handleSit(client, msg),
     emote: (client: Client, msg: EmoteMessage) => this.handleEmote(client, msg),
+    target: (client: Client, msg: TargetMessage) => this.handleTarget(client, msg),
+    revive: (client: Client) => this.handleRevive(client),
     "shop:open": (client: Client, msg: ShopOpenMessage) => {
       this.handleShopOpen(client, msg).catch((err) => {
         console.error("[shops] open failed:", err);
@@ -134,8 +146,26 @@ export class WorldRoom extends Room<{ state: WorldState }> {
 
     this.brain = new NpcBrain(world, feed, this.now, (msg: NpcSay) => this.broadcast("npc:say", msg));
     for (const [id, npc] of this.brain.npcs) this.state.npcs.set(id, npc);
+    this.combat = new Combat(world, this.state.monsters, this.now, {
+      emit: (x, y, ev) => {
+        for (const [id, meta] of this.meta) if (Math.abs(meta.x - x) <= FX_X && Math.abs(meta.y - y) <= FX_Y) this.queueFx(id, ev);
+      },
+      tell: (id, ev) => this.queueFx(id, ev),
+      sheet: (id, sheet) => this.clients.getById(id)?.send("me", sheet),
+      save: (id, progress) => this.saveProgress(id, progress),
+      despawn: (mob) => {
+        // Out of every view first, or the views would keep holding it.
+        for (const client of this.clients) if (client.view?.has(mob)) client.view.remove(mob);
+      },
+      levelUp: (id, lv) => {
+        const name = this.state.players.get(id)?.name;
+        if (name && lv % 10 === 0) this.system(`${name} reached level ${lv}!`);
+      },
+    });
     this.clock.setInterval(() => {
       this.brain.tick(NPC_TICK_MS);
+      this.combat.tick(NPC_TICK_MS);
+      this.flushFx();
       this.state.siteOnline = feed.online;
     }, NPC_TICK_MS);
 
@@ -159,6 +189,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
   }
 
   onDispose() {
+    this.combat.saveAll();
     this.stopAnnouncements?.();
     this.stopListings?.();
   }
@@ -181,7 +212,11 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       db.saveCharacter(account.id, name, look);
       Object.assign(account, { name, look });
       const previous = this.sessionOf.get(account.id);
-      if (previous && previous !== client.sessionId) this.clients.getById(previous)?.leave(TAKEN_OVER, "You entered the town from another window.");
+      if (previous && previous !== client.sessionId) {
+        // Save the other window's progress first, so this one picks it up.
+        this.combat.flush(previous);
+        this.clients.getById(previous)?.leave(TAKEN_OVER, "You entered the town from another window.");
+      }
       this.sessionOf.set(account.id, client.sessionId);
       // Back to your shop if it's still open.
       shopId = this.shopOf(account.id);
@@ -191,7 +226,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     const spawn = shop ?? world.findSpawn();
     const player = new Player({ name, look, x: spawn.x, y: spawn.y, ts: this.now(), sit: Boolean(shop), dir: Dir.Down });
     this.state.players.set(client.sessionId, player);
-    this.meta.set(client.sessionId, {
+    const meta: PlayerMeta = {
       x: spawn.x,
       y: spawn.y,
       allowance: 0,
@@ -203,7 +238,9 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       lastEmoteAt: 0,
       account,
       shop: shop && shopId,
-    });
+    };
+    this.meta.set(client.sessionId, meta);
+    this.combat.join(client.sessionId, player, meta, account && db.progress(account.id), Boolean(account));
     this.state.online = this.clients.length;
 
     if (account && shop) {
@@ -232,11 +269,14 @@ export class WorldRoom extends Room<{ state: WorldState }> {
   }
 
   onLeave(client: Client) {
+    // First, while the session still owns its account (progress is saved under it).
+    this.combat.leave(client.sessionId);
     const player = this.state.players.get(client.sessionId);
     const meta = this.meta.get(client.sessionId);
     this.state.players.delete(client.sessionId);
     this.meta.delete(client.sessionId);
     this.state.online = this.clients.length;
+    this.fx.delete(client.sessionId);
     const account = meta?.account;
     if (account) {
       if (this.sessionOf.get(account.id) === client.sessionId) this.sessionOf.delete(account.id);
@@ -250,21 +290,23 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     if (player) this.queuePresence("left", player.name);
   }
 
-  /** Interest management: each client's view holds only the players near it. */
+  /** Interest management: each client's view holds only the players and monsters near it. */
   private updateViews() {
     const players = [...this.state.players.entries()];
+    const monsters = [...this.state.monsters.values()];
     for (const client of this.clients) {
       const view = client.view;
       const me = this.state.players.get(client.sessionId);
       if (!view || !me) continue;
-      for (const [id, other] of players) {
-        if (id === client.sessionId) continue;
+      const near = (other: Player | Monster) => {
         const dx = Math.abs(other.x - me.x);
         const dy = Math.abs(other.y - me.y);
         const visible = view.has(other);
         if (!visible && dx <= VIEW_ENTER_X && dy <= VIEW_ENTER_Y) view.add(other);
         else if (visible && (dx > VIEW_ENTER_X + VIEW_EXIT_PAD || dy > VIEW_ENTER_Y + VIEW_EXIT_PAD)) view.remove(other);
-      }
+      };
+      for (const [id, other] of players) if (id !== client.sessionId) near(other);
+      for (const mob of monsters) near(mob);
     }
   }
 
@@ -281,8 +323,8 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     meta.tokens -= 1;
     meta.allowance = Math.min(BUDGET_MAX, meta.allowance + PLAYER_SPEED * dt * 1.25);
 
-    if (meta.shop) {
-      // Minding a shop: stay on the rug until it's closed.
+    if (meta.shop || player.dead) {
+      // Minding a shop (stay on the rug until it's closed), or knocked out.
       client.send("correct", { x: meta.x, y: meta.y } satisfies CorrectMessage);
       return;
     }
@@ -320,23 +362,58 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     const player = this.state.players.get(client.sessionId);
     const meta = this.meta.get(client.sessionId);
     const door = DOORS.find((d) => d.id === msg?.id);
-    if (!player || !meta || !door || meta.shop) return;
+    if (!player || !meta || !door || meta.shop || player.dead) return;
     const t = door.trigger;
     const slack = 64; // the client may be ahead of us, or used the door from a step away
     if (meta.x < t.x - slack || meta.x > t.x + t.w + slack || meta.y < t.y - slack || meta.y > t.y + t.h + slack) return;
+    this.teleport(client, door.to.x, door.to.y, door.dir);
+  }
 
-    meta.x = door.to.x;
-    meta.y = door.to.y;
+  /** Moves a player somewhere else entirely (doors, back to town); the client fades across. */
+  private teleport(client: Client, x: number, y: number, dir: number) {
+    const player = this.state.players.get(client.sessionId);
+    const meta = this.meta.get(client.sessionId);
+    if (!player || !meta) return;
+    meta.x = x;
+    meta.y = y;
     meta.allowance = 0;
     meta.lastMoveAt = Date.now();
-    player.x = door.to.x;
-    player.y = door.to.y;
-    player.dir = door.dir;
-    player.moving = false;
-    player.sit = false;
-    player.ts = this.now();
-    client.send("correct", { x: door.to.x, y: door.to.y, dir: door.dir } satisfies CorrectMessage);
+    Object.assign(player, { x, y, dir, moving: false, sit: false, ts: this.now() });
+    client.send("correct", { x, y, dir } satisfies CorrectMessage);
     this.updateViews();
+  }
+
+  // ---------------------------------------------------------------- fighting
+
+  private handleTarget(client: Client, msg: TargetMessage) {
+    const meta = this.meta.get(client.sessionId);
+    if (!meta || meta.shop) return;
+    const id = typeof msg?.id === "string" ? msg.id.slice(0, 16) : "";
+    this.combat.setTarget(client.sessionId, id);
+  }
+
+  /** Knocked out: back to town on your feet. */
+  private handleRevive(client: Client) {
+    if (!this.combat.revive(client.sessionId)) return;
+    const spawn = world.findSpawn();
+    this.teleport(client, spawn.x, spawn.y, Dir.Down);
+  }
+
+  private queueFx(id: string, ev: FxEvent) {
+    let list = this.fx.get(id);
+    if (!list) this.fx.set(id, (list = []));
+    list.push(ev);
+  }
+
+  private flushFx() {
+    for (const [id, list] of this.fx) this.clients.getById(id)?.send("fx", list);
+    this.fx.clear();
+  }
+
+  /** Saves under the account, unless another window has taken it over since. */
+  private saveProgress(id: string, progress: Progress) {
+    const account = this.meta.get(id)?.account;
+    if (account && this.sessionOf.get(account.id) === id) db.saveProgress(account.id, progress);
   }
 
   private handleLook(client: Client, msg: LookMessage) {
@@ -358,7 +435,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
   private handleSit(client: Client, msg: SitMessage) {
     const player = this.state.players.get(client.sessionId);
     const meta = this.meta.get(client.sessionId);
-    if (!player || !meta || meta.shop) return; // shopkeepers stay seated until they close
+    if (!player || !meta || meta.shop || player.dead) return; // shopkeepers stay seated until they close
     const now = Date.now();
     if (now - meta.lastSitAt < SIT_COOLDOWN_MS) return;
     meta.lastSitAt = now;
@@ -384,6 +461,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
 
     const text = sanitizeChat(msg?.text);
     if (!text) return;
+    if (text.startsWith("/")) return this.command(client, text);
 
     const now = Date.now();
     const wait = meta.lastChatAt + CHAT_COOLDOWN_MS - now;
@@ -565,6 +643,20 @@ export class WorldRoom extends Room<{ state: WorldState }> {
         this.system(kind === "joined" ? `${who} joined the town` : `${who} left`);
       }
     }, PRESENCE_BATCH_MS);
+  }
+
+  /** Chat commands. Only for testing, so they're off in production. */
+  private command(client: Client, text: string) {
+    const reply = (line: string) => client.send("chat", this.makeMessage("", "System", line, true));
+    if (process.env.NODE_ENV === "production") return reply("Unknown command.");
+    const [name, arg] = text.slice(1).split(" ");
+    const n = Number(arg);
+    if (name === "level" && Number.isFinite(n)) {
+      const lv = Math.min(LEVEL_CAP, Math.max(1, Math.floor(n)));
+      this.combat.cheatLevel(client.sessionId, lv);
+      return reply(`Test command: you are now level ${lv}.`);
+    }
+    reply(`Test commands: /level <1-${LEVEL_CAP}>`);
   }
 
   private system(text: string) {
