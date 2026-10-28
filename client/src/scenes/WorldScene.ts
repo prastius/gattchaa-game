@@ -16,7 +16,7 @@ import {
   type SitMessage,
   type TargetMessage,
 } from "../../../shared/protocol";
-import { CLASSES, JOB_LEVEL, aClass, isClassId, isMonsterId, reach } from "../../../shared/rpg";
+import { CLASSES, JOB_LEVEL, aClass, isClassId, isMonsterId } from "../../../shared/rpg";
 import { SKILLS, type SkillId } from "../../../shared/skills";
 import { ITEMS, PICKUP_RANGE, RARITY, appearanceKey, cleanUpgrade, isItemId, parseCards } from "../../../shared/items";
 import { NPCS, type NpcDef } from "../../../shared/npcs";
@@ -40,6 +40,8 @@ import type { StatusPanel } from "../ui/status";
 import type { BagPanel } from "../ui/bag";
 import type { SkillsUI } from "../ui/skills";
 import type { TitlesUI } from "../ui/titles";
+import type { DuelUI } from "../ui/duel";
+import { PLAYER_RADIUS } from "../../../shared/duels";
 import { TITLES, isTitleId, type TitleDef } from "../../../shared/titles";
 import type { Net } from "../net";
 import type { Shop } from "../shop";
@@ -59,6 +61,7 @@ export interface WorldSceneData {
   bag: BagPanel;
   skills: SkillsUI;
   titles: TitlesUI;
+  duel: DuelUI;
 }
 
 interface Chunk {
@@ -187,6 +190,7 @@ export class WorldScene extends Phaser.Scene {
   private bag!: BagPanel;
   private skills!: SkillsUI;
   private titles!: TitlesUI;
+  private duel!: DuelUI;
   /** A skill pressed while the target was out of range: cast once we've walked close enough. */
   private pendingSkill?: { id: SkillId; at: number };
   private skillHintAt = 0;
@@ -346,6 +350,11 @@ export class WorldScene extends Phaser.Scene {
     this.hud.onSkills(() => this.toggleSkills());
     this.hud.onTitles(() => this.toggleTitles());
     this.titles.onUnseen = (n) => this.hud.setNewTitles(n);
+    // A duel begins: aim at the opponent (the fighting itself waits for the countdown).
+    this.net.onDuelStart.add((ev) => this.setTarget(ev.opp));
+    this.net.onDuelEnd.add(() => {
+      if (this.target && !isMonster(this.target)) this.clearTarget(false);
+    });
     this.skills.onUse = (id) => this.castSkill(id);
     this.skills.onPoints = (n) => this.hud.setSkillPoints(n);
     this.dialog.openSkills = () => {
@@ -374,7 +383,7 @@ export class WorldScene extends Phaser.Scene {
       // Clicking the world leaves any text box (a shop title…), so the game keys work again.
       if (this.typing()) (document.activeElement as HTMLElement | null)?.blur();
       // Only a left click or a tap uses things; right/middle click does nothing. Monsters first, then loot.
-      this.pointerUsed = p.button === 0 && (this.tryTarget(p) || this.tryPickup(p) || this.tryUse(p));
+      this.pointerUsed = p.button === 0 && (this.tryTarget(p) || this.tryPickup(p) || this.tryUse(p) || this.tryPlayer(p));
     });
     this.input.on("wheel", (_p: Phaser.Input.Pointer, _over: unknown, _dx: number, dy: number) => {
       // Collect small trackpad deltas into whole steps; reset when direction flips.
@@ -629,7 +638,8 @@ export class WorldScene extends Phaser.Scene {
         sprite.dead = Boolean(s.dead);
         sprite.setAura(s.aura ?? 0);
         this.showTitle(sprite, s.title);
-        sprite.setHp(s.hp ?? 0, s.mhp ?? 0, (s.hp ?? 0) < (s.mhp ?? 0));
+        // Duelists' health shows for everyone watching.
+        sprite.setHp(s.hp ?? 0, s.mhp ?? 0, (s.hp ?? 0) < (s.mhp ?? 0) || Boolean(s.duel));
       }
       sprite.animate();
     };
@@ -772,11 +782,11 @@ export class WorldScene extends Phaser.Scene {
         else this.pickTarget = undefined;
       }
     } else if (this.chasing && this.target) {
-      const mob = this.monsters.get(this.target);
-      if (mob) {
-        const ox = mob.sprite.x - self.x;
-        const oy = mob.sprite.y - self.y;
-        if (Math.hypot(ox, oy) > this.myReach(mob) - CHASE_MARGIN) {
+      const t = this.targetSpot();
+      if (t) {
+        const ox = t.x - self.x;
+        const oy = t.y - self.y;
+        if (Math.hypot(ox, oy) > this.myReach(t.radius) - CHASE_MARGIN) {
           dx = ox;
           dy = oy;
         }
@@ -831,15 +841,24 @@ export class WorldScene extends Phaser.Scene {
     return this.entities.get(this.room.sessionId)?.state.lv ?? 1;
   }
 
-  /** How close (feet to feet) you must be to hit this monster: further with a bow or staff. */
-  private myReach(mob: MobEntity): number {
-    return reach(this.net.stats?.range ?? CLASSES.novice.range, mob.sprite.def);
+  /** How close (feet to feet) you must be to hit something this big: further with a bow or staff. */
+  private myReach(radius: number): number {
+    return (this.net.stats?.range ?? CLASSES.novice.range) + radius;
   }
 
   /** How close you must be for a skill (its own range, or your weapon's reach). */
-  private skillReach(id: SkillId, mob: MobEntity): number {
+  private skillReach(id: SkillId, radius: number): number {
     const s = SKILLS[id];
-    return s.range !== undefined ? s.range + mob.sprite.def.radius : this.myReach(mob);
+    return s.range !== undefined ? s.range + radius : this.myReach(radius);
+  }
+
+  /** Where your target is and how big: a monster, or your duel opponent. */
+  private targetSpot(id = this.target): { x: number; y: number; radius: number; mob?: MobEntity; player?: Entity } | undefined {
+    if (!id) return undefined;
+    const mob = this.monsters.get(id);
+    if (mob) return { x: mob.sprite.x, y: mob.sprite.y, radius: mob.sprite.def.radius, mob };
+    const player = id === this.duel.opponent ? this.entities.get(id) : undefined;
+    return player && { x: player.sprite.x, y: player.sprite.y, radius: PLAYER_RADIUS, player };
   }
 
   /**
@@ -857,10 +876,10 @@ export class WorldScene extends Phaser.Scene {
       this.net.useSkill(id);
       return;
     }
-    if (!this.target || !this.monsters.has(this.target)) this.targetNearest();
-    const mob = this.target ? this.monsters.get(this.target) : undefined;
-    if (!mob) return;
-    if (Math.hypot(mob.sprite.x - self.x, mob.sprite.y - self.y) <= this.skillReach(id, mob) - CHASE_MARGIN) this.net.useSkill(id, this.target);
+    if (!this.targetSpot()) this.targetNearest();
+    const t = this.targetSpot();
+    if (!t) return;
+    if (Math.hypot(t.x - self.x, t.y - self.y) <= this.skillReach(id, t.radius) - CHASE_MARGIN) this.net.useSkill(id, this.target);
     else {
       this.pendingSkill = { id, at: performance.now() };
       this.chasing = true;
@@ -872,12 +891,12 @@ export class WorldScene extends Phaser.Scene {
     const p = this.pendingSkill;
     const self = this.self;
     if (!p || !self) return;
-    const mob = this.target ? this.monsters.get(this.target) : undefined;
-    if (!mob || self.dead || now - p.at > PENDING_SKILL_MS) {
+    const t = this.targetSpot();
+    if (!t || self.dead || now - p.at > PENDING_SKILL_MS) {
       this.pendingSkill = undefined;
       return;
     }
-    if (Math.hypot(mob.sprite.x - self.x, mob.sprite.y - self.y) > this.skillReach(p.id, mob) - CHASE_MARGIN) return;
+    if (Math.hypot(t.x - self.x, t.y - self.y) > this.skillReach(p.id, t.radius) - CHASE_MARGIN) return;
     this.pendingSkill = undefined;
     if (!this.skills.notReady(p.id)) this.net.useSkill(p.id, this.target);
   }
@@ -914,7 +933,7 @@ export class WorldScene extends Phaser.Scene {
     const mhp = state.mhp ?? 0;
     const dead = Boolean(state.dead);
     this.status.setHp(hp, mhp);
-    self.setHp(hp, mhp, mhp > 0 && (hp < mhp || this.hud.inField));
+    self.setHp(hp, mhp, mhp > 0 && (hp < mhp || this.hud.inField || Boolean(state.duel)));
     self.dead = dead;
     if (dead !== this.wasDead) {
       this.wasDead = dead;
@@ -924,16 +943,18 @@ export class WorldScene extends Phaser.Scene {
         this.dialog.close();
       }
     }
-    if (!this.sitTipShown && !dead && mhp > 0 && hp < mhp * 0.4) {
+    if (!this.sitTipShown && !dead && !state.duel && mhp > 0 && hp < mhp * 0.4) {
       this.sitTipShown = true;
       this.chat.addSystem("Tip: sit down (X) to heal three times faster, or rest inside the town walls.");
     }
   }
 
-  /** Space or the sword button: the nearest monster around you. */
+  /** Space or the sword button: your duel opponent, or else the nearest monster around you. */
   private targetNearest() {
     const self = this.self;
     if (!self || self.dead) return;
+    const opp = this.duel.opponent;
+    if (opp && this.entities.has(opp)) return this.setTarget(opp);
     let best: string | undefined;
     let bestD = TARGET_RANGE;
     for (const [id, m] of this.monsters) {
@@ -1011,12 +1032,38 @@ export class WorldScene extends Phaser.Scene {
     this.net.useItem(best);
   }
 
-  /** Click/tap on a monster attacks it. */
+  /** Click/tap on a monster (or your duel opponent) attacks it. */
   private tryTarget(p: Phaser.Input.Pointer): boolean {
-    const id = this.monsterAt(p);
+    const opp = this.duel.opponent;
+    const id = this.monsterAt(p) ?? (opp && this.playerAt(p) === opp ? opp : undefined);
     if (!id) return false;
     this.setTarget(id);
     return true;
+  }
+
+  /** Click/tap on another player: their card, with a duel challenge. */
+  private tryPlayer(p: Phaser.Input.Pointer): boolean {
+    const id = this.playerAt(p);
+    const e = id && this.entities.get(id);
+    if (!id || !e) return false;
+    this.duel.openCard(id, { name: e.state.name, lv: e.state.lv, cls: e.state.cls, title: e.state.title });
+    return true;
+  }
+
+  /** Another player under the pointer (their body, roughly), front-most first. */
+  private playerAt(p: Phaser.Input.Pointer): string | undefined {
+    const wp = p.positionToCamera(this.cameras.main) as Phaser.Math.Vector2;
+    let best: string | undefined;
+    let bestY = -Infinity;
+    for (const [id, e] of this.entities) {
+      if (id === this.room.sessionId) continue;
+      const s = e.sprite;
+      if (s.y > bestY && Math.abs(wp.x - s.x) <= 14 && wp.y >= s.y - 52 && wp.y <= s.y + 4) {
+        bestY = s.y;
+        best = id;
+      }
+    }
+    return best;
   }
 
   /** The monster under the pointer, front-most first. */
@@ -1035,7 +1082,7 @@ export class WorldScene extends Phaser.Scene {
 
   private setTarget(id: string) {
     const self = this.self;
-    if (!self || self.dead || !this.monsters.has(id)) return;
+    if (!self || self.dead || !this.targetSpot(id)) return;
     if (this.vending.myShop) {
       this.chat.addSystem("You're minding your shop. Close it first to go fighting.");
       return;
@@ -1046,7 +1093,8 @@ export class WorldScene extends Phaser.Scene {
       this.target = id;
       this.room.send("target", { id } satisfies TargetMessage);
     }
-    this.monsters.get(id)!.sprite.targeted = true;
+    const mob = this.monsters.get(id);
+    if (mob) mob.sprite.targeted = true;
     this.chasing = true;
     if (self.sitting) this.toggleSit();
   }
@@ -1063,12 +1111,17 @@ export class WorldScene extends Phaser.Scene {
   /** The target frame, names on hover, and letting go of targets you walked away from. */
   private updateTarget() {
     const self = this.self;
-    const mob = this.target ? this.monsters.get(this.target) : undefined;
-    if (this.target && (!mob || !self || Math.hypot(mob.sprite.x - self.x, mob.sprite.y - self.y) > TARGET_DROP_RANGE)) this.clearTarget();
+    const t = this.targetSpot();
+    const mob = t?.mob;
+    // Your duel opponent stays your target however far they run (the duel has its own limit).
+    if (this.target && (!t || !self || (mob && Math.hypot(mob.sprite.x - self.x, mob.sprite.y - self.y) > TARGET_DROP_RANGE))) this.clearTarget();
     else if (mob) {
       const color = levelColor(this.myLevel, mob.sprite.kind);
       mob.sprite.setNameColor(color);
       this.status.showTarget(mob.sprite.def.name, mob.sprite.def.level, mob.state.hp, mob.sprite.def.hp, color);
+    } else if (t?.player) {
+      const s = t.player.state;
+      this.status.showTarget(s.name, s.lv ?? 1, s.hp ?? 0, s.mhp ?? 1, "#ff8a7a");
     }
 
     // Desktop: point at a monster (or loot) to see its name.
@@ -1268,6 +1321,22 @@ export class WorldScene extends Phaser.Scene {
         const b = this.body(ev.t);
         if (b) this.fx.card(b.x, b.y);
         if (ev.t === me) audio.card();
+        return;
+      }
+      case "duel": {
+        const mine = ev.a === me || ev.b === me;
+        if (ev.ev === "start") {
+          for (const id of [ev.a, ev.b]) this.fx.countdown(() => this.body(id));
+          if (mine) [0, 1000, 2000].forEach((ms) => this.time.delayedCall(ms, () => audio.blip()));
+          if (mine) this.time.delayedCall(3000, () => audio.hit(true));
+          return;
+        }
+        const w = ev.w && this.body(ev.w);
+        if (w) this.fx.levelUp(w.x, w.y, "WINNER!", 0xffd27a);
+        else if (!ev.w) for (const id of [ev.a, ev.b]) {
+          const b = this.body(id);
+          if (b) this.fx.float(b.x, b.y - 84, "DRAW", "#d9dde2");
+        }
         return;
       }
       case "title": {

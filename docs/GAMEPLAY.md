@@ -6,7 +6,7 @@ The game has three parts:
 
 1. **Hanging out.** The town is a meeting place. Chat, sit by the fountain, visit the Gattchaa staff, and run your own card shop in the Market Square.
 2. **Adventure.** Outside the walls, monsters wait in fields sorted by level. Level up, choose a job, find gear and monster cards, and upgrade your equipment.
-3. **Player vs player.** Coming later: duels and an arena.
+3. **Player vs player.** Challenge anyone to a duel, and climb the ranking in the Arena.
 
 > **One rule about money.** Real cards are bought and paid for only on gattchaaoripa.com. In-game gold buys in-game things (potions, gear, upgrades) and never real cards.
 
@@ -27,6 +27,8 @@ The game has three parts:
 | Walk | W A S D or the arrow keys | Hold your finger on the screen where you want to go |
 | Talk to someone, use a machine or stall | Walk up and press **E** (or click it) | Tap it |
 | Attack a monster | Click it, or press **Space** for the nearest one | Tap it, or the sword button |
+| Challenge someone to a duel | Click them, then **Challenge to a duel** | Tap them, then the same button |
+| Attack your duel opponent | Click them, or **Space** | Tap them, or the sword button |
 | Use a skill | Keys **1** to **6**, or the skill buttons | The skill buttons (above the chat) |
 | Drink a potion | **Q** | The potion button |
 | Bag and equipment | **I** | The bag button |
@@ -53,10 +55,10 @@ Gattchaa Town is a walled royal town in the middle of an island, with gates to t
 - **The pack stalls** (east of the plaza) are four counters run by Gattchaa staff.
 - **The Market Square** (by the south gate) is where players run their own shops.
 - **The lakeside park** runs along the west wall, with a pond, benches and a campfire.
-- **The Collectors' Café** is in the east quarter.
+- **The Collectors' Café** is in the east quarter, with **the Arena** behind it: a ring of sand where players duel, with benches for the crowd.
 - **The gates** lead to the monster fields: south to the South Meadow, east to Dusk Hollow.
 
-The town is always safe: monsters never come in, and nobody can fight inside the walls.
+The town is always safe: monsters never come in, and nobody can attack anyone inside the walls, except in a duel both players agreed to.
 
 **Day and night** follow Batam time. At night the lamps, windows, campfire and shop signs glow and fireflies come out. By day, butterflies fly over the flowers. When someone pulls a big hit on Gattchaa, the whole town hears about it.
 
@@ -89,6 +91,7 @@ The town is always safe: monsters never come in, and nobody can fight inside the
 | Orin | Job Master | Just inside the south gate | Makes you a Knight, Mage or Archer at level 10 |
 | Bram | Outfitter | Outside the south gate, east of the road | Sells potions and starter gear, buys loot |
 | Hilda | Blacksmith | Outside the south gate, west of Rowan | Upgrades gear from +0 to +10 |
+| Magnus | Arena Master | By the Arena, east of the Market Square | Explains duels and keeps the arena ranking |
 
 ## 4. Player shops
 
@@ -440,7 +443,42 @@ Some titles have their own aura too (see Titles). At night, auras glow like the 
 
 Upgraded gear shows its level in its name ("+7 Double Stinging Saber") and in the corner of its bag slot. It keeps its level if you drop it and pick it up again.
 
-## 10. Titles
+## 10. Duels and the Arena
+
+Fight other players, just for fun or for the ranking. **Nobody ever loses EXP, gold or items in a duel**, and both players are healed when it ends.
+
+### How a duel works
+
+1. **Challenge.** Click (or tap) another player standing near you and press **Challenge to a duel**. They get a pop-up and have 20 seconds to **Accept** or **Decline**.
+2. **Countdown.** "3, 2, 1, FIGHT!" appears over both of you. You automatically aim at your opponent.
+3. **Fight.** Attack like you would a monster: click them or press Space, and use your skills (keys 1–6). A bar across the top shows who you're fighting and the time left, with a **Give up** button.
+4. **The end.** Whoever drops to 0 HP loses. The winner gets a "WINNER!" banner, and you're both healed straight away.
+
+### Rules
+
+| Rule | Why |
+| --- | --- |
+| Player hits do **half damage** | So a duel lasts long enough for skills and tactics to matter |
+| **No potions** and no healing over time | Otherwise nobody could ever win. A Mage's Heal skill still works |
+| **2 minutes** at most | After that it's a draw |
+| Stay close: walking too far from your opponent calls it off | It's a draw |
+| Giving up, leaving the game, or fainting to a monster | The other player wins |
+| Duels work anywhere, even inside the town | Only the two duelists can hurt each other; nobody else can join in |
+| You can't duel while minding your shop | Close the shop first |
+
+Skills work on players too: Bash, Double Shot and Fire Bolt hit your opponent, and Whirlwind, Frost Nova and Arrow Rain catch them if they're close (Frost Nova doesn't freeze players). Evade cards help against player attacks as well.
+
+### The Arena and the ranking
+
+The Arena is the ring of sand behind the café. **A duel counts for the ranking when both players stand inside the ring when it starts and both are signed in.** The challenge pop-up says whether a duel is ranked.
+
+- Everyone starts with a **rating of 1,000**. The winner takes points from the loser: **16** between equal ratings, more for beating someone rated higher, fewer for beating someone rated lower.
+- **Stepping out of the ring during a ranked duel loses it.**
+- Every ranked win is announced to the whole town, with the winner's new rating.
+- **Magnus the Arena Master** explains the rules and shows your place, rating and wins and losses, plus the ten best players.
+- Guests can duel anywhere, but only signed-in players are ranked.
+
+## 11. Titles
 
 Titles are earned by doing things in the game. Open your titles with **T** (or the medal button) to see every title, the ones you've earned, and how far along you are with the rest. Pick one to **show under your name**, in its rarity colour, for everyone to see, or hide it again.
 
@@ -474,6 +512,10 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 | Shiny | Rare | Upgrade any gear to +7 |
 | Forge Master | Epic | Upgrade any gear to +10 |
 | Never Give Up | Rare | Fail 30 upgrades, and keep going |
+| **The Arena** | | |
+| Good Sport | Common | Fight 10 duels, win or lose (a draw counts) |
+| Duelist | Uncommon | Win 10 duels |
+| Gladiator | Epic | Win 50 duels in the Arena's ring |
 | **Town** | | |
 | Shopkeeper | Uncommon | Open your own shop in the Market Square |
 
@@ -487,7 +529,7 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 
 Pioneer places are counted per level cap: when the cap goes up, the first 10 players to reach the new cap become Pioneers too.
 
-## 11. Monster reference
+## 12. Monster reference
 
 | Monster | Lv | HP | ATK | DEF | EXP | Gold | Notable drops |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -504,7 +546,7 @@ Pioneer places are counted per level cap: when the cap goes up, the first 10 pla
 
 Every monster also drops its own card (see Monster cards) and often potions.
 
-## 12. A good path for new players
+## 13. A good path for new players
 
 1. **Level 1–4:** Slimes by the road, south of town. Buy a few Red Potions and a Dagger or Short Sword from Bram.
 2. **Level 4–7:** Grass Snakes in the west grass. Wear what you find.
@@ -518,9 +560,8 @@ Along the way, open your titles (T) now and then: you'll have earned a few.
 
 Sell your monster loot to Bram whenever your bag fills up, and sit down (X) to heal faster between fights.
 
-## 13. Coming next
+## 14. Coming next
 
-- **Duels and an arena** for player vs player.
 - **Trading in-game items for gold** in player shops, so cards, gear and ingots can change hands.
 - **New fields and monsters** above level 20, and a higher level cap.
 

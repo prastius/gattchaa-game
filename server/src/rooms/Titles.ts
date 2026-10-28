@@ -43,7 +43,7 @@ export class TitleBook {
   /** For the database (null when there's nothing yet). */
   save(): { deeds: string | null; titles: string | null } {
     const d = this.deeds;
-    const empty = !Object.keys(d.kills).length && !d.cards.length && !d.legendary && !d.bestUp && !d.upFails && !d.shop;
+    const empty = !Object.keys(d.kills).length && !d.cards.length && !d.legendary && !d.bestUp && !d.upFails && !d.shop && !d.duels;
     return {
       deeds: empty ? null : JSON.stringify(d),
       titles: this.earned.length ? JSON.stringify({ earned: this.earned, shown: this.shown }) : null,

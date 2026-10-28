@@ -346,6 +346,32 @@ export class Fx {
     });
   }
 
+  /** "3, 2, 1, FIGHT!" over a duelist's head, following them as they move. */
+  countdown(at: () => { x: number; y: number } | undefined) {
+    ["3", "2", "1", "FIGHT!"].forEach((label, i) =>
+      this.scene.time.delayedCall(i * 1000, () => {
+        const p = at();
+        if (!p) return;
+        const fight = i === 3;
+        const t = this.scene.add
+          .text(Math.round(p.x), Math.round(p.y - 92), label, {
+            fontFamily: FONT,
+            fontSize: fight ? "18px" : "17px",
+            fontStyle: "bold",
+            color: fight ? "#ff6a5c" : "#ffffff",
+            stroke: "#10202b",
+            strokeThickness: 4,
+          })
+          .setOrigin(0.5, 1)
+          .setResolution(this.textRes())
+          .setDepth(DEPTH)
+          .setScale(1.8);
+        this.scene.tweens.add({ targets: t, scale: 1, duration: 220, ease: "Back.Out" });
+        this.scene.tweens.add({ targets: t, alpha: 0, y: t.y - 12, delay: fight ? 700 : 550, duration: 300, onComplete: () => t.destroy() });
+      }),
+    );
+  }
+
   /** A column of golden light, rising sparks and "LEVEL UP!" (or a new job) over someone's head. */
   levelUp(x: number, y: number, text = "LEVEL UP!", tint = 0xffd27a) {
     const glow = this.scene.add.image(x, y - 24, GLOW).setBlendMode(Phaser.BlendModes.ADD).setTint(tint).setDepth(DEPTH).setScale(0.4, 1.2).setAlpha(0);

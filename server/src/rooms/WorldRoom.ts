@@ -40,6 +40,7 @@ import type { DoorMessage } from "../../../shared/protocol";
 import { CLASSES, LEVEL_CAP, aClass, isClassId } from "../../../shared/rpg";
 import { isSkillId } from "../../../shared/skills";
 import { PIONEERS, TITLES, isTitleId, type TitleShowMessage } from "../../../shared/titles";
+import type { ArenaBoard, DuelAnswerMessage, DuelAskMessage, DuelEndEvent } from "../../../shared/duels";
 import { BAG_SIZE, ITEMS, OUTFITTER_STOCK, SMITH_STOCK, cleanUpgrade, isItemId, isSlot } from "../../../shared/items";
 import { NPCS, type NpcKind } from "../../../shared/npcs";
 import { SHOP_AWAY_HOURS, inShopZone, sanitizeShopTitle, shopSpotProblem, type ShopOpenMessage, type ShopResult } from "../../../shared/vending";
@@ -174,6 +175,22 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     "item:pickup": (client: Client, msg: PickupMessage) => {
       if (this.itemOk(client) && typeof msg?.id === "string") this.combat.pickup(client.sessionId, msg.id.slice(0, 16));
     },
+    "duel:ask": (client: Client, msg: DuelAskMessage) => {
+      const to = typeof msg?.t === "string" ? msg.t.slice(0, 16) : "";
+      if (!this.itemOk(client) || !this.state.players.has(to)) return;
+      if (this.meta.get(client.sessionId)?.shop) return this.notice(client.sessionId, "You're minding your shop. Close it first to duel.");
+      if (this.meta.get(to)?.shop) return this.notice(client.sessionId, "They're minding their shop right now.");
+      this.combat.askDuel(client.sessionId, to);
+    },
+    "duel:answer": (client: Client, msg: DuelAnswerMessage) => {
+      if (this.itemOk(client) && typeof msg?.from === "string") this.combat.answerDuel(client.sessionId, msg.from.slice(0, 16), msg.yes === true);
+    },
+    "duel:quit": (client: Client) => this.combat.quitDuel(client.sessionId),
+    "arena:board": (client: Client, msg: { npc?: string }) => {
+      if (!this.itemOk(client) || !this.npcNear(client, msg?.npc, "arena")) return;
+      const account = this.meta.get(client.sessionId)?.account;
+      client.send("arena:board", { ...db.arenaBoard(10, account?.id), saved: Boolean(account) } satisfies ArenaBoard);
+    },
     "title:show": (client: Client, msg: TitleShowMessage) => {
       const id = msg?.id;
       if (this.itemOk(client) && (id === "" || isTitleId(id))) this.combat.showTitle(client.sessionId, id);
@@ -247,6 +264,9 @@ export class WorldRoom extends Room<{ state: WorldState }> {
         if (name) this.system(`🔨 ${name} upgraded a ${item} to +${up}!`);
       },
       titles: (id, msg) => this.clients.getById(id)?.send("titles", msg),
+      duelAsk: (to, ev) => this.clients.getById(to)?.send("duel:ask", ev),
+      duelStart: (id, ev) => this.clients.getById(id)?.send("duel:start", ev),
+      duelEnded: (d) => this.duelEnded(d),
       titleEarned: (id, title) => {
         const name = this.state.players.get(id)?.name;
         if (name && (title.tier === "epic" || title.tier === "legendary")) this.system(`🏅 ${name} earned the title "${title.name}"!`);
@@ -491,6 +511,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     const meta = this.meta.get(client.sessionId);
     if (!meta || meta.shop) return;
     const id = typeof msg?.id === "string" ? msg.id.slice(0, 16) : "";
+    // (A player id is accepted only for your duel opponent.)
     this.combat.setTarget(client.sessionId, id);
   }
 
@@ -516,6 +537,38 @@ export class WorldRoom extends Room<{ state: WorldState }> {
   }
 
   private bagSlot = (slot: unknown): slot is number => Number.isInteger(slot) && (slot as number) >= 0 && (slot as number) < BAG_SIZE;
+
+  private notice(id: string, text: string) {
+    this.clients.getById(id)?.send("chat", this.makeMessage("", "System", text, true));
+  }
+
+  /** Tells both duelists how it went; a ranked win moves both ratings and is town news. */
+  private duelEnded(d: { a: string; b: string; winner?: string; ranked: boolean; why: string }) {
+    const name = (id: string) => this.state.players.get(id)?.name ?? "Someone";
+    const account = (id: string) => {
+      const acc = this.meta.get(id)?.account;
+      return acc && this.sessionOf.get(acc.id) === id ? acc : undefined;
+    };
+    const loser = d.winner && (d.winner === d.a ? d.b : d.a);
+    let ratings: { winner: [number, number]; loser: [number, number] } | undefined;
+    const wAcc = d.winner && account(d.winner);
+    const lAcc = loser && account(loser);
+    if (d.ranked && wAcc && lAcc) ratings = db.arenaResult(wAcc.id, lAcc.id);
+    // "Bo was beaten" reads "You were beaten" to Bo.
+    const yours = (id: string) => {
+      const n = name(id);
+      if (d.why.startsWith(`${n} was `)) return `You were ${d.why.slice(n.length + 5)}`;
+      return d.why.startsWith(`${n} `) ? `You ${d.why.slice(n.length + 1)}` : d.why;
+    };
+    for (const id of [d.a, d.b]) {
+      const result = !d.winner ? "draw" : d.winner === id ? "win" : "lose";
+      const rating = ratings && (result === "win" ? ratings.winner : ratings.loser);
+      this.clients.getById(id)?.send("duel:end", { result, why: yours(id), ...(rating && { rating }) } satisfies DuelEndEvent);
+    }
+    if (d.winner && loser && ratings) {
+      this.system(`⚔️ ${name(d.winner)} beat ${name(loser)} in the Arena! (rating ${ratings.winner[1]})`);
+    }
+  }
 
   /** The NPC of that kind, if you're standing with them. */
   private npcNear(client: Client, npcId: unknown, kind: NpcKind) {
@@ -648,6 +701,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     const problem = () => {
       if (!account) return "Sign in with Gattchaa to open a shop.";
       if (meta.shop || this.shopOf(account.id)) return "You already have a shop open. Close it first.";
+      if (this.combat.inDuel(client.sessionId)) return "Finish your duel first.";
       if (!feed.enabled) return "Player shops need the link to Gattchaa, which isn't set up on this server yet.";
       return shopSpotProblem(meta.x, meta.y, this.otherShops());
     };

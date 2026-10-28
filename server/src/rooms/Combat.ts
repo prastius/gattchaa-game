@@ -49,6 +49,19 @@ import {
 } from "../../../shared/items";
 import { GLOBAL_COOLDOWN_MS, SKILLS, SKILL_MAX, cleanSkills, pointsLeft, type SkillDef, type SkillId, type SkillLevels } from "../../../shared/skills";
 import { TITLES, type TitleDef, type TitleId, type TitlesMessage } from "../../../shared/titles";
+import {
+  DUEL_ASK_COOLDOWN_MS,
+  DUEL_ASK_MS,
+  DUEL_ASK_RANGE,
+  DUEL_COUNTDOWN_MS,
+  DUEL_LEASH,
+  DUEL_MS,
+  PLAYER_RADIUS,
+  PVP_DAMAGE,
+  inArena,
+  type DuelAskEvent,
+  type DuelStartEvent,
+} from "../../../shared/duels";
 import type { Progress } from "../db";
 import { Monster, type Player } from "./WorldState";
 import { Inventory, type GearAt } from "./Inventory";
@@ -110,6 +123,23 @@ export interface CombatHooks {
   titleEarned(id: string, title: TitleDef): void;
   /** Someone reached the level cap: maybe a Pioneer (the room knows the accounts). */
   reachedCap(id: string, cap: number): void;
+  /** Someone challenged `to` to a duel. */
+  duelAsk(to: string, ev: DuelAskEvent): void;
+  /** A duel began (told to each duelist). */
+  duelStart(id: string, ev: DuelStartEvent): void;
+  /** A duel ended (`winner` undefined: a draw). The room settles the ranking and tells both. */
+  duelEnded(d: { a: string; b: string; winner?: string; ranked: boolean; why: string }): void;
+}
+
+/** Two players fighting each other: one object, filed under both their ids. */
+interface Duel {
+  a: string;
+  b: string;
+  /** In the Arena's ring between signed-in players: counts for the ranking. */
+  ranked: boolean;
+  /** Fighting starts after the countdown; from `endsAt` it's a draw. */
+  startsAt: number;
+  endsAt: number;
 }
 
 interface Fighter {
@@ -200,6 +230,10 @@ export class Combat {
   private fighters = new Map<string, Fighter>();
   private mobs = new Map<string, Mob>();
   private respawns: { group: number; at: number }[] = [];
+  private duels = new Map<string, Duel>();
+  /** Open challenges by challenger: whom, and until when. */
+  private asks = new Map<string, { to: string; until: number }>();
+  private askedAt = new Map<string, number>();
   private nextId = 0;
   private saveAt = Date.now() + SAVE_MS;
 
@@ -273,6 +307,11 @@ export class Combat {
   leave(id: string) {
     const f = this.fighters.get(id);
     if (!f) return;
+    const duel = this.duels.get(id);
+    if (duel) this.endDuel(duel, duel.a === id ? duel.b : duel.a, `${f.player.name} left`);
+    this.asks.delete(id);
+    this.askedAt.delete(id);
+    for (const [from, ask] of this.asks) if (ask.to === id) this.asks.delete(from);
     this.save(f);
     this.fighters.delete(id);
     this.drops.release(id);
@@ -297,7 +336,7 @@ export class Combat {
     const f = this.fighters.get(id);
     if (!f || f.player.dead) return;
     if (!mobId) f.target = undefined;
-    else if (this.mobs.has(mobId)) f.target = mobId;
+    else if (this.mobs.has(mobId) || this.opponentId(f) === mobId) f.target = mobId;
   }
 
   /** Back on your feet in town: full health. Returns false if they weren't knocked out. */
@@ -367,6 +406,7 @@ export class Combat {
       this.regen(f, now);
       this.expireBuffs(f, now);
     }
+    this.tickDuels(now);
 
     if (now >= this.saveAt) {
       this.saveAt = now + SAVE_MS;
@@ -403,6 +443,7 @@ export class Combat {
 
   private fight(f: Fighter, now: number) {
     if (!f.target || f.player.dead) return;
+    if (!f.target.startsWith(MONSTER_ID_PREFIX)) return this.duelFight(f, now);
     const mob = this.mobs.get(f.target);
     if (!mob) {
       f.target = undefined;
@@ -427,6 +468,15 @@ export class Combat {
     this.hurt(mob, f, damage, crit ? { crit: 1 } : {});
   }
 
+  /** Night Bat Cards: a share of every hit (not thorns) comes back as HP. */
+  private drain(f: Fighter, dealt: number) {
+    if (f.stats.drain <= 0 || f.player.dead || f.player.hp >= f.stats.maxHp) return;
+    const healed = Math.min(Math.max(1, Math.round(dealt * f.stats.drain)), f.stats.maxHp - f.player.hp);
+    f.player.hp += healed;
+    f.dirty = true;
+    this.hooks.emit(f.pos.x, f.pos.y, { k: "heal", t: f.id, d: healed });
+  }
+
   /** `f` attacked it: even shy monsters fight back. */
   private provoke(mob: Mob, f: Fighter, now: number) {
     mob.lastHitAt = now;
@@ -440,13 +490,7 @@ export class Combat {
   private hurt(mob: Mob, f: Fighter, damage: number, flags: { crit?: 1; thorn?: 1; skill?: SkillId }) {
     const dealt = Math.min(damage, mob.hp);
     mob.damage.set(f.id, (mob.damage.get(f.id) ?? 0) + dealt);
-    // Night Bat Cards: a share of every hit (not thorns) comes back as HP.
-    if (f.stats.drain > 0 && !flags.thorn && !f.player.dead && f.player.hp < f.stats.maxHp) {
-      const healed = Math.min(Math.max(1, Math.round(dealt * f.stats.drain)), f.stats.maxHp - f.player.hp);
-      f.player.hp += healed;
-      f.dirty = true;
-      this.hooks.emit(f.pos.x, f.pos.y, { k: "heal", t: f.id, d: healed });
-    }
+    if (!flags.thorn) this.drain(f, dealt);
     mob.hp = Math.max(0, mob.hp - damage);
     mob.state.hp = mob.hp;
     this.hooks.emit(mob.x, mob.y, { k: "hit", a: f.id, t: mob.id, d: damage, ...flags });
@@ -530,7 +574,8 @@ export class Combat {
   private regen(f: Fighter, now: number) {
     if (now < f.regenAt) return;
     f.regenAt = now + REGEN_MS;
-    if (f.player.dead || now - f.lastCombatAt < COMBAT_MS) return;
+    // No healing mid-duel: it would never end.
+    if (f.player.dead || this.duels.has(f.id) || now - f.lastCombatAt < COMBAT_MS) return;
     const s = f.stats;
     const rate = (REGEN_RATE * REGEN_MS) / 1000 * (f.player.sit ? SIT_REGEN : 1) * (inSafeZone(f.pos.x, f.pos.y) ? TOWN_REGEN : 1);
     if (f.player.hp < s.maxHp) {
@@ -554,6 +599,9 @@ export class Combat {
   }
 
   private knockOut(f: Fighter) {
+    // A monster got a duelist: the other one wins.
+    const duel = this.duels.get(f.id);
+    if (duel) this.endDuel(duel, duel.a === f.id ? duel.b : duel.a, `${f.player.name} fainted`);
     const p = f.player;
     p.dead = true;
     p.hp = 0;
@@ -657,6 +705,7 @@ export class Combat {
   private drink(f: Fighter, slot: number, it: ItemDef) {
     const now = Date.now();
     if (!it.heal || now < f.potionAt) return;
+    if (this.duels.has(f.id)) return this.hooks.notice(f.id, "No potions in a duel!");
     if (f.player.hp >= f.stats.maxHp) return this.hooks.notice(f.id, "You're already at full health.");
     f.potionAt = now + POTION_MS;
     f.inv.take(slot, 1);
@@ -815,6 +864,164 @@ export class Combat {
     this.traded(f);
   }
 
+  // ---------------------------------------------------------------- duels
+
+  /** Whether someone is in a duel (they can't open a shop meanwhile). */
+  inDuel(id: string): boolean {
+    return this.duels.has(id);
+  }
+
+  private opponentId(f: Fighter): string | undefined {
+    const d = this.duels.get(f.id);
+    return d && (d.a === f.id ? d.b : d.a);
+  }
+
+  /** Your duel opponent, if that's who `id` is and the countdown is over. */
+  private foe(f: Fighter, id: string | undefined): Fighter | undefined {
+    const d = this.duels.get(f.id);
+    if (!d || !id || id !== this.opponentId(f) || Date.now() < d.startsAt) return undefined;
+    return this.fighters.get(id);
+  }
+
+  /** Ranked: both in the Arena's ring, and both signed in (the ranking is kept per account). */
+  private rankable(f: Fighter, g: Fighter): boolean {
+    return f.saved && g.saved && inArena(f.pos.x, f.pos.y) && inArena(g.pos.x, g.pos.y);
+  }
+
+  /** `id` challenges `to` (the room checked neither is minding a shop). */
+  askDuel(id: string, to: string) {
+    const f = this.fighters.get(id);
+    const g = this.fighters.get(to);
+    if (!f || !g || f === g || f.player.dead || g.player.dead) return;
+    const now = Date.now();
+    if (now < (this.askedAt.get(id) ?? 0) + DUEL_ASK_COOLDOWN_MS) return this.hooks.notice(id, "Wait a moment before challenging again.");
+    if (this.duels.has(id)) return this.hooks.notice(id, "You're already in a duel.");
+    if (this.duels.has(to)) return this.hooks.notice(id, `${g.player.name} is already in a duel.`);
+    if (dist(f.pos, g.pos) > DUEL_ASK_RANGE) return this.hooks.notice(id, `Get closer to ${g.player.name} to challenge them.`);
+    this.askedAt.set(id, now);
+    this.asks.set(id, { to, until: now + DUEL_ASK_MS });
+    const ranked = this.rankable(f, g);
+    this.hooks.duelAsk(to, { from: id, name: f.player.name, lv: f.player.lv, cls: f.cls, ranked, ms: DUEL_ASK_MS });
+    this.hooks.notice(id, `You challenged ${g.player.name} to a ${ranked ? "ranked " : ""}duel. Waiting for an answer…`);
+  }
+
+  /** `id` answers `from`'s challenge. */
+  answerDuel(id: string, from: string, yes: boolean) {
+    const ask = this.asks.get(from);
+    const f = this.fighters.get(from);
+    const g = this.fighters.get(id);
+    if (!ask || ask.to !== id || !f || !g) return;
+    this.asks.delete(from);
+    if (Date.now() > ask.until) return this.hooks.notice(id, "That challenge has run out.");
+    if (!yes) return this.hooks.notice(from, `${g.player.name} turned down your duel.`);
+    if (f.player.dead || g.player.dead || this.duels.has(from) || this.duels.has(id) || dist(f.pos, g.pos) > DUEL_ASK_RANGE * 1.5) {
+      for (const who of [f, g]) this.hooks.notice(who.id, "The duel can't start right now.");
+      return;
+    }
+    this.startDuel(f, g);
+  }
+
+  private startDuel(f: Fighter, g: Fighter) {
+    const now = Date.now();
+    const d: Duel = { a: f.id, b: g.id, ranked: this.rankable(f, g), startsAt: now + DUEL_COUNTDOWN_MS, endsAt: now + DUEL_COUNTDOWN_MS + DUEL_MS };
+    for (const [me, opp] of [[f, g], [g, f]] as const) {
+      this.duels.set(me.id, d);
+      this.asks.delete(me.id);
+      me.player.duel = opp.id;
+      me.player.sit = false;
+      me.target = undefined;
+      this.hooks.duelStart(me.id, { opp: opp.id, name: opp.player.name, ranked: d.ranked, countdown: DUEL_COUNTDOWN_MS, ms: DUEL_MS });
+    }
+    this.hooks.emit((f.pos.x + g.pos.x) / 2, (f.pos.y + g.pos.y) / 2, { k: "duel", a: f.id, b: g.id, ev: "start" });
+  }
+
+  /** Gives up your duel. */
+  quitDuel(id: string) {
+    const d = this.duels.get(id);
+    const f = this.fighters.get(id);
+    if (d && f) this.endDuel(d, d.a === id ? d.b : d.a, `${f.player.name} gave up`);
+  }
+
+  /** Auto-attacks on your duel opponent (the countdown has to be over). */
+  private duelFight(f: Fighter, now: number) {
+    const g = this.foe(f, f.target);
+    if (!g) {
+      // Still counting down: wait. The duel is over: stop.
+      if (!this.duels.has(f.id)) f.target = undefined;
+      return;
+    }
+    if (now < f.nextAttackAt) return;
+    const s = f.stats;
+    if (dist(f.pos, g.pos) > s.range + PLAYER_RADIUS + REACH_SLACK) return;
+    f.nextAttackAt = now + s.attackMs;
+    f.player.sit = false;
+    f.player.dir = dirTo(g.pos.x - f.pos.x, g.pos.y - f.pos.y);
+    // Grass Snake and Ghost Cards help against players too.
+    if (Math.random() >= hitChance(f.player.lv, g.player.lv) * (1 - g.stats.flee)) {
+      f.lastCombatAt = g.lastCombatAt = now;
+      this.hooks.emit(g.pos.x, g.pos.y, { k: "miss", a: f.id, t: g.id });
+      return;
+    }
+    const { damage, crit } = rollDamage(s.atk, g.stats.def, s.crit);
+    this.hurtFoe(f, g, damage, crit ? { crit: 1 } : {});
+  }
+
+  /** One duelist hits the other, for PVP_DAMAGE of the damage. Whoever drops to 0 HP loses. */
+  private hurtFoe(f: Fighter, g: Fighter, raw: number, flags: { crit?: 1; skill?: SkillId }) {
+    const damage = Math.max(1, Math.round(raw * PVP_DAMAGE));
+    const dealt = Math.min(damage, g.player.hp);
+    g.player.hp -= dealt;
+    g.dirty = true;
+    f.lastCombatAt = g.lastCombatAt = Date.now();
+    this.hooks.emit(g.pos.x, g.pos.y, { k: "hit", a: f.id, t: g.id, d: damage, ...flags });
+    this.drain(f, dealt);
+    const d = this.duels.get(f.id);
+    if (d && g.player.hp <= 0) this.endDuel(d, f.id, `${g.player.name} was beaten`);
+  }
+
+  /** Over: both healed (unless a monster knocked one out), deeds counted, and the room settles the rest. */
+  private endDuel(d: Duel, winner: string | undefined, why: string) {
+    if (this.duels.get(d.a) !== d) return;
+    this.duels.delete(d.a);
+    this.duels.delete(d.b);
+    for (const id of [d.a, d.b]) {
+      const f = this.fighters.get(id);
+      if (!f) continue;
+      f.player.duel = "";
+      if (f.target === d.a || f.target === d.b) f.target = undefined;
+      if (!f.player.dead) {
+        f.player.hp = f.stats.maxHp;
+        f.mp = f.stats.maxMp;
+      }
+      f.lastCombatAt = 0;
+      f.sheetDirty = true;
+      const deeds = f.book.deeds;
+      deeds.duels++;
+      if (winner === id) {
+        deeds.duelWins++;
+        if (d.ranked) deeds.arenaWins++;
+      }
+      this.deed(f);
+    }
+    const at = this.fighters.get(winner ?? d.a) ?? this.fighters.get(d.b);
+    if (at) this.hooks.emit(at.pos.x, at.pos.y, { k: "duel", a: d.a, b: d.b, ev: "end", ...(winner && { w: winner }) });
+    this.hooks.duelEnded({ a: d.a, b: d.b, winner, ranked: d.ranked, why });
+  }
+
+  /** Time limits, wandering apart, stepping out of the ring in a ranked duel; old challenges lapse. */
+  private tickDuels(now: number) {
+    for (const [id, ask] of this.asks) if (now > ask.until) this.asks.delete(id);
+    for (const d of new Set(this.duels.values())) {
+      const a = this.fighters.get(d.a);
+      const b = this.fighters.get(d.b);
+      if (!a || !b) continue;
+      const out = d.ranked ? [a, b].find((f) => !inArena(f.pos.x, f.pos.y)) : undefined;
+      if (now >= d.endsAt) this.endDuel(d, undefined, "Time's up");
+      else if (dist(a.pos, b.pos) > DUEL_LEASH) this.endDuel(d, undefined, "You were too far apart");
+      else if (out) this.endDuel(d, out === a ? b.id : a.id, `${out.player.name} left the ring`);
+    }
+  }
+
   // ---------------------------------------------------------------- titles
 
   /** Deeds changed: send the progress, and hand out any titles just earned. */
@@ -925,12 +1132,19 @@ export class Combat {
     const weapon = f.inv.gear.weapon && ITEMS[f.inv.gear.weapon.id];
     if (s.weapon && weapon?.weapon !== s.weapon) return this.fail(f, `${s.name} needs a ${WEAPON_NAMES[s.weapon]}`);
     const attack = s.kind !== "self";
-    if (attack && inSafeZone(f.pos.x, f.pos.y)) return this.fail(f, "No fighting in town");
+    const duel = this.duels.get(f.id);
+    if (attack && inSafeZone(f.pos.x, f.pos.y) && !duel) return this.fail(f, "No fighting in town");
+    if (attack && duel && now < duel.startsAt) return this.fail(f, "Wait for the countdown");
     let mob: Mob | undefined;
+    // Aimed at your duel opponent instead of a monster.
+    let foe: Fighter | undefined;
     if (s.kind === "strike" || s.kind === "rain") {
-      mob = this.mobs.get(targetId || f.target || "");
-      if (!mob) return this.fail(f, "No target");
-      if (dist(f.pos, mob) > (s.range ?? f.stats.range) + mob.def.radius + REACH_SLACK) return this.fail(f, "Too far away");
+      const aim = targetId || f.target || "";
+      foe = this.foe(f, aim);
+      mob = foe ? undefined : this.mobs.get(aim);
+      const to = foe ? { ...foe.pos, radius: PLAYER_RADIUS } : mob && { x: mob.x, y: mob.y, radius: mob.def.radius };
+      if (!to) return this.fail(f, "No target");
+      if (dist(f.pos, to) > (s.range ?? f.stats.range) + to.radius + REACH_SLACK) return this.fail(f, "Too far away");
     }
     const mp = s.mp(lv);
     if (f.mp < mp) return this.fail(f, "Not enough MP");
@@ -942,16 +1156,22 @@ export class Combat {
     f.cooldowns.set(skill, now + s.cooldownMs);
     f.player.sit = false;
     if (attack) f.lastCombatAt = now;
-    if (mob) {
-      f.target = mob.id;
-      f.player.dir = dirTo(mob.x - f.pos.x, mob.y - f.pos.y);
+    const aimed = mob ? { id: mob.id, x: mob.x, y: mob.y } : foe && { id: foe.id, ...foe.pos };
+    if (aimed) {
+      f.target = aimed.id;
+      f.player.dir = dirTo(aimed.x - f.pos.x, aimed.y - f.pos.y);
     }
-    this.hooks.emit(f.pos.x, f.pos.y, { k: "cast", a: f.id, s: skill, ...(mob && { t: mob.id }) });
+    this.hooks.emit(f.pos.x, f.pos.y, { k: "cast", a: f.id, s: skill, ...(aimed && { t: aimed.id }) });
 
     if (s.kind === "strike" && mob) {
       for (let i = 0; i < (s.hits ?? 1) && this.mobs.has(mob.id); i++) this.skillHit(f, mob, s, lv, now);
+    } else if (s.kind === "strike" && foe) {
+      for (let i = 0; i < (s.hits ?? 1); i++) this.foeSkillHit(f, foe, s, lv);
     } else if (s.kind === "burst" || s.kind === "rain") {
-      const at = mob ? { x: mob.x, y: mob.y } : f.pos;
+      const at = aimed ?? f.pos;
+      // A duel opponent in the blast is hit too (but never frozen).
+      const opp = this.foe(f, this.opponentId(f));
+      if (opp && dist(at, opp.pos) <= (s.radius ?? 0) + PLAYER_RADIUS) this.foeSkillHit(f, opp, s, lv);
       for (const m of [...this.mobs.values()]) {
         if (dist(at, m) > (s.radius ?? 0) + m.def.radius) continue;
         this.skillHit(f, m, s, lv, now);
@@ -980,6 +1200,13 @@ export class Combat {
     this.provoke(mob, f, now);
     const { damage, crit } = rollDamage(Math.round(f.stats.atk * (s.power?.(lv) ?? 1)), mob.def.def, f.stats.crit);
     this.hurt(mob, f, damage, { ...(crit && { crit: 1 as const }), skill: s.id as SkillId });
+  }
+
+  /** One hit of a skill on your duel opponent (unless an earlier hit already won it). */
+  private foeSkillHit(f: Fighter, g: Fighter, s: SkillDef, lv: number) {
+    if (!this.duels.has(f.id)) return;
+    const { damage, crit } = rollDamage(Math.round(f.stats.atk * (s.power?.(lv) ?? 1)), g.stats.def, f.stats.crit);
+    this.hurtFoe(f, g, damage, { ...(crit && { crit: 1 as const }), skill: s.id as SkillId });
   }
 
   /** Why a skill didn't go off, floated over your head. */

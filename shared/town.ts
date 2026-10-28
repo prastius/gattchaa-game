@@ -13,6 +13,7 @@
 //   Rooms pavilion (west) and the pack stalls (east)
 //   Lakeside park along the west wall; the café and more houses along the east wall
 //   The Market Square, where players run their own shops, either side of the avenue
+//   The Arena behind the café (east quarter), with the orchard south of it
 //   South gate between two towers, the main road out
 
 export const TILE = 32;
@@ -72,6 +73,11 @@ export const PARK: Rect = { x: 130, y: 191, w: 25, h: 59 };
 export const POND = { cx: 142, cy: 216, rx: 6.5, ry: 8.5 };
 /** The café terrace in the east quarter. */
 export const CAFE: Rect = { x: 231, y: 201, w: 19, h: 9 };
+/** The Arena's ring of sand: duels fought inside it count for the arena ranking. */
+export const ARENA: Rect = { x: 235, y: 220, w: 12, h: 10 };
+/** The open ground round the ring, kept clear of the orchard's trees. */
+const ARENA_YARD: Rect = { x: 229, y: 214, w: 25, h: 22 };
+
 /** New players appear on the avenue between the plaza and the Market Square. */
 export const SPAWN_AREA: Rect = { x: 189, y: 203, w: 6, h: 8 };
 /** Where wandering NPCs may walk: the fountain plaza… */
@@ -103,6 +109,7 @@ const PLACES: { name: string; rect: Rect }[] = [
   { name: "the main street", rect: { x: 130, y: 182, w: 124, h: 9 } },
   { name: "the avenue", rect: AVENUE },
   { name: "the west quarter", rect: { x: 130, y: 158, w: 28, h: 30 } },
+  { name: "the Arena", rect: ARENA_YARD },
   { name: "the east quarter", rect: { x: 226, y: 158, w: 28, h: 92 } },
 ];
 
@@ -250,6 +257,11 @@ export const BUNTING: [TilePos, TilePos][] = [
 
 export const FLOORS: { rect: Rect; floor: Floor }[] = [
   { rect: MARKET, floor: Floor.Slab },
+  // A stone kerb round the Arena's sand.
+  { rect: { x: ARENA.x - 1, y: ARENA.y - 1, w: ARENA.w + 2, h: 1 }, floor: Floor.StoneEdge },
+  { rect: { x: ARENA.x - 1, y: ARENA.y + ARENA.h, w: ARENA.w + 2, h: 1 }, floor: Floor.StoneEdge },
+  { rect: { x: ARENA.x - 1, y: ARENA.y, w: 1, h: ARENA.h }, floor: Floor.StoneEdge },
+  { rect: { x: ARENA.x + ARENA.w, y: ARENA.y, w: 1, h: ARENA.h }, floor: Floor.StoneEdge },
   // A cross street through the square, widening round each fountain.
   { rect: { x: MARKET.x, y: 226, w: MARKET.w, h: 2 }, floor: Floor.Stone },
   { rect: { x: MARKET_FOUNTAIN.x - 3, y: MARKET_FOUNTAIN.y - 2, w: 8, h: 6 }, floor: Floor.Stone },
@@ -287,8 +299,8 @@ export const GARDENS: Rect[] = [
   { x: 162, y: 245, w: 22, h: 2 },
 ].flatMap((r) => [r, mirror(r)]);
 
-/** Wild corners with trees, ferns and flowers at random: the park, and the orchard behind the café. */
-export const GROVES: Rect[] = [PARK, { x: 229, y: 216, w: 24, h: 31 }];
+/** Wild corners with trees, ferns and flowers at random: the park, and the orchard south of the Arena. */
+export const GROVES: Rect[] = [PARK, { x: 229, y: ARENA_YARD.y + ARENA_YARD.h, w: 24, h: 247 - (ARENA_YARD.y + ARENA_YARD.h) }];
 
 /** Dirt trails (vertex rectangles) besides the ring round the pond: in from the lane, and down to the campfire. */
 export const TRAILS: Rect[] = [
@@ -296,6 +308,8 @@ export const TRAILS: Rect[] = [
   { x: 148, y: 226, w: 9, h: 2 },
   { x: 141, y: 228, w: 2, h: 10 },
   { x: 137, y: 237, w: 10, h: 6 },
+  // The Arena's sand (vertices one past the ring, so every tile inside is sand).
+  { x: ARENA.x, y: ARENA.y, w: ARENA.w + 1, h: ARENA.h + 1 },
 ];
 
 /**
@@ -480,6 +494,12 @@ const props: Prop[] = [
   ...pair({ type: "barrels", x: 157, y: 239 }),
   ...pair({ type: "crate", x: 157, y: 241, variant: 1 }),
 
+  // ---- The Arena: pillars at the corners of the kerb, lamps either side, benches for the crowd.
+  ...[ARENA.x - 1, ARENA.x + ARENA.w].flatMap((x) => [ARENA.y - 1, ARENA.y + ARENA.h].map((y): Prop => ({ type: "pillar", x, y }))),
+  ...[ARENA.x - 3, ARENA.x + ARENA.w + 2].flatMap((x) => [ARENA.y + 1, ARENA.y + ARENA.h - 2].map((y): Prop => ({ type: "lamp", x, y }))),
+  ...[ARENA.x + 2, ARENA.x + 6, ARENA.x + 10].map((x): Prop => ({ type: "bench", x, y: ARENA.y - 3, variant: 6 })),
+  ...[ARENA.x + 2, ARENA.x + 6, ARENA.x + 10].map((x): Prop => ({ type: "bench", x, y: ARENA.y + ARENA.h + 2, variant: 4 })),
+
   // ---- Outside the south gate: the Blacksmith's forge fire, barrels and a crate.
   { type: "campfire", x: 179, y: 257 },
   { type: "barrels", x: 177, y: 255 },
@@ -507,7 +527,6 @@ const props: Prop[] = [
   { type: "lamp", x: 231, y: 209 },
   { type: "lamp", x: 249, y: 209 },
   { type: "bin", x: 236, y: 200 },
-  { type: "bench", x: 239, y: 231, variant: 5 },
   { type: "lamp", x: 236, y: 214 },
   { type: "lamp", x: 248, y: 214 },
 ];

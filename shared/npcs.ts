@@ -8,7 +8,7 @@ import { MARKET_WANDER, PARK_WANDER, STORE_WANDER, TILE, WANDER_AREA, type Rect 
 import type { ShopProduct } from "./gattchaa";
 import { Dir } from "./protocol";
 
-export type NpcKind = "guide" | "shop" | "kuji" | "rooms" | "market" | "grading" | "pickup" | "crier" | "keeper" | "outfitter" | "jobs" | "smith" | "local";
+export type NpcKind = "guide" | "shop" | "kuji" | "rooms" | "market" | "grading" | "pickup" | "crier" | "keeper" | "outfitter" | "jobs" | "smith" | "arena" | "local";
 
 export interface NpcDef {
   id: string;
@@ -331,6 +331,25 @@ export const NPCS: NpcDef[] = [
       "A +10? Only with Star Crystals… and luck.",
       "My upgrades never break your gear. Promise!",
       "See that glow? Somebody's gear is +7 or better.",
+    ],
+  },
+  {
+    // At the Arena's west side, facing the ring.
+    id: "arena-master",
+    name: "Magnus",
+    title: "Arena Master",
+    kind: "arena",
+    look: look({ body: "male", hair: "topknot", hairColor: "dark_gray", beard: "trimmed", skin: "olive", top: "sleeveless", topColor: "maroon", bottom: "longPants", bottomColor: "black", shoes: "boots", shoesColor: "black", hat: "headband", hatColor: "red" }),
+    ...at(231.5, 225.6),
+    dir: Dir.Right,
+    greeting:
+      "Welcome to the Arena! Click any player and challenge them to a duel. Fight it out here on the sand and it counts for my ranking: win, and your rating goes up. Out there it's just for fun. Nobody loses anything in a duel, and I patch you both up after.",
+    chatter: [
+      "Who's next on the sand?",
+      "Click a player to challenge them!",
+      "Duels in the ring count for the ranking!",
+      "No potions in a duel. Skill wins!",
+      "Nobody gets hurt for real here. Promise.",
     ],
   },
   {

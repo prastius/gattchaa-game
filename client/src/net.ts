@@ -26,6 +26,7 @@ import {
 import type { BagMessage, ItemId, Slot } from "../../shared/items";
 import type { SkillId } from "../../shared/skills";
 import type { TitleId, TitleShowMessage, TitlesMessage } from "../../shared/titles";
+import type { ArenaBoard, DuelAnswerMessage, DuelAskEvent, DuelAskMessage, DuelEndEvent, DuelStartEvent } from "../../shared/duels";
 import type { Announcement, NpcSay } from "../../shared/gattchaa";
 import type { ChatUI } from "./ui/chat";
 import { audio } from "./audio";
@@ -59,6 +60,10 @@ export class Net {
   readonly onStats = new Set<(s: StatsMessage) => void>();
   readonly onBag = new Set<(b: BagMessage) => void>();
   readonly onTitles = new Set<(t: TitlesMessage) => void>();
+  readonly onDuelAsk = new Set<(ev: DuelAskEvent) => void>();
+  readonly onDuelStart = new Set<(ev: DuelStartEvent) => void>();
+  readonly onDuelEnd = new Set<(ev: DuelEndEvent) => void>();
+  readonly onArenaBoard = new Set<(b: ArenaBoard) => void>();
   /** Your latest character sheet. */
   stats?: StatsMessage;
   /** Your bag and equipment, as of the server's last word. */
@@ -103,6 +108,18 @@ export class Net {
     room.onMessage("titles", (t: TitlesMessage) => {
       this.titles = t;
       for (const fn of this.onTitles) fn(t);
+    });
+    room.onMessage("duel:ask", (ev: DuelAskEvent) => {
+      for (const fn of this.onDuelAsk) fn(ev);
+    });
+    room.onMessage("duel:start", (ev: DuelStartEvent) => {
+      for (const fn of this.onDuelStart) fn(ev);
+    });
+    room.onMessage("duel:end", (ev: DuelEndEvent) => {
+      for (const fn of this.onDuelEnd) fn(ev);
+    });
+    room.onMessage("arena:board", (b: ArenaBoard) => {
+      for (const fn of this.onArenaBoard) fn(b);
     });
 
     room.onDrop((code, reason) => {
@@ -181,6 +198,25 @@ export class Net {
   /** Puts the card in a bag slot into equipment in the bag or worn. */
   insertCard(card: number, at: { bag: number } | { gear: Slot }) {
     this.room.send("item:card", { card, ...at } satisfies CardInsertMessage);
+  }
+
+  /** Challenges a player (their session id) to a duel. */
+  askDuel(t: string) {
+    this.room.send("duel:ask", { t } satisfies DuelAskMessage);
+  }
+
+  answerDuel(from: string, yes: boolean) {
+    this.room.send("duel:answer", { from, yes } satisfies DuelAnswerMessage);
+  }
+
+  /** Gives up the duel you're in. */
+  quitDuel() {
+    this.room.send("duel:quit");
+  }
+
+  /** Asks the Arena Master for the ranking. */
+  arenaBoard(npc: string) {
+    this.room.send("arena:board", { npc });
   }
 
   /** Shows an earned title under your name ("" hides it). */

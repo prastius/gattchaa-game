@@ -91,10 +91,12 @@ shared/       Code used by both client and server
   items.ts        Every item and monster card: stats, prices, rarity, icon, card slots, who may wear it and how it looks when worn; the Outfitter's stock; the Blacksmith's upgrade table and auras
   skills.ts       Class skills: what each does per level, MP, cooldowns, and how it looks
   titles.ts       Titles: how each is earned (deeds), its rarity and aura, and progress counting
+  duels.ts        Duel rules (ranges, timers, PvP damage, the Arena ring) and the arena rating maths (Elo)
 server/       Colyseus server
   src/rooms/WorldRoom.ts   Joins, interest management, movement validation, chat, emotes, wardrobe, sitting, shops, trading
   src/rooms/WorldState.ts  Synced state
-  src/rooms/Combat.ts      Monsters (spawning, AI), auto-attacks, EXP, level-ups, knockouts, loot, using items, jobs and skills
+  src/rooms/Combat.ts      Monsters (spawning, AI), auto-attacks, EXP, level-ups, knockouts, loot, using items, jobs and skills, upgrades, titles and duels
+  src/rooms/Titles.ts      A character's deeds and titles (bookkeeping only)
   src/rooms/Inventory.ts   A character's bag and equipment
   src/rooms/Drops.ts       Items on the ground: first pick for the top fighter, then anyone; they fade after 90 s
   src/db.ts                SQLite: accounts, sessions, characters, open shops
@@ -129,7 +131,7 @@ scripts/
 ## How it works
 
 - **Same world on both sides.** Client and server generate the same 384×384-tile island from one seed, so the map is never sent over the network. Terrain is stored per tile *corner*, and each tile picks its art from its four corners. That gives smooth grassy banks, water and dirt edges.
-- **The town.** A walled town of 124×92 tiles in the middle of the island, with gates west, east and south. Gattchaa Palace (the store) stands against the north wall. Below it are the fountain plaza, the Rooms pavilion and the pack stalls. Townhouses fill the west and east quarters. A lakeside park with a campfire runs along the west wall, and the Collectors' Café and an orchard are on the east side. The Market Square, by the south gate, is where player shops gather.
+- **The town.** A walled town of 124×92 tiles in the middle of the island, with gates west, east and south. Gattchaa Palace (the store) stands against the north wall. Below it are the fountain plaza, the Rooms pavilion and the pack stalls. Townhouses fill the west and east quarters. A lakeside park with a campfire runs along the west wall, and the Collectors' Café, the Arena (a ring for duels) and an orchard are on the east side. The Market Square, by the south gate, is where player shops gather.
 - **Alive day and night.** Day and night follow Batam time. At night, lamps, the campfire, house windows and shop signs glow, and fireflies drift over the grass. By day, butterflies flit over the flowers and the water glints. These are cheap touches drawn only around the camera.
 - **Crisp pixel art with no flicker.** The game renders at the screen's real pixel density with whole-number zoom, nearest-neighbor filtering and whole-pixel positions. Tiles come from an atlas with a 1 px padded border, so neighboring tiles can't bleed into each other while the camera moves.
 - **Characters.** Each look is a short string such as `0.3.1.5.12.0.4.2.7.1.22`. The client stacks the LPC layers (shadow, body, head, shoes, legs, top, hair) and swaps the palette colors to the chosen skin, hair, eye and cloth colors. It makes one sprite sheet per distinct look and frees it when nobody on screen wears it.
@@ -183,7 +185,7 @@ Ragnarok and TibiaME style: click a monster and your character fights it. Everyt
 - **Fainting.** At 0 HP you faint and return to town fully healed. Novices lose no EXP; Knights, Mages and Archers lose 3 % of a level.
 - **Saving.** Signed-in players' progress is saved on every level-up and faint, every 30 s, and when they leave. Guests can fight too, but start over next visit.
 - **Server cost.** Monsters only think while a player is near their spawn area, and fight events go only to players close enough to see them. 20 bots fighting at once used about 5 % of one CPU core.
-- **Testing.** Outside production (`NODE_ENV` not `production`), chat commands help: `/level 25` jumps to a level, `/item saber` (or `/item redPotion 20`, `/item hornetCard`, `/item moonblade +10`) adds items, `/gold 1000` sets your gold, `/job archer` turns you into a class (from level 10; `/job novice` goes back), `/title kingslayer` hands you a title. `/help` lists every item id.
+- **Testing.** Outside production (`NODE_ENV` not `production`), chat commands help: `/level 25` jumps to a level, `/item saber` (or `/item redPotion 20`, `/item hornetCard`, `/item moonblade +10`) adds items, `/gold 1000` sets your gold, `/job archer` turns you into a class (from level 10; `/job novice` goes back), `/title kingslayer` hands you a title. To test duels you need a second player (another window, or a bot). `/help` lists every item id.
 
 ## Jobs and skills
 
@@ -272,6 +274,16 @@ Earned by doing things, one shown under your name. The list is `TITLES` in `shar
 - **Showing.** `title:show` picks an earned title; it syncs as `Player.title` and draws under the name in its rarity colour. A shown title with an aura (Kingslayer, Card Master, Pioneer) replaces the gear aura (`Player.aura`).
 - **Pioneer.** When a signed-in player reaches `LEVEL_CAP`, the room claims a place in the `pioneers` table (first `PIONEERS` = 10 accounts per cap, numbered in order) and grants the title. Raising the cap opens 10 new places.
 - **The window.** T (or the medal button) lists every title by group with progress bars; a badge counts titles earned since you last looked. The server sends `titles` (earned, shown, progress) whenever something changes.
+
+## Duels and the Arena
+
+Player vs player by agreement only. The rules are in `shared/duels.ts`; the fighting is in `Combat` (the "duels" section), next to the monster fighting it reuses.
+
+- **Challenges.** Clicking another player opens a card with "Challenge to a duel" (`duel:ask`). The other player gets a prompt and answers within 20 s (`duel:answer`). One challenge every 5 s, from within 8 tiles; nobody minding a shop, already in a duel or knocked out.
+- **The duel.** `Player.duel` holds each duelist's opponent, so everyone draws their health bars. A 3 s countdown (`duel` fx), then auto-attacks and skills work on the opponent like on a monster, anywhere (even in town), at `PVP_DAMAGE` (half). No potions and no regen mid-duel. Area skills catch the opponent; freezes don't apply to players.
+- **Endings.** 0 HP loses; giving up (`duel:quit`), leaving the game or fainting to a monster forfeits; 2 minutes or more than 16 tiles apart is a draw. Both are healed afterwards; nobody loses anything.
+- **Ranked.** A duel is ranked when both stand in `ARENA` (the ring behind the café) at the start and both are signed in; leaving the ring then forfeits. Ratings are Elo (start 1,000, K 32) in the `arena` table (migration v7), and a ranked win is town news. Magnus the Arena Master (`arena:board`) shows the top 10 and your place.
+- **Titles.** Deeds count duels fought, won, and won in the ring: Good Sport, Duelist, Gladiator.
 
 ## Gattchaa shop data
 

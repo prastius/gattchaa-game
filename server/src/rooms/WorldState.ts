@@ -28,6 +28,8 @@ export const Player = schema(
     aura: t.uint8().default(0),
     /** The title shown under the name (a TitleId, "" = none). */
     title: t.string().default(""),
+    /** Session id of the player they're in a duel with ("" = none). */
+    duel: t.string().default(""),
   },
   "Player",
 );

@@ -1029,6 +1029,112 @@ button {
   cursor: default;
 }
 
+/* ---------- Duels ---------- */
+
+.duel-panel {
+  position: fixed;
+  top: 92px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 7;
+  width: min(380px, calc(100vw - 24px));
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--panel-solid);
+  border: 1px solid rgba(229, 83, 75, 0.6);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  font-size: 13px;
+  line-height: 1.4;
+  animation: bag-in 0.14s ease-out;
+}
+
+.player-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+}
+
+.player-card-head .dialog-close {
+  margin-left: auto;
+}
+
+.player-card-about {
+  margin: 2px 0 8px;
+  color: var(--ink-dim);
+}
+
+.player-card-title {
+  font-weight: 700;
+}
+
+.player-card-duel,
+.duel-ask-buttons .dialog-link {
+  width: 100%;
+  align-items: center;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.player-card-note,
+.duel-ask-sub {
+  margin: 6px 0 0;
+  color: var(--ink-dim);
+  font-size: 12px;
+}
+
+.duel-ask-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.duel-ask-time {
+  height: 4px;
+  margin-top: 8px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.duel-ask-time i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: #e5534b;
+  transition: width 0.2s linear;
+}
+
+.duel-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: auto;
+  max-width: calc(100vw - 24px);
+  padding: 6px 8px 6px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.duel-give-up {
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--panel-raised);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .duel-panel {
+    top: 262px;
+  }
+}
+
 /* ---------- Titles ---------- */
 
 .titles-list {
@@ -2408,4 +2514,70 @@ button.dialog-link:disabled {
     left: 12px;
     transform: none;
   }
+}
+
+/* ---------- The Arena Master: rules and ranking ---------- */
+
+.arena-rules {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.arena-rules li + li {
+  margin-top: 4px;
+}
+
+.arena-me {
+  margin: 0;
+  font-weight: 700;
+  color: #ffd27a;
+}
+
+.arena-board {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+}
+
+.arena-board li {
+  display: grid;
+  grid-template-columns: 28px 1fr auto auto;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--panel-raised);
+  border: 1px solid var(--line);
+  font-size: 13px;
+}
+
+.arena-board li.me {
+  border-color: var(--accent);
+}
+
+.arena-rank {
+  color: var(--ink-dim);
+  font-weight: 700;
+}
+
+.arena-name {
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.arena-rating {
+  color: #ffd27a;
+  font-weight: 700;
+}
+
+.arena-wl {
+  color: var(--ink-dim);
+  font-size: 12px;
 }

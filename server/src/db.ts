@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { DatabaseSync } from "node:sqlite";
+import { RATING_START, ratingChange, type ArenaRow } from "../../shared/duels";
 
 // Saved game data, in one SQLite file: no database server to run, and a backup
 // is a copy of the file. Holds Gattchaa-linked accounts, their sign-in
@@ -116,6 +117,15 @@ const MIGRATIONS = [
      at INTEGER NOT NULL,
      PRIMARY KEY (cap, account_id)
    );`,
+  // v7: the arena ranking, one row per account after its first ranked duel.
+  `CREATE TABLE arena (
+     account_id INTEGER PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,
+     rating INTEGER NOT NULL,
+     wins INTEGER NOT NULL DEFAULT 0,
+     losses INTEGER NOT NULL DEFAULT 0,
+     updated_at INTEGER NOT NULL
+   );
+   CREATE INDEX arena_rating ON arena (rating DESC);`,
 ];
 
 const ACCOUNT_COLS = "id, gattchaa_id AS gattchaaId, display_name AS displayName, name, look";
@@ -217,6 +227,43 @@ export class Db {
            skills = excluded.skills, deeds = excluded.deeds, titles = excluded.titles, updated_at = excluded.updated_at`,
       )
       .run(accountId, p.cls, p.lv, p.exp, p.hp, p.mp, p.gold, p.bag, p.gear, p.skills, p.deeds, p.titles, Date.now());
+  }
+
+  // ------------------------------------------------------------ the arena
+
+  /** A ranked duel's result: the winner takes rating points from the loser. Returns [before, after] for each. */
+  arenaResult(winnerId: number, loserId: number): { winner: [number, number]; loser: [number, number] } {
+    return this.transaction(() => {
+      const rating = (id: number) =>
+        (this.db.prepare("SELECT rating FROM arena WHERE account_id = ?").get(id) as { rating: number } | undefined)?.rating ?? RATING_START;
+      const w = rating(winnerId);
+      const l = rating(loserId);
+      const change = ratingChange(w, l);
+      const upsert = this.db.prepare(
+        `INSERT INTO arena (account_id, rating, wins, losses, updated_at) VALUES (?, ?, ?, ?, ?)
+         ON CONFLICT(account_id) DO UPDATE SET rating = excluded.rating, wins = wins + excluded.wins,
+           losses = losses + excluded.losses, updated_at = excluded.updated_at`,
+      );
+      const now = Date.now();
+      upsert.run(winnerId, w + change, 1, 0, now);
+      upsert.run(loserId, Math.max(0, l - change), 0, 1, now);
+      return { winner: [w, w + change], loser: [l, Math.max(0, l - change)] };
+    });
+  }
+
+  /** The best `n` in the arena, and (for a signed-in player) their own line and place. */
+  arenaBoard(n: number, accountId?: number): { top: ArenaRow[]; me?: ArenaRow & { rank: number } } {
+    const cols = "COALESCE(NULLIF(a.name, ''), a.display_name) AS name, r.rating, r.wins, r.losses";
+    const top = this.db
+      .prepare(`SELECT ${cols} FROM arena r JOIN accounts a ON a.id = r.account_id ORDER BY r.rating DESC, r.wins DESC, r.updated_at ASC LIMIT ?`)
+      .all(n) as unknown as ArenaRow[];
+    if (accountId === undefined) return { top };
+    const mine = this.db.prepare(`SELECT ${cols} FROM arena r JOIN accounts a ON a.id = r.account_id WHERE r.account_id = ?`).get(accountId) as
+      | ArenaRow
+      | undefined;
+    if (!mine) return { top };
+    const { above } = this.db.prepare("SELECT COUNT(*) AS above FROM arena WHERE rating > ?").get(mine.rating) as { above: number };
+    return { top, me: { ...mine, rank: above + 1 } };
   }
 
   /**

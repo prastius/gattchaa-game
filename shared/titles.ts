@@ -22,9 +22,13 @@ export interface Deeds {
   upFails: number;
   /** Opened a shop in the Market Square. */
   shop: boolean;
+  /** Duels fought (any result), won, and won in the Arena's ring (ranked). */
+  duels: number;
+  duelWins: number;
+  arenaWins: number;
 }
 
-export const noDeeds = (): Deeds => ({ kills: {}, cards: [], legendary: 0, bestUp: 0, upFails: 0, shop: false });
+export const noDeeds = (): Deeds => ({ kills: {}, cards: [], legendary: 0, bestUp: 0, upFails: 0, shop: false, duels: 0, duelWins: 0, arenaWins: 0 });
 
 const count = (raw: unknown) => (Number.isFinite(Number(raw)) ? Math.max(0, Math.floor(Number(raw))) : 0);
 
@@ -41,6 +45,9 @@ export function cleanDeeds(raw: unknown): Deeds {
   d.bestUp = Math.min(10, count(r.bestUp));
   d.upFails = count(r.upFails);
   d.shop = r.shop === true;
+  d.duels = count(r.duels);
+  d.duelWins = count(r.duelWins);
+  d.arenaWins = count(r.arenaWins);
   return d;
 }
 
@@ -55,11 +62,13 @@ export type TitleGoal =
   | { kind: "upgrade"; n: number }
   | { kind: "upFails"; n: number }
   | { kind: "shop" }
+  /** Fight `n` duels, win `n` duels, or win `n` ranked duels in the Arena. */
+  | { kind: "duels"; n: number; won?: "any" | "ranked" }
   /** One of the first PIONEERS players to reach the level cap. */
   | { kind: "pioneer" };
 
-export type TitleGroup = "Levels" | "Hunting" | "Collecting" | "The forge" | "Town";
-export const TITLE_GROUPS: TitleGroup[] = ["Levels", "Hunting", "Collecting", "The forge", "Town"];
+export type TitleGroup = "Levels" | "Hunting" | "Collecting" | "The forge" | "The Arena" | "Town";
+export const TITLE_GROUPS: TitleGroup[] = ["Levels", "Hunting", "Collecting", "The forge", "The Arena", "Town"];
 
 export interface TitleDef {
   id: string;
@@ -120,6 +129,11 @@ export const TITLES = def({
   forgeMaster: { name: "Forge Master", tier: "epic", group: "The forge", goal: { kind: "upgrade", n: 10 }, how: "Upgrade any gear to +10." },
   neverGiveUp: { name: "Never Give Up", tier: "rare", group: "The forge", goal: { kind: "upFails", n: 30 }, how: "Fail 30 upgrades, and keep going." },
 
+  // ------------------------------------------------------------ the arena
+  goodSport: { name: "Good Sport", tier: "common", group: "The Arena", goal: { kind: "duels", n: 10 }, how: "Fight 10 duels, win or lose." },
+  duelist: { name: "Duelist", tier: "uncommon", group: "The Arena", goal: { kind: "duels", n: 10, won: "any" }, how: "Win 10 duels." },
+  gladiator: { name: "Gladiator", tier: "epic", group: "The Arena", goal: { kind: "duels", n: 50, won: "ranked" }, how: "Win 50 duels in the Arena's ring." },
+
   // ------------------------------------------------------------ town
   shopkeeper: { name: "Shopkeeper", tier: "uncommon", group: "Town", goal: { kind: "shop" }, how: "Open your own shop in the Market Square." },
 });
@@ -148,6 +162,10 @@ export function titleProgress(t: TitleDef, d: Deeds, level: number): [number, nu
       return [Math.min(d.upFails, g.n), g.n];
     case "shop":
       return [d.shop ? 1 : 0, 1];
+    case "duels": {
+      const n = g.won === "ranked" ? d.arenaWins : g.won === "any" ? d.duelWins : d.duels;
+      return [Math.min(n, g.n), g.n];
+    }
     case "pioneer":
       return [0, 1];
   }

@@ -211,6 +211,8 @@ export type FxEvent =
   | { k: "forge"; t: string; ok: 0 | 1; up: number; item: string }
   /** Someone earned a title (a TitleId). */
   | { k: "title"; t: string; title: string }
+  /** A duel between `a` and `b` began (the countdown starts), or ended (`w` won; none: a draw). */
+  | { k: "duel"; a: string; b: string; ev: "start" | "end"; w?: string }
   /** Someone used a skill (at monster `t`, for the ones aimed at something). Its hits follow. */
   | { k: "cast"; a: string; s: SkillId; t?: string }
   /** A monster can't move or bite for `ms`. */
@@ -247,6 +249,8 @@ export interface PlayerView {
   aura?: number;
   /** The title shown under the name (a TitleId; "" = none). */
   title?: string;
+  /** Session id of their duel opponent ("" = none). */
+  duel?: string;
 }
 
 /** Read-only shape of an item lying on the ground. */

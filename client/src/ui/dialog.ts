@@ -32,6 +32,7 @@ import {
 } from "../../../shared/items";
 import { CLASSES, JOBS, JOB_LEVEL, JOB_WEAPON, aClass, isClassId, statsFor, type ClassId } from "../../../shared/rpg";
 import { skillsOf } from "../../../shared/skills";
+import { PVP_DAMAGE, RATING_START, type ArenaBoard } from "../../../shared/duels";
 import { FRAME, composeCharacter, itemIcon } from "../character";
 import type { Shop } from "../shop";
 import type { Vending } from "../vending";
@@ -126,6 +127,10 @@ export class TownDialog {
   private smithTab: "upgrade" | "buy" = "upgrade";
   /** How your last upgrade went, shown at the top of her window. */
   private forgeNote?: { ok: boolean; up: number; item: string };
+  /** The Arena Master's ranking, as of the last time you asked. */
+  private board?: ArenaBoard;
+  /** The panel being drawn was just opened (not a refresh). */
+  private renderFresh = false;
   /** Opens the skills window (from the Job Master). */
   openSkills?: () => void;
   /** Where the conversation is happening; walking away closes it. */
@@ -153,6 +158,10 @@ export class TownDialog {
     };
     net.onBag.add(trade);
     net.onStats.add(trade);
+    net.onArenaBoard.add((b) => {
+      this.board = b;
+      if (this.openKind === "arena") this.render(this.openTarget!, false);
+    });
   }
 
   get isOpen() {
@@ -228,6 +237,7 @@ export class TownDialog {
       if (!npc) return this.close();
       this.header(npc.name, npc.title || "Local", token, npc.look);
       if (fresh) this.say(npc.greeting);
+      this.renderFresh = fresh;
       this.npcBody(npc);
     } else if (kind === "machine") {
       const m = MACHINES.find((mm) => mm.id === id);
@@ -283,6 +293,9 @@ export class TownDialog {
         break;
       case "smith":
         this.forge(npc);
+        break;
+      case "arena":
+        this.arena(npc);
         break;
       case "keeper":
         this.shopList();
@@ -348,6 +361,42 @@ export class TownDialog {
       cards.append(card);
     }
     this.body.append(cards);
+  }
+
+  // ------------------------------------------------------------------ the Arena Master
+
+  /** How duels work, your record, and the ten best. */
+  private arena(npc: NpcDef) {
+    if (!this.board || this.renderFresh) this.net.arenaBoard(npc.id);
+    const half = Math.round((1 - PVP_DAMAGE) * 100);
+    this.section("How duels work");
+    const rules = el("ul", "arena-rules");
+    for (const line of [
+      "Click (or tap) another player and choose Challenge to a duel. They have 20 seconds to accept.",
+      `After 3, 2, 1 you fight until one of you drops. Player hits do ${half}% less damage, so use your skills. No potions.`,
+      "Fight inside this ring, both signed in, and it counts for the ranking: the winner takes rating points from the loser. Step out of the ring and you lose.",
+      "Anywhere else a duel is just for fun. Either way, you're both healed afterwards, and nobody loses EXP or items.",
+    ]) rules.append(el("li", "", line));
+    this.body.append(rules);
+
+    const b = this.board;
+    this.section("Your record");
+    if (!b) this.body.append(el("p", "dialog-empty", "Fetching the ranking…"));
+    else if (!b.saved) this.body.append(el("p", "dialog-empty", "Guests can duel, but only signed-in players are ranked."));
+    else if (!b.me) this.body.append(el("p", "dialog-empty", `No ranked duels yet. Everyone starts at ${RATING_START}.`));
+    else this.body.append(el("p", "arena-me", `#${b.me.rank} · rating ${b.me.rating} · ${b.me.wins} won, ${b.me.losses} lost`));
+
+    this.section("The ten best");
+    if (b && b.top.length === 0) this.body.append(el("p", "dialog-empty", "Nobody yet. Be the first to win on the sand!"));
+    else if (b) {
+      const list = el("ol", "arena-board");
+      b.top.forEach((r, i) => {
+        const row = el("li", r.name === b.me?.name && b.me.rank === i + 1 ? "me" : "");
+        row.append(el("span", "arena-rank", `${i + 1}`), el("span", "arena-name", r.name), el("span", "arena-rating", String(r.rating)), el("span", "arena-wl", `${r.wins}–${r.losses}`));
+        list.append(row);
+      });
+      this.body.append(list);
+    }
   }
 
   // ------------------------------------------------------------------ the Blacksmith
