@@ -22,13 +22,15 @@ export interface Deeds {
   upFails: number;
   /** Opened a shop in the Market Square. */
   shop: boolean;
+  /** Gold earned selling things in their shop. */
+  sold: number;
   /** Duels fought (any result), won, and won in the Arena's ring (ranked). */
   duels: number;
   duelWins: number;
   arenaWins: number;
 }
 
-export const noDeeds = (): Deeds => ({ kills: {}, cards: [], legendary: 0, bestUp: 0, upFails: 0, shop: false, duels: 0, duelWins: 0, arenaWins: 0 });
+export const noDeeds = (): Deeds => ({ kills: {}, cards: [], legendary: 0, bestUp: 0, upFails: 0, shop: false, sold: 0, duels: 0, duelWins: 0, arenaWins: 0 });
 
 const count = (raw: unknown) => (Number.isFinite(Number(raw)) ? Math.max(0, Math.floor(Number(raw))) : 0);
 
@@ -45,6 +47,7 @@ export function cleanDeeds(raw: unknown): Deeds {
   d.bestUp = Math.min(10, count(r.bestUp));
   d.upFails = count(r.upFails);
   d.shop = r.shop === true;
+  d.sold = count(r.sold);
   d.duels = count(r.duels);
   d.duelWins = count(r.duelWins);
   d.arenaWins = count(r.arenaWins);
@@ -62,6 +65,8 @@ export type TitleGoal =
   | { kind: "upgrade"; n: number }
   | { kind: "upFails"; n: number }
   | { kind: "shop" }
+  /** Earn `n` gold selling things in your shop. */
+  | { kind: "sold"; n: number }
   /** Fight `n` duels, win `n` duels, or win `n` ranked duels in the Arena. */
   | { kind: "duels"; n: number; won?: "any" | "ranked" }
   /** One of the first PIONEERS players to reach the level cap. */
@@ -136,6 +141,8 @@ export const TITLES = def({
 
   // ------------------------------------------------------------ town
   shopkeeper: { name: "Shopkeeper", tier: "uncommon", group: "Town", goal: { kind: "shop" }, how: "Open your own shop in the Market Square." },
+  merchant: { name: "Merchant", tier: "rare", group: "Town", goal: { kind: "sold", n: 100_000 }, how: "Earn 100,000 gold selling things in your shop." },
+  tycoon: { name: "Tycoon", tier: "epic", group: "Town", goal: { kind: "sold", n: 1_000_000 }, how: "Earn 1,000,000 gold selling things in your shop." },
 });
 
 export type TitleId = keyof typeof TITLES;
@@ -162,6 +169,8 @@ export function titleProgress(t: TitleDef, d: Deeds, level: number): [number, nu
       return [Math.min(d.upFails, g.n), g.n];
     case "shop":
       return [d.shop ? 1 : 0, 1];
+    case "sold":
+      return [Math.min(d.sold, g.n), g.n];
     case "duels": {
       const n = g.won === "ranked" ? d.arenaWins : g.won === "any" ? d.duelWins : d.duels;
       return [Math.min(n, g.n), g.n];

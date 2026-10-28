@@ -46,9 +46,11 @@ export const PlayerShop = schema(
     y: t.uint16(),
     /** The owner's session id while they're in town; empty while they're away. */
     owner: t.string(),
-    /** How many cards are listed (shown on the sign). */
+    /** How many cards are listed on the Gattchaa marketplace (shown on the sign). */
     cards: t.uint16(),
-    /** Bumped when the listings change, so open shop panels reload. */
+    /** How many different things from the bag are still for sale, for gold (shown on the sign too). */
+    items: t.uint8().default(0),
+    /** Bumped when the listings or the stock change, so open shop panels reload. */
     rev: t.uint16(),
   },
   "PlayerShop",

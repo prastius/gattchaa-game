@@ -41,16 +41,31 @@ import { CLASSES, LEVEL_CAP, aClass, isClassId } from "../../../shared/rpg";
 import { isSkillId } from "../../../shared/skills";
 import { PIONEERS, TITLES, isTitleId, type TitleShowMessage } from "../../../shared/titles";
 import type { ArenaBoard, DuelAnswerMessage, DuelAskMessage, DuelEndEvent } from "../../../shared/duels";
-import { BAG_SIZE, ITEMS, OUTFITTER_STOCK, SMITH_STOCK, cleanUpgrade, isItemId, isSlot } from "../../../shared/items";
+import { BAG_SIZE, ITEMS, MAX_STACK, OUTFITTER_STOCK, SMITH_STOCK, cleanUpgrade, isItemId, isSlot, itemName } from "../../../shared/items";
 import { NPCS, type NpcKind } from "../../../shared/npcs";
-import { SHOP_AWAY_HOURS, inShopZone, sanitizeShopTitle, shopSpotProblem, type ShopOpenMessage, type ShopResult } from "../../../shared/vending";
+import {
+  SHOP_AWAY_HOURS,
+  SHOP_ID_RE,
+  SHOP_WARES,
+  goldText,
+  inShopZone,
+  isPrice,
+  sanitizeShopTitle,
+  shopSpotProblem,
+  stackText,
+  waresLeft,
+  type ShopBuyMessage,
+  type ShopOpenMessage,
+  type ShopResult,
+  type WarePick,
+} from "../../../shared/vending";
 import { Drop, Monster, Player, PlayerShop, WorldState } from "./WorldState";
 import { NpcBrain } from "./NpcBrain";
 import { Combat } from "./Combat";
 import { Drops } from "./Drops";
 import { feed } from "../gattchaa";
-import { db, type Account, type Progress } from "../db";
-import type { Announcement, NpcSay } from "../../../shared/gattchaa";
+import { db, parseWares, type Account, type Mail, type Progress } from "../db";
+import type { Announcement, MarketListing, NpcSay } from "../../../shared/gattchaa";
 
 // Generated once per process; every room instance shares the same map.
 const world = new World();
@@ -81,6 +96,8 @@ const SHOP_RECOUNT_MS = 10 * 60_000;
 const AWAY_MS = SHOP_AWAY_HOURS * 3_600_000;
 /** "X opened a shop" goes to chat at most this often per seller, so reopening isn't spam. */
 const OPEN_NEWS_EVERY_MS = 10 * 60_000;
+/** Mail (shop sales and leftovers) is handed out this often, for sales made in another room and for bags that were full. */
+const MAIL_MS = 5000;
 const TAKEN_OVER = 4001;
 /** Fights are sent to players this close (px, per axis): everyone who has the fighters in view. */
 const FX_X = VIEW_ENTER_X + VIEW_EXIT_PAD;
@@ -115,6 +132,8 @@ interface PlayerMeta {
   shop?: string;
   /** A shop:open request is waiting on Gattchaa. */
   opening?: boolean;
+  /** Things from their shop still waiting because their bag is full (so they're told once, not every few seconds). */
+  mailWaiting?: number;
 }
 
 interface AuthData {
@@ -219,6 +238,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       });
     },
     "shop:close": (client: Client) => this.handleShopClose(client),
+    "shop:buy": (client: Client, msg: ShopBuyMessage) => this.handleShopBuy(client, msg),
   };
 
   onCreate() {
@@ -301,6 +321,9 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     }
     this.syncShops();
     this.clock.setInterval(() => this.syncShops(), SHOP_SYNC_MS);
+    this.clock.setInterval(() => {
+      for (const accountId of db.mailboxes()) if (this.sessionOf.has(accountId)) this.deliver(accountId);
+    }, MAIL_MS);
     this.stopListings = feed.onListingsChanged((userId) => {
       for (const [id, owner] of this.shopOwners) if (owner.gattchaaId === userId) void this.recount(id, true);
     });
@@ -375,6 +398,8 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     client.send("auth", { signedIn: Boolean(account), ...(auth?.expired && { expired: true }) } satisfies AuthInfo);
     client.send("chat:history", this.history);
     this.queuePresence("joined", player.name);
+    // What your shop sold while you were away (after the history, so it isn't buried).
+    if (account) this.deliver(account.id);
   }
 
   async onDrop(client: Client) {
@@ -687,10 +712,23 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     for (const [id, shop] of this.state.shops) if (id !== except) yield shop;
   }
 
+  /** The things picked from the bag for a new shop, if the message makes sense. */
+  private warePicks(raw: unknown): WarePick[] | undefined {
+    if (raw === undefined) return [];
+    if (!Array.isArray(raw) || raw.length > SHOP_WARES) return undefined;
+    const picks: WarePick[] = [];
+    for (const r of raw as Partial<WarePick>[]) {
+      if (!this.bagSlot(r?.slot) || !Number.isInteger(r.n) || r.n! < 1 || r.n! > MAX_STACK || !isPrice(r.price)) return undefined;
+      picks.push({ slot: r.slot, n: r.n!, price: r.price });
+    }
+    return picks;
+  }
+
   /**
-   * Opens a shop right where the player stands: it shows their Gattchaa
-   * marketplace listings, so they need at least one. Everything is checked
-   * again after waiting for Gattchaa, since the town may have moved on meanwhile.
+   * Opens a shop right where the player stands. It sells the things they
+   * picked from their bag, for gold, and shows the cards they've listed on the
+   * Gattchaa marketplace; it needs at least one of the two. Everything is
+   * checked again after waiting for Gattchaa, since the town may have moved on.
    */
   private async handleShopOpen(client: Client, msg: ShopOpenMessage) {
     const reply = (error?: string) => client.send("shop:result", (error ? { ok: false, error } : { ok: true }) satisfies ShopResult);
@@ -698,41 +736,55 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     const player = this.state.players.get(client.sessionId);
     if (!meta || !player || meta.opening) return;
     const account = meta.account;
+    const picks = this.warePicks(msg?.wares);
+    if (!picks) return reply("Something's wrong with what you picked. Please pick again.");
     const problem = () => {
       if (!account) return "Sign in with Gattchaa to open a shop.";
       if (meta.shop || this.shopOf(account.id)) return "You already have a shop open. Close it first.";
       if (this.combat.inDuel(client.sessionId)) return "Finish your duel first.";
-      if (!feed.enabled) return "Player shops need the link to Gattchaa, which isn't set up on this server yet.";
+      if (player.dead) return "You can't open a shop right now.";
+      if (!feed.enabled && picks.length === 0) return "Pick something from your bag to sell first.";
       return shopSpotProblem(meta.x, meta.y, this.otherShops());
     };
     const before = problem();
     if (before || !account) return reply(before);
 
-    meta.opening = true;
-    let listings;
-    try {
-      listings = await feed.listings(account.gattchaaId);
-    } finally {
-      meta.opening = false;
+    // The cards they've listed on Gattchaa (none when the link isn't set up).
+    let listings: MarketListing[] | undefined = [];
+    if (feed.enabled) {
+      meta.opening = true;
+      try {
+        listings = await feed.listings(account.gattchaaId);
+      } finally {
+        meta.opening = false;
+      }
+      if (this.meta.get(client.sessionId) !== meta) return; // left the town meanwhile
     }
-    if (this.meta.get(client.sessionId) !== meta) return; // left the town meanwhile
-    if (!listings) return reply("Couldn't reach Gattchaa. Try again in a moment.");
-    if (listings.length === 0) return reply("You haven't listed any cards on the Gattchaa marketplace yet. List some there first, then open your shop.");
+    if (picks.length === 0) {
+      if (!listings) return reply("Couldn't reach Gattchaa. Try again in a moment.");
+      if (listings.length === 0) return reply("Pick something from your bag to sell, or list cards on the Gattchaa marketplace first.");
+    }
     const after = problem();
     if (after) return reply(after);
 
-    const title = sanitizeShopTitle(msg?.title) || `${player.name}'s cards`;
+    const wares = this.combat.stockShop(client.sessionId, picks);
+    if (typeof wares === "string") return reply(wares);
+    const title = sanitizeShopTitle(msg?.title) || `${player.name}'s shop`;
     const x = Math.round(meta.x);
     const y = Math.round(meta.y);
     let id: string;
     try {
-      id = db.openShop(account.id, x, y, title);
+      id = db.openShop(account.id, x, y, title, wares);
     } catch {
       // This account opened a shop from another room a moment ago.
+      this.combat.unstock(client.sessionId, wares);
       return reply("You already have a shop open. Close it first.");
     }
     this.shopOwners.set(id, account);
-    this.state.shops.set(id, new PlayerShop({ name: player.name, look: player.look, title, x, y, owner: client.sessionId, cards: listings.length, rev: 0 }));
+    this.state.shops.set(
+      id,
+      new PlayerShop({ name: player.name, look: player.look, title, x, y, owner: client.sessionId, cards: listings?.length ?? 0, items: waresLeft(wares), rev: 0 }),
+    );
     this.combat.shopOpened(client.sessionId);
 
     // Sit down on the rug, facing the street.
@@ -759,10 +811,80 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     client.send("shop:result", { ok: true } satisfies ShopResult);
   }
 
+  /** Closes a shop for good: what it didn't sell goes back to its owner (now if they're here, or when they return). */
   private closeShop(id: string) {
     const owner = this.shopOwners.get(id);
     if (owner) db.closeShop(owner.id);
     this.dropShop(id);
+    if (owner) this.deliver(owner.id);
+  }
+
+  /**
+   * Buys from a player's shop, for gold. The buyer has to be in the Market
+   * Square. The seller is paid by mail: straight away if they're here, or as
+   * soon as they're back.
+   */
+  private handleShopBuy(client: Client, msg: ShopBuyMessage) {
+    const id = client.sessionId;
+    const meta = this.meta.get(id);
+    const player = this.state.players.get(id);
+    if (!this.itemOk(client) || !meta || !player) return;
+    const shopId = typeof msg?.shop === "string" && SHOP_ID_RE.test(msg.shop) ? msg.shop : "";
+    const shop = this.state.shops.get(shopId);
+    const owner = this.shopOwners.get(shopId);
+    if (!shop || !owner) return this.notice(id, "This shop has just closed.");
+    if (!Number.isInteger(msg.ware) || !isItemId(msg.item) || !isPrice(msg.price)) return;
+    if (meta.account?.id === owner.id) return this.notice(id, "That's your own shop!");
+    if (!inShopZone(meta.x, meta.y)) return this.notice(id, "Come to the Market Square to buy.");
+    const ware = parseWares(db.shop(shopId)?.wares)[msg.ware];
+    if (!ware || ware.item.id !== msg.item || ware.price !== msg.price) return this.notice(id, "That's no longer for sale. Have another look.");
+    if (ware.item.n <= 0) return this.notice(id, "Sold out!");
+    const n = Math.min(ware.item.n, Number.isInteger(msg.n) && msg.n > 0 ? msg.n : 1);
+    if (!this.combat.canBuy(id, { ...ware.item, n }, ware.price * n)) return;
+    const sale = db.buyWare(shopId, msg.ware, n, { item: msg.item, price: msg.price }, player.name);
+    if (typeof sale === "string") return this.notice(id, sale);
+    this.combat.bought(id, sale.item, sale.gold);
+    this.notice(id, `You bought ${stackText(itemName(sale.item), sale.item.n)} from ${shop.name} for ${goldText(sale.gold)} gold.`);
+    shop.items = waresLeft(sale.wares);
+    shop.rev = (shop.rev + 1) % 65536;
+    this.deliver(sale.seller);
+    // Sold out, with no Gattchaa cards to show either: the shop closes, Ragnarok style.
+    if (shop.items === 0 && shop.cards === 0) {
+      const seller = this.sessionOf.get(sale.seller);
+      this.closeShop(shopId);
+      if (seller) this.notice(seller, "🎉 Your shop sold out, so it has closed.");
+    }
+  }
+
+  /**
+   * Hands an account its mail if they're in this room: gold from their shop's
+   * sales, and whatever it didn't sell. A full bag leaves items waiting.
+   */
+  private deliver(accountId: number) {
+    const id = this.sessionOf.get(accountId);
+    const meta = id ? this.meta.get(id) : undefined;
+    if (!id || !meta) return;
+    const sales: Mail[] = [];
+    let back = 0;
+    let waiting = 0;
+    db.deliverMail(accountId, (m) => {
+      if (!this.combat.receive(id, m)) {
+        waiting++;
+        return false;
+      }
+      if (m.gold > 0) sales.push(m);
+      if (m.item) back++;
+      return true;
+    });
+    if (sales.length || back) this.combat.flush(id);
+    const gold = sales.reduce((sum, m) => sum + m.gold, 0);
+    if (sales.length === 1) this.notice(id, `💰 ${sales[0].note} for ${goldText(gold)} gold.`);
+    else if (sales.length > 1) this.notice(id, `💰 Your shop made ${sales.length} sales, for ${goldText(gold)} gold in all.`);
+    if (back) this.notice(id, `📦 ${back === 1 ? "One thing" : `${back} things`} your shop didn't sell ${back === 1 ? "is" : "are"} back in your bag.`);
+    if (waiting && waiting !== meta.mailWaiting) {
+      this.notice(id, `📦 Your bag is full: ${waiting === 1 ? "one thing" : `${waiting} things`} from your shop ${waiting === 1 ? "is" : "are"} waiting. Make room and ${waiting === 1 ? "it comes" : "they come"} to you.`);
+    }
+    meta.mailWaiting = waiting;
   }
 
   /** Removes a shop from the town (not the database), standing its owner up if they're here. */
@@ -787,7 +909,13 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     const rows = new Map(db.shops().map((r) => [r.id, r]));
     for (const id of [...this.shopOwners.keys()]) if (!rows.has(id)) this.dropShop(id);
     for (const [id, row] of rows) {
-      if (this.shopOwners.has(id)) continue;
+      const items = waresLeft(parseWares(row.wares));
+      const known = this.state.shops.get(id);
+      if (known && this.shopOwners.has(id)) {
+        // Something sold through another room.
+        if (known.items !== items) Object.assign(known, { items, rev: (known.rev + 1) % 65536 });
+        continue;
+      }
       const owner = db.account(row.accountId);
       if (!owner) {
         db.closeShop(row.accountId);
@@ -796,7 +924,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       this.shopOwners.set(id, owner);
       this.state.shops.set(
         id,
-        new PlayerShop({ name: owner.name || owner.displayName, look: normalizeLook(owner.look), title: row.title, x: row.x, y: row.y, owner: "", cards: 0, rev: 0 }),
+        new PlayerShop({ name: owner.name || owner.displayName, look: normalizeLook(owner.look), title: row.title, x: row.x, y: row.y, owner: "", cards: 0, items, rev: 0 }),
       );
       void this.recount(id);
     }

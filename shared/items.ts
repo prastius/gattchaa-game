@@ -286,6 +286,21 @@ export function cleanCards(gear: ItemId, raw: unknown): ItemId[] | undefined {
   return cards.length ? cards : undefined;
 }
 
+/** A saved stack (bag, shop or mail), if it still makes sense: the item exists, the count fits, the cards and upgrade belong. */
+export function cleanStack(raw: unknown): ItemStack | null {
+  if (!raw || typeof raw !== "object") return null;
+  const { id, n, cards, up } = raw as { id?: unknown; n?: unknown; cards?: unknown; up?: unknown };
+  if (!isItemId(id)) return null;
+  const count = Math.min(stackLimit(ITEMS[id]), Math.floor(Number(n)));
+  if (!(count >= 1)) return null;
+  const s: ItemStack = { id, n: count };
+  const c = cleanCards(id, cards);
+  const u = cleanUpgrade(id, up);
+  if (c) s.cards = c;
+  if (u) s.up = u;
+  return s;
+}
+
 /** Cards on the ground travel as "hornetCard.hornetCard". */
 export const cardString = (cards?: ItemId[]) => cards?.join(".") ?? "";
 export const parseCards = (gear: ItemId, s: string) => (s ? cleanCards(gear, s.split(".")) : undefined);

@@ -242,8 +242,8 @@ export const NPCS: NpcDef[] = [
     look: look({ body: "female", hair: "bun", hairColor: "black", skin: "bronze", top: "cardigan", topColor: "forest", bottom: "belleSkirt", bottomColor: "walnut", shoes: "sandals", shoesColor: "brown", hat: "kerchief", hatColor: "orange" }),
     ...at(187.5, 212.6),
     dir: Dir.Down,
-    greeting: "Welcome to the Market Square! Collectors sell their own Gattchaa cards right here in the square. Here's every shop that's open: pick one to browse it. Buying happens on Gattchaa Oripa.",
-    chatter: ["Fresh cards in the Market Square!", "Open your own shop right here in the square!", "Looking for a card? Ask me who's selling."],
+    greeting: "Welcome to the Market Square! Adventurers sell gear, ingots and monster cards here for gold, and collectors show their real Gattchaa cards. Pick a shop to browse it, or tell me what you're looking for.",
+    chatter: ["Fresh goods in the Market Square!", "Open your own shop right here in the square!", "Looking for Mithril? Ask me who's selling.", "Sell your spare loot to other adventurers!"],
   },
   {
     id: "cafe",

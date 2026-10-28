@@ -2234,6 +2234,102 @@ button.dialog-link:disabled {
   cursor: pointer;
 }
 
+/* Picking things from your bag to sell, each with a price. */
+.pick-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 6px 0 2px;
+}
+
+.pick-box .ware-info {
+  white-space: normal;
+}
+
+.pick-toggle.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.pick-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  padding: 8px 8px 8px 50px;
+  margin-top: -4px;
+  border: 1px solid var(--line);
+  border-top: 0;
+  border-radius: 0 0 10px 10px;
+  background: rgba(255, 210, 122, 0.05);
+}
+
+.pick-fields[hidden] {
+  display: none;
+}
+
+.pick-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  color: var(--ink-dim);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pick-field input,
+.market-search {
+  width: 120px;
+  padding: 7px 9px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: #17130f;
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px; /* no iOS zoom on focus */
+  outline: none;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.pick-field input:focus,
+.market-search:focus {
+  border-color: var(--accent);
+}
+
+.pick-warn {
+  flex-basis: 100%;
+  color: #ffb36b;
+  font-size: 12px;
+}
+
+.pick-warn:empty {
+  display: none;
+}
+
+.market-search {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+/* "For gold" over a shop's things, with your purse at the end. */
+.shop-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.shop-head .dialog-section {
+  margin: 0;
+}
+
+/* The real cards come after the things for gold, with a gap. */
+.ware-list + .dialog-section,
+.ware-list + .dialog-note + .dialog-section {
+  margin-top: 14px;
+}
+
 /* Green when the seller is in town (you can chat with them). */
 .shop-dot {
   flex: none;

@@ -8,7 +8,22 @@ import {
   type ShopProduct,
   type ShopRoom,
 } from "../../../shared/gattchaa";
-import { SHOP_AWAY_HOURS, SHOP_TITLE_MAX, signText, type PlayerShopDetails, type PlayerShopView } from "../../../shared/vending";
+import {
+  MAX_PRICE,
+  SHOP_AWAY_HOURS,
+  SHOP_TITLE_MAX,
+  SHOP_WARES,
+  goldText,
+  inShopZone,
+  isPrice,
+  merchantPays,
+  signText,
+  type MarketWare,
+  type PlayerShopDetails,
+  type PlayerShopView,
+  type ShopWare,
+  type WarePick,
+} from "../../../shared/vending";
 import {
   AURA_LEVELS,
   ITEMS,
@@ -16,6 +31,7 @@ import {
   OUTFITTER_STOCK,
   RARITY,
   SLOTS,
+  SLOT_NAMES,
   SMITH_STOCK,
   bonusText,
   canUpgrade,
@@ -40,8 +56,12 @@ import type { Net } from "../net";
 import { audio } from "../audio";
 
 // The panel that opens when you talk to someone, use a machine or visit a
-// player's shop. Every link goes to gattchaaoripa.com (new tab), so buying,
-// logging in and paying all happen on the actual site.
+// player's shop. Every link goes to gattchaaoripa.com (new tab), so buying
+// real cards, logging in and paying all happen on the actual site. In-game
+// things (gear, ingots, monster cards) are bought here with in-game gold.
+
+/** Tina's "Find an item" shows this many results at most (search to narrow it down). */
+const MARKET_ROWS = 40;
 
 interface LinkSpec {
   label: string;
@@ -129,6 +149,11 @@ export class TownDialog {
   private forgeNote?: { ok: boolean; up: number; item: string };
   /** The Arena Master's ranking, as of the last time you asked. */
   private board?: ArenaBoard;
+  /** Which side of the Market Keeper's window is showing, and what you searched for. */
+  private keeperTab: "shops" | "find" = "shops";
+  private marketQuery = "";
+  /** Your gold when the open player shop was drawn (its Buy buttons depend on it). */
+  private shownGold = -1;
   /** The panel being drawn was just opened (not a refresh). */
   private renderFresh = false;
   /** Opens the skills window (from the Job Master). */
@@ -158,6 +183,11 @@ export class TownDialog {
     };
     net.onBag.add(trade);
     net.onStats.add(trade);
+    // Your gold decides which Buy buttons work in a player's shop.
+    net.onStats.add(() => {
+      const target = this.openTarget;
+      if (this.isOpen && target?.startsWith("shop:") && (this.net.stats?.gold ?? 0) !== this.shownGold) this.render(target, false);
+    });
     net.onArenaBoard.add((b) => {
       this.board = b;
       if (this.openKind === "arena") this.render(this.openTarget!, false);
@@ -188,6 +218,8 @@ export class TownDialog {
     this.backTo = undefined;
     this.tradeTab = "buy";
     this.smithTab = "upgrade";
+    this.keeperTab = "shops";
+    this.marketQuery = "";
     this.forgeNote = undefined;
     this.jobConfirm = undefined;
     audio.blip();
@@ -212,6 +244,8 @@ export class TownDialog {
     const [kind, id] = target.split(":");
     const shops = kind === "vend" || kind === "shop" || target === "npc:keeper";
     if (shops !== playerShops) return;
+    // Don't wipe a search being typed; the results are fetched fresh on the next search anyway.
+    if (target === "npc:keeper" && this.keeperTab === "find") return;
     if (kind === "vend") {
       // Never wipe a half-typed shop title: only move on once your shop is open.
       const mine = this.vending.myShop;
@@ -298,7 +332,9 @@ export class TownDialog {
         this.arena(npc);
         break;
       case "keeper":
-        this.shopList();
+        this.body.append(this.tabs(npc, [["shops", "Shops"], ["find", "Find an item"]], this.keeperTab, (tab) => (this.keeperTab = tab), this.net.stats?.gold ?? 0));
+        if (this.keeperTab === "find") this.marketFind();
+        else this.shopList();
         if (!this.vending.auth.signedIn) this.signInButton("Sign in to open your own shop");
         else if (!this.vending.myShop) this.button("Open my shop", "Pick a spot in this square (V)", () => this.render("vend", true), "primary");
         break;
@@ -551,7 +587,16 @@ export class TownDialog {
     if (it.lv && it.lv > 1) parts.unshift(`Lv ${it.lv}+`);
     const who = wearersText(it);
     if (who) parts.unshift(who);
+    if (it.kind === "card" && it.fits) parts.push(`goes in: ${it.fits.map((s) => SLOT_NAMES[s].toLowerCase()).join(", ")}`);
     return parts.join(" · ");
+  }
+
+  /** What one particular piece is like: the item, plus what its upgrades add. */
+  private stackInfo(s: ItemStack): string {
+    const it = ITEMS[s.id];
+    if (!s.up) return this.wareInfo(it);
+    const step = upgradeStep(it);
+    return `${this.wareInfo(it)} · upgrades add ${step.atk ? `ATK +${step.atk * s.up}` : `DEF +${step.def * s.up}`}`;
   }
 
   private ware(it: ItemDef, info: string, buttons: HTMLButtonElement[], title = it.name) {
@@ -585,7 +630,7 @@ export class TownDialog {
   /** Everything the panel for a shop shows, as one string ("" once it's closed). */
   private shopState(id: string): string {
     const s = this.vending.shop(id);
-    return s ? `${s.name}|${s.look}|${s.title}|${s.owner}|${s.cards}|${s.rev}` : "";
+    return s ? `${s.name}|${s.look}|${s.title}|${s.owner}|${s.cards}|${s.items}|${s.rev}` : "";
   }
 
   /** The Market Keeper's board: every open shop and where it is, browsable from right there. */
@@ -597,16 +642,15 @@ export class TownDialog {
       return;
     }
     // Sellers who are here first (you can chat with them), then the biggest shops.
-    shops.sort((a, b) => Number(b.shop.owner !== "") - Number(a.shop.owner !== "") || b.shop.cards - a.shop.cards);
+    shops.sort((a, b) => Number(b.shop.owner !== "") - Number(a.shop.owner !== "") || b.shop.items + b.shop.cards - (a.shop.items + a.shop.cards));
     this.section(`${shops.length} shop${shops.length === 1 ? "" : "s"} open`);
     const list = el("div", "room-list");
     for (const { id, shop } of shops) {
       const row = el("button", "room shop-row");
       row.type = "button";
       const info = el("div", "room-info");
-      const cards = `${shop.cards} card${shop.cards === 1 ? "" : "s"}`;
-      const where = placeName(shop.x, shop.y);
-      info.append(el("div", "room-title", shop.title), el("div", "room-seats", `${shop.name} · ${cards} · ${shop.owner ? "here now" : "away"} · ${where}`));
+      const what = [shop.items && `${shop.items} for gold`, shop.cards && `${shop.cards} card${shop.cards === 1 ? "" : "s"}`].filter(Boolean).join(" · ") || "sold out";
+      info.append(el("div", "room-title", shop.title), el("div", "room-seats", `${shop.name} · ${what} · ${shop.owner ? "here now" : "away"}`));
       row.append(el("span", `shop-dot${shop.owner ? " on" : ""}`), info, el("span", "room-join", "Browse"));
       row.addEventListener("click", () => {
         this.backTo = this.openTarget;
@@ -618,6 +662,58 @@ export class TownDialog {
     this.body.append(list);
   }
 
+  /** Tina's "Find an item": everything for gold in every shop, cheapest first, with a search box. */
+  private marketFind() {
+    const token = this.renderToken;
+    const input = el("input", "market-search");
+    input.type = "search";
+    input.placeholder = "Search: Mithril, Saber, Slime Card…";
+    input.value = this.marketQuery;
+    input.autocomplete = "off";
+    input.enterKeyHint = "search";
+    input.setAttribute("aria-label", "Search the shops");
+    const status = el("p", "dialog-empty", "Looking around the square…");
+    const results = el("div", "ware-list");
+    this.body.append(input, status, results);
+    let wares: MarketWare[] | undefined;
+    const draw = () => {
+      if (!wares) return;
+      const q = this.marketQuery.trim().toLowerCase();
+      const hits = wares
+        .filter((w) => !q || itemName(w.item).toLowerCase().includes(q))
+        .sort((a, b) => ITEMS[a.item.id].name.localeCompare(ITEMS[b.item.id].name) || a.price - b.price);
+      status.textContent =
+        wares.length === 0 ? "Nobody is selling anything for gold right now." : hits.length === 0 ? `Nobody is selling “${this.marketQuery.trim()}” right now.` : "";
+      status.hidden = !status.textContent;
+      results.replaceChildren();
+      for (const w of hits.slice(0, MARKET_ROWS)) {
+        const visit = el("button", "ware-button", "Visit");
+        visit.type = "button";
+        visit.addEventListener("click", () => {
+          audio.blip();
+          this.backTo = this.openTarget;
+          this.render(`shop:${w.shop}`, true);
+        });
+        const info = `${goldText(w.price)} gold${w.item.n > 1 ? ` each · ${w.item.n} left` : ""} · ${w.seller}'s shop`;
+        results.append(this.ware(ITEMS[w.item.id], info, [visit], itemName(w.item)));
+      }
+      if (hits.length > MARKET_ROWS) results.append(el("p", "dialog-note", `…and ${hits.length - MARKET_ROWS} more. Search to narrow it down.`));
+    };
+    input.addEventListener("input", () => {
+      this.marketQuery = input.value;
+      draw();
+    });
+    this.vending.market().then((m) => {
+      if (token !== this.renderToken) return;
+      if (typeof m === "string") status.textContent = m;
+      else {
+        wares = m.wares;
+        draw();
+      }
+    });
+    if (matchMedia("(pointer: fine)").matches) setTimeout(() => token === this.renderToken && input.focus(), 30);
+  }
+
   /** "Open shop": the form to open yours right where you stand, or how to get one. */
   private vendPanel(fresh: boolean, token: number) {
     const mine = this.vending.myShop;
@@ -626,12 +722,12 @@ export class TownDialog {
     const say = (text: string) => fresh && this.say(text);
 
     if (!this.vending.auth.signedIn) {
-      say("Anyone signed in with Gattchaa can sit down in the Market Square and open a shop. It shows the cards you've listed on the Gattchaa marketplace, and buyers pay on gattchaaoripa.com.");
+      say("Anyone signed in with Gattchaa can sit down in the Market Square and open a shop: sell things from your bag for gold, and show the cards you've listed on the Gattchaa marketplace.");
       this.signInButton("You'll come straight back to town");
       this.links(LINKS.sell, "vend");
       return;
     }
-    say(`Find a free spot in the Market Square and open your shop! It shows the cards you've listed on the Gattchaa marketplace, and stays open for ${SHOP_AWAY_HOURS} hours after you leave town.`);
+    say(`Find a free spot in the Market Square and open your shop! Sell things from your bag for gold; the cards you've listed on the Gattchaa marketplace show up too. It stays open for ${SHOP_AWAY_HOURS} hours after you leave town.`);
 
     // Whether this spot is allowed, checked again as you move (the server has the final say).
     const spot = el("p", "shop-spot");
@@ -652,22 +748,34 @@ export class TownDialog {
     input.autocomplete = "off";
     input.enterKeyHint = "go";
     label.append(input);
-    const sign = el("small", "shop-form-hint", "Leave it empty for “your name's cards”.");
+    const sign = el("small", "shop-form-hint", "Leave it empty for “your name's shop”.");
     input.addEventListener("input", () => {
       const title = input.value.trim();
-      sign.textContent = title ? `Your sign: ${signText(title)}` : "Leave it empty for “your name's cards”.";
+      sign.textContent = title ? `Your sign: ${signText(title)}` : "Leave it empty for “your name's shop”.";
     });
+    const picks = new Map<number, { n: number; price: string }>();
+    const picker = this.warePicker(picks);
     const submit = el("button", "shop-form-submit", "Open shop here");
     submit.type = "submit";
     const error = el("p", "shop-form-error");
     error.setAttribute("role", "alert");
-    form.append(label, sign, spot, submit, error);
+    form.append(label, sign, picker, spot, submit, error);
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      error.textContent = "";
+      const bag = this.net.bag?.bag ?? [];
+      const wares: WarePick[] = [];
+      for (const [slot, p] of picks) {
+        const s = bag[slot];
+        const price = Number(p.price);
+        if (!s) return void (error.textContent = "Something you picked isn't in your bag any more. Please pick again.");
+        if (!isPrice(price)) return void (error.textContent = `Set a price for your ${itemName(s)}: 1 to ${goldText(MAX_PRICE)} gold.`);
+        if (!(Number.isInteger(p.n) && p.n >= 1 && p.n <= s.n)) return void (error.textContent = `How many ${ITEMS[s.id].name}? You have ${s.n}.`);
+        wares.push({ slot, n: p.n, price });
+      }
       submit.disabled = true;
       submit.textContent = "Opening…";
-      error.textContent = "";
-      const failed = await this.vending.open(input.value);
+      const failed = await this.vending.open(input.value, wares);
       if (token !== this.renderToken) return; // the shop appeared and the panel already moved on
       if (failed) {
         submit.disabled = false;
@@ -685,11 +793,86 @@ export class TownDialog {
     if (fresh && matchMedia("(pointer: fine)").matches) setTimeout(() => input.focus(), 30);
   }
 
-  /** A player's shop: their cards, each one a link to buy it on Gattchaa. */
+  /** What's in your bag, each thing a tap away from going in your shop with a price. */
+  private warePicker(picks: Map<number, { n: number; price: string }>) {
+    const box = el("div", "pick-box");
+    box.append(el("div", "shop-form-label", "Sell from your bag, for gold"));
+    const count = el("small", "shop-form-hint");
+    const recount = () =>
+      (count.textContent = picks.size
+        ? `${picks.size} of ${SHOP_WARES} picked. They leave your bag until they sell; whatever doesn't sell comes back when your shop closes.`
+        : `Pick up to ${SHOP_WARES} things. Pick nothing to show only your Gattchaa cards.`);
+    recount();
+    box.append(count);
+    const list = el("div", "ware-list");
+    (this.net.bag?.bag ?? []).forEach((s, slot) => {
+      if (!s) return;
+      const it = ITEMS[s.id];
+      const pays = merchantPays(s);
+      const fields = el("div", "pick-fields");
+      fields.hidden = true;
+      const field = (text: string, input: HTMLInputElement) => {
+        const l = el("label", "pick-field", text);
+        l.append(input);
+        fields.append(l);
+        return input;
+      };
+      const number = (max: number) => {
+        const i = el("input");
+        i.type = "number";
+        i.inputMode = "numeric";
+        i.min = "1";
+        i.max = String(max);
+        i.step = "1";
+        return i;
+      };
+      const price = field("Gold each", number(MAX_PRICE));
+      price.placeholder = "Price";
+      const qty = s.n > 1 ? field(`How many (of ${s.n})`, number(s.n)) : undefined;
+      if (qty) qty.value = String(s.n);
+      const warn = el("small", "pick-warn");
+      fields.append(warn);
+      const update = () => {
+        const p = picks.get(slot);
+        if (p) Object.assign(p, { price: price.value, n: qty ? Number(qty.value) : 1 });
+        const asked = Number(price.value);
+        warn.textContent = pays && asked > 0 && asked < pays ? `Careful: Bram the Outfitter pays ${pays} gold for one of these.` : "";
+      };
+      price.addEventListener("input", update);
+      qty?.addEventListener("input", update);
+
+      const toggle = el("button", "ware-button pick-toggle", "Sell");
+      toggle.type = "button";
+      toggle.addEventListener("click", () => {
+        if (picks.has(slot)) picks.delete(slot);
+        else if (picks.size < SHOP_WARES) picks.set(slot, { n: s.n, price: "" });
+        else return;
+        audio.blip();
+        const on = picks.has(slot);
+        if (on) update();
+        fields.hidden = !on;
+        toggle.textContent = on ? "✓ Selling" : "Sell";
+        toggle.classList.toggle("on", on);
+        recount();
+        if (on && matchMedia("(pointer: fine)").matches) price.focus();
+      });
+      const info = [s.n > 1 ? `×${s.n}` : "", this.stackInfo(s), pays ? `Bram pays ${pays}` : ""].filter(Boolean).join(" · ");
+      const pick = el("div", "pick");
+      pick.append(this.ware(it, info, [toggle], itemName(s)), fields);
+      list.append(pick);
+    });
+    if (list.childElementCount === 0) box.append(el("p", "dialog-empty", "Your bag is empty."));
+    else box.append(list);
+    box.append(el("small", "shop-form-hint", "Gear you're wearing isn't listed: take it off in your bag (I) first."));
+    return box;
+  }
+
+  /** A player's shop: things for gold, and their Gattchaa cards (each a link to buy it on the site). */
   private shopPanel(id: string, fresh: boolean, token: number) {
     this.shownShop = this.shopState(id);
+    this.shownGold = this.net.stats?.gold ?? 0;
     const shop = this.vending.shop(id);
-    if (this.backTo) this.button("← All shops", undefined, () => this.backTo && this.render(this.backTo, true));
+    if (this.backTo) this.button("← Back", undefined, () => this.backTo && this.render(this.backTo, true));
     if (!shop) {
       this.header("Shop closed", "Player shops", token);
       this.say("This shop has just closed. Tina, the Market Keeper in the Market Square, knows which shops are still open.");
@@ -700,20 +883,20 @@ export class TownDialog {
     this.header(shop.name, mine ? `Your shop · ${where}` : `Player shop · ${shop.owner ? "seller is here" : "seller is away"} · ${where}`, token, shop.look);
     if (fresh) this.say(`“${shop.title}”`);
 
-    const loading = el("p", "dialog-empty", "Loading cards…");
+    const loading = el("p", "dialog-empty", "Loading…");
     this.body.append(loading);
     const keepScroll = this.keepScroll;
     this.vending.details(id).then((d) => {
       if (token !== this.renderToken) return;
       loading.remove();
       if (typeof d === "string") this.body.append(el("p", "dialog-empty", d));
-      else this.listings(d, id, mine);
+      else this.shopGoods(d, id, mine);
       this.body.scrollTop = keepScroll;
     });
 
     if (mine) {
-      this.links([{ label: "Manage my listings", path: "/inventory", hint: "Changes show up here" }], `shop-${id}`);
-      this.button("Close shop", "Stand up and roll up your rug", async (btn) => {
+      this.links([{ label: "Manage my Gattchaa listings", path: "/inventory", hint: "Changes show up here" }], `shop-${id}`);
+      this.button("Close shop", "What didn't sell goes back in your bag", async (btn) => {
         btn.disabled = true;
         const failed = await this.vending.close();
         if (failed) btn.disabled = false;
@@ -722,12 +905,61 @@ export class TownDialog {
     }
   }
 
-  private listings(d: PlayerShopDetails, stall: string, mine: boolean) {
-    if (!d.fresh) this.section("Gattchaa isn't answering right now, so these may be out of date.");
-    if (d.listings.length === 0) {
-      this.body.append(el("p", "dialog-empty", mine ? "You have no cards listed right now. List some on Gattchaa and they'll show up here." : "Sold out! Check back later."));
-      return;
+  /** What a player's shop sells: things for gold first, then their real cards on Gattchaa. */
+  private shopGoods(d: PlayerShopDetails, id: string, mine: boolean) {
+    const wares = d.wares.map((w, i) => ({ w, i })).filter(({ w }) => mine || w.item.n > 0);
+    if (wares.length) this.goldWares(id, wares, mine);
+    if (d.listings.length) this.listings(d, id, wares.length > 0);
+    if (wares.length || d.listings.length) return;
+    const empty = !d.fresh
+      ? "Gattchaa isn't answering right now, so this shop's cards can't be shown. Try again in a moment."
+      : mine
+        ? "Nothing for sale right now. Close your shop and open it again with things from your bag, or list cards on Gattchaa."
+        : "Sold out! Check back later.";
+    this.body.append(el("p", "dialog-empty", empty));
+  }
+
+  /** Things from the seller's bag, for in-game gold. */
+  private goldWares(shopId: string, wares: { w: ShopWare; i: number }[], mine: boolean) {
+    const gold = this.net.stats?.gold ?? 0;
+    const head = el("div", "shop-head");
+    head.append(el("span", "dialog-section", mine ? "Your things for gold" : "For gold"));
+    if (!mine) {
+      const purse = el("span", "gold trade-gold");
+      purse.append(el("span", "coin"), el("span", "", goldText(gold)));
+      head.append(purse);
     }
+    this.body.append(head);
+    const at = this.selfPosition?.();
+    const here = !at || inShopZone(at.x, at.y);
+    const list = el("div", "ware-list");
+    for (const { w, i } of wares) {
+      const it = ITEMS[w.item.id];
+      const left = w.item.n;
+      const about = this.stackInfo(w.item);
+      const buttons: HTMLButtonElement[] = [];
+      let info: string;
+      if (mine) info = `${left ? `${left} left` : "Sold out"}${w.sold ? ` · ${w.sold} sold` : ""} · ${goldText(w.price)} gold${left > 1 ? " each" : ""}`;
+      else {
+        info = `${left > 1 ? `${left} left · ` : ""}${about}`;
+        buttons.push(this.wareButton(`Buy · ${goldText(w.price)}`, here && gold >= w.price, () => this.vending.buy(shopId, i, w, 1)));
+        if (left > 1) buttons.push(this.wareButton(`All ${left} · ${goldText(w.price * left)}`, here && gold >= w.price * left, () => this.vending.buy(shopId, i, w, left)));
+      }
+      list.append(this.ware(it, info, buttons, itemName(w.item)));
+    }
+    this.body.append(list);
+    if (mine) {
+      const earned = wares.reduce((sum, { w }) => sum + w.sold * w.price, 0);
+      this.body.append(
+        el("p", "dialog-note", earned ? `Sold so far: ${goldText(earned)} gold, already in your purse.` : "When something sells, the gold goes straight into your purse, even while you're away."),
+      );
+    } else if (!here) this.body.append(el("p", "dialog-note", "Come to the Market Square to buy."));
+  }
+
+  /** The seller's real cards, listed on the Gattchaa marketplace: bought on the site, never with gold. */
+  private listings(d: PlayerShopDetails, stall: string, afterWares: boolean) {
+    this.section(afterWares ? "Real cards on Gattchaa · paid on gattchaaoripa.com, not with gold" : "Cards on Gattchaa");
+    if (!d.fresh) this.section("Gattchaa isn't answering right now, so these may be out of date.");
     const grid = el("div", "product-grid");
     for (const l of d.listings) {
       const card = external(el("a", "product"), tagLink(l.url, `shop-${stall}`));

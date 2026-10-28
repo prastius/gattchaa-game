@@ -1,21 +1,21 @@
 # Gattchaa Town: Gameplay Guide
 
-Gattchaa Town is a small online world for card collectors, built around the Gattchaa Oripa shop. You walk around a walled royal town with other players, chat, open your own card shop, and head out of the gates to fight monsters, level up and collect gear, much like Ragnarok Online or TibiaME.
+Gattchaa Town is a small online world for card collectors, built around the Gattchaa Oripa shop. You walk around a walled royal town with other players, chat, open your own shop, and head out of the gates to fight monsters, level up and collect gear, much like Ragnarok Online or TibiaME.
 
 The game has three parts:
 
-1. **Hanging out.** The town is a meeting place. Chat, sit by the fountain, visit the Gattchaa staff, and run your own card shop in the Market Square.
+1. **Hanging out.** The town is a meeting place. Chat, sit by the fountain, visit the Gattchaa staff, and run your own shop in the Market Square: trade gear, ingots and monster cards for gold, and show off your real cards.
 2. **Adventure.** Outside the walls, monsters wait in fields sorted by level. Level up, choose a job, find gear and monster cards, and upgrade your equipment.
 3. **Player vs player.** Challenge anyone to a duel, and climb the ranking in the Arena.
 
-> **One rule about money.** Real cards are bought and paid for only on gattchaaoripa.com. In-game gold buys in-game things (potions, gear, upgrades) and never real cards.
+> **One rule about money.** Real cards are bought and paid for only on gattchaaoripa.com. In-game gold buys in-game things (potions, gear, upgrades, other players' loot) and never real cards.
 
 ---
 
 ## 1. Getting started
 
 - **Play as a guest** with just a name, or **Sign in with Gattchaa** using your gattchaaoripa.com account. The sign-in happens on the Gattchaa site, so the game never sees your password.
-- **Guests** can do everything except open a shop, but they start over on their next visit.
+- **Guests** can do everything except open a shop (they can still buy from one), but they start over on their next visit.
 - **Signed-in players** keep their character, level, bag, gear and skills on any device. Only one window per account is allowed: opening a second one takes over from the first.
 - **Your look.** Choose a body, hair, clothes and colours when you join. You can change them any time with the **Wardrobe** button. Gear you wear (helmets, armour, weapons…) shows on top of your look.
 - New players appear on the main avenue, between the fountain plaza and the Market Square.
@@ -80,7 +80,7 @@ The town is always safe: monsters never come in, and nobody can attack anyone in
 | Yuki | New & Hot | Inside the palace | The newest packs |
 | Dewi | Battle Hall Host | Inside the palace | Live rooms, in the palace's Battle Hall |
 | Toto | Town Crier | Fountain plaza | Shouts out new releases and big pulls |
-| Tina | Market Keeper | Market Square | Lists every open player shop |
+| Tina | Market Keeper | Market Square | Lists every open player shop, and finds who sells what |
 
 **Adventurers' helpers**
 
@@ -95,17 +95,44 @@ The town is always safe: monsters never come in, and nobody can attack anyone in
 
 ## 4. Player shops
 
-Ragnarok-style vending. Signed-in players can sell the cards they have listed on the Gattchaa marketplace.
+Ragnarok-style vending. Signed-in players sit down in the Market Square and sell two kinds of things:
 
-1. List your cards for sale on gattchaaoripa.com first.
-2. Walk into the **Market Square** and press **Open shop** (V).
-3. Give your shop a name. The form tells you if your spot is good: not in front of staff, and not so close to another shop that the signs overlap.
-4. Your character sits down on a rug with a sign over your head. Anyone can walk up and browse your cards.
+- **Things from their bag, for in-game gold:** gear (upgrades and cards stay in it), monster cards, ingots, potions, loot.
+- **Their real cards,** the ones they've listed on the Gattchaa marketplace. These are only ever bought on gattchaaoripa.com, never with gold.
 
-- Each card links to its listing on the website, so buying and payment always happen on gattchaaoripa.com.
-- When you leave the game, a look-alike minds your shop for **24 hours**.
-- Price changes and sold cards update within seconds.
-- **Finding shops:** ask **Tina** in the Market Square. She lists every open shop and where it is, and you can browse them straight from her list. Shops also show as orange dots on the minimap.
+### Opening your shop
+
+1. Walk into the **Market Square** and press **Open shop** (V).
+2. Give your shop a name (or leave it empty for "your name's shop").
+3. Under **Sell from your bag**, tap **Sell** next to up to **12** things. Set a price in gold for each, and for stacks how many to sell. If you ask less than Bram the Outfitter would pay, the form warns you.
+4. The form tells you if your spot is good: not in front of staff, and not so close to another shop that the signs overlap.
+5. Press **Open shop here**. Your character sits down on a rug with a sign over your head. The sign shows a coin when you sell only for gold, a card when you also have Gattchaa cards, and how many things are for sale.
+
+You need at least one thing from your bag or one card listed on Gattchaa. Gear you're wearing isn't offered: take it off first.
+
+### While it's open
+
+- What you put in the shop **leaves your bag** until it sells.
+- When something sells, **the gold goes straight into your purse** and the chat tells you who bought what. This works **even while you're away**: when you leave the game, a look-alike minds your shop for **24 hours**, and the next time you come back, the chat tells you what sold.
+- To change prices or what's for sale, close the shop and open it again.
+- **Closing:** press **Close shop**. Whatever didn't sell comes back to your bag. If your bag is full, it waits for you and arrives as soon as you make room.
+- **Sold out:** when everything has sold (and you have no Gattchaa cards to show), the shop closes by itself.
+
+### Buying
+
+- Click a shop's sign (or browse it from Tina's list) to see what it sells, with prices in gold.
+- Press **Buy** for one, or **All** for the whole stack. You must be in the Market Square, have the gold and have room in your bag.
+- Upgraded gear and gear with cards keep them when you buy them.
+- Real cards in the shop link to their listing on gattchaaoripa.com, where you buy and pay as usual.
+
+### Finding things
+
+Ask **Tina** in the Market Square:
+
+- **Shops** lists every open shop, who runs it, whether they're in town, and what it sells. Tap one to browse it.
+- **Find an item** lists everything for sale for gold in every shop, cheapest first. Type a name ("mithril", "saber", "slime card") to narrow it down, then **Visit** the shop.
+
+Shops also show as orange dots on the minimap.
 
 ## 5. Adventure: levels and fighting
 
@@ -288,7 +315,7 @@ Bram stands outside the south gate. He sells:
 | Copper Ring | 120 |
 | Clover Charm | 120 |
 
-He also **buys** almost anything, and has a one-click "sell all monster loot" button. He won't buy monster cards (other players will pay far more), gear with cards in it, or upgraded gear, so you can't sell those by accident. Better gear only comes from monsters.
+He also **buys** almost anything, and has a one-click "sell all monster loot" button. He won't buy monster cards (other players will pay far more), gear with cards in it, or upgraded gear, so you can't sell those by accident: sell them to other players in your own shop instead. Better gear only comes from monsters, or from other players' shops.
 
 ### Gear list
 
@@ -518,6 +545,8 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 | Gladiator | Epic | Win 50 duels in the Arena's ring |
 | **Town** | | |
 | Shopkeeper | Uncommon | Open your own shop in the Market Square |
+| Merchant | Rare | Earn 100,000 gold selling things in your shop |
+| Tycoon | Epic | Earn 1,000,000 gold selling things in your shop |
 
 ✦ **Titles with an aura.** While you show one of these, its aura replaces your gear's aura:
 
@@ -558,11 +587,10 @@ Every monster also drops its own card (see Monster cards) and often potions.
 
 Along the way, open your titles (T) now and then: you'll have earned a few.
 
-Sell your monster loot to Bram whenever your bag fills up, and sit down (X) to heal faster between fights.
+Sell your monster loot to Bram whenever your bag fills up, and sit down (X) to heal faster between fights. Spare gear, ingots and cards are worth more to other players: open a shop in the Market Square, or look in theirs for what you need.
 
 ## 14. Coming next
 
-- **Trading in-game items for gold** in player shops, so cards, gear and ingots can change hands.
 - **New fields and monsters** above level 20, and a higher level cap.
 
 ---

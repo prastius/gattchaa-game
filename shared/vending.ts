@@ -1,10 +1,16 @@
 // Player shops ("vending", Ragnarok style): a signed-in player sits down in
-// the Market Square, names their shop, and everyone can browse the cards they've
-// listed on the Gattchaa marketplace. A rug appears under them and a sign over
-// their head. Buying always happens on gattchaaoripa.com, so the game never
-// handles money. Rules here are shared by client and server.
+// the Market Square, names their shop, and sells two kinds of things:
+//
+//  - things from their bag (gear, monster cards, ingots…), for in-game gold.
+//    The game hands over the item and the gold, even while the seller is away.
+//  - the real cards they've listed on the Gattchaa marketplace. Those are only
+//    ever bought on gattchaaoripa.com: in-game gold never buys a real card.
+//
+// A rug appears under the seller and a sign over their head. Rules here are
+// shared by client and server.
 
 import type { MarketListing } from "./gattchaa";
+import { ITEMS, cleanStack, sellPrice, type ItemStack } from "./items";
 import { NPCS } from "./npcs";
 import { DOORS, MARKET, PROPS, TILE, inRect, propAnchor } from "./town";
 
@@ -23,6 +29,45 @@ export const SHOP_SPACING_Y = 72;
 export const SHOP_CLEARANCE = 64;
 /** Shop ids: random, so they don't reveal anything about the seller. */
 export const SHOP_ID_RE = /^[a-z0-9]{10}$/;
+/** Different things one shop can sell from the bag (Ragnarok's Vending tops out at 12 too). */
+export const SHOP_WARES = 12;
+/** The most one item can cost, in gold. */
+export const MAX_PRICE = 9_999_999;
+
+/** One thing for sale from a seller's bag: what's left (`item.n`), the price of each, and how many have sold. */
+export interface ShopWare {
+  item: ItemStack;
+  price: number;
+  sold: number;
+}
+
+export const isPrice = (p: unknown): p is number => Number.isInteger(p) && (p as number) >= 1 && (p as number) <= MAX_PRICE;
+
+/** A shop's saved wares, with anything broken dropped. Sold-out wares stay (n 0), so the numbering never shifts. */
+export function cleanWares(raw: unknown): ShopWare[] {
+  if (!Array.isArray(raw)) return [];
+  const wares: ShopWare[] = [];
+  for (const w of raw.slice(0, SHOP_WARES)) {
+    const r = (w ?? {}) as { item?: { n?: unknown }; price?: unknown; sold?: unknown };
+    const left = Math.floor(Number(r.item?.n));
+    const item = cleanStack({ ...r.item, n: Math.max(1, left) });
+    if (!item || !isPrice(r.price)) continue;
+    wares.push({ item: { ...item, n: left > 0 ? item.n : 0 }, price: r.price, sold: Math.max(0, Math.floor(Number(r.sold)) || 0) });
+  }
+  return wares;
+}
+
+/** How many different things a shop still has in stock (shown on its sign). */
+export const waresLeft = (wares: readonly ShopWare[]) => wares.filter((w) => w.item.n > 0).length;
+
+/** "Iron Ingot ×5", or "+7 Saber". */
+export const stackText = (name: string, n: number) => (n > 1 ? `${name} ×${n}` : name);
+
+/** Gold, the way the game writes it: "12,500". */
+export const goldText = (n: number) => Math.floor(n).toLocaleString("en-US");
+
+/** What Bram the Outfitter would pay for one (0: he won't buy it), so sellers don't ask less by mistake. */
+export const merchantPays = (s: ItemStack) => (s.cards || s.up ? 0 : sellPrice(ITEMS[s.id]));
 
 export function sanitizeShopTitle(raw: unknown): string {
   return String(raw ?? "")
@@ -70,9 +115,32 @@ export function shopSpotProblem(x: number, y: number, shops: Iterable<{ x: numbe
   return undefined;
 }
 
-/** client -> server: open your shop where you're standing. */
+/** One thing to sell, picked from the bag when opening a shop. */
+export interface WarePick {
+  /** Bag slot. */
+  slot: number;
+  /** How many of that slot. */
+  n: number;
+  /** Gold each. */
+  price: number;
+}
+
+/** client -> server: open your shop where you're standing, selling these things from your bag (and your Gattchaa cards). */
 export interface ShopOpenMessage {
   title: string;
+  wares?: WarePick[];
+}
+
+/**
+ * client -> server: buy `n` of a shop's ware number `ware`. `item` and `price`
+ * are what the buyer saw, so a sale never goes through on something else.
+ */
+export interface ShopBuyMessage {
+  shop: string;
+  ware: number;
+  n: number;
+  item: string;
+  price: number;
 }
 
 /** server -> client: the answer to shop:open or shop:close. */
@@ -91,7 +159,11 @@ export interface PlayerShopView {
   y: number;
   /** The owner's session id while they're in town, empty while they're away. */
   owner: string;
+  /** Cards listed on the Gattchaa marketplace. */
   cards: number;
+  /** Different things from the bag still for sale. */
+  items: number;
+  /** Bumped whenever the listings or the stock change, so open shop panels reload. */
   rev: number;
 }
 
@@ -100,7 +172,24 @@ export interface PlayerShopDetails {
   id: string;
   name: string;
   title: string;
+  /** Things from the seller's bag, for gold (numbered as in ShopBuyMessage.ware). */
+  wares: ShopWare[];
   listings: MarketListing[];
   /** False when Gattchaa couldn't be reached and these are the last known listings. */
   fresh: boolean;
+}
+
+/** One thing for sale anywhere in the Market Square (Tina's "Find an item"). */
+export interface MarketWare extends ShopWare {
+  shop: string;
+  /** Which of the shop's wares it is. */
+  ware: number;
+  seller: string;
+  x: number;
+  y: number;
+}
+
+/** GET /api/market: everything for sale in every shop, for gold. */
+export interface MarketList {
+  wares: MarketWare[];
 }

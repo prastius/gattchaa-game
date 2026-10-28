@@ -45,8 +45,10 @@ import {
   type BagMessage,
   type ItemDef,
   type ItemId,
+  type ItemStack,
   type Slot,
 } from "../../../shared/items";
+import { MAX_PRICE, SHOP_WARES, goldText, isPrice, type ShopWare, type WarePick } from "../../../shared/vending";
 import { GLOBAL_COOLDOWN_MS, SKILLS, SKILL_MAX, cleanSkills, pointsLeft, type SkillDef, type SkillId, type SkillLevels } from "../../../shared/skills";
 import { TITLES, type TitleDef, type TitleId, type TitlesMessage } from "../../../shared/titles";
 import {
@@ -1062,6 +1064,80 @@ export class Combat {
     if (!f || f.book.deeds.shop) return;
     f.book.deeds.shop = true;
     this.deed(f);
+  }
+
+  // ---------------------------------------------------------------- player shops
+
+  /**
+   * Takes the things picked for a shop out of the bag (the room checked the
+   * shop may open here). Returns the shop's stock, or why it can't.
+   */
+  stockShop(id: string, picks: WarePick[]): ShopWare[] | string {
+    const f = this.fighters.get(id);
+    if (!f || f.player.dead) return "You can't open a shop right now.";
+    if (picks.length > SHOP_WARES) return `A shop holds up to ${SHOP_WARES} different things.`;
+    const seen = new Set<number>();
+    for (const p of picks) {
+      const s = f.inv.bag[p.slot];
+      if (!s || seen.has(p.slot)) return "Something you picked isn't in your bag any more. Please pick again.";
+      if (!(Number.isInteger(p.n) && p.n >= 1 && p.n <= s.n)) return `You only have ${s.n} ${ITEMS[s.id].name}.`;
+      if (!isPrice(p.price)) return `Prices go from 1 to ${goldText(MAX_PRICE)} gold.`;
+      seen.add(p.slot);
+    }
+    const wares = picks.map((p) => ({ item: f.inv.take(p.slot, p.n)!, price: p.price, sold: 0 }));
+    if (wares.length) this.traded(f);
+    return wares;
+  }
+
+  /** Puts a shop's stock back in the bag: it couldn't open after all. */
+  unstock(id: string, wares: ShopWare[]) {
+    const f = this.fighters.get(id);
+    if (!f || !wares.length) return;
+    for (const w of wares) f.inv.add(w.item.id, w.item.n, w.item);
+    this.traded(f);
+  }
+
+  /** Whether someone can pay for something from a player's shop and carry it. If not, they're told why. */
+  canBuy(id: string, item: ItemStack, gold: number): boolean {
+    const f = this.fighters.get(id);
+    if (!f || f.player.dead) return false;
+    if (f.gold < gold) this.hooks.notice(id, `That costs ${goldText(gold)} gold: you have ${goldText(f.gold)}.`);
+    else if (f.inv.room(item.id, item.n) < item.n) this.hooks.notice(id, "Your bag is full. Make room first.");
+    else return true;
+    return false;
+  }
+
+  /** Bought from a player's shop (the room settled it with the shop): the gold out, the item in. */
+  bought(id: string, item: ItemStack, gold: number) {
+    const f = this.fighters.get(id);
+    if (!f) return;
+    f.gold -= gold;
+    f.inv.add(item.id, item.n, item);
+    this.hooks.tell(id, { k: "loot", item: item.id, n: item.n });
+    this.traded(f);
+  }
+
+  /**
+   * Mail: gold from a sale in your shop, or something it didn't sell. False
+   * when the item doesn't fit in the bag (it waits). Save with flush() after.
+   */
+  receive(id: string, m: { gold: number; item: ItemStack | null }): boolean {
+    const f = this.fighters.get(id);
+    if (!f) return false;
+    if (m.item && f.inv.room(m.item.id, m.item.n) < m.item.n) return false;
+    if (m.item) {
+      f.inv.add(m.item.id, m.item.n, m.item);
+      this.hooks.tell(id, { k: "loot", item: m.item.id, n: m.item.n });
+    }
+    if (m.gold > 0) {
+      f.gold += m.gold;
+      f.book.deeds.sold += m.gold;
+      this.hooks.tell(id, { k: "gain", exp: 0, gold: m.gold });
+      this.deed(f);
+    }
+    this.changed(f);
+    f.sheetDirty = true;
+    return true;
   }
 
   // ---------------------------------------------------------------- jobs and skills

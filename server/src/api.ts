@@ -1,6 +1,6 @@
 import express, { type Application, type NextFunction, type Request, type Response } from "express";
-import { SHOP_ID_RE, type PlayerShopDetails } from "../../shared/vending";
-import { db } from "./db";
+import { SHOP_ID_RE, type MarketList, type MarketWare, type PlayerShopDetails } from "../../shared/vending";
+import { db, parseWares } from "./db";
 import { feed } from "./gattchaa";
 
 // HTTP endpoints the game page calls (everything live goes over the WebSocket):
@@ -9,7 +9,8 @@ import { feed } from "./gattchaa";
 //                               sends the player back to the game with ?ticket=…
 //   POST /api/auth/ticket    -> swaps that one-time ticket for a game session token
 //   POST /api/auth/logout    -> ends the session
-//   GET  /api/shops/:id      -> a player shop's cards, for the shop panel
+//   GET  /api/shops/:id      -> a player shop's things for gold and Gattchaa cards, for the shop panel
+//   GET  /api/market         -> everything for gold in every shop (the Market Keeper's search)
 
 const TICKET_RE = /^[A-Za-z0-9_-]{16,128}$/;
 const SIGNIN_ATTEMPTS_PER_MIN = 10;
@@ -83,14 +84,28 @@ export function registerApiRoutes(app: Application) {
       res.status(404).json({ error: "This shop has closed." });
       return;
     }
-    const listings = await feed.listings(owner.gattchaaId);
+    // Read the stock after waiting for Gattchaa, so it's as fresh as can be.
+    const listings = feed.enabled ? await feed.listings(owner.gattchaaId) : [];
     const details: PlayerShopDetails = {
       id,
       name: owner.name || owner.displayName,
       title: row.title,
+      wares: parseWares(db.shop(id)?.wares),
       listings: listings ?? [],
       fresh: listings !== undefined,
     };
     res.set("Cache-Control", "no-store").json(details);
+  });
+
+  app.get("/api/market", (_req: Request, res: Response) => {
+    const wares: MarketWare[] = [];
+    for (const row of db.shops()) {
+      const owner = db.account(row.accountId);
+      if (!owner) continue;
+      parseWares(row.wares).forEach((w, ware) => {
+        if (w.item.n > 0) wares.push({ ...w, shop: row.id, ware, seller: owner.name || owner.displayName, x: row.x, y: row.y });
+      });
+    }
+    res.set("Cache-Control", "no-store").json({ wares } satisfies MarketList);
   });
 }

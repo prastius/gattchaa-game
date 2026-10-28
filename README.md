@@ -67,7 +67,7 @@ PM2 settings are in `ecosystem.config.cjs`.
 
 ### Saved data
 
-Accounts (players who signed in with Gattchaa), their characters' progress (class, level, EXP, HP/MP, gold, bag, equipment and skills) and open shops are kept in one SQLite file, `server/data/town.db`, using Node's built-in `node:sqlite`. There's no database server to run. Deploys and restarts leave the file alone; open shops come back after a restart. Back it up with a copy while the server is stopped, or live with `sqlite3 server/data/town.db ".backup town-backup.db"`. Set `DB_PATH` to keep it somewhere else.
+Accounts (players who signed in with Gattchaa), their characters' progress (class, level, EXP, HP/MP, gold, bag, equipment and skills), open shops with what they sell, and mail (gold and items waiting for a player who was away) are kept in one SQLite file, `server/data/town.db`, using Node's built-in `node:sqlite`. There's no database server to run. Deploys and restarts leave the file alone; open shops come back after a restart. Back it up with a copy while the server is stopped, or live with `sqlite3 server/data/town.db ".backup town-backup.db"`. Set `DB_PATH` to keep it somewhere else.
 
 ### Load testing
 
@@ -86,7 +86,7 @@ shared/       Code used by both client and server
   appearance.ts   Character look: encode/decode/validate, random looks
   catalog.ts      Generated list of hair/clothes/colour options
   protocol.ts     Message types, name/chat sanitizing
-  vending.ts      Player shop rules (where a shop may open) and messages
+  vending.ts      Player shop rules (where a shop may open, what it sells for gold) and messages
   rpg.ts          Leveling and fighting: classes, the EXP curve, monsters (and their drops), fields, damage rules
   items.ts        Every item and monster card: stats, prices, rarity, icon, card slots, who may wear it and how it looks when worn; the Outfitter's stock; the Blacksmith's upgrade table and auras
   skills.ts       Class skills: what each does per level, MP, cooldowns, and how it looks
@@ -106,7 +106,7 @@ server/       Colyseus server
 client/       Phaser game
   src/main.ts              Character creator and sign-in, then boots Phaser; wardrobe panel
   src/auth.ts              Gattchaa sign-in (ticket -> session token)
-  src/vending.ts           Player shops: open/close yours, load a shop's cards
+  src/vending.ts           Player shops: open/close yours, load what a shop sells, buy, search the market
   src/character.ts         Builds character sprite sheets (walk + sit) from recolored LPC layers, gear included; item icons
   src/PlayerSprite.ts      Avatar, walk/sit animation, name tag, chat bubble, emotes, health bar
   src/MonsterSprite.ts     Monster: animation, health bar, name on hover, target ring
@@ -143,13 +143,17 @@ scripts/
 - **Emotes.** Ten Ragnarok-style emotes pop up over your head (the smiley button; the number keys are for skills), one per second at most.
 - **Reconnects.** A dropped connection keeps your character in the world for 20 s while the SDK reconnects automatically.
 - **Accounts are optional.** Anyone can walk around and chat as a guest. **Sign in with Gattchaa** goes to gattchaaoripa.com, which sends the player back with a one-time ticket. The game swaps it for its own 30-day session, so passwords never reach the game. Signed-in players get their character back on any device. One window per account: opening a second one takes over.
-- **Player shops.** Ragnarok-style vending: a signed-in player presses **Open shop** (V) in the Market Square, names their shop, and sits down on a rug with a sign over their head. Everyone can browse the cards they've listed on the Gattchaa marketplace. Each card links to its listing, so buying (and the money) stays on the website.
+- **Player shops.** Ragnarok-style vending: a signed-in player presses **Open shop** (V) in the Market Square, names their shop, picks up to 12 things from their bag with a price in gold each, and sits down on a rug with a sign over their head. The shop also shows the cards they've listed on the Gattchaa marketplace; each links to its listing, so real cards (and real money) stay on the website. In-game gold never buys a real card.
+  - **Stock:** the picked things leave the bag (`Combat.stockShop`) and are saved as JSON on the shop row (`shops.wares`, migration v8). Sold-out wares stay at 0 so their numbers never shift.
+  - **Buying** (`shop:buy`): the buyer sends the ware number plus the item and price they saw; the room checks they're in the Market Square, can pay and have room, then `db.buyWare` takes the stock in one transaction. The sign's count (`PlayerShop.items`) and `rev` update, so open panels reload.
+  - **Mail:** the seller is paid through the `mail` table (gold, or an item, plus a note). The room hands mail to whoever is in town: right after a sale, on joining, and every 5 s (for sales through another room, and for bags that were full). Delivery and deleting the mail happen in one transaction, so nothing arrives twice. Closing a shop (by hand, by expiry, or because it sold out) mails back what didn't sell.
+  - **Search:** `GET /api/market` lists everything for gold in every shop; Tina's "Find an item" tab filters it.
   - **Where:** only in the Market Square, and not right in front of staff or so close to another shop that the signs would overlap. The form says whether the spot is good before you open. Shops saved outside the square (from before this rule) close when the server starts.
   - **While it's open:** the seller stays seated, and signs stay lit at night.
   - **When the seller leaves:** a look-alike minds the shop for 24 hours.
-  - **Finding shops:** Tina, the Market Keeper in the Market Square, lists every open shop with where it is, and you can browse them from her list. The minimap marks shops in orange.
+  - **Finding shops:** Tina, the Market Keeper in the Market Square, lists every open shop, and you can browse them from her list or search what's for sale. The minimap marks shops in orange.
   - **Updates:** listing changes arrive by webhook, so prices and card counts update within seconds.
-  - **Server cost:** nothing between purchases. Shops only do work when opened, browsed or updated.
+  - **Server cost:** nothing between purchases, apart from one small mail query every 5 s. Shops only do work when opened, browsed, bought from or updated.
 
 ## Leveling and fighting
 
@@ -185,7 +189,7 @@ Ragnarok and TibiaME style: click a monster and your character fights it. Everyt
 - **Fainting.** At 0 HP you faint and return to town fully healed. Novices lose no EXP; Knights, Mages and Archers lose 3 % of a level.
 - **Saving.** Signed-in players' progress is saved on every level-up and faint, every 30 s, and when they leave. Guests can fight too, but start over next visit.
 - **Server cost.** Monsters only think while a player is near their spawn area, and fight events go only to players close enough to see them. 20 bots fighting at once used about 5 % of one CPU core.
-- **Testing.** Outside production (`NODE_ENV` not `production`), chat commands help: `/level 25` jumps to a level, `/item saber` (or `/item redPotion 20`, `/item hornetCard`, `/item moonblade +10`) adds items, `/gold 1000` sets your gold, `/job archer` turns you into a class (from level 10; `/job novice` goes back), `/title kingslayer` hands you a title. To test duels you need a second player (another window, or a bot). `/help` lists every item id.
+- **Testing.** Outside production (`NODE_ENV` not `production`), chat commands help: `/level 25` jumps to a level, `/item saber` (or `/item redPotion 20`, `/item hornetCard`, `/item moonblade +10`) adds items, `/gold 1000` sets your gold, `/job archer` turns you into a class (from level 10; `/job novice` goes back), `/title kingslayer` hands you a title. To test duels you need a second player (another window, or a bot). Shops need a signed-in seller (run the Gattchaa mock to sign in) and a second player to buy. `/help` lists every item id.
 
 ## Jobs and skills
 
@@ -269,7 +273,7 @@ Hilda the Blacksmith works by her forge fire outside the south gate, west of Row
 
 Earned by doing things, one shown under your name. The list is `TITLES` in `shared/titles.ts`; each has a goal (level, kills of one monster or any, kinds of cards found, a legendary find, best upgrade, failed upgrades, opening a shop, or Pioneer), a rarity and sometimes an aura.
 
-- **Deeds.** The server counts what each character does (`Deeds`: kills by monster, card kinds found fresh from monsters, legendary finds, best upgrade, failed upgrades, shop opened) in `server/src/rooms/Titles.ts` and checks for new titles after each deed. Everyone who hurt a monster gets the kill. Deeds and titles are JSON columns on `characters` (migration v6), cleaned when loaded.
+- **Deeds.** The server counts what each character does (`Deeds`: kills by monster, card kinds found fresh from monsters, legendary finds, best upgrade, failed upgrades, shop opened, gold earned in your shop) in `server/src/rooms/Titles.ts` and checks for new titles after each deed. Everyone who hurt a monster gets the kill. Deeds and titles are JSON columns on `characters` (migration v6), cleaned when loaded.
 - **Earning.** A new title gives a banner over the head (`title` fx), a chat line, and town news for epic and legendary ones. Characters saved before titles existed get their level titles quietly on join.
 - **Showing.** `title:show` picks an earned title; it syncs as `Player.title` and draws under the name in its rarity colour. A shown title with an aura (Kingslayer, Card Master, Pioneer) replaces the gear aura (`Player.aura`).
 - **Pioneer.** When a signed-in player reaches `LEVEL_CAP`, the room claims a place in the `pioneers` table (first `PIONEERS` = 10 accounts per cap, numbered in order) and grants the title. Raising the cap opens 10 new places.

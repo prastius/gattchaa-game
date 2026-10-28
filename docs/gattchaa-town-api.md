@@ -198,7 +198,7 @@ A seller's **active** marketplace listings. They are what their player shop in t
 | `image_url` | a small image (about 256 px). It's shown in an `<img>` in the shop panel, so no CORS is needed |
 | `url` | the listing's page on the marketplace |
 
-Newest first, at most 60. An unknown user, or one with nothing listed: `{ "data": [] }`. A player can only open a shop when they have at least one listing.
+Newest first, at most 60. An unknown user, or one with nothing listed: `{ "data": [] }`. A shop shows these next to whatever the player sells from their in-game bag (for in-game gold, which never buys a real card), so a player with no listings can still open one.
 
 ---
 

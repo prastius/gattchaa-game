@@ -1,5 +1,15 @@
 import { Callbacks, type Room } from "@colyseus/sdk";
-import { shopSpotProblem, type PlayerShopDetails, type PlayerShopView, type ShopOpenMessage, type ShopResult } from "../../shared/vending";
+import {
+  shopSpotProblem,
+  type MarketList,
+  type PlayerShopDetails,
+  type PlayerShopView,
+  type ShopBuyMessage,
+  type ShopOpenMessage,
+  type ShopResult,
+  type ShopWare,
+  type WarePick,
+} from "../../shared/vending";
 import type { Auth } from "./auth";
 import { httpBase } from "./shop";
 
@@ -13,10 +23,10 @@ interface ShopMap {
 
 /**
  * Player shops as this client sees them: the synced list (state.shops, keyed by
- * shop id), opening and closing your own, and loading a shop's cards.
+ * shop id), opening and closing your own, loading what a shop sells, and buying.
  */
 export class Vending {
-  /** A shop opened, closed or changed (title, owner, card count…). */
+  /** A shop opened, closed or changed (title, owner, what's for sale…). */
   readonly onChange = new Set<() => void>();
   private pending?: (r: ShopResult) => void;
   private cache = new Map<string, { rev: number; at: number; details: Promise<PlayerShopDetails | string> }>();
@@ -73,9 +83,21 @@ export class Vending {
     return shopSpotProblem(x, y, shops);
   }
 
-  /** Opens your shop where you stand. Resolves to an error message, or undefined when it's open. */
-  open(title: string): Promise<string | undefined> {
-    return this.request("shop:open", { title } satisfies ShopOpenMessage);
+  /** Opens your shop where you stand, selling `wares` from your bag. Resolves to an error message, or undefined when it's open. */
+  open(title: string, wares: WarePick[]): Promise<string | undefined> {
+    return this.request("shop:open", { title, wares } satisfies ShopOpenMessage);
+  }
+
+  /** Buys `n` of a shop's ware number `ware` (the server answers in chat, and the shop's stock updates). */
+  buy(shop: string, ware: number, w: ShopWare, n: number) {
+    this.room.send("shop:buy", { shop, ware, n, item: w.item.id, price: w.price } satisfies ShopBuyMessage);
+  }
+
+  /** Everything for gold in every shop, or an error message. */
+  market(): Promise<MarketList | string> {
+    return fetch(`${httpBase()}/api/market`)
+      .then(async (res) => (res.ok ? ((await res.json()) as MarketList) : "The market list isn't available right now."))
+      .catch(() => "Couldn't load the market. Check your connection.");
   }
 
   close(): Promise<string | undefined> {
@@ -97,7 +119,7 @@ export class Vending {
     });
   }
 
-  /** A shop's cards (fetched again when its listings change), or an error message. */
+  /** What a shop sells (fetched again when its stock or listings change), or an error message. */
   details(id: string): Promise<PlayerShopDetails | string> {
     const rev = this.shop(id)?.rev ?? -1;
     const hit = this.cache.get(id);

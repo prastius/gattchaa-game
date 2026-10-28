@@ -4,11 +4,9 @@ import {
   SLOTS,
   auraOf,
   canInsert,
-  cleanCards,
-  cleanUpgrade,
+  cleanStack,
   gearBonus,
   gearString,
-  isItemId,
   stackLimit,
   type BagMessage,
   type ItemId,
@@ -35,16 +33,6 @@ function stack(id: ItemId, n: number, extras?: Extras): ItemStack {
   return s;
 }
 
-/** A saved stack, if it still makes sense (the item exists, the count fits, the cards and upgrade belong). */
-function readStack(raw: unknown): ItemStack | null {
-  if (!raw || typeof raw !== "object") return null;
-  const { id, n, cards, up } = raw as { id?: unknown; n?: unknown; cards?: unknown; up?: unknown };
-  if (!isItemId(id)) return null;
-  const count = Math.min(stackLimit(ITEMS[id]), Math.floor(Number(n)));
-  if (!(count >= 1)) return null;
-  return stack(id, count, { cards: cleanCards(id, cards), up: cleanUpgrade(id, up) });
-}
-
 /** Where a piece of equipment is: a bag slot, or worn. */
 export type GearAt = { bag: number } | { gear: Slot };
 
@@ -60,11 +48,11 @@ export class Inventory {
   static load(bagJson: string | null | undefined, gearJson: string | null | undefined): Inventory {
     const inv = new Inventory();
     const bag = parse(bagJson);
-    if (Array.isArray(bag)) bag.slice(0, BAG_SIZE).forEach((raw, i) => (inv.bag[i] = readStack(raw)));
+    if (Array.isArray(bag)) bag.slice(0, BAG_SIZE).forEach((raw, i) => (inv.bag[i] = cleanStack(raw)));
     const gear = parse(gearJson) as Record<string, unknown> | null;
     if (gear && typeof gear === "object") {
       for (const slot of SLOTS) {
-        const s = readStack(gear[slot]);
+        const s = cleanStack(gear[slot]);
         if (s && ITEMS[s.id].slot === slot) inv.gear[slot] = { ...s, n: 1 };
       }
     }
