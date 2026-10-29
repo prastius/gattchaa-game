@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { DECOR, type DecorId } from "../../../shared/world";
+import type { Biome } from "../../../shared/town";
 
 // Sprite rectangles (x, y, w, h) inside the LPC Revised sheets, measured from
 // their alpha channel. Each decor id has visual variants; the world picks one
@@ -11,14 +12,21 @@ export const WORLD_TEX = {
   plants: "plants",
   flowers: "flowers",
   rocks: "rocks",
-  // Frostfell's snowy versions (same layout as the summer sheets).
+  // Frostfell's snowy versions and Ravenmoor's autumn ones (same layout as the summer sheets).
   terrainWinter: "terrain-winter",
   treesWinter: "trees-winter",
   plantsWinter: "plants-winter",
+  terrainAutumn: "terrain-autumn",
+  treesAutumn: "trees-autumn",
+  plantsAutumn: "plants-autumn",
 } as const;
 
-/** The winter sheet standing in for a summer one on Frostfell. */
-const WINTER: Record<string, string> = { [WORLD_TEX.trees]: WORLD_TEX.treesWinter, [WORLD_TEX.plants]: WORLD_TEX.plantsWinter };
+/** The season's sheet standing in for a summer one on the islands. */
+const SEASON: Record<Biome, Record<string, string>> = {
+  summer: {},
+  winter: { [WORLD_TEX.trees]: WORLD_TEX.treesWinter, [WORLD_TEX.plants]: WORLD_TEX.plantsWinter },
+  autumn: { [WORLD_TEX.trees]: WORLD_TEX.treesAutumn, [WORLD_TEX.plants]: WORLD_TEX.plantsAutumn },
+};
 
 type Rect = readonly [x: number, y: number, w: number, h: number];
 interface DecorArt {
@@ -54,10 +62,10 @@ const ART: Record<Exclude<DecorId, "none">, DecorArt> = {
 
 const SHADOW_FRAME = "decor-shadow";
 
-/** Registers a named frame for every rect (on the winter sheets too); call once after the sheets load. */
+/** Registers a named frame for every rect (on the seasons' sheets too); call once after the sheets load. */
 export function registerDecorFrames(scene: Phaser.Scene) {
   for (const [id, art] of Object.entries(ART)) {
-    for (const key of [art.tex, WINTER[art.tex]]) {
+    for (const key of [art.tex, ...Object.values(SEASON).map((s) => s[art.tex])]) {
       if (!key) continue;
       const tex = scene.textures.get(key);
       art.rects.forEach((r, i) => tex.add(`${id}:${i}`, 0, r[0], r[1], r[2], r[3]));
@@ -72,13 +80,13 @@ export interface DecorSprite {
   tall: boolean;
 }
 
-/** Creates the sprite(s) for a decor at tile (tx, ty); `pick` in [0,1) chooses the variant. Snowy on Frostfell. */
-export function createDecor(scene: Phaser.Scene, decor: number, px: number, py: number, pick: number, winter = false): DecorSprite | null {
+/** Creates the sprite(s) for a decor at tile (tx, ty); `pick` in [0,1) chooses the variant. Snowy on Frostfell, autumn on Ravenmoor. */
+export function createDecor(scene: Phaser.Scene, decor: number, px: number, py: number, pick: number, biome: Biome = "summer"): DecorSprite | null {
   const id = DECOR[decor]?.id;
   if (!id || id === "none") return null;
   const art = ART[id];
   const variant = Math.floor(pick * art.rects.length);
-  const tex = (winter && WINTER[art.tex]) || art.tex;
+  const tex = SEASON[biome][art.tex] ?? art.tex;
   const image = scene.add.image(px, py, tex, `${id}:${variant}`).setOrigin(0.5, 1).setDepth(py);
   let shadow: Phaser.GameObjects.Image | undefined;
   if (art.shadow) {

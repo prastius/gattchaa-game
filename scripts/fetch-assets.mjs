@@ -248,6 +248,16 @@ const GEAR = [
   ["norman", "Norman helmet", "headwear/helmets/helmets/hat_helmet_norman.json"],
   ["helmWings", "Helmet wings", "headwear/helmets/accessories/hat_accessory_wings.json"],
   ["tabardWhite", "Tabard (white)", "torso/jacket/torso_jacket_tabard.json", { variant: "white" }],
+  // Ravenmoor's gear.
+  ["swordGold", "Gold arming sword", "weapons/sword/weapon_sword_arming.json", { variant: "gold" }],
+  ["longspearDark", "Long spear (dark)", "weapons/polearm/weapon_polearm_longspear.json", { variant: "dark", walk128: true }],
+  ["recurveRed", "Recurve bow (red)", "weapons/ranged/bow/weapon_ranged_bow_recurve.json", { variant: "red", walk128: true }],
+  ["bowGold", "Bow (gold)", "weapons/ranged/bow/weapon_ranged_bow_normal.json", { variant: "gold", walk128: true }],
+  ["gnarledLight", "Gnarled staff (light)", "weapons/magic/weapon_magic_gnarled.json", { variant: "light" }],
+  ["crystalPurple", "Crystal staff (purple)", "weapons/magic/weapon_magic_crystal.json", { variant: "purple" }],
+  ["kiteRed", "Kite shield (red)", "weapons/shields/shield_kite.json", { variant: "kite_red_gray" }],
+  ["bascinet", "Bascinet", "headwear/helmets/helmets/hat_helmet_bascinet.json"],
+  ["crownGray", "Crown (grey)", "headwear/hats/formal/hat_formal_crown.json", { variant: "crown_gray" }],
 ].map(([id, label, def, opts]) => ["gear", id, label, def, B, opts]);
 
 /**
@@ -280,6 +290,8 @@ const MOB_PARTS = [
   ["hornsCurled", "Curled horns", "head/appendages/head_horns_curled.json"],
   ["lizardWings", "Lizard wings", "body/lizard/wings_lizard.json"],
   ["wolfTailFluffy", "Fluffy wolf tail", "body/tails/tail_wolf_fluffy.json", { variant: "fur_white" }],
+  // Ravenmoor.
+  ["frankHead", "Frankenstein head", "head/heads/undead/heads_frankenstein.json"],
 ].map(([id, label, def, opts]) => ["mob", id, label, def, M, opts]);
 
 const PALETTES = {
@@ -313,6 +325,10 @@ const WORLD_FILES = {
   "terrain-winter.png": "Terrain/terrain_winter.png",
   "trees-winter.png": "Terrain/trees_winter.png",
   "plants-winter.png": "Terrain/plants_winter.png",
+  // Ravenmoor: autumn.
+  "terrain-autumn.png": "Terrain/terrain_autumn.png",
+  "trees-autumn.png": "Terrain/trees_autumn.png",
+  "plants-autumn.png": "Terrain/plants_autumn.png",
 };
 
 /** Town buildings, furniture and floors, also from LPC Revised (OGA-BY 3.0). */

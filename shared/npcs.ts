@@ -287,7 +287,14 @@ export const NPCS: NpcDef[] = [
     dir: Dir.Down,
     greeting:
       "Dusk Hollow (Lv 10–20) starts here. Grubs (Lv 11) by the road only fight back, but Night Bats (Lv 12) swoop at anyone. Rock Worms (Lv 14) are slow and thick-shelled. Deeper in, Gazers (Lv 16) shoot from afar and Ghosts (Lv 18) are hard to hit: use your skills. And where the road ends lives the Pumpking (Lv 22). Don't face him alone.",
-    chatter: ["Dusk Hollow is no meadow. Be careful!", "Ghosts dodge plain attacks. Use your skills!", "Gazers shoot from afar. Close in fast!", "Something big lives where the road ends…", "Past level 20? The Orc Woods lie out the west gate."],
+    chatter: [
+      "Dusk Hollow is no meadow. Be careful!",
+      "Ghosts dodge plain attacks. Use your skills!",
+      "Gazers shoot from afar. Close in fast!",
+      "Something big lives where the road ends…",
+      "Past level 20? The Orc Woods lie out the west gate.",
+      "Level 50? Follow the road past the Pumpking to Finn's boat. He sails to Ravenmoor.",
+    ],
   },
   {
     // Outside the west gate, where the road runs into the Orc Woods.
@@ -366,6 +373,32 @@ export const NPCS: NpcDef[] = [
       "The Frost Giant waits at the end of the path…",
       "Bring White Potions. Lots of them.",
     ],
+  },
+  {
+    // At the end of the pier where the east road meets the sea.
+    id: "ferry-dusk",
+    name: "Finn",
+    title: "Boatman",
+    kind: "ferry",
+    look: look({ body: "male", hair: "messy", hairColor: "sandy", beard: "stubble", skin: "taupe", top: "vneck", topColor: "teal", bottom: "cuffed", bottomColor: "slate", shoes: "boots", shoesColor: "brown", hat: "bandana", hatColor: "teal" }),
+    ...at(341.5, 186.6),
+    dir: Dir.Right,
+    greeting:
+      "Ravenmoor? Across the strait, under a sky that never gets light. It's for adventurers of level 50 and up: Wraiths, Gargoyles, Dark Knights, Liches and worse, and the Fallen King on his throne in the old castle. I'll row you over for 800 gold. Corvin brings you back for free.",
+    chatter: ["Boat to Ravenmoor! 800 gold!", "Ravenmoor is for level 50 and up!", "Strange lights over that island at night…", "Corvin rows you back for free."],
+  },
+  {
+    // At the end of Ravenmoor's pier, on the island's west shore.
+    id: "ferry-ravenmoor",
+    name: "Corvin",
+    title: "Ferryman",
+    kind: "ferry",
+    look: look({ body: "male", hair: "long", hairColor: "dark_gray", beard: "beard", skin: "light", top: "longsleeve", topColor: "black", bottom: "pants", bottomColor: "charcoal", shoes: "boots", shoesColor: "black", hat: "hood", hatColor: "black" }),
+    ...at(385.5, 186.6),
+    dir: Dir.Left,
+    greeting:
+      "Welcome to Ravenmoor (Lv 50–60), where the sun never quite comes up. Wraiths (Lv 51) drift through the woods by the pier: plain attacks pass through them, so use your skills. Gargoyles (Lv 53) swoop down from the high ground either side of the castle. Below the castle gate, Dark Knights (Lv 55) still keep watch, and inside, the Fallen King (Lv 64) waits on his throne. Liches (Lv 57) cast from the east, past the lake, and Flesh Golems (Lv 59) lurch about in the south. When you've seen enough, I'll row you back for free.",
+    chatter: ["Boat back to Dusk Hollow! Free!", "Wraiths dodge plain attacks. Use your skills!", "The Fallen King never leaves his throne…", "Liches cast from afar. Close in fast!"],
   },
   {
     // Just inside the south gate: Novices walk past him on their way out, and come back at level 10.
@@ -523,6 +556,8 @@ export const NPCS: NpcDef[] = [
 export const FERRY: Record<string, { to: { x: number; y: number }; dir: number; fare: number; dest: string; lv?: number }> = {
   "ferry-meadow": { to: at(190.5, 399.6), dir: Dir.Down, fare: 500, dest: "Frostfell", lv: 40 },
   "ferry-frostfell": { to: at(242.5, 333.6), dir: Dir.Up, fare: 0, dest: "the South Meadow" },
+  "ferry-dusk": { to: at(388.5, 186.6), dir: Dir.Right, fare: 800, dest: "Ravenmoor", lv: 50 },
+  "ferry-ravenmoor": { to: at(338.5, 186.6), dir: Dir.Left, fare: 0, dest: "Dusk Hollow" },
 };
 
 /** What an NPC's stall offers right now (sold-out items last for featured stalls). */

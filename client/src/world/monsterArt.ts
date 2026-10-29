@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 import { MONSTERS, type MonsterId } from "../../../shared/rpg";
 // character.ts imports this file too: use its exports inside functions only, never while this file loads.
-import { composeParts, type ArtPart } from "../character";
+import { composeParts, tintSheet, type ArtPart } from "../character";
 import type { Missile } from "./fx";
 
 // Monster sprite sheets ("[LPC] Monsters", see CREDITS.md). Rows face up,
@@ -34,6 +34,8 @@ export interface MonsterArt {
   idle?: number[];
   /** Drawn bigger than the sheet (bosses). */
   scale?: number;
+  /** A pack sheet recoloured: multiplied by this colour (the Wraith is a darker Ghost). */
+  tint?: number;
   /** What it shoots, from at least `missileFrom` px away (closer, it bites). */
   missile?: Missile;
   missileFrom?: number;
@@ -276,6 +278,64 @@ export const MONSTER_ART: Record<MonsterId, MonsterArt> = {
     ],
     { scale: 1.9, w: 52, h: 98, missile: "ice", missileFrom: 70 },
   ),
+  // Ravenmoor.
+  wraith: { file: "ghost.png", tint: 0x8a6ad8, frame: 64, cols: 6, feet: 56, attack: same([4, 5]), w: 36, h: 50, scale: 1.15 },
+  gargoyle: humanoid(
+    [
+      ...skin("fur_grey"),
+      { category: "mob", id: "lizardWings", colors: { body: "fur_grey" } },
+      { category: "mob", id: "beastHead", colors: { body: "fur_grey" } },
+    ],
+    { scale: 1.2, w: 32, h: 58 },
+  ),
+  darkKnight: humanoid(
+    [
+      ...skin("taupe"),
+      { category: "gear", id: "cape", colors: { cloth: "maroon" } },
+      { category: "gear", id: "plate", colors: { metal: "iron" } },
+      { category: "gear", id: "plateArms", colors: { metal: "iron" } },
+      { category: "gear", id: "greaves", colors: { metal: "iron" } },
+      { category: "gear", id: "ironBoots", colors: { metal: "iron" } },
+      { category: "gear", id: "greathelm", colors: { metal: "iron" } },
+      { category: "gear", id: "kiteRed" },
+      { category: "gear", id: "longsword" },
+    ],
+    { scale: 1.1, w: 30, h: 54 },
+  ),
+  lich: humanoid(
+    [
+      { category: "mob", id: "skeletonBody" },
+      { category: "mob", id: "skullHead" },
+      { category: "gear", id: "cape", colors: { cloth: "purple" } },
+      { category: "gear", id: "tabardBlack" },
+      { category: "gear", id: "hood", colors: { cloth: "black" } },
+      { category: "gear", id: "crystalPurple" },
+    ],
+    { missile: "bolt", missileFrom: 60 },
+  ),
+  fleshGolem: humanoid(
+    [
+      { category: "mob", id: "zombieBody" },
+      { category: "mob", id: "frankHead", colors: { body: "zombie_green" } },
+      { category: "bottom", id: "shorts", colors: { cloth: "brown" } },
+      { category: "mob", id: "mace" },
+    ],
+    { scale: 1.45, w: 38, h: 70 },
+  ),
+  fallenKing: humanoid(
+    [
+      { category: "mob", id: "skeletonBody" },
+      { category: "mob", id: "skullHead" },
+      { category: "gear", id: "cape", colors: { cloth: "purple" } },
+      { category: "gear", id: "plate", colors: { metal: "gold" } },
+      { category: "gear", id: "plateArms", colors: { metal: "gold" } },
+      { category: "gear", id: "greaves", colors: { metal: "gold" } },
+      { category: "gear", id: "ironBoots", colors: { metal: "iron" } },
+      { category: "gear", id: "crownGray" },
+      { category: "gear", id: "halberd" },
+    ],
+    { scale: 1.9, w: 52, h: 98, missile: "bolt", missileFrom: 70 },
+  ),
 };
 
 const MOVE_COLS = [0, 1, 2, 1];
@@ -289,7 +349,20 @@ const ALL = Object.entries(MONSTER_ART) as [MonsterId, MonsterArt][];
 /** The pack's sheets load with the scene; humanoids are put together in createMonsterAnims. */
 export function preloadMonsters(scene: Phaser.Scene) {
   for (const [kind, art] of ALL) {
-    if (art.file) scene.load.spritesheet(texKey(kind), `${import.meta.env.BASE_URL}assets/monsters/${art.file}`, { frameWidth: art.frame, frameHeight: art.frame });
+    const url = `${import.meta.env.BASE_URL}assets/monsters/${art.file}`;
+    // A recoloured sheet loads as a plain image and becomes its texture in createMonsterAnims.
+    if (art.file && art.tint) scene.load.image(`${texKey(kind)}:src`, url);
+    else if (art.file) scene.load.spritesheet(texKey(kind), url, { frameWidth: art.frame, frameHeight: art.frame });
+  }
+}
+
+/** A recoloured pack monster's texture: its sheet multiplied by the tint, cut into frames. */
+function tintedTexture(scene: Phaser.Scene, kind: MonsterId, art: MonsterArt) {
+  if (scene.textures.exists(texKey(kind))) return;
+  const src = scene.textures.get(`${texKey(kind)}:src`).getSourceImage() as HTMLImageElement;
+  const tex = scene.textures.addCanvas(texKey(kind), tintSheet(src, art.tint!))!;
+  for (let row = 0; row < 4; row++) {
+    for (let col = 0; col < art.cols; col++) tex.add(row * art.cols + col, 0, col * art.frame, row * art.frame, art.frame, art.frame);
   }
 }
 
@@ -332,7 +405,10 @@ export function monsterReady(scene: Phaser.Scene, kind: MonsterId): Promise<void
 export function createMonsterAnims(scene: Phaser.Scene) {
   for (const [kind, art] of ALL) {
     if (art.parts) void monsterReady(scene, kind);
-    else createAnims(scene, kind, art);
+    else {
+      if (art.tint) tintedTexture(scene, kind, art);
+      createAnims(scene, kind, art);
+    }
   }
 }
 

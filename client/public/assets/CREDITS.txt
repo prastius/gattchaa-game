@@ -1310,6 +1310,14 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://opengameart.org/content/lpc-helmets>
 - <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
 
+### Bascinet (hat/helmet/bascinet)
+
+- Authors: bluecarrot16, ElizaWy, Sander Frenken (castelonia)
+- Licenses: OGA-BY 3.0, CC-BY-SA 4.0, CC-BY-SA 3.0, GPL 3.0
+- <https://opengameart.org/content/lpc-realistic-helmet-pack>
+- <https://opengameart.org/content/lpc-helmets-mega-pack>
+- <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
+
 ### Basic Beard (beards/beard/basic)
 
 - Authors: JaidynReiman, Carlo Enrico Victoria (Nemisys)
@@ -1638,6 +1646,14 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://opengameart.org/content/lpc-2-characters>
 - <https://opengameart.org/content/lpc-gentleman>
 - <https://opengameart.org/content/lpc-expanded-pants>
+
+### Frankenstein (head/heads/frankenstein)
+
+- Authors: Stephen Challener (Redshrike), bluecarrot16
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+- Notes: original head by Redshrike, frankenstein's monster version by bluecarrot16
+- <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
+- <https://opengameart.org/content/lpc-folk>
 
 ### French Mustache (beards/mustache/french)
 

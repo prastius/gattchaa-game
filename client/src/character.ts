@@ -408,12 +408,33 @@ const CARD_SKY: Record<MonsterId, [string, string]> = {
   frostWight: ["#e4ecf2", "#6f8394"],
   frostDrake: ["#d6f1ff", "#3f8fc4"],
   frostGiant: ["#e0f6ff", "#2f5f9a"],
+  wraith: ["#e2d8f6", "#5a4a8a"],
+  gargoyle: ["#e4e2dc", "#6e6a64"],
+  darkKnight: ["#e6d8d8", "#5a2a2a"],
+  lich: ["#e8dcf2", "#4a2a6a"],
+  fleshGolem: ["#dfe8d0", "#5a6a3a"],
+  fallenKing: ["#efe2c8", "#3a2a4a"],
 };
+
+/** A monster sheet recoloured by multiplying with `tint` (the Wraith is a darker Ghost). */
+export function tintSheet(img: HTMLImageElement | HTMLCanvasElement, tint: number): HTMLCanvasElement {
+  const canvas = document.createElement("canvas");
+  canvas.width = img.width;
+  canvas.height = img.height;
+  const ctx = canvas.getContext("2d")!;
+  ctx.drawImage(img, 0, 0);
+  ctx.globalCompositeOperation = "multiply";
+  ctx.fillStyle = `#${tint.toString(16).padStart(6, "0")}`;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.globalCompositeOperation = "destination-in";
+  ctx.drawImage(img, 0, 0);
+  return canvas;
+}
 
 /** A monster card: gold frame, the monster facing you, and a name plate (Ragnarok style). */
 async function drawCard(ctx: CanvasRenderingContext2D, monster: MonsterId) {
   const art = MONSTER_ART[monster];
-  const sheet = art.parts ? await composeParts(art.parts) : await loadImage(`monsters/${art.file}`);
+  const sheet = art.parts ? await composeParts(art.parts) : art.tint ? tintSheet(await loadImage(`monsters/${art.file}`), art.tint) : await loadImage(`monsters/${art.file}`);
   // Its standing frame, facing down.
   const frame = document.createElement("canvas");
   frame.width = frame.height = art.frame;

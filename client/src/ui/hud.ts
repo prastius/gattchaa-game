@@ -1,5 +1,5 @@
 import { DECOR, TILE_SIZE, Terrain, isWet, type World } from "../../../shared/world";
-import { Floor, inRect, isSnowy } from "../../../shared/town";
+import { Floor, biomeAt, inRect, type Biome } from "../../../shared/town";
 import { EMOTES, EMOTE_NAMES } from "../../../shared/protocol";
 import { FIELDS, fieldAt, inSafeZone } from "../../../shared/rpg";
 import { inPvpZone } from "../../../shared/pvp";
@@ -18,10 +18,11 @@ const TERRAIN_RGB: Record<number, [number, number, number]> = {
   [Terrain.Grass]: [104, 160, 72],
   [Terrain.Dirt]: [166, 124, 82],
 };
-/** Frostfell: snowfields and icy rock. */
-const SNOW_RGB: Record<number, [number, number, number]> = {
-  [Terrain.Grass]: [226, 236, 244],
-  [Terrain.Dirt]: [170, 200, 220],
+/** The islands' land: Frostfell's snowfields and icy rock, Ravenmoor's golden grass. */
+const SEASON_RGB: Record<Biome, Record<number, [number, number, number]>> = {
+  summer: {},
+  winter: { [Terrain.Grass]: [226, 236, 244], [Terrain.Dirt]: [170, 200, 220] },
+  autumn: { [Terrain.Grass]: [176, 150, 66], [Terrain.Dirt]: [140, 104, 70] },
 };
 
 const FLOOR_RGB: Record<number, [number, number, number]> = {
@@ -84,7 +85,7 @@ export class HUD {
           ? [120, 52, 30]
           : floor
             ? (FLOOR_RGB[floor] ?? [200, 200, 200])
-            : ((isSnowy(ty) && SNOW_RGB[world.vertexAt(tx, ty)]) || TERRAIN_RGB[world.vertexAt(tx, ty)] || [0, 0, 0]);
+            : (SEASON_RGB[biomeAt(tx, ty)][world.vertexAt(tx, ty)] ?? TERRAIN_RGB[world.vertexAt(tx, ty)] ?? [0, 0, 0]);
         const d = DECOR[world.decorAt(tx, ty)];
         // The Wildlands' land has a red cast, so you can see where PVP starts.
         const pvp = !isWet(world.vertexAt(tx, ty)) && FIELDS.some((f) => f.pvp && inRect(f.area, tx, ty));

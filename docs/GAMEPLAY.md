@@ -57,7 +57,7 @@ Gattchaa Town is a walled royal town in the middle of an island, with gates to t
 - **The Market Square** (by the south gate) is where players run their own shops.
 - **The lakeside park** runs along the west wall, with a pond, benches and a campfire.
 - **The Collectors' Café** is in the east quarter, with **the Arena** behind it: a ring of sand where players duel, with benches for the crowd.
-- **The gates** lead to the monster fields: south to the South Meadow, east to Dusk Hollow, west to the Orc Woods. From the west and east roads, paths run north along the town walls to the Wildlands. Off the south road, a path runs east to the meadow's south-east point, where a ferry sails to the snowy island of Frostfell.
+- **The gates** lead to the monster fields: south to the South Meadow, east to Dusk Hollow, west to the Orc Woods. From the west and east roads, paths run north along the town walls to the Wildlands. Off the south road, a path runs east to the meadow's south-east point, where a ferry sails to the snowy island of Frostfell. And the east road runs on past the Pumpking to a boat for the autumn island of Ravenmoor.
 
 The town is always safe: monsters never come in, and nobody can attack anyone inside the walls, except in a duel both players agreed to.
 
@@ -93,6 +93,8 @@ The town is always safe: monsters never come in, and nobody can attack anyone in
 | Sable | Bounty Hunter | North of town, by the path up from the west road | Explains the Wildlands and their PVP rules |
 | Edda | Ferry Captain | At the end of the pier on the meadow's south-east point | Sails you to Frostfell for 500 gold |
 | Bjorn | Ferryman | At the end of Frostfell's pier | Explains Frostfell, and sails you back for free |
+| Finn | Boatman | At the end of the pier where the east road meets the sea | Rows you to Ravenmoor for 800 gold |
+| Corvin | Ferryman | At the end of Ravenmoor's pier | Explains Ravenmoor, and rows you back for free |
 | Orin | Job Master | Just inside the south gate | Makes you a Knight, Mage or Archer at level 10, and gives you your second job at level 50 |
 | Bram | Outfitter | Outside the south gate, east of the road | Sells potions and starter gear, buys loot |
 | Hilda | Blacksmith | Outside the south gate, west of Rowan | Upgrades gear from +0 to +10 |
@@ -150,8 +152,11 @@ Shops also show as orange dots on the minimap.
 | Orc Woods | 20–30 | Out of the west gate | Gregor |
 | Wildlands (open PVP) | 30–40 | Up the paths north along the town walls, from the west or east road | Sable |
 | Frostfell | 40–50 | The ferry from the meadow's south-east point (500 gold; the way back is free) | Edda, Bjorn |
+| Ravenmoor | 50–60 | The boat at the end of the east road, past the Pumpking (800 gold; the way back is free) | Finn, Corvin |
 
 **The ferry.** Frostfell is an island across the sea, south of the South Meadow. Follow the south road out of the gate and take the path east (there's a signpost), past the Hornets, down to the pier on the meadow's south-east point. **Edda the Ferry Captain** waits at the end of it: talk to her and press **Sail to Frostfell** (500 gold). You step off at the end of Frostfell's pier, by **Bjorn the Ferryman**, who sails you back for free whenever you like. Fainting on Frostfell wakes you up in town as usual.
+
+**The boat to Ravenmoor.** Ravenmoor is an island across the strait east of Dusk Hollow. Follow the east road out of the gate, all the way past the Pumpking (there's a signpost), to the pier where the road meets the sea. **Finn the Boatman** rows you over for 800 gold; **Corvin the Ferryman** rows you back for free.
 
 **South Meadow**
 
@@ -206,7 +211,18 @@ Shops also show as orange dots on the minimap.
 | Frost Drake | 49 | 4,200 | The east of the island | Big and slow, only fights back, hits very hard |
 | **Frost Giant** (boss) | 54 | 70,000 | His ring of stones on the highlands, at the end of the path from the pier | See "Field bosses" below |
 
-Goblins, orcs, the undead and the beastmen of the Wildlands and Frostfell walk like people, carry real weapons (war axes, maces, flails, tridents, spears, bows) and lunge at you when they strike.
+**Ravenmoor** (an autumn island under an endless dusk, with falling leaves; the Fallen King's ruined castle on its high ground)
+
+| Monster | Lv | HP | Where | Behaviour |
+| --- | --- | --- | --- | --- |
+| Wraith | 51 | 4,300 | The woods by the pier | Plain attacks often miss it (skills always hit). Attacks anyone who comes close |
+| Gargoyle | 53 | 4,600 | The high ground either side of the castle | Fast, attacks anyone who comes close |
+| Dark Knight | 55 | 5,400 | Below the castle gate | Tough, attacks anyone who comes close |
+| Lich | 57 | 4,400 | The east of the island, past the lake | Casts dark bolts from far away, attacks on sight |
+| Flesh Golem | 59 | 6,200 | The south of the island | Huge and slow, only fights back, hits very hard |
+| **Fallen King** (boss) | 64 | 110,000 | His throne inside the ruined castle | See "Field bosses" below |
+
+Goblins, orcs, the undead and the beastmen of the Wildlands, Frostfell and Ravenmoor walk like people, carry real weapons (war axes, maces, flails, tridents, spears, bows) and lunge at you when they strike.
 
 ### How fighting works
 
@@ -248,7 +264,7 @@ The Novice levels go fast. From the job change at level 10, each level needs a l
 | 55 | 443,927 |
 | 59 | 562,245 |
 
-Fighting monsters of your own level, a level takes about 4 minutes at level 12, about 8 minutes at level 18, about 12 to 15 minutes in the Orc Woods (levels 20–30), about 11 to 15 minutes in the Wildlands (levels 30–40), and about 10 to 16 minutes on Frostfell (levels 40–50). Past level 50 the levels take longer again: Frostfell's Frost Drakes and the Frost Giant still give full EXP up to about level 54, and new fields for levels 50–60 are coming. Using your skills makes it quicker.
+Fighting monsters of your own level, a level takes about 4 minutes at level 12, about 8 minutes at level 18, about 12 to 15 minutes in the Orc Woods (levels 20–30), about 11 to 15 minutes in the Wildlands (levels 30–40), about 10 to 16 minutes on Frostfell (levels 40–50), and about 14 to 17 minutes on Ravenmoor (levels 50–60). Using your skills makes it quicker.
 
 ### Healing and fainting
 
@@ -288,6 +304,13 @@ Fighting monsters of your own level, a level takes about 4 minutes at level 12, 
 - When he falls, the whole town hears who brought him down. He comes back **25 minutes** later.
 - He's meant for a party of four around level 50: four level-50 players beat him in a few minutes, with one of them taking the hits and drinking potions.
 - **He always drops** the Heart of Winter (sells for 4,500 gold), a Mithril Ingot and a Star Crystal (often two), and usually a White Potion. He often drops good gear (Glacier Lance, Glacier Bow, Aurora Staff, Valkyrie Helm, Frost Plate). Rarely he drops the **Frost Giant's Tooth** (6%), and very rarely the legendary **Frost Giant Card** (2%) or **Frost Scythe** (1.5%).
+
+**The Fallen King** sits on his throne in the ruined castle on Ravenmoor's high ground, among broken walls and two rows of old pillars. Dark Knights still keep watch below his gate.
+
+- He has 110,000 HP, swings a halberd, casts dark bolts at anyone out of his reach, and heals slowly if left alone. He's drawn very big: a crowned skeleton in gold plate and a purple cape.
+- When he falls, the whole town hears who brought him down. He comes back **30 minutes** later.
+- He's meant for a party of four at level 60: four level-60 players beat him in a few minutes, with one of them taking the hits and drinking potions.
+- **He always drops** the Royal Key (sells for 6,000 gold), a Mithril Ingot and a Star Crystal (often two), and usually a White Potion. He often drops good gear (Dark Lance, Royal Bow, Soul Staff, Dread Plate, Ruin Shield). Rarely he drops the **King's Seal** (6%), and very rarely the legendary **Fallen King Card** (2%) or **Fallen Crown** (1.5%), a crown anyone can wear.
 
 ## 6. Jobs and skills
 
@@ -403,7 +426,7 @@ Frozen (and snared) monsters turn icy blue and can't move or attack. While a buf
 - Monsters drop loot on the ground around them. Rarer loot glows.
 - For the first **15 seconds**, only the player who did the most damage can pick it up (it looks faded to everyone else). After that, anyone can.
 - Loot disappears after **90 seconds**. Click it to walk over and pick it up.
-- Every monster drops its own loot to sell (Slime Jelly, Snake Scale, Wild Honey, Bloom Crystal, Sticky Silk, Bat Fang, Rock Shard, Gazer Lens, Ectoplasm, Goblin Charm, Orc Tusk, Orcish Arrowhead, Old Bone, Rotten Bandage, Boar Hide, Lizard Scale, Wolf Pelt, Troll Tooth, Blood Ruby, Yeti Fur, Ram Horn, Frozen Tear, Wight's Chain, Drake Scale), plus potions, now and then gear, ingots for the Blacksmith, and very rarely its card.
+- Every monster drops its own loot to sell (Slime Jelly, Snake Scale, Wild Honey, Bloom Crystal, Sticky Silk, Bat Fang, Rock Shard, Gazer Lens, Ectoplasm, Goblin Charm, Orc Tusk, Orcish Arrowhead, Old Bone, Rotten Bandage, Boar Hide, Lizard Scale, Wolf Pelt, Troll Tooth, Blood Ruby, Yeti Fur, Ram Horn, Frozen Tear, Wight's Chain, Drake Scale, Wraith Essence, Gargoyle Shard, Rusted Key, Bone Dust, Golem's Heart), plus potions, now and then gear, ingots for the Blacksmith, and very rarely its card.
 
 ### Bram the Outfitter
 
@@ -432,6 +455,8 @@ He also **buys** almost anything, and has a one-click "sell all monster loot" bu
 
 ### Gear list
 
+Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "Mage" Wizards and "Archer" Hunters.
+
 **Weapons**
 
 | Weapon | Lv | Bonus | Who | Card slots | Where to get it |
@@ -448,12 +473,14 @@ He also **buys** almost anything, and has a one-click "sell all monster loot" bu
 | Katana | 27 | ATK +40, Critical +6% | Novice, Knight | 2 | Orc Skeleton, Orc Warlord |
 | Flame Blade | 36 | ATK +54, Critical +6% | Novice, Knight | 2 | Troll, Vampire, Minotaur King |
 | Ice Sword | 42 | ATK +60, Critical +3% | Novice, Knight | 2 | Yeti |
+| Gilded Blade | 52 | ATK +70, Critical +4% | Novice, Knight | 2 | Gargoyle |
 | Halberd (spear, both hands) | 25 | ATK +50 | Knight | 2 | Orc Warrior, Orc Warlord |
 | Dragon Spear (legendary, spear, both hands) | 30 | ATK +66, Critical +8% | Knight | 2 | Orc Warlord |
 | Long Spear (spear, both hands) | 32 | ATK +62 | Knight | 2 | Boarman, Lizardman |
 | Trident (spear, both hands) | 37 | ATK +74, Critical +4% | Knight | 2 | Lizardman, Minotaur King |
 | Glacier Lance (spear, both hands) | 46 | ATK +88, Critical +4% | Knight | 2 | Ramhorn, Frost Drake, Frost Giant |
 | Frost Scythe (legendary, spear, both hands) | 48 | ATK +102, Critical +8% | Knight | 2 | Frost Giant |
+| Dark Lance (spear, both hands) | 56 | ATK +104, Critical +4% | Knight | 2 | Dark Knight, Flesh Golem, Fallen King |
 | Hunting Bow | 10 | ATK +9, reach 170 | Archer | 1 | Orin (job gift), Bram |
 | Recurve Bow | 12 | ATK +14, reach 190 | Archer | 2 | Snapper Flower |
 | Great Bow | 16 | ATK +23, reach 210 | Archer | 2 | Gazer, Pumpking |
@@ -463,6 +490,8 @@ He also **buys** almost anything, and has a one-click "sell all monster loot" bu
 | Sunfire Bow (legendary) | 38 | ATK +64, Critical +8%, reach 240 | Archer | 2 | Minotaur King |
 | Frost Bow | 42 | ATK +54, reach 235 | Archer | 2 | Ramhorn |
 | Glacier Bow | 46 | ATK +66, Critical +4%, reach 245 | Archer | 2 | Frost Wight, Frost Giant |
+| Blood Bow | 52 | ATK +62, reach 245 | Archer | 2 | Wraith |
+| Royal Bow | 56 | ATK +76, Critical +4%, reach 250 | Archer | 2 | Flesh Golem, Fallen King |
 | Apprentice Staff | 10 | ATK +9, MP +15, reach 150 | Mage | 1 | Orin (job gift), Bram |
 | Gnarled Staff | 12 | ATK +14, MP +25, reach 160 | Mage | 2 | Snapper Flower |
 | Crystal Staff | 15 | ATK +19, MP +40, reach 170 | Mage | 2 | Snapper Flower |
@@ -473,6 +502,8 @@ He also **buys** almost anything, and has a one-click "sell all monster loot" bu
 | Archmage Staff (legendary) | 38 | ATK +64, MP +200, reach 230 | Mage | 2 | Minotaur King |
 | Winter Staff | 42 | ATK +54, MP +160, reach 220 | Mage | 2 | Frost Shaman |
 | Aurora Staff | 46 | ATK +66, MP +220, reach 235 | Mage | 2 | Frost Drake, Frost Giant |
+| Bone Staff | 52 | ATK +62, MP +200, reach 230 | Mage | 2 | Lich |
+| Soul Staff | 56 | ATK +76, MP +260, reach 240 | Mage | 2 | Lich, Flesh Golem, Fallen King |
 
 **Spears** are new for Knights (in Ragnarok, Knights carry spears). They hit harder than swords but need both hands, so no shield.
 
@@ -489,6 +520,7 @@ He also **buys** almost anything, and has a one-click "sell all monster loot" bu
 | Tower Shield | 33 | DEF +12, HP +120 | Lizardman |
 | Engrailed Shield | 38 | DEF +14, HP +170 | Vampire, Minotaur King |
 | Frost Shield | 45 | DEF +16, HP +220 | Ramhorn |
+| Ruin Shield | 55 | DEF +18, HP +270 | Gargoyle, Dark Knight, Fallen King |
 
 **Head**
 
@@ -510,6 +542,10 @@ He also **buys** almost anything, and has a one-click "sell all monster loot" bu
 | Snow Hood | 42 | ATK +5, DEF +7, HP +60 | Yeti |
 | Moon Hat | 43 | ATK +4, DEF +4, MP +170 | Frost Shaman |
 | Valkyrie Helm | 46 | ATK +3, DEF +13, HP +220 | Frost Wight, Frost Drake, Frost Giant |
+| Bascinet | 53 | DEF +15, HP +260 | Gargoyle |
+| Shadow Hood | 53 | ATK +7, DEF +9, HP +90 | Wraith |
+| Night Hat | 53 | ATK +5, DEF +5, MP +210 | Lich |
+| Fallen Crown (legendary, anyone) | 58 | ATK +8, DEF +12, HP +260, MP +120 | Fallen King |
 | Meadow Crown (legendary) | 10 | ATK +4, DEF +4, HP +60 | Snapper Flower (1 in 2,000) |
 
 **Armour, legs and feet**
@@ -530,6 +566,9 @@ He also **buys** almost anything, and has a one-click "sell all monster loot" bu
 | Fur Cloak | Armour | 43 | ATK +8, DEF +9, HP +100 | Yeti |
 | Winter Robe | Armour | 44 | ATK +8, DEF +5, MP +190 | Frost Shaman |
 | Frost Plate | Armour | 47 | DEF +19, HP +240 | Frost Wight, Frost Drake, Frost Giant |
+| Shadow Cloak | Armour | 54 | ATK +10, DEF +11, HP +130 | Wraith |
+| Lich Robe | Armour | 54 | ATK +10, DEF +6, MP +230 | Lich |
+| Dread Plate | Armour | 57 | DEF +22, HP +290 | Dark Knight, Flesh Golem, Fallen King |
 | Leather Pants | Legs | 1 | DEF +1 (no card slot) | Bram, Slime |
 | Iron Greaves | Legs | 6 | DEF +2, HP +10 | Hornet, Rock Worm |
 | Steel Greaves | Legs | 22 | DEF +4, HP +30 | Orc Warrior |
@@ -559,6 +598,9 @@ He also **buys** almost anything, and has a one-click "sell all monster loot" bu
 | Snowflake Pendant | Amulet | 44 | ATK +7, MP +80, Critical +4% | Frost Shaman |
 | Frost Ring | Ring | 46 | ATK +3, DEF +5, HP +100 | Frost Wight |
 | Frost Giant's Tooth (epic) | Amulet | 48 | ATK +14, DEF +4, HP +220 | Frost Giant |
+| Bone Charm | Amulet | 53 | ATK +9, Critical +5% | Gargoyle |
+| Ring of Souls | Ring | 55 | ATK +4, DEF +6, HP +130 | Dark Knight |
+| King's Seal (epic) | Amulet | 58 | ATK +16, DEF +5, HP +260 | Fallen King |
 
 ## 8. Monster cards
 
@@ -594,6 +636,12 @@ Ragnarok style: every monster very rarely drops **its own card**. A card goes in
 | Frost Wight Card | Frost Wight | Ring | Frozen | DEF +3, HP +80 | 1 in 1,000 |
 | Frost Drake Card | Frost Drake | Weapon | Draconic | ATK +6, Critical +3% | 1 in 1,000 |
 | Frost Giant Card (legendary) | Frost Giant | Amulet | Titanic | ATK +8, DEF +4, HP +250 | 1 in 50 kills |
+| Wraith Card | Wraith | Feet | Spectral | HP +60, Evade +8% | 1 in 1,000 |
+| Gargoyle Card | Gargoyle | Legs | Stony | DEF +4, HP +100 | 1 in 1,000 |
+| Dark Knight Card | Dark Knight | Shield | Dread | DEF +5, HP +100 | 1 in 1,000 |
+| Lich Card | Lich | Amulet | Arcane | ATK +6, MP +120 | 1 in 1,000 |
+| Flesh Golem Card | Flesh Golem | Armour | Stitched | HP +250 | 1 in 1,000 |
+| Fallen King Card (legendary) | Fallen King | Weapon | Kingly | ATK +12, Critical +8% | 1 in 50 kills |
 
 - **Card slots.** Most gear has one slot and the better weapons have two. In the bag, small dots in the corner of an item show its slots: hollow when free, gold when filled. The Leather Cap, Leather Pants, Copper Ring and Clover Charm have no slots.
 - **Putting a card in.** In the bag, pick the card and press **Put in gear** (or double-click it). The gear it fits lights up, worn or in the bag. Pick one and confirm.
@@ -635,8 +683,8 @@ Ragnarok style: every monster very rarely drops **its own card**. A card goes in
 | Ingot | Used for | Where to get it |
 | --- | --- | --- |
 | Iron Ingot | +1 to +5 | Hilda sells them (100 gold). Hornets, Snapper Flowers, Grubs, Night Bats and Rock Worms drop them |
-| Mithril Ingot | +6 to +8 | Dusk Hollow, Orc Woods, Wildlands and Frostfell monsters (Trolls, Orc Zombies and Rock Worms most often), rarely Snapper Flowers. Every boss always drops one |
-| Star Crystal | +9 and +10 | Gazers and Ghosts (about 1 in 200 to 250), Orc Skeletons and Orc Zombies (about 1 in 125 to 170), Lizardmen, Werewolves, Trolls and Vampires (about 1 in 100 to 170), Frostfell's monsters (about 1 in 70 to 125: Frost Drakes most often), the Pumpking (one kill in two), and the Orc Warlord, Minotaur King and Frost Giant (always, often two) |
+| Mithril Ingot | +6 to +8 | Dusk Hollow, Orc Woods, Wildlands, Frostfell and Ravenmoor monsters (Trolls, Orc Zombies and Rock Worms most often), rarely Snapper Flowers. Every boss always drops one |
+| Star Crystal | +9 and +10 | Gazers and Ghosts (about 1 in 200 to 250), Orc Skeletons and Orc Zombies (about 1 in 125 to 170), Lizardmen, Werewolves, Trolls and Vampires (about 1 in 100 to 170), Frostfell's monsters (about 1 in 70 to 125: Frost Drakes most often), Ravenmoor's (about 1 in 60 to 85), the Pumpking (one kill in two), and the Orc Warlord, Minotaur King, Frost Giant and Fallen King (always, often two) |
 
 ### What it really costs
 
@@ -759,10 +807,12 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 | Matador | Epic | Help defeat the Minotaur King 10 times |
 | Dragonslayer | Rare | Help defeat 300 Frost Drakes |
 | Giantslayer ✦ | Epic | Help defeat the Frost Giant 10 times |
+| Exorcist | Rare | Help defeat 500 Wraiths |
+| Usurper | Epic | Help defeat the Fallen King 10 times |
 | **Collecting** | | |
 | Card Finder | Rare | Find a monster card |
 | Card Collector | Epic | Find 5 different monster cards |
-| Card Master ✦ | Legendary | Find every kind of monster card (28 so far) |
+| Card Master ✦ | Legendary | Find every kind of monster card (34 so far) |
 | Lucky | Epic | Find a legendary item |
 | **The forge** | | |
 | Shiny | Rare | Upgrade any gear to +7 |
@@ -824,6 +874,12 @@ Pioneer places are counted per level cap: when the cap goes up, the first 10 pla
 | Frost Wight | 47 | 3,500 | 60 | 32 | 7,200 | 58–98 | Valkyrie Helm, Frost Plate, Frost Sabatons, Glacier Bow, Frost Ring, Mithril Ingot, Star Crystal |
 | Frost Drake | 49 | 4,200 | 84 | 30 | 8,600 | 62–104 | Glacier Lance, Aurora Staff, Frost Plate, Valkyrie Helm, Mithril Ingot, Star Crystal |
 | Frost Giant | 54 | 70,000 | 150 | 48 | 150,000 | 3,000–6,000 | See "Field bosses" |
+| Wraith | 51 | 4,300 | 58 | 28 | 9,900 | 64–108 | Shadow Hood, Shadow Cloak, Blood Bow, White Potion, Mithril Ingot, Star Crystal |
+| Gargoyle | 53 | 4,600 | 62 | 38 | 10,600 | 66–112 | Bascinet, Gilded Blade, Bone Charm, Ruin Shield, Mithril Ingot, Star Crystal |
+| Dark Knight | 55 | 5,400 | 72 | 44 | 12,700 | 70–118 | Dread Plate, Dark Lance, Ruin Shield, Ring of Souls, Mithril Ingot, Star Crystal |
+| Lich | 57 | 4,400 | 62 | 30 | 14,300 | 72–122 | Night Hat, Lich Robe, Bone Staff, Soul Staff, Mithril Ingot, Star Crystal |
+| Flesh Golem | 59 | 6,200 | 102 | 40 | 17,000 | 76–128 | Dread Plate, Royal Bow, Soul Staff, Dark Lance, Mithril Ingot, Star Crystal |
+| Fallen King | 64 | 110,000 | 180 | 56 | 260,000 | 5,000–9,000 | See "Field bosses" |
 
 Every monster also drops its own card (see Monster cards) and often potions.
 
@@ -842,7 +898,9 @@ Every monster also drops its own card (see Monster cards) and often potions.
 11. **Level 35–40:** Werewolves in the north-west woods, Trolls on the highlands, Vampires on the high ground to the north-east. From 40, bring a party for the **Minotaur King**, and watch your back.
 12. **Level 40–45:** Take the path east off the south road to **Edda**'s pier and sail to **Frostfell** (500 gold). Yetis jump you in the woods west of the pier; Ramhorns to the east only fight back. Then the Frost Shamans on the west shore: close in fast, they throw ice.
 13. **Level 45–50:** Frost Wights on the icy highlands and Frost Drakes in the east. At 50, bring a party of four for the **Frost Giant** at the end of the path. **Bjorn** sails you home for free.
-14. **Level 50:** Back to **Orin** for your second job: **Lord Knight**, **Wizard** or **Hunter**. Spend your new points on the skills on keys 4–6, then keep hunting Frost Drakes and the Frost Giant on the way to 60.
+14. **Level 50:** Back to **Orin** for your second job: **Lord Knight**, **Wizard** or **Hunter**. Spend your new points on the skills on keys 4–6.
+15. **Level 50–55:** Down the east road past the Pumpking to **Finn**'s boat, and over to **Ravenmoor** (800 gold). Wraiths in the woods by the pier dodge plain attacks: use your skills. Then the Gargoyles either side of the castle.
+16. **Level 55–60:** Dark Knights below the castle gate, Liches in the east, Flesh Golems in the south. At 60, bring a party of four into the castle for the **Fallen King**. **Corvin** rows you home for free.
 
 Along the way, open your titles (T) now and then: you'll have earned a few.
 
@@ -850,7 +908,8 @@ Sell your monster loot to Bram whenever your bag fills up, and sit down (X) to h
 
 ## 15. Coming next
 
-- **New fields and monsters** for levels 50–60, then the cap goes up again.
+- **Raising the level cap** past 60, with new fields above it.
+- **A ranking board** for the Wildlands' player fights.
 
 ---
 

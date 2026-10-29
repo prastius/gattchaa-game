@@ -101,14 +101,28 @@ export const MINOTAUR_LAIR: Rect = { x: 190, y: 52, w: 16, h: 10 };
  * line is drawn in winter art. The ferry docks are on either shore.
  */
 export const FROSTFELL_ISLE = { cx: 200, cy: 452, rx: 104, ry: 70 };
+/** Ravenmoor (Lv 50–60), the autumn island across the sea east of Dusk Hollow, under an endless dusk. */
+export const RAVENMOOR_ISLE = { cx: 440, cy: 200, rx: 66, ry: 86 };
 export const SNOW_LINE = 372;
-export const isSnowy = (ty: number) => ty >= SNOW_LINE;
+/** Everything east of this column is Ravenmoor's: autumn colours instead of summer. */
+export const AUTUMN_LINE = 368;
+/** Which season the art shows at a tile: the islands have their own. */
+export type Biome = "summer" | "winter" | "autumn";
+export const biomeAt = (tx: number, ty: number): Biome => (tx >= AUTUMN_LINE ? "autumn" : ty >= SNOW_LINE ? "winter" : "summer");
+export const isSnowy = (tx: number, ty: number) => biomeAt(tx, ty) === "winter";
+/** Ravenmoor's endless dusk hangs over this area (tiles). */
+export const GLOOM: Rect = { x: 376, y: 112, w: 136, h: 168 };
+/** The Fallen King's ruined castle on Ravenmoor's high ground: broken walls round his throne, kept clear of trees. */
+export const RUINS: Rect = { x: 424, y: 139, w: 38, h: 27 };
 /** The Frost Giant's ring of standing stones on Frostfell's icy highlands: kept clear of trees and rocks. */
 export const FROST_LAIR: Rect = { x: 170, y: 458, w: 16, h: 10 };
 /** The ferry piers: out to sea from the meadow's south-east point, and from Frostfell's north shore. */
 export const PIERS = {
   meadow: { x: 241, y: 331, w: 3, h: 6 },
   frostfell: { x: 189, y: 396, w: 3, h: 7 },
+  // East from Dusk Hollow where the east road ends, and west from Ravenmoor's shore, facing each other across the strait.
+  dusk: { x: 334, y: 185, w: 8, h: 3 },
+  ravenmoor: { x: 385, y: 185, w: 9, h: 3 },
 } satisfies Record<string, Rect>;
 
 /** Dirt roads (vertex rectangles) leading out of the three gates, and two paths north along the walls to the Wildlands. */
@@ -121,6 +135,9 @@ export const ROADS: Rect[] = [
   { x: 195, y: 283, w: 47, h: 3 }, // east from the south road, towards the ferry…
   { x: 241, y: 283, w: 3, h: 48 }, // …and down to the meadow's pier
   { x: 189, y: 402, w: 3, h: 58 }, // Frostfell: from the pier up to the Frost Giant's stones
+  { x: 322, y: 185, w: 13, h: 4 }, // the east road goes on past the Pumpking, to the pier for Ravenmoor
+  { x: 393, y: 185, w: 51, h: 3 }, // Ravenmoor: from the pier east across the island…
+  { x: 441, y: 160, w: 4, h: 28 }, // …and north, up to the castle gate
 ];
 /** Where the two paths north cross into the Wildlands (tile x of each path's middle, and the border's tile row). */
 export const WILD_CROSSINGS = [123, 261];
@@ -163,6 +180,9 @@ export const STRUCT_GROUPS = [
   { id: "palaceTower", style: "palace", face: 5, battlements: true },
   { id: "keep", style: "palace", face: 4, battlements: true },
   { id: "hall", style: "hall", face: 4, battlements: false },
+  // Ravenmoor's castle: the same grey stone, long since fallen in.
+  { id: "ruin", style: "rampart", face: 3, battlements: true },
+  { id: "ruinTower", style: "rampart", face: 4, battlements: true },
 ] as const;
 export type StructGroup = (typeof STRUCT_GROUPS)[number]["id"];
 export type StructStyle = (typeof STRUCT_GROUPS)[number]["style"];
@@ -210,6 +230,18 @@ export const STRUCT_BLOCKS: StructBlock[] = [
   { group: "hall", rect: { x: 56, y: 4, w: 2, h: 36 }, face: 0 },
   { group: "hall", rect: { x: 6, y: 38, w: 24, h: 2 }, face: 0 },
   { group: "hall", rect: { x: 34, y: 38, w: 24, h: 2 }, face: 0 },
+  // ---- Ravenmoor: the Fallen King's castle, its walls broken through in places, the gate long gone.
+  { group: "ruin", rect: { x: 431, y: 143, w: 8, h: 2 } },
+  { group: "ruin", rect: { x: 442, y: 143, w: 5, h: 2 } },
+  { group: "ruin", rect: { x: 450, y: 143, w: 5, h: 2 } },
+  { group: "ruin", rect: { x: 431, y: 160, w: 9, h: 2 } },
+  { group: "ruin", rect: { x: 446, y: 160, w: 9, h: 2 } },
+  { group: "ruin", rect: { x: 428, y: 149, w: 2, h: 3 } },
+  { group: "ruin", rect: { x: 428, y: 158, w: 2, h: 2 } },
+  { group: "ruin", rect: { x: 456, y: 149, w: 2, h: 2 } },
+  { group: "ruin", rect: { x: 456, y: 157, w: 2, h: 3 } },
+  { group: "ruinTower", rect: { x: 427, y: 141, w: 4, h: 4 } },
+  { group: "ruinTower", rect: { x: 455, y: 141, w: 4, h: 4 } },
 ];
 
 /** The palace face (row 165-168) and its door, centred on the town line. */
@@ -287,6 +319,10 @@ export const BUNTING: [TilePos, TilePos][] = [
 export const FLOORS: { rect: Rect; floor: Floor }[] = [
   { rect: PIERS.meadow, floor: Floor.Pier },
   { rect: PIERS.frostfell, floor: Floor.Pier },
+  { rect: PIERS.dusk, floor: Floor.Pier },
+  { rect: PIERS.ravenmoor, floor: Floor.Pier },
+  // Old flagstones in the Fallen King's courtyard.
+  { rect: { x: 430, y: 145, w: 26, h: 15 }, floor: Floor.Slab },
   { rect: MARKET, floor: Floor.Slab },
   // A stone kerb round the Arena's sand.
   { rect: { x: ARENA.x - 1, y: ARENA.y - 1, w: ARENA.w + 2, h: 1 }, floor: Floor.StoneEdge },
@@ -563,6 +599,15 @@ const props: Prop[] = [
   { type: "crate", x: PIERS.meadow.x + 4, y: PIERS.meadow.y - 2 },
   { type: "barrel", x: PIERS.meadow.x + 5, y: PIERS.meadow.y - 2 },
   { type: "barrels", x: PIERS.frostfell.x + 3, y: PIERS.frostfell.y + PIERS.frostfell.h + 1 },
+  { type: "crate", x: PIERS.dusk.x - 1, y: PIERS.dusk.y - 2 },
+  { type: "barrel", x: PIERS.ravenmoor.x + PIERS.ravenmoor.w + 1, y: PIERS.ravenmoor.y + PIERS.ravenmoor.h + 1 },
+
+  // ---- The Fallen King's castle: his throne, two rows of pillars down the hall, and rubble.
+  { type: "throne", x: 442, y: 148 },
+  ...[434, 438, 447, 451].flatMap((x) => [151, 155].map((y): Prop => ({ type: "pillar", x, y }))),
+  { type: "crate", x: 432, y: 147, variant: 1 },
+  { type: "barrels", x: 452, y: 157 },
+  { type: "barrel", x: 433, y: 158 },
 
   // ---- The park: benches by the pond, a campfire in the clearing, lamps where the trails start.
   { type: "bench", x: 141, y: 201, variant: 3 },

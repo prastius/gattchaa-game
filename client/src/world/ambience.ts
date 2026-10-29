@@ -203,25 +203,50 @@ export class Critters {
   }
 }
 
-/** Snow drifting down over Frostfell: a light, endless fall over the view while the camera is on the island. */
-export class Snowfall {
+/** Little textures for the weather: a snowflake, and a leaf. */
+function makeWeatherTextures(scene: Phaser.Scene) {
+  if (!scene.textures.exists("snowflake")) {
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 3;
+    const ctx = canvas.getContext("2d")!;
+    ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+    ctx.fillRect(0, 1, 3, 1);
+    ctx.fillRect(1, 0, 1, 3);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(1, 1, 1, 1);
+    scene.textures.addCanvas("snowflake", canvas);
+  }
+  if (!scene.textures.exists("leaf")) {
+    const canvas = document.createElement("canvas");
+    canvas.width = 4;
+    canvas.height = 3;
+    const ctx = canvas.getContext("2d")!;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(1, 0, 2, 1);
+    ctx.fillRect(0, 1, 4, 1);
+    ctx.fillRect(1, 2, 2, 1);
+    scene.textures.addCanvas("leaf", canvas);
+  }
+}
+
+/** How each kind of weather falls. */
+const WEATHER = {
+  // Snow over Frostfell: light, steady, drifting a little to the left.
+  snow: { tex: "snowflake", speedX: { min: -14, max: 6 }, speedY: { min: 16, max: 38 }, scale: { min: 0.7, max: 1.6 }, frequency: 55, quantity: 2, tint: [0xffffff] },
+  // Leaves over Ravenmoor: fewer, blown by the wind, tumbling as they go.
+  leaves: { tex: "leaf", speedX: { min: -40, max: -10 }, speedY: { min: 18, max: 42 }, scale: { min: 1, max: 1.8 }, frequency: 140, quantity: 1, tint: [0xe8832a, 0xd8452a, 0xf2c14e, 0x9a5a2a] },
+} as const;
+
+/** Snow or leaves falling over the view while the camera is on an island that has them. */
+export class Weather {
   private zone = new Phaser.Geom.Rectangle(0, 0, 1, 1);
   private emitter: Phaser.GameObjects.Particles.ParticleEmitter;
 
-  constructor(scene: Phaser.Scene) {
-    if (!scene.textures.exists("snowflake")) {
-      const canvas = document.createElement("canvas");
-      canvas.width = canvas.height = 3;
-      const ctx = canvas.getContext("2d")!;
-      ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
-      ctx.fillRect(0, 1, 3, 1);
-      ctx.fillRect(1, 0, 1, 3);
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(1, 1, 1, 1);
-      scene.textures.addCanvas("snowflake", canvas);
-    }
+  constructor(scene: Phaser.Scene, kind: keyof typeof WEATHER) {
+    makeWeatherTextures(scene);
+    const w = WEATHER[kind];
     this.emitter = scene.add
-      .particles(0, 0, "snowflake", {
+      .particles(0, 0, w.tex, {
         emitZone: {
           type: "random",
           source: {
@@ -232,13 +257,15 @@ export class Snowfall {
           },
         },
         lifespan: { min: 3500, max: 6500 },
-        speedX: { min: -14, max: 6 },
-        speedY: { min: 16, max: 38 },
-        scale: { min: 0.7, max: 1.6 },
-        // Fades in where it appears and out before it goes, so flakes never pop.
+        speedX: w.speedX,
+        speedY: w.speedY,
+        scale: w.scale,
+        rotate: kind === "leaves" ? { min: 0, max: 360 } : 0,
+        tint: [...w.tint],
+        // Fades in where it appears and out before it goes, so nothing pops.
         alpha: { onEmit: () => 0, onUpdate: (_p: unknown, _k: string, t: number) => Math.sin(t * Math.PI) * 0.85 },
-        frequency: 55,
-        quantity: 2,
+        frequency: w.frequency,
+        quantity: w.quantity,
         emitting: false,
       })
       // Over the world, under the night tint.

@@ -163,7 +163,13 @@ export type MonsterId =
   | "frostShaman"
   | "frostWight"
   | "frostDrake"
-  | "frostGiant";
+  | "frostGiant"
+  | "wraith"
+  | "gargoyle"
+  | "darkKnight"
+  | "lich"
+  | "fleshGolem"
+  | "fallenKing";
 
 export interface MonsterDef {
   id: MonsterId;
@@ -400,6 +406,57 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
       ["mithril", 1], ["starCrystal", 1], ["starCrystal", 0.7], ["giantsTooth", 0.06], ["frostScythe", 0.015], ["frostGiantCard", 0.02],
     ],
   },
+
+  // ---------------------------------------------------------------- Ravenmoor (Lv 50–60), the autumn island east of Dusk Hollow
+  // Restless spirits in the woods by the pier: they drift at anyone who comes near. Hard to hit with plain attacks.
+  wraith: {
+    id: "wraith", name: "Wraith", level: 51, hp: 4300, atk: 58, def: 28, exp: 9900, gold: [64, 108], speed: 55, chase: 105, aggro: 50, range: 36, attackMs: 1500, radius: 12, respawnMs: 22_000, flee: 0.15,
+    drops: [
+      ["wraithEssence", 0.55], ["whitePotion", 0.07], ["shadowHood", 0.005], ["shadowCloak", 0.004], ["bloodBow", 0.004],
+      ["mithril", 0.06], ["starCrystal", 0.012], ["wraithCard", 0.001],
+    ],
+  },
+  // Stone that walks: they swoop down from the castle walls at anyone close.
+  gargoyle: {
+    id: "gargoyle", name: "Gargoyle", level: 53, hp: 4600, atk: 62, def: 38, exp: 10_600, gold: [66, 112], speed: 60, chase: 115, aggro: 50, range: 38, attackMs: 1500, radius: 14, respawnMs: 22_000,
+    drops: [
+      ["gargoyleShard", 0.55], ["whitePotion", 0.07], ["bascinet", 0.005], ["gildedBlade", 0.004], ["boneCharm", 0.003], ["ruinShield", 0.002],
+      ["mithril", 0.06], ["starCrystal", 0.012], ["gargoyleCard", 0.001],
+    ],
+  },
+  // The Fallen King's guard, still patrolling outside his walls. They charge anyone who comes near.
+  darkKnight: {
+    id: "darkKnight", name: "Dark Knight", level: 55, hp: 5400, atk: 72, def: 44, exp: 12_700, gold: [70, 118], speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 13, respawnMs: 24_000,
+    drops: [
+      ["rustedKey", 0.55], ["whitePotion", 0.08], ["dreadPlate", 0.003], ["darkLance", 0.002], ["ruinShield", 0.003], ["soulRing", 0.003],
+      ["mithril", 0.07], ["starCrystal", 0.014], ["darkKnightCard", 0.001],
+    ],
+  },
+  // Casts dark bolts from afar at anyone it sees.
+  lich: {
+    id: "lich", name: "Lich", level: 57, hp: 4400, atk: 62, def: 30, exp: 14_300, gold: [72, 122], speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 24_000,
+    drops: [
+      ["boneDust", 0.55], ["whitePotion", 0.07], ["nightHat", 0.005], ["lichRobe", 0.004], ["boneStaff", 0.004], ["soulStaff", 0.002],
+      ["mithril", 0.06], ["starCrystal", 0.015], ["lichCard", 0.001],
+    ],
+  },
+  // Huge, slow and stitched together from worse things. Leave it alone and it leaves you alone.
+  fleshGolem: {
+    id: "fleshGolem", name: "Flesh Golem", level: 59, hp: 6200, atk: 102, def: 40, exp: 17_000, gold: [76, 128], speed: 30, chase: 70, aggro: 0, range: 46, attackMs: 2100, radius: 18, respawnMs: 26_000,
+    drops: [
+      ["golemHeart", 0.55], ["whitePotion", 0.09], ["dreadPlate", 0.003], ["royalBow", 0.003], ["soulStaff", 0.002], ["darkLance", 0.002],
+      ["mithril", 0.07], ["starCrystal", 0.016], ["fleshGolemCard", 0.001],
+    ],
+  },
+  // Ravenmoor's boss, on his throne in the ruined castle. Casts dark bolts at anyone out of reach.
+  fallenKing: {
+    id: "fallenKing", name: "Fallen King", level: 64, hp: 110_000, atk: 180, def: 56, exp: 260_000, gold: [5000, 9000], speed: 35, chase: 85, aggro: 150, range: 150, attackMs: 2000, radius: 26, respawnMs: 1_800_000,
+    boss: true, regen: 0.004,
+    drops: [
+      ["royalKey", 1], ["whitePotion", 0.8], ["darkLance", 0.2], ["royalBow", 0.2], ["soulStaff", 0.2], ["dreadPlate", 0.15], ["ruinShield", 0.15],
+      ["mithril", 1], ["starCrystal", 1], ["starCrystal", 0.8], ["kingsSeal", 0.06], ["fallenCrown", 0.015], ["fallenKingCard", 0.02],
+    ],
+  },
 };
 
 export const isMonsterId = (id: unknown): id is MonsterId => typeof id === "string" && Object.hasOwn(MONSTERS, id);
@@ -518,6 +575,25 @@ export const FIELDS: Field[] = [
       { monster: "frostWight", rect: { x: 146, y: 432, w: 56, h: 22 }, count: 9 },
       { monster: "frostWight", rect: { x: 146, y: 468, w: 66, h: 16 }, count: 6 },
       { monster: "frostGiant", rect: { x: 174, y: 460, w: 8, h: 6 }, count: 1 },
+    ],
+  },
+  {
+    // Across the strait east of Dusk Hollow: the boat at the end of the east road sails here.
+    id: "ravenmoor",
+    name: "Ravenmoor",
+    levels: "Lv 50–60",
+    area: { x: 380, y: 130, w: 112, h: 128 },
+    wild: true,
+    spawns: [
+      // Wraiths in the woods by the pier; Gargoyles on the high ground either side of the castle.
+      { monster: "wraith", rect: { x: 400, y: 166, w: 30, h: 30 }, count: 8 },
+      { monster: "gargoyle", rect: { x: 410, y: 152, w: 14, h: 13 }, count: 5 },
+      { monster: "gargoyle", rect: { x: 459, y: 146, w: 11, h: 15 }, count: 4 },
+      // The Fallen King's guard on the slopes below his gate; Liches in the east, past the lake; Flesh Golems in the south.
+      { monster: "darkKnight", rect: { x: 426, y: 165, w: 34, h: 14 }, count: 8 },
+      { monster: "lich", rect: { x: 456, y: 198, w: 26, h: 28 }, count: 7 },
+      { monster: "fleshGolem", rect: { x: 400, y: 212, w: 20, h: 32 }, count: 8 },
+      { monster: "fallenKing", rect: { x: 439, y: 149, w: 8, h: 2 }, count: 1 },
     ],
   },
 ];

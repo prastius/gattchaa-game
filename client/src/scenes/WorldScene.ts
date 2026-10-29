@@ -20,7 +20,7 @@ import { CLASSES, JOB_LEVEL, aClass, isClassId, isMonsterId, type ClassId } from
 import { SKILLS, type SkillId } from "../../../shared/skills";
 import { ITEMS, PICKUP_RANGE, RARITY, appearanceKey, cleanUpgrade, isItemId, parseCards } from "../../../shared/items";
 import { NPCS, type NpcDef } from "../../../shared/npcs";
-import { DOORS, INTERIOR_ZONE, PROPS, TOWN_AREA, inRect, isSnowy } from "../../../shared/town";
+import { DOORS, GLOOM, INTERIOR_ZONE, PROPS, RUINS, TOWN_AREA, biomeAt, inRect } from "../../../shared/town";
 import { CharacterTextures, PlayerSprite } from "../PlayerSprite";
 import { MonsterSprite } from "../MonsterSprite";
 import { DropSprite } from "../DropSprite";
@@ -32,7 +32,7 @@ import { Town, preloadTown, type Hotspot } from "../world/town";
 import { SELLER_BUBBLE_LIFT, Shops } from "../world/shops";
 import { Interpolator, ServerClock } from "../interp";
 import { Daylight } from "../world/daylight";
-import { Critters, Snowfall } from "../world/ambience";
+import { Critters, Weather } from "../world/ambience";
 import { audio } from "../audio";
 import type { ChatUI } from "../ui/chat";
 import type { HUD } from "../ui/hud";
@@ -270,8 +270,9 @@ export class WorldScene extends Phaser.Scene {
   private daylight!: Daylight;
   /** Butterflies by day, fireflies at night. */
   private critters!: Critters;
-  /** Snow over Frostfell. */
-  private snow!: Snowfall;
+  /** Snow over Frostfell, leaves over Ravenmoor. */
+  private snow!: Weather;
+  private leaves!: Weather;
   /** Inside the Gattchaa store (the interior zone)? */
   private indoors = false;
   private doorPendingUntil = 0;
@@ -293,6 +294,9 @@ export class WorldScene extends Phaser.Scene {
     this.load.image(WORLD_TEX.terrainWinter, `${ASSETS}terrain-winter.png`);
     this.load.image(WORLD_TEX.treesWinter, `${ASSETS}trees-winter.png`);
     this.load.image(WORLD_TEX.plantsWinter, `${ASSETS}plants-winter.png`);
+    this.load.image(WORLD_TEX.terrainAutumn, `${ASSETS}terrain-autumn.png`);
+    this.load.image(WORLD_TEX.treesAutumn, `${ASSETS}trees-autumn.png`);
+    this.load.image(WORLD_TEX.plantsAutumn, `${ASSETS}plants-autumn.png`);
     preloadTown(this);
     preloadMonsters(this);
     this.load.spritesheet(WATER_FX, `${import.meta.env.BASE_URL}assets/town/water-fx.png`, { frameWidth: 32, frameHeight: 32 });
@@ -307,7 +311,7 @@ export class WorldScene extends Phaser.Scene {
     black.destroy();
     // Every stone-structure tile the town and the palace hall use, so the atlas can compose them up front.
     const structs: string[] = [];
-    for (const area of [TOWN_AREA, INTERIOR_ZONE]) {
+    for (const area of [TOWN_AREA, INTERIOR_ZONE, RUINS]) {
       for (let ty = area.y; ty < area.y + area.h; ty++) {
         for (let tx = area.x; tx < area.x + area.w; tx++) {
           const k = structKey(this.world, tx, ty);
@@ -315,14 +319,16 @@ export class WorldScene extends Phaser.Scene {
         }
       }
     }
-    this.atlas = buildTerrainAtlas(this, WORLD_TEX.terrain, WORLD_TEX.terrainWinter, ATLAS_KEY, structs);
+    this.atlas = buildTerrainAtlas(this, { summer: WORLD_TEX.terrain, winter: WORLD_TEX.terrainWinter, autumn: WORLD_TEX.terrainAutumn }, ATLAS_KEY, structs);
     registerDecorFrames(this);
     if (!this.anims.exists("glint-a")) {
       this.anims.create({ key: "glint-a", frames: this.anims.generateFrameNumbers(WATER_FX, { start: 0, end: 3 }), frameRate: 6, repeat: -1 });
       this.anims.create({ key: "glint-b", frames: this.anims.generateFrameNumbers(WATER_FX, { start: 4, end: 7 }), frameRate: 7, repeat: -1 });
     }
     this.critters = new Critters(this, this.world);
-    this.snow = new Snowfall(this);
+    this.snow = new Weather(this, "snow");
+    this.leaves = new Weather(this, "leaves");
+    this.gloom();
     createMonsterAnims(this);
     this.fx = new Fx(this, () => this.textRes);
 
@@ -711,7 +717,10 @@ export class WorldScene extends Phaser.Scene {
     this.daylight.update(time, this.indoors);
     PlayerSprite.nightLight = this.daylight.lamps;
     this.critters.update(time, dt, this.cameras.main.worldView, this.daylight.night, this.indoors);
-    this.snow.update(this.cameras.main.worldView, !this.indoors && isSnowy(this.cameras.main.worldView.centerY / TILE_SIZE));
+    const view = this.cameras.main.worldView;
+    const season = this.indoors ? "summer" : biomeAt(view.centerX / TILE_SIZE, view.centerY / TILE_SIZE);
+    this.snow.update(view, season === "winter");
+    this.leaves.update(view, season === "autumn");
     audio.calm = this.indoors || this.daylight.night;
     if (this.doorPendingUntil && performance.now() > this.doorPendingUntil) {
       // The server said no (or lag): don't leave the screen black.
@@ -1687,6 +1696,33 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 
+  /** Ravenmoor's endless dusk: a purple shade over the island, fading out softly at its edges. */
+  private gloom() {
+    const key = "gloom";
+    if (!this.textures.exists(key)) {
+      const size = 128;
+      const canvas = document.createElement("canvas");
+      canvas.width = canvas.height = size;
+      const ctx = canvas.getContext("2d")!;
+      const img = ctx.createImageData(size, size);
+      for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+          const edge = Math.min(x, y, size - 1 - x, size - 1 - y) / (size * 0.18);
+          const a = Math.min(1, edge);
+          const o = (y * size + x) * 4;
+          img.data[o] = 36;
+          img.data[o + 1] = 18;
+          img.data[o + 2] = 58;
+          img.data[o + 3] = Math.round(255 * a * a * (3 - 2 * a) * 0.38);
+        }
+      }
+      ctx.putImageData(img, 0, 0);
+      this.textures.addCanvas(key, canvas);
+    }
+    // Over the world, under the weather and the night tint.
+    this.add.image(GLOOM.x * TILE_SIZE, GLOOM.y * TILE_SIZE, key).setOrigin(0).setDisplaySize(GLOOM.w * TILE_SIZE, GLOOM.h * TILE_SIZE).setDepth(1e6 - 12);
+  }
+
   /** Trees and tall plants turn see-through while the local player is behind them. */
   private fadeTallDecor(dt: number) {
     const self = this.self;
@@ -1769,9 +1805,9 @@ export class WorldScene extends Phaser.Scene {
         const tx = tx0 + x;
         const ty = ty0 + y;
         const [g, o] = tileCells(world, tx, ty);
-        const snow = isSnowy(ty);
-        gRow.push(atlas.terrain(g, snow));
-        oRow.push(o ? atlas.terrain(o, snow) : -1);
+        const biome = biomeAt(tx, ty);
+        gRow.push(atlas.terrain(g, biome));
+        oRow.push(o ? atlas.terrain(o, biome) : -1);
         if (o) hasOverlay = true;
         const sk = structKey(world, tx, ty);
         const f = sk ? null : floorCell(world, tx, ty);
@@ -1787,7 +1823,7 @@ export class WorldScene extends Phaser.Scene {
             tx * TILE_SIZE + TILE_SIZE / 2 + jitter,
             ty * TILE_SIZE + TILE_SIZE - 3,
             hash2(tx, ty, world.seed + 12),
-            snow,
+            biome,
           );
           if (sprite) decor.push(sprite);
         } else if (hash2(tx, ty, world.seed + 61) < GLINT_CHANCE && world.corners(tx, ty).every(isWet)) {

@@ -463,12 +463,15 @@ export class Town {
     for (const c of WILD_CROSSINGS) this.signpost((c + 3.5) * 32, (WILD_BORDER_Y + 1) * 32, "WILDLANDS", "⚔ OPEN PVP", "#ff8a7a");
   }
 
-  /** The ferry moored alongside the end of each pier, and a signpost where the path to it leaves the south road. */
+  /** A boat moored alongside the end of each pier, and a signpost where each path to one leaves its road. */
   private ferry() {
-    const { meadow, frostfell } = PIERS;
+    const { meadow, frostfell, dusk, ravenmoor } = PIERS;
     this.boat((meadow.x + meadow.w) * 32 + 52, (meadow.y + meadow.h - 1) * 32);
     this.boat((frostfell.x + frostfell.w) * 32 + 52, (frostfell.y + 2) * 32);
+    this.boat((dusk.x + dusk.w - 3) * 32, (dusk.y + dusk.h) * 32 + 30);
+    this.boat((ravenmoor.x + 3) * 32, (ravenmoor.y + ravenmoor.h) * 32 + 30);
     this.signpost(199.5 * 32, 283 * 32 - 2, "FERRY", "FROSTFELL →", "#bfe9ff");
+    this.signpost(329.5 * 32, 185 * 32 - 2, "FERRY", "RAVENMOOR →", "#d9b8ff");
   }
 
   /** A little sailing boat on the water, rocking gently. */

@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { Terrain, TILE_SIZE, hash2, isWet, type World } from "../../../shared/world";
-import { Floor, STRUCT_GROUPS, type StructStyle } from "../../../shared/town";
+import { Floor, STRUCT_GROUPS, type Biome, type StructStyle } from "../../../shared/town";
 
 // Corner-based autotiling for Eliza Wyatt's LPC Revised terrain sheet.
 //
@@ -13,6 +13,8 @@ type Cell = readonly [col: number, row: number];
 export interface SheetCell {
   tex: string;
   cell: Cell;
+  /** Turned a quarter clockwise (planks of a pier running east–west). */
+  rot?: boolean;
 }
 
 export const FLOOR_TEX = {
@@ -53,14 +55,27 @@ const CARPET_CELLS: SheetCell[] = Object.values(CARPETS).flatMap(([cx, cy]) =>
   [0, 1, 2].flatMap((r) => [0, 1, 2].map((c): SheetCell => ({ tex: FLOOR_TEX.carpet, cell: [cx + c, cy + r] }))),
 );
 
-/** Pier planks: the left edge, the middle and the right edge. */
+/** Pier planks: the left edge, the middle and the right edge; turned, the top edge, the middle and the bottom edge. */
 const PIER_CELLS: SheetCell[] = [0, 1, 2].map((c) => ({ tex: FLOOR_TEX.pier, cell: [c, 1] }));
+const PIER_CELLS_TURNED: SheetCell[] = PIER_CELLS.map((c) => ({ ...c, rot: true }));
+
+/** A pier tile: planks across the way it runs, edged along its sides. */
+function pierCell(world: World, tx: number, ty: number): SheetCell {
+  const run = (dx: number, dy: number) => {
+    let n = 0;
+    while (n < 16 && world.floorAt(tx + dx * (n + 1), ty + dy * (n + 1)) === Floor.Pier) n++;
+    return n;
+  };
+  const pier = (x: number, y: number) => world.floorAt(x, y) === Floor.Pier;
+  if (run(-1, 0) + run(1, 0) > run(0, -1) + run(0, 1)) return PIER_CELLS_TURNED[!pier(tx, ty - 1) ? 0 : !pier(tx, ty + 1) ? 2 : 1];
+  return PIER_CELLS[!pier(tx - 1, ty) ? 0 : !pier(tx + 1, ty) ? 2 : 1];
+}
 
 /** Floor tile for a town tile, if it is paved. */
 export function floorCell(world: World, tx: number, ty: number): SheetCell | null {
   const f = world.floorAt(tx, ty);
   if (f === Floor.Slab) return SLAB_CELLS[(tx & 1) | ((ty & 1) << 1)];
-  if (f === Floor.Pier) return PIER_CELLS[world.floorAt(tx - 1, ty) !== f ? 0 : world.floorAt(tx + 1, ty) !== f ? 2 : 1];
+  if (f === Floor.Pier) return pierCell(world, tx, ty);
   const carpet = CARPETS[f];
   if (carpet) {
     // Border where the carpet ends, fill inside.
@@ -270,30 +285,31 @@ const PAD = 1; // 1px extruded border around every tile: prevents seams/flicker
 const STRIDE = TILE_SIZE + PAD * 2;
 
 export interface TerrainAtlas {
-  /** A terrain cell, from the winter sheet on Frostfell. */
-  terrain(cell: Cell, winter?: boolean): number;
+  /** A terrain cell, from the season's sheet (winter on Frostfell, autumn on Ravenmoor). */
+  terrain(cell: Cell, biome?: Biome): number;
   sheet(c: SheetCell): number;
   struct(key: string): number;
 }
 
 /**
- * Copies every tile the autotiler can produce (from the summer sheet and the
- * winter one, which has the same layout) plus the town floors into one padded
- * atlas texture and returns lookups from source cell to atlas index.
+ * Copies every tile the autotiler can produce (from each season's sheet; they
+ * share one layout) plus the town floors into one padded atlas texture and
+ * returns lookups from source cell to atlas index.
  */
-export function buildTerrainAtlas(scene: Phaser.Scene, sourceKey: string, winterKey: string, atlasKey: string, structKeys: Iterable<string> = []): TerrainAtlas {
+export function buildTerrainAtlas(scene: Phaser.Scene, sheets: Record<Biome, string>, atlasKey: string, structKeys: Iterable<string> = []): TerrainAtlas {
   const cells: Cell[] = [...GRASS_FULL, ...DIRT_FULL, ...WATER_FULL];
   for (const set of [GRASS, WATER, DEEP]) {
     for (let m = 1; m <= 15; m++) if (m !== 6 && m !== 9) cells.push(autotile(m, set));
   }
   const entries: SheetCell[] = [
-    ...[sourceKey, winterKey].flatMap((tex) => [...new Map(cells.map((c) => [`${c[0]},${c[1]}`, { tex, cell: c }])).values()]),
+    ...Object.values(sheets).flatMap((tex) => [...new Map(cells.map((c) => [`${c[0]},${c[1]}`, { tex, cell: c }])).values()]),
     ...Object.values(FLOOR_CELLS),
     ...SLAB_CELLS,
     ...CARPET_CELLS,
     ...PIER_CELLS,
+    ...PIER_CELLS_TURNED,
   ];
-  const keyOf = (e: SheetCell) => `${e.tex}:${e.cell[0]},${e.cell[1]}`;
+  const keyOf = (e: SheetCell) => `${e.tex}:${e.cell[0]},${e.cell[1]}${e.rot ? ":r" : ""}`;
   const structs = [...new Set(structKeys)];
 
   const rows = Math.ceil((entries.length + structs.length) / ATLAS_COLS);
@@ -311,6 +327,20 @@ export function buildTerrainAtlas(scene: Phaser.Scene, sourceKey: string, winter
     const sx = entry.cell[0] * TILE_SIZE;
     const sy = entry.cell[1] * TILE_SIZE;
     const S = TILE_SIZE;
+    if (entry.rot) {
+      ctx.save();
+      ctx.translate(ax + S, ay);
+      ctx.rotate(Math.PI / 2);
+      ctx.drawImage(src, sx, sy, S, S, 0, 0, S, S);
+      ctx.restore();
+      // Extrude edges by one pixel (copied from the tile just drawn).
+      ctx.drawImage(canvas, ax, ay, S, 1, ax, ay - 1, S, 1);
+      ctx.drawImage(canvas, ax, ay + S - 1, S, 1, ax, ay + S, S, 1);
+      ctx.drawImage(canvas, ax, ay - 1, 1, S + 2, ax - 1, ay - 1, 1, S + 2);
+      ctx.drawImage(canvas, ax + S - 1, ay - 1, 1, S + 2, ax + S, ay - 1, 1, S + 2);
+      index.set(keyOf(entry), i);
+      return;
+    }
     ctx.drawImage(src, sx, sy, S, S, ax, ay, S, S);
     // Extrude edges by one pixel.
     ctx.drawImage(src, sx, sy, S, 1, ax, ay - 1, S, 1);
@@ -340,7 +370,7 @@ export function buildTerrainAtlas(scene: Phaser.Scene, sourceKey: string, winter
 
   scene.textures.addCanvas(atlasKey, canvas);
   return {
-    terrain: (cell, winter) => index.get(keyOf({ tex: winter ? winterKey : sourceKey, cell })) ?? 0,
+    terrain: (cell, biome = "summer") => index.get(keyOf({ tex: sheets[biome], cell })) ?? 0,
     sheet: (c) => index.get(keyOf(c)) ?? 0,
     struct: (key) => structIndex.get(key) ?? 0,
   };
