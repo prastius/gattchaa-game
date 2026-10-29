@@ -205,7 +205,39 @@ const GEAR = [
   ["glowsword", "Glowsword", "weapons/sword/weapon_sword_glowsword.json", { variant: "blue" }],
   ["greatBow", "Great bow", "weapons/ranged/bow/weapon_ranged_bow_great.json", { variant: "red", walk128: true }],
   ["crystalRed", "Crystal staff (red)", "weapons/magic/weapon_magic_crystal.json", { variant: "red" }],
+  // The Orc Woods' gear.
+  ["scimitar", "Scimitar", "weapons/sword/weapon_sword_scimitar.json", { variant: "scimitar", walk128: true }],
+  ["katana", "Katana", "weapons/sword/weapon_sword_katana.json", { variant: "katana", walk128: true }],
+  ["halberd", "Halberd", "weapons/polearm/weapon_polearm_halberd.json"],
+  ["dragonspear", "Dragon spear", "weapons/polearm/weapon_polearm_dragonspear.json", { variant: "gold", walk128: true }],
+  ["recurveLight", "Recurve bow (light)", "weapons/ranged/bow/weapon_ranged_bow_recurve.json", { variant: "light", walk128: true }],
+  ["crossbow", "Crossbow", "weapons/ranged/weapon_ranged_crossbow.json"],
+  ["loop", "Loop staff", "weapons/magic/weapon_magic_loop.json", { variant: "bronze" }],
+  ["diamond", "Diamond staff", "weapons/magic/weapon_magic_diamond.json", { variant: "silver" }],
+  ["roundShield", "Round shield", "weapons/shields/shield_round.json", { variant: "black" }],
+  ["spartan", "Spartan shield", "weapons/shields/shield_spartan.json"],
+  ["barbarian", "Barbarian helmet", "headwear/helmets/helmets/hat_helmet_barbarian.json"],
+  ["viking", "Viking helmet", "headwear/helmets/helmets/hat_helmet_spangenhelm_viking.json"],
+  ["cape", "Cape", "torso/cape/cape_solid.json"],
+  ["capeTattered", "Tattered cape", "torso/cape/cape_tattered.json"],
 ].map(([id, label, def, opts]) => ["gear", id, label, def, B, opts]);
+
+/**
+ * Monster parts (category "mob"): heads, bodies and weapons that only monsters
+ * use. Humanoid monsters are put together from these and the parts above, on
+ * the male body. Never offered in the character creator.
+ */
+const MOB_PARTS = [
+  ["skeletonBody", "Skeleton body", "body/special/body_skeleton.json"],
+  ["zombieBody", "Zombie body", "body/special/body_zombie.json"],
+  ["orcHead", "Orc head", "head/heads/fantasy/heads_orc_male.json"],
+  ["goblinHead", "Goblin head", "head/heads/fantasy/heads_goblin.json"],
+  ["skullHead", "Skeleton head", "head/heads/undead/heads_skeleton.json"],
+  ["zombieHead", "Zombie head", "head/heads/undead/heads_zombie.json"],
+  ["waraxe", "War axe", "weapons/blunt/weapon_blunt_waraxe.json"],
+  ["mace", "Mace", "weapons/blunt/weapon_blunt_mace.json"],
+  ["spear", "Spear", "weapons/polearm/weapon_polearm_spear.json", { variant: "iron" }],
+].map(([id, label, def, opts]) => ["mob", id, label, def, M, opts]);
 
 const PALETTES = {
   body: "palette_definitions/body/body_ulpc.json",
@@ -374,12 +406,17 @@ const layersOf = (def) =>
     .map((k) => def[k])
     .filter((l) => !l.custom_animation);
 
-/** Materials whose art isn't drawn in the palette's usual base colour (leather armour is drawn in "leather"). */
+/**
+ * Materials whose art isn't drawn in the palette's usual base colour (leather
+ * armour is drawn in "leather", an orc's head in "green"). Some name the
+ * palette too ("ulpc.green"); the colour names are the same.
+ */
 function basesOf(def) {
   const r = def.recolors ?? {};
   const out = {};
-  if (r.material && r.base) out[r.material] = r.base;
-  for (const [k, v] of Object.entries(r)) if (k.startsWith("color_") && v.base) out[v.material] = v.base;
+  const name = (base) => base.replace(/^ulpc\./, "");
+  if (r.material && r.base) out[r.material] = name(r.base);
+  for (const [k, v] of Object.entries(r)) if (k.startsWith("color_") && v.base) out[v.material] = name(v.base);
   return out;
 }
 
@@ -485,7 +522,7 @@ async function main() {
     manifest.palettes[mat] = { base: PALETTE_BASE[mat], colors: await get(`${ULPC}/${file}`, "json") };
   }
 
-  const results = await pool([...ITEMS, ...GEAR], 8, fetchItem);
+  const results = await pool([...ITEMS, ...GEAR, ...MOB_PARTS], 8, fetchItem);
   for (const { item, credits: cr } of results) {
     if (item.bodies.length === 0) {
       console.warn(`  dropping ${item.category}/${item.id}: no artwork for the requested bodies`);

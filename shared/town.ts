@@ -89,6 +89,8 @@ export const MARKET_WANDER: Rect = { x: 158, y: 213, w: 68, h: 29 };
 
 /** Outside the south gate, west of the road: kept clear of trees so the Blacksmith and her forge can be seen. */
 export const FORGE_YARD: Rect = { x: 174, y: 258, w: 13, h: 5 };
+/** The Orc Warlord's camp where the west road ends: kept clear of trees too. */
+export const ORC_CAMP: Rect = { x: 68, y: 176, w: 16, h: 9 };
 
 /** Dirt roads (vertex rectangles) leading out of the three gates. */
 export const ROADS: Rect[] = [
@@ -504,6 +506,14 @@ const props: Prop[] = [
   { type: "campfire", x: 179, y: 257 },
   { type: "barrels", x: 177, y: 255 },
   { type: "crate", x: 179, y: 255 },
+
+  // ---- The Orc Warlord's camp, where the west road ends: a fire, and loot piled round it.
+  { type: "campfire", x: 75, y: 181 },
+  { type: "barrels", x: 70, y: 178 },
+  { type: "crate", x: 72, y: 178 },
+  { type: "crate", x: 79, y: 179 },
+  { type: "barrel", x: 81, y: 181 },
+  { type: "crate", x: 70, y: 182 },
 
   // ---- The park: benches by the pond, a campfire in the clearing, lamps where the trails start.
   { type: "bench", x: 141, y: 201, variant: 3 },

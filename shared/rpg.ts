@@ -113,7 +113,23 @@ export function statsFor(cls: ClassId, level: number, bonus?: Partial<Bonus>, we
 
 // ---------------------------------------------------------------- monsters
 
-export type MonsterId = "slime" | "snake" | "hornet" | "snapper" | "grub" | "bat" | "rockworm" | "gazer" | "ghost" | "pumpking";
+export type MonsterId =
+  | "slime"
+  | "snake"
+  | "hornet"
+  | "snapper"
+  | "grub"
+  | "bat"
+  | "rockworm"
+  | "gazer"
+  | "ghost"
+  | "pumpking"
+  | "goblin"
+  | "orcWarrior"
+  | "orcArcher"
+  | "orcSkeleton"
+  | "orcZombie"
+  | "orcWarlord";
 
 export interface MonsterDef {
   id: MonsterId;
@@ -201,6 +217,53 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
       ["mithril", 1], ["mithril", 0.5], ["starCrystal", 0.5], ["moonblade", 0.08], ["pumpkingCard", 0.02],
     ],
   },
+
+  // ---------------------------------------------------------------- the Orc Woods (Lv 20–30), west of town
+  // Quick little scouts in the grass north of the road: they jump anyone who comes close.
+  goblin: {
+    id: "goblin", name: "Goblin", level: 20, hp: 1000, atk: 30, def: 10, exp: 850, gold: [20, 34], speed: 55, chase: 115, aggro: 70, range: 36, attackMs: 1300, radius: 11, respawnMs: 15_000,
+    drops: [["goblinCharm", 0.6], ["orangePotion", 0.06], ["scimitar", 0.004], ["ringStaff", 0.004], ["scoutArmor", 0.005], ["tuskNecklace", 0.003], ["mithril", 0.03], ["goblinCard", 0.001]],
+  },
+  // Big and tough, but only fights back.
+  orcWarrior: {
+    id: "orcWarrior", name: "Orc Warrior", level: 23, hp: 1400, atk: 42, def: 20, exp: 1300, gold: [30, 50], speed: 40, chase: 85, aggro: 0, range: 40, attackMs: 1600, radius: 13, respawnMs: 18_000,
+    drops: [
+      ["orcTusk", 0.6], ["orangePotion", 0.07], ["barbarianHelm", 0.006], ["roundShield", 0.006], ["steelGreaves", 0.008], ["scimitar", 0.004], ["halberd", 0.003],
+      ["ironIngot", 0.06], ["mithril", 0.04], ["orcWarriorCard", 0.001],
+    ],
+  },
+  // Shoots from afar, at anyone in sight.
+  orcArcher: {
+    id: "orcArcher", name: "Orc Archer", level: 25, hp: 1300, atk: 40, def: 14, exp: 1500, gold: [32, 52], speed: 45, chase: 80, aggro: 140, range: 180, attackMs: 1900, radius: 12, respawnMs: 18_000,
+    drops: [
+      ["orcArrowhead", 0.55], ["orangePotion", 0.06], ["compositeBow", 0.005], ["crossbow", 0.0025], ["ringStaff", 0.004], ["steelSabatons", 0.007], ["mightRing", 0.003],
+      ["mithril", 0.04], ["orcArcherCard", 0.001],
+    ],
+  },
+  orcSkeleton: {
+    id: "orcSkeleton", name: "Orc Skeleton", level: 27, hp: 1700, atk: 48, def: 24, exp: 1800, gold: [34, 56], speed: 50, chase: 95, aggro: 90, range: 38, attackMs: 1500, radius: 12, respawnMs: 20_000,
+    drops: [
+      ["oldBone", 0.6], ["orangePotion", 0.07], ["katana", 0.003], ["spartanShield", 0.004], ["darkPlate", 0.004], ["guardianRing", 0.002],
+      ["mithril", 0.04], ["starCrystal", 0.006], ["orcSkeletonCard", 0.001],
+    ],
+  },
+  // Slow, but hits like a falling tree.
+  orcZombie: {
+    id: "orcZombie", name: "Orc Zombie", level: 29, hp: 2100, atk: 52, def: 20, exp: 2200, gold: [36, 60], speed: 22, chase: 55, aggro: 70, range: 38, attackMs: 2000, radius: 13, respawnMs: 20_000,
+    drops: [
+      ["rottenBandage", 0.6], ["orangePotion", 0.08], ["starryCloak", 0.005], ["diamondStaff", 0.003], ["vikingHelm", 0.003], ["darkPlate", 0.004],
+      ["mithril", 0.05], ["starCrystal", 0.008], ["orcZombieCard", 0.001],
+    ],
+  },
+  // The Orc Woods' boss, in his camp where the west road ends.
+  orcWarlord: {
+    id: "orcWarlord", name: "Orc Warlord", level: 33, hp: 24_000, atk: 90, def: 30, exp: 40_000, gold: [1000, 2000], speed: 35, chase: 80, aggro: 150, range: 48, attackMs: 1700, radius: 22, respawnMs: 900_000,
+    boss: true, regen: 0.004,
+    drops: [
+      ["warlordBanner", 1], ["orangePotion", 0.8], ["halberd", 0.2], ["vikingHelm", 0.2], ["spartanShield", 0.2], ["crossbow", 0.15], ["diamondStaff", 0.15], ["katana", 0.15],
+      ["mithril", 1], ["starCrystal", 1], ["starCrystal", 0.5], ["warlordMedal", 0.06], ["dragonSpear", 0.02], ["orcWarlordCard", 0.02],
+    ],
+  },
 };
 
 export const isMonsterId = (id: unknown): id is MonsterId => typeof id === "string" && Object.hasOwn(MONSTERS, id);
@@ -260,6 +323,24 @@ export const FIELDS: Field[] = [
       { monster: "ghost", rect: { x: 304, y: 212, w: 24, h: 38 }, count: 8 },
       // The Pumpking waits where the east road ends.
       { monster: "pumpking", rect: { x: 314, y: 181, w: 10, h: 12 }, count: 1 },
+    ],
+  },
+  {
+    id: "orc-woods",
+    name: "Orc Woods",
+    levels: "Lv 20–30",
+    area: { x: 56, y: 104, w: 64, h: 154 },
+    wild: true,
+    spawns: [
+      // Goblins in the grass north of the west road, right outside the gate; orc warriors on the rocky ground south of it.
+      { monster: "goblin", rect: { x: 94, y: 158, w: 24, h: 22 }, count: 10 },
+      { monster: "orcWarrior", rect: { x: 92, y: 198, w: 28, h: 24 }, count: 12 },
+      // Archers up north along the wall; skeletons west of the inlet; zombies far to the south.
+      { monster: "orcArcher", rect: { x: 96, y: 110, w: 24, h: 18 }, count: 7 },
+      { monster: "orcSkeleton", rect: { x: 60, y: 138, w: 24, h: 20 }, count: 8 },
+      { monster: "orcZombie", rect: { x: 66, y: 228, w: 52, h: 26 }, count: 10 },
+      // The Orc Warlord's camp, where the west road ends.
+      { monster: "orcWarlord", rect: { x: 70, y: 178, w: 10, h: 10 }, count: 1 },
     ],
   },
 ];

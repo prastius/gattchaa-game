@@ -88,6 +88,7 @@ The town is always safe: monsters never come in, and nobody can attack anyone in
 | --- | --- | --- | --- |
 | Rowan | Gate Guard | Outside the south gate | Explains the South Meadow |
 | Mara | Ranger | Outside the east gate | Explains Dusk Hollow |
+| Gregor | Scout | Outside the west gate | Explains the Orc Woods |
 | Orin | Job Master | Just inside the south gate | Makes you a Knight, Mage or Archer at level 10 |
 | Bram | Outfitter | Outside the south gate, east of the road | Sells potions and starter gear, buys loot |
 | Hilda | Blacksmith | Outside the south gate, west of Rowan | Upgrades gear from +0 to +10 |
@@ -142,6 +143,7 @@ Shops also show as orange dots on the minimap.
 | --- | --- | --- | --- |
 | South Meadow | 1–10 | Out of the south gate | Rowan |
 | Dusk Hollow | 10–20 | Out of the east gate | Mara |
+| Orc Woods | 20–30 | Out of the west gate | Gregor |
 
 **South Meadow**
 
@@ -161,7 +163,20 @@ Shops also show as orange dots on the minimap.
 | Rock Worm | 14 | 950 | South of the road | Slow, thick shell, only fights back |
 | Gazer | 16 | 800 | North-east | Shoots a beam from far away, attacks on sight |
 | Ghost | 18 | 1,150 | South-east | Plain attacks often miss it (skills always hit), attacks on sight |
-| **Pumpking** (boss) | 22 | 12,000 | Where the east road ends | See "Field boss" below |
+| **Pumpking** (boss) | 22 | 12,000 | Where the east road ends | See "Field bosses" below |
+
+**Orc Woods** (open grass and a rocky patch, around a big inlet; an orc tribe and its dead)
+
+| Monster | Lv | HP | Where | Behaviour |
+| --- | --- | --- | --- | --- |
+| Goblin | 20 | 1,000 | The grass north of the west road | Fast, attacks anyone who comes close |
+| Orc Warrior | 23 | 1,400 | The rocky ground south of the road | Tough and hits hard, but only fights back |
+| Orc Archer | 25 | 1,300 | Up north, along the town wall | Shoots arrows from far away, attacks on sight |
+| Orc Skeleton | 27 | 1,700 | West of the inlet | Attacks anyone who comes close |
+| Orc Zombie | 29 | 2,100 | Far to the south | Very slow, but hits the hardest |
+| **Orc Warlord** (boss) | 33 | 24,000 | His camp, where the west road ends | See "Field bosses" below |
+
+Goblins, orcs and the undead walk like people, carry real weapons (war axes, maces, bows) and lunge at you when they strike.
 
 ### How fighting works
 
@@ -197,7 +212,7 @@ The Novice levels go fast. From the job change at level 10, each level needs a l
 | 30 | 68,377 |
 | 40 | 159,392 |
 
-Fighting monsters of your own level, a level takes about 4 minutes at level 12 and about 8 minutes at level 18.
+Fighting monsters of your own level, a level takes about 4 minutes at level 12, about 8 minutes at level 18, and about 12 to 15 minutes in the Orc Woods (levels 20–30). Using your skills makes it quicker.
 
 ### Healing and fainting
 
@@ -206,15 +221,22 @@ Fighting monsters of your own level, a level takes about 4 minutes at level 12 a
 - **Potions** heal straight away, even in the middle of a fight: one every 0.8 seconds. Q drinks the smallest potion that heals you fully.
 - **Fainting.** At 0 HP you faint and wake up back in town, fully healed. Novices lose nothing. Knights, Mages and Archers lose 3% of a level's EXP.
 
-### Field boss: the Pumpking
+### Field bosses
 
-The Pumpking lives where the east road ends in Dusk Hollow. It's a Ragnarok-style MVP:
+**The Pumpking** lives where the east road ends in Dusk Hollow. It's a Ragnarok-style MVP:
 
 - There's only one. It has 12,000 HP, breathes fire from a distance, and heals slowly if left alone.
 - It's drawn big, with its name and health bar always showing.
 - When it falls, the whole town hears who brought it down. It comes back **10 minutes** later, and the town hears that too.
 - A level 20 Knight can just about beat it alone with plenty of potions. A party of three takes about 80 seconds.
 - **It always drops** King's Candy (sells for 600 gold), a Mithril Ingot and usually an Orange Potion. It often drops good gear (Crusader Shield, Greathelm, Great Bow, Ember Staff, Knight's Blade), and half the time a Star Crystal. Rarely it drops the **Moonblade** (8%) or the legendary **Pumpking Card** (2%).
+
+**The Orc Warlord** keeps his camp where the west road ends in the Orc Woods, among barrels, crates and a campfire:
+
+- He has 24,000 HP, swings a halberd that hits very hard, and heals slowly if left alone. He's drawn big, in gold plate and a red cape.
+- When he falls, the whole town hears who brought him down. He comes back **15 minutes** later.
+- He's meant for a party: three or four players around level 28–30.
+- **He always drops** the Warlord's Banner (sells for 1,500 gold), a Mithril Ingot and a Star Crystal (often two). He often drops good gear (Halberd, Viking Helm, Spartan Shield, Crossbow, Diamond Staff, Katana). Rarely he drops the **Warlord's Medal** (6%), and very rarely the legendary **Dragon Spear** or **Orc Warlord Card** (2% each).
 
 ## 6. Jobs and skills
 
@@ -331,13 +353,23 @@ He also **buys** almost anything, and has a one-click "sell all monster loot" bu
 | Rapier | 13 | ATK +17, Critical +3% | Novice, Knight | 2 | Grub, Night Bat |
 | Knight's Blade | 17 | ATK +25 | Knight | 2 | Ghost, Pumpking |
 | Moonblade (epic) | 20 | ATK +32, Critical +6% | Novice, Knight | 2 | Pumpking |
+| Scimitar | 22 | ATK +30, Critical +3% | Novice, Knight | 2 | Goblin, Orc Warrior |
+| Katana | 27 | ATK +40, Critical +6% | Novice, Knight | 2 | Orc Skeleton, Orc Warlord |
+| Halberd (spear, both hands) | 25 | ATK +50 | Knight | 2 | Orc Warrior, Orc Warlord |
+| Dragon Spear (legendary, spear, both hands) | 30 | ATK +66, Critical +8% | Knight | 2 | Orc Warlord |
 | Hunting Bow | 10 | ATK +9, reach 170 | Archer | 1 | Orin (job gift), Bram |
 | Recurve Bow | 12 | ATK +14, reach 190 | Archer | 2 | Snapper Flower |
 | Great Bow | 16 | ATK +23, reach 210 | Archer | 2 | Gazer, Pumpking |
+| Composite Bow | 22 | ATK +30, reach 210 | Archer | 2 | Orc Archer |
+| Crossbow | 27 | ATK +40, Critical +4%, reach 220 | Archer | 2 | Orc Archer, Orc Warlord |
 | Apprentice Staff | 10 | ATK +9, MP +15, reach 150 | Mage | 1 | Orin (job gift), Bram |
 | Gnarled Staff | 12 | ATK +14, MP +25, reach 160 | Mage | 2 | Snapper Flower |
 | Crystal Staff | 15 | ATK +19, MP +40, reach 170 | Mage | 2 | Snapper Flower |
 | Ember Staff | 16 | ATK +23, MP +50, reach 180 | Mage | 2 | Gazer, Pumpking |
+| Ring Staff | 22 | ATK +30, MP +65, reach 190 | Mage | 2 | Goblin, Orc Archer |
+| Diamond Staff | 27 | ATK +40, MP +90, reach 200 | Mage | 2 | Orc Zombie, Orc Warlord |
+
+**Spears** are new for Knights (in Ragnarok, Knights carry spears). They hit harder than swords but need both hands, so no shield.
 
 **Shields**
 
@@ -347,6 +379,8 @@ He also **buys** almost anything, and has a one-click "sell all monster loot" bu
 | Guard Shield | 5 | DEF +3, HP +15 | Grass Snake, Snapper Flower |
 | Kite Shield | 14 | DEF +5, HP +20 | Rock Worm |
 | Crusader Shield | 18 | DEF +7, HP +45 | Ghost, Pumpking |
+| Round Shield | 22 | DEF +8, HP +50 | Orc Warrior |
+| Spartan Shield | 27 | DEF +10, HP +90 | Orc Skeleton, Orc Warlord |
 
 **Head**
 
@@ -360,6 +394,8 @@ He also **buys** almost anything, and has a one-click "sell all monster loot" bu
 | Ranger Hood | 12 | ATK +2, DEF +2 | Grub, Night Bat |
 | Horned Helm | 15 | DEF +4, HP +35 | Rock Worm |
 | Greathelm | 18 | DEF +5, HP +60 | Ghost, Pumpking |
+| Barbarian Helm | 22 | DEF +6, HP +60 | Orc Warrior |
+| Viking Helm | 27 | ATK +2, DEF +8, HP +100 | Orc Zombie, Orc Warlord |
 | Meadow Crown (legendary) | 10 | ATK +4, DEF +4, HP +60 | Snapper Flower (1 in 2,000) |
 
 **Armour, legs and feet**
@@ -371,10 +407,15 @@ He also **buys** almost anything, and has a one-click "sell all monster loot" bu
 | Plate Armour | Armour | 10 | DEF +6, HP +40 | Snapper Flower |
 | Guard Tabard | Armour | 14 | DEF +4, HP +30 | Rock Worm |
 | Sage Tabard | Armour | 15 | ATK +2, DEF +2, MP +50 | Gazer, Ghost |
+| Scout Armour | Armour | 22 | ATK +3, DEF +5, HP +40 | Goblin |
+| Starry Cloak | Armour | 25 | ATK +4, DEF +3, MP +90 | Orc Zombie |
+| Dark Plate | Armour | 26 | DEF +10, HP +90 | Orc Skeleton, Orc Zombie |
 | Leather Pants | Legs | 1 | DEF +1 (no card slot) | Bram, Slime |
 | Iron Greaves | Legs | 6 | DEF +2, HP +10 | Hornet, Rock Worm |
+| Steel Greaves | Legs | 22 | DEF +4, HP +30 | Orc Warrior |
 | Leather Boots | Feet | 1 | DEF +1 | Bram, Slime, Grass Snake |
 | Iron Boots | Feet | 6 | DEF +2, HP +10 | Hornet |
+| Steel Sabatons | Feet | 22 | DEF +4, HP +25 | Orc Archer |
 
 **Rings and amulets**
 
@@ -384,6 +425,10 @@ He also **buys** almost anything, and has a one-click "sell all monster loot" bu
 | Ring of Vigor | Ring | 5 | HP +30 | Grass Snake, Night Bat |
 | Clover Charm | Amulet | 1 | HP +15 (no card slot) | Bram, Slime |
 | Stinger Pendant | Amulet | 7 | ATK +3 | Hornet |
+| Ring of Might | Ring | 24 | ATK +5 | Orc Archer |
+| Guardian Ring | Ring | 28 | DEF +4, HP +60 | Orc Skeleton |
+| Tusk Necklace | Amulet | 22 | ATK +4, Critical +4% | Goblin |
+| Warlord's Medal (epic) | Amulet | 30 | ATK +8, HP +120 | Orc Warlord |
 
 ## 8. Monster cards
 
@@ -401,6 +446,12 @@ Ragnarok style: every monster very rarely drops **its own card**. A card goes in
 | Gazer Card | Gazer | Head | Gazing | ATK +3, MP +30 | 1 in 1,000 |
 | Ghost Card | Ghost | Armour | Ghostly | DEF +1, Evade +6% | 1 in 1,000 |
 | Pumpking Card (legendary) | Pumpking | Weapon | Royal | ATK +10, Critical +6% | 1 in 50 kills |
+| Goblin Card | Goblin | Feet | Swift | ATK +2, Evade +5% | 1 in 1,000 |
+| Orc Warrior Card | Orc Warrior | Armour | Orcish | DEF +2, HP +60 | 1 in 1,000 |
+| Orc Archer Card | Orc Archer | Head | Keen | Critical +10% | 1 in 1,000 |
+| Orc Skeleton Card | Orc Skeleton | Shield | Bony | DEF +4 | 1 in 1,000 |
+| Orc Zombie Card | Orc Zombie | Legs | Undying | HP +100 | 1 in 1,000 |
+| Orc Warlord Card (legendary) | Orc Warlord | Head | Heroic | ATK +5, DEF +3, HP +100 | 1 in 50 kills |
 
 - **Card slots.** Most gear has one slot and the better weapons have two. In the bag, small dots in the corner of an item show its slots: hollow when free, gold when filled. The Leather Cap, Leather Pants, Copper Ring and Clover Charm have no slots.
 - **Putting a card in.** In the bag, pick the card and press **Put in gear** (or double-click it). The gear it fits lights up, worn or in the bag. Pick one and confirm.
@@ -442,8 +493,8 @@ Ragnarok style: every monster very rarely drops **its own card**. A card goes in
 | Ingot | Used for | Where to get it |
 | --- | --- | --- |
 | Iron Ingot | +1 to +5 | Hilda sells them (100 gold). Hornets, Snapper Flowers, Grubs, Night Bats and Rock Worms drop them |
-| Mithril Ingot | +6 to +8 | Dusk Hollow monsters (Rock Worms most often), rarely Snapper Flowers. The Pumpking always drops one |
-| Star Crystal | +9 and +10 | Gazers and Ghosts (about 1 in 200 to 250), and the Pumpking (one kill in two) |
+| Mithril Ingot | +6 to +8 | Dusk Hollow and Orc Woods monsters (Orc Zombies and Rock Worms most often), rarely Snapper Flowers. Both bosses always drop one |
+| Star Crystal | +9 and +10 | Gazers and Ghosts (about 1 in 200 to 250), Orc Skeletons and Orc Zombies (about 1 in 125 to 170), the Pumpking (one kill in two) and the Orc Warlord (always, often two) |
 
 ### What it really costs
 
@@ -530,10 +581,12 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 | Ghost Hunter | Rare | Help defeat 300 Ghosts |
 | Kingslayer ✦ | Epic | Help defeat the Pumpking 10 times |
 | Monster Slayer | Epic | Help defeat 10,000 monsters |
+| Orc Slayer | Rare | Help defeat 500 Orc Warriors |
+| Warbreaker | Epic | Help defeat the Orc Warlord 10 times |
 | **Collecting** | | |
 | Card Finder | Rare | Find a monster card |
 | Card Collector | Epic | Find 5 different monster cards |
-| Card Master ✦ | Legendary | Find every kind of monster card (10 so far) |
+| Card Master ✦ | Legendary | Find every kind of monster card (16 so far) |
 | Lucky | Epic | Find a legendary item |
 | **The forge** | | |
 | Shiny | Rare | Upgrade any gear to +7 |
@@ -571,7 +624,13 @@ Pioneer places are counted per level cap: when the cap goes up, the first 10 pla
 | Rock Worm | 14 | 950 | 30 | 16 | 720 | 14–24 | Iron Greaves, Kite Shield, Horned Helm, Guard Tabard, Iron and Mithril Ingots |
 | Gazer | 16 | 800 | 34 | 10 | 760 | 18–30 | Sage Tabard, Wizard Hat, Ember Staff, Great Bow, Mithril Ingot, Star Crystal |
 | Ghost | 18 | 1,150 | 34 | 12 | 1,100 | 24–40 | Knight's Blade, Greathelm, Crusader Shield, Sage Tabard, Mithril Ingot, Star Crystal |
-| Pumpking | 22 | 12,000 | 58 | 20 | 16,000 | 400–800 | See "Field boss" |
+| Pumpking | 22 | 12,000 | 58 | 20 | 16,000 | 400–800 | See "Field bosses" |
+| Goblin | 20 | 1,000 | 30 | 10 | 850 | 20–34 | Scimitar, Ring Staff, Scout Armour, Tusk Necklace, Mithril Ingot |
+| Orc Warrior | 23 | 1,400 | 42 | 20 | 1,300 | 30–50 | Barbarian Helm, Round Shield, Steel Greaves, Scimitar, Halberd, Iron and Mithril Ingots |
+| Orc Archer | 25 | 1,300 | 40 | 14 | 1,500 | 32–52 | Composite Bow, Crossbow, Ring Staff, Steel Sabatons, Ring of Might, Mithril Ingot |
+| Orc Skeleton | 27 | 1,700 | 48 | 24 | 1,800 | 34–56 | Katana, Spartan Shield, Dark Plate, Guardian Ring, Mithril Ingot, Star Crystal |
+| Orc Zombie | 29 | 2,100 | 52 | 20 | 2,200 | 36–60 | Starry Cloak, Diamond Staff, Viking Helm, Dark Plate, Mithril Ingot, Star Crystal |
+| Orc Warlord | 33 | 24,000 | 90 | 30 | 40,000 | 1,000–2,000 | See "Field bosses" |
 
 Every monster also drops its own card (see Monster cards) and often potions.
 
@@ -583,7 +642,9 @@ Every monster also drops its own card (see Monster cards) and often potions.
 4. **Level 10:** Visit **Orin** just inside the south gate and choose your job. Spend your first skill point (K).
 5. **Level 10–14:** Snapper Flowers by the lake, or Grubs and Night Bats out of the **east gate**.
 6. **Level 14–20:** Rock Worms, Gazers and Ghosts deeper in Dusk Hollow. Use skills on Ghosts, since plain attacks often miss them.
-7. **Level 20+:** Team up for the **Pumpking**. Save your Mithril and Star Crystals for **Hilda**, and aim for your first aura at +7. Ten Pumpking fights make you a **Kingslayer**.
+7. **Level 20:** Team up for the **Pumpking**. Save your Mithril and Star Crystals for **Hilda**, and aim for your first aura at +7. Ten Pumpking fights make you a **Kingslayer**.
+8. **Level 20–25:** Out of the **west gate** into the **Orc Woods**: Goblins in the grass north of the road, then Orc Warriors on the rocks south of it. Knights, try a **Halberd** from level 25.
+9. **Level 25–30:** Orc Archers up north, Orc Skeletons west of the inlet, and Orc Zombies far to the south. At 30, gather a party for the **Orc Warlord**.
 
 Along the way, open your titles (T) now and then: you'll have earned a few.
 
@@ -591,7 +652,7 @@ Sell your monster loot to Bram whenever your bag fills up, and sit down (X) to h
 
 ## 14. Coming next
 
-- **New fields and monsters** above level 20, and a higher level cap.
+- **New fields and monsters** above level 30. The level cap (50) goes up once there's content to reach it.
 
 ---
 

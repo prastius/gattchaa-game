@@ -280,7 +280,20 @@ export const NPCS: NpcDef[] = [
     dir: Dir.Down,
     greeting:
       "Dusk Hollow (Lv 10–20) starts here. Grubs (Lv 11) by the road only fight back, but Night Bats (Lv 12) swoop at anyone. Rock Worms (Lv 14) are slow and thick-shelled. Deeper in, Gazers (Lv 16) shoot from afar and Ghosts (Lv 18) are hard to hit: use your skills. And where the road ends lives the Pumpking (Lv 22). Don't face him alone.",
-    chatter: ["Dusk Hollow is no meadow. Be careful!", "Ghosts dodge plain attacks. Use your skills!", "Gazers shoot from afar. Close in fast!", "Something big lives where the road ends…"],
+    chatter: ["Dusk Hollow is no meadow. Be careful!", "Ghosts dodge plain attacks. Use your skills!", "Gazers shoot from afar. Close in fast!", "Something big lives where the road ends…", "Past level 20? The Orc Woods lie out the west gate."],
+  },
+  {
+    // Outside the west gate, where the road runs into the Orc Woods.
+    id: "scout",
+    name: "Gregor",
+    title: "Scout",
+    kind: "local",
+    look: look({ body: "male", hair: "buzzcut", hairColor: "dark_brown", beard: "medium", skin: "taupe", top: "longsleeve", topColor: "walnut", bottom: "pants", bottomColor: "charcoal", shoes: "boots", shoesColor: "black", hat: "none" }),
+    ...at(123.5, 183.6),
+    dir: Dir.Down,
+    greeting:
+      "The Orc Woods (Lv 20–30) start here. Goblins (Lv 20) in the grass north of the road jump anyone who comes close. Orc Warriors (Lv 23) on the rocks south of the road only fight back, but they hit hard. Orc Archers (Lv 25) shoot from up north along the wall. West of the inlet the Orc Skeletons (Lv 27) rattle about, and far to the south the Orc Zombies (Lv 29) never stop walking. Where the road ends, the Orc Warlord (Lv 33) keeps his camp. Bring friends.",
+    chatter: ["The Orc Woods are no place for beginners!", "Goblins hide in the grass north of the road.", "Orc Archers shoot from up north. Keep moving!", "The Warlord's camp is where the road ends…", "Level 20? You're ready for the woods."],
   },
   {
     // Just inside the south gate: Novices walk past him on their way out, and come back at level 10.

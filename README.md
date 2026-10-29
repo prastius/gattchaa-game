@@ -117,7 +117,7 @@ client/       Phaser game
   src/world/shops.ts       Player shops: rugs, signs, the away seller's look-alike
   src/world/daylight.ts    Day and night (Batam time), lamp and fire glow
   src/world/ambience.ts    Butterflies by day, fireflies at night
-  src/world/monsterArt.ts  Monster sprite sheets and their animations
+  src/world/monsterArt.ts  Monster sprite sheets and their animations; humanoid monsters' parts
   src/world/fx.ts          Damage numbers, slashes, level-up light, arrows and magic bolts, skill effects
   src/scenes/WorldScene.ts   Chunk streaming, water glints, input, camera, interpolation
   src/ui/                  Creator, chat, HUD + minimap + emote picker, status panel (HP/MP/EXP), bag, skills (bar and window), NPC and shop panels
@@ -160,7 +160,7 @@ scripts/
 Ragnarok and TibiaME style: click a monster and your character fights it. Everything about a fight is decided on the server, and the numbers live in `shared/rpg.ts`.
 
 - **Classes.** Everyone starts as a Novice; at level 10 the Job Master makes you a Knight, Mage or Archer (see below). HP, MP, attack and defence grow by class as you level.
-- **Levels.** The cap is `LEVEL_CAP` (50 for now). The EXP curve (`expToNext`) is gentle through the Novice levels, then climbs to three times as much from the job change to level 13, so job levels take a few minutes each (about 4 at level 12, about 8 at level 18, fighting on-level monsters). It keeps going past the cap, so raising it is a one-line change. At the cap, EXP stops filling.
+- **Levels.** The cap is `LEVEL_CAP` (50 for now). The EXP curve (`expToNext`) is gentle through the Novice levels, then climbs to three times as much from the job change to level 13, so job levels take a few minutes each (about 4 at level 12, about 8 at level 18, 12 to 15 in the Orc Woods, fighting on-level monsters with plain attacks). It keeps going past the cap, so raising it is a one-line change. At the cap, EXP stops filling.
 - **Fields.** Monsters live outside the walls. The town (and the palace) is always safe: monsters never come in, and nobody can attack from inside. The first field is the **South Meadow**, out of the south gate (Rowan the Gate Guard explains it):
 
   | Monster | Level | Where | Behaviour |
@@ -181,7 +181,18 @@ Ragnarok and TibiaME style: click a monster and your character fights it. Everyt
   | Ghost | 18 | South-east | Plain attacks often miss it (skills always land); attacks on sight |
   | **Pumpking** | 22 | Where the east road ends | Field boss (below) |
 
-- **Field boss.** The Pumpking is Dusk Hollow's boss, Ragnarok's MVP style: one at a time, 12,000 HP, breathes fire from 150 px, heals only slowly when left alone, and comes back 10 minutes after it falls. It's drawn bigger, with its name and health always showing. The whole town hears when it rises again and who brought it down. A level 20 Knight can just about beat it alone with plenty of potions; a party shares the EXP by damage. It always drops King's Candy (600 gold at Bram), often a good piece of gear, and very rarely the Moonblade or the Pumpking Card. Any monster can be a boss (`boss: true` in `MONSTERS`).
+  The third field is the **Orc Woods** (Lv 20–30), out of the west gate: open grass and a rocky patch around a big inlet (Gregor the Scout explains it):
+
+  | Monster | Level | Where | Behaviour |
+  | --- | --- | --- | --- |
+  | Goblin | 20 | Grass north of the west road | Fast; attacks anyone close |
+  | Orc Warrior | 23 | Rocky ground south of the road | Tough; only fights back |
+  | Orc Archer | 25 | North, along the town wall | Shoots arrows from 180 px; attacks on sight |
+  | Orc Skeleton | 27 | West of the inlet | Attacks anyone close |
+  | Orc Zombie | 29 | Far south | Very slow; hits hardest |
+  | **Orc Warlord** | 33 | His camp where the west road ends (`ORC_CAMP`) | Field boss: 24,000 HP, 15 min respawn, for a party |
+
+- **Field boss.** The Pumpking is Dusk Hollow's boss, Ragnarok's MVP style: one at a time, 12,000 HP, breathes fire from 150 px, heals only slowly when left alone, and comes back 10 minutes after it falls. It's drawn bigger, with its name and health always showing. The whole town hears when it rises again and who brought it down. A level 20 Knight can just about beat it alone with plenty of potions; a party shares the EXP by damage. It always drops King's Candy (600 gold at Bram), often a good piece of gear, and very rarely the Moonblade or the Pumpking Card. The Orc Woods' Orc Warlord is the same kind of boss, bigger (24,000 HP, back after 15 minutes), with the Dragon Spear and his own card as the rare prizes. Any monster can be a boss (`boss: true` in `MONSTERS`).
 
 - **Fighting.** You auto-attack once a second while the monster is in reach. Hits can miss (more often against higher levels), and 5 % are critical hits. The client only says what you're attacking and draws what the server reports: damage numbers, slashes, health bars.
 - **Rewards.** EXP is shared by everyone who hurt the monster, by how much damage they did. Monsters more than 5 levels below you give less (down to 10 %). Gold goes to whoever did the most damage. Level-ups heal you fully, and every 10th level is announced in chat.
@@ -220,6 +231,7 @@ Every item is in `shared/items.ts`: its stats, price, rarity, icon, and how it l
 - **Potions.** Red Potions heal 40 HP, Orange Potions 100 HP, one every 0.8 s, even mid-fight. Q drinks the smallest one that heals you fully.
 - **The Outfitter.** Bram stands outside the south gate, across from Rowan. He sells potions and starter gear (Dagger, Short Sword, Wooden Shield, Leather Cap, Chain Coif, Leather Armour, Leather Pants and Boots, Copper Ring, Clover Charm) and buys anything with a price, with a one-click "sell all monster loot". Better gear only comes from monsters.
 - **Dusk Hollow gear.** Level 12–20 drops, all visible on the character: Wizard Hat, Ranger Hood (hides your hair), Horned Helm, Greathelm, Guard Tabard, Sage Tabard, Kite Shield, Crusader Shield, Rapier, Knight's Blade, Great Bow, Ember Staff, and the Pumpking's Moonblade. Each monster also has its own loot to sell (Sticky Silk, Bat Fang, Rock Shard, Gazer Lens, Ectoplasm).
+- **Orc Woods gear.** Level 22–30 drops: Scimitar, Katana, Composite Bow, Crossbow, Ring Staff, Diamond Staff, Round and Spartan Shields, Barbarian and Viking Helms, Scout Armour and Starry Cloak (both with a cape), Dark Plate, Steel Greaves and Sabatons, two rings and two amulets, and from the Orc Warlord the Warlord's Medal and the legendary Dragon Spear. **Spears** are a new weapon type (`spear` in `WEAPON_USERS`), for Knights only and two-handed: the Halberd and the Dragon Spear. Six more cards (Goblin, Orc Warrior, Orc Archer, Orc Skeleton, Orc Zombie and the legendary Orc Warlord Card) bring the total to 16.
 - **Saving.** The bag and equipment are saved with the rest of your progress, plus right away after buying, selling or finding something good. Guests keep their bag until they leave.
 - **Defence.** Damage is softened by defence rather than reduced by it (defence equal to the attack halves a hit), so armour always helps but never makes you untouchable.
 
@@ -262,7 +274,7 @@ Hilda the Blacksmith works by her forge fire outside the south gate, west of Row
 | +10 | 25% | 2,500 gold | Star Crystal |
 
 - **What it adds.** Weapons get ATK for every level: an eighth of their own ATK, at least 1 (Saber +2, Moonblade +4). Shields, helmets, armour, legs and boots get DEF +1 per level. Rings and amulets can't be upgraded. A worn upgrade counts straight away.
-- **Ingots.** Hilda sells Iron Ingots (100 gold); monsters drop them too. Mithril Ingots drop in Dusk Hollow (Rock Worms most often) and rarely from Snapper Flowers. Star Crystals come from Gazers and Ghosts (about 1 in 200 to 250) and from the Pumpking (one kill in two). The Pumpking also always carries a Mithril Ingot or two. Ingots are kept out of Bram's "sell all monster loot".
+- **Ingots.** Hilda sells Iron Ingots (100 gold); monsters drop them too. Mithril Ingots drop in Dusk Hollow (Rock Worms most often) and rarely from Snapper Flowers. Star Crystals come from Gazers and Ghosts (about 1 in 200 to 250), Orc Skeletons and Orc Zombies (about 1 in 125 to 170), the Pumpking (one kill in two) and the Orc Warlord (always). The Pumpking also always carries a Mithril Ingot or two. Ingots are kept out of Bram's "sell all monster loot".
 - **The cost of luck.** Simulated over 20,000 tries, reaching +7 takes about 10 tries (6,000 gold, 4 Mithril), +9 about 29 tries (32,000 gold, 19 Mithril, 3 Star Crystals), and +10 about 74 tries (100,000 gold, 50 Mithril, 16 Star Crystals).
 - **Names.** Upgraded gear goes first in the name: "+7 Double Stinging Saber". The bag shows the level in the item's corner and what the upgrades add. Upgrades stay on gear that's dropped and picked up again; Bram won't buy upgraded gear.
 - **Auras.** Wear anything at +7 or higher and everyone sees an aura at your feet: a blue ring at +7, violet with rising sparks at +9, and gold with a column of light at +10. Legendary gear (or a legendary card in gear) gives an orange aura that ranks between +9 and +10. The best one you qualify for shows (`auraOf` in `shared/items.ts`), unless your shown title has its own. At night auras glow like the street lamps (a glow above the night tint).
@@ -311,6 +323,7 @@ The stalls, machines, Rooms tables, big-pull announcements, signing in and playe
 
 - **Add a hairstyle or clothing item:** add its `sheet_definitions` path to `ITEMS`. Browse the options at <https://liberatedpixelcup.github.io/Universal-LPC-Spritesheet-Character-Generator/>.
 - **Monsters:** `MONSTER_FILES` lists the sheets taken from "[LPC] Monsters" (OpenGameArt). `client/src/world/monsterArt.ts` says how each sheet is laid out.
+- **Humanoid monsters** (goblins, orcs, skeletons, zombies) are put together from character art instead: `MOB_PARTS` in `fetch-assets` adds their heads, bodies and weapons (category `mob`, male body only, never in the character creator), and each monster in `monsterArt.ts` lists its `parts` (any manifest item, with colours). `composeParts` in `client/src/character.ts` builds the walk sheet the first time one appears. They stand still when idle, walk when they move, and lunge to attack (there are no attack frames). Their card pictures use the same sheet.
 - **Equipment art:** `GEAR` lists the armour and weapon sheets. Items in `shared/items.ts` pick pieces by id and recolour them (`colors: { metal: "bronze" }`).
 - **Bows:** LPC bows only walk in 128px frames. `fetch-assets` marks those layers `frame: 128`, and `client/src/character.ts` cuts the middle 64px out of each frame when it loads them.
 - **Item icons:** every icon from Kyrise's 16x16 RPG Icon Pack (CC-BY 4.0) is in `client/public/assets/items/`; an item names one with `icon`. Items without one get an icon cut from their gear art. Monster cards are drawn in `client/src/character.ts`: a gold card with the monster's own sprite on it.

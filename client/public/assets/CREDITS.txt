@@ -1272,6 +1272,14 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
 - <https://opengameart.org/content/lpc-expanded-hair>
 
+### Barbarian (hat/helmet/barbarian)
+
+- Authors: bluecarrot16, JaidynReiman, Napsio (Vitruvian Studio)
+- Licenses: CC-BY 3.0, CC-BY 4.0, OGA-BY 3.0, GPL 2.0, GPL 3.0
+- Notes: original version by bluecarrot16, color reduction by Napsio (Vitruvian Studio)
+- <https://opengameart.org/content/lpc-helmets>
+- <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
+
 ### Basic Beard (beards/beard/basic)
 
 - Authors: JaidynReiman, Carlo Enrico Victoria (Nemisys)
@@ -1436,6 +1444,13 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://github.com/ElizaWy/LPC/blob/main/Characters/Hair>
 - <https://opengameart.org/content/lpc-expanded-sit-run-jump-more>
 
+### Crossbow (weapon/ranged/crossbow)
+
+- Authors: bluecarrot16, drjamgo@hotmail.com
+- Licenses: CC0
+- Notes: original by drjamgo, modified for v3 character bases and split into layers by bluecarrot16
+- <https://opengameart.org/content/lpc-crossbow-final>
+
 ### Crown (hat/formal/crown)
 
 - Authors: DarkwallLKE, Charles Sanchez (CharlesGabriel)
@@ -1492,6 +1507,20 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Authors: bluecarrot16, Johannes Sjölund (wulax), Matthew Krohn (makrohn)
 - Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
 - <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+- <https://opengameart.org/content/lpc-extended-weapon-animations>
+
+### Diamond staff (weapon/magic/diamond)
+
+- Authors: bluecarrot16
+- Licenses: OGA-BY 3.0+, GPL 3.0, CC-BY 4.0
+- <https://opengameart.org/content/lpc-more-weapons>
+
+### Dragon spear (weapon/polearm/dragonspear)
+
+- Authors: Daniel Eddeland (daneeklu), gr3yh47, Johannes Sjölund (wulax)
+- Licenses: CC-BY-SA 3.0
+- Notes: original "dragon spear" by daneeklu and gr3yh47; adapted to opposite hand and split into layers by bluecarrot16
+- <https://opengameart.org/content/lpc-weapons-two-bows-a-spear-and-a-trident>
 - <https://opengameart.org/content/lpc-extended-weapon-animations>
 
 ### Dreadlocks short (hair/dreadlocks_short)
@@ -1558,6 +1587,14 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Licenses: OGA-BY 3.0+, GPL 3.0, CC-BY 4.0
 - <https://opengameart.org/content/lpc-more-weapons>
 
+### Goblin (head/heads/goblin)
+
+- Authors: bluecarrot16, Stephen Challener (Redshrike), William.Thomsponj
+- Licenses: OGA-BY 3.0, CC-BY 4.0, GPL 2.0, GPL 3.0
+- Notes: original goblin by Redshrike, commisioned by William.Thomsponj; modular head extracted and enlarged by bluecarrot16
+- <https://opengameart.org/content/lpc-goblin>
+- <https://opengameart.org/content/lpc-folk>
+
 ### Great (weapon/ranged/bow/great)
 
 - Authors: Daniel Eddeland (daneeklu), gr3yh47, Johannes Sjölund (wulax), Pierre Vigier (pvigier)
@@ -1572,6 +1609,12 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Licenses: OGA-BY 3.0, CC-BY 3.0, CC-BY 4.0, GPL 2.0, GPL 3.0
 - <https://opengameart.org/content/lpc-helmets>
 - <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
+
+### Halberd (weapon/polearm/halberd)
+
+- Authors: Benjamin K. Smith (BenCreating), bluecarrot16, Sander Frenken (castelonia)
+- Licenses: CC-BY-SA 3.0, GPL 3.0
+- <https://opengameart.org/content/lpc-medieval-weapons>
 
 ### Half up (hair/half_up)
 
@@ -1656,6 +1699,12 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://opengameart.org/content/lpc-hair>
 - <https://github.com/ElizaWy/LPC/tree/main/Characters/Hair>
 - <https://opengameart.org/content/lpc-expanded-sit-run-jump-more>
+
+### Katana (weapon/sword/katana)
+
+- Authors: Pierre Vigier and DCSS artists (see https://github.com/crawl/tiles/blob/master/ARTISTS.md)
+- Licenses: OGA-BY 3.0
+- <https://opengameart.org/content/lpc-dcss-swords>
 
 ### Kerchief (hat/pirate/kerchief)
 
@@ -1851,12 +1900,25 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Licenses: OGA-BY 3.0
 - <https://opengameart.org/content/lpc-dcss-swords>
 
+### Loop staff (weapon/magic/loop)
+
+- Authors: bluecarrot16
+- Licenses: OGA-BY 3.0+, GPL 3.0, CC-BY 4.0
+- <https://opengameart.org/content/lpc-more-weapons>
+
 ### Loose (hair/loose)
 
 - Authors: JaidynReiman, Manuel Riecke (MrBeast)
 - Licenses: CC-BY-SA 3.0, GPL 3.0
 - <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
 - <https://opengameart.org/content/lpc-expanded-hair>
+
+### Mace (weapon/blunt/mace)
+
+- Authors: Johannes Sjölund (wulax), bluecarrot16
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0
+- <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+- <https://opengameart.org/content/lpc-extended-weapon-animations>
 
 ### Mail (hat/helmet/mail)
 
@@ -1925,6 +1987,16 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Notes: original by wulax, walk animations by pvigier, split into layers and tweaked for v3 character bases by bluecarrot16. pvigier has agreed to license this sheet as OGA-BY 3.0+.
 - <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
 - <https://opengameart.org/content/lpc-walk-animations-for-bows>
+
+### Orc male (head/heads/orc/male)
+
+- Authors: bluecarrot16, Matthew Krohn (makrohn), Stephen Challener (Redshrike), Zi Ye
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+- Notes: Sinbad the ogre design by Zi Ye, original 4-direction sprite by Redshrike, additional hurt/cast animations by makrohn, headless version by bluecarrot16
+- <https://opengameart.org/content/four-characters-my-lpc-entries>
+- <https://opengameart.org/content/sinbad-the-ogre>
+- <https://opengameart.org/content/lpc-male-sheets>
+- <https://opengameart.org/content/lpc-character-bases>
 
 ### Pants (legs/pants/male)
 
@@ -2054,6 +2126,13 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://opengameart.org/content/clothing-facial-features-and-ui-elements>
 - <https://opengameart.org/content/lpc-gentleman>
 
+### Round Shield (shield/round)
+
+- Authors: Johannes Sjölund (wulax), Michael Whitlock (bigbeargames), DarkwallLKE, Tuomo Untinen (reemax)
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+- <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+- <https://opengameart.org/content/lpc-shields-pack>
+
 ### Saber (weapon/sword/saber)
 
 - Authors: Daniel Eddeland (daneeklu), Johannes Sjölund (wulax), gr3yh47, bluecarrot16
@@ -2076,6 +2155,12 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Licenses: CC-BY-SA 3.0, GPL 3.0
 - Notes: adapted to v3 bases and recolored by bluecarrot16
 - <https://opengameart.org/content/lpc-2-characters>
+
+### Scimitar (weapon/sword/scimitar)
+
+- Authors: Pierre Vigier and DCSS artists (see https://github.com/crawl/tiles/blob/master/ARTISTS.md)
+- Licenses: OGA-BY 3.0
+- <https://opengameart.org/content/lpc-dcss-swords>
 
 ### Shades (facial/glasses/shades)
 
@@ -2162,6 +2247,24 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Notes: original by DrJamgo, hands switched and split into to layers by bluecarrot16
 - <https://opengameart.org/content/lpc-simple-staff>
 
+### Skeleton (body/bodies/skeleton)
+
+- Authors: bluecarrot16, Napsio, JaidynReiman, Johannes Sjölund (wulax), Stephen Challener (Redshrike)
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+- <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
+- <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+- <https://opengameart.org/content/lpc-skeleton>
+- <https://opengameart.org/content/lpc-character-bases>
+
+### Skeleton (head/heads/skeleton)
+
+- Authors: bluecarrot16, Napsio, JaidynReiman, Johannes Sjölund (wulax), Stephen Challener (Redshrike)
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+- <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
+- <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+- <https://opengameart.org/content/lpc-skeleton>
+- <https://opengameart.org/content/lpc-character-bases>
+
 ### Sleeveless 2 (torso/clothes/sleeveless/sleeveless2)
 
 - Authors: ElizaWy, JaidynReiman, Stephen Challener (Redshrike), Johannes Sjölund (wulax)
@@ -2196,6 +2299,35 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Notes: original "TightDress" by Nila122, edited to skirt by ElizaWy, extended to all animation frames and edited for v3 bases by bluecarrot16
 - <https://opengameart.org/content/lpc-clothes-and-hair>
 - <http://opengameart.org/content/lpc-clothing-updates>
+
+### Solid (cape/solid/bg)
+
+- Authors: Nila122, JaidynReiman
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+- <https://opengameart.org/content/lpc-curly-hair-elven-ears-white-cape-with-blue-trim-and-more>
+- <https://opengameart.org/content/lpc-roman-armor>
+
+### Solid (cape/solid/fg)
+
+- Authors: bluecarrot16, JaidynReiman
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+- <https://opengameart.org/content/lpc-curly-hair-elven-ears-white-cape-with-blue-trim-and-more>
+- <https://opengameart.org/content/lpc-roman-armor>
+- <http://opengameart.org/content/lpc-clothing-updates>
+
+### Spartan Shield (shield/spartan)
+
+- Authors: bluecarrot16, Sander Frenken (castelonia)
+- Licenses: OGA-BY 3.0
+- <https://opengameart.org/content/lpc-shields>
+
+### Spear (weapon/polearm/spear)
+
+- Authors: Pierre Vigier (pvigier), Johannes Sjölund (wulax), Inboxninja
+- Licenses: CC-BY-SA 3.0
+- Notes: original by wulax, walk animations redone by pvigier, split into layers and tweaked for v3 character bases by bluecarrot16
+- <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+- <https://opengameart.org/content/lpc-spear-and-shovel-reworked>
 
 ### Spiked (hair/spiked)
 
@@ -2248,6 +2380,20 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
 - <https://opengameart.org/content/lpc-combat-armor-for-women>
 - <http://opengameart.org/content/lpc-clothing-updates>
+
+### Tattered (cape/tattered/bg)
+
+- Authors: Nila122, JaidynReiman
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+- <https://opengameart.org/content/lpc-curly-hair-elven-ears-white-cape-with-blue-trim-and-more>
+- <https://opengameart.org/content/lpc-roman-armor>
+
+### Tattered (cape/tattered/fg)
+
+- Authors: Nila122, JaidynReiman
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+- <https://opengameart.org/content/lpc-curly-hair-elven-ears-white-cape-with-blue-trim-and-more>
+- <https://opengameart.org/content/lpc-roman-armor>
 
 ### Thick Headband (hat/headband/thick)
 
@@ -2325,6 +2471,19 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
 - <https://opengameart.org/content/lpc-expanded-hair>
 
+### Viking spangenhelm (hat/helmet/spangenhelm_viking)
+
+- Authors: bluecarrot16
+- Licenses: CC-BY 3.0, CC-BY 4.0, OGA-BY 3.0, GPL 2.0, GPL 3.0
+- <https://opengameart.org/content/lpc-helmets>
+- <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
+
+### Waraxe (weapon/blunt/waraxe)
+
+- Authors: Benjamin K. Smith (BenCreating), bluecarrot16, Sander Frenken (castelonia)
+- Licenses: CC-BY-SA 3.0, GPL 3.0
+- <https://opengameart.org/content/lpc-medieval-weapons>
+
 ### Wavy (hair/wavy)
 
 - Authors: JaidynReiman, Nila122
@@ -2347,3 +2506,20 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Licenses: OGA-BY 3.0
 - Notes: Custom by JaidynReiman; inspiration for spellcast frames from Nila122's XLong
 - <https://opengameart.org/content/lpc-expanded-xlong-hair>
+
+### Zombie (body/bodies/zombie)
+
+- Authors: Stephen Challener (Redshrike), Johannes Sjölund (wulax), Sander Frenken (castelonia), Benjamin K. Smith (BenCreating), bluecarrot16
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+- <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
+- <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+- <https://opengameart.org/content/lpc-zombie>
+- <https://opengameart.org/content/lpc-character-bases>
+
+### Zombie (head/heads/zombie)
+
+- Authors: bluecarrot16, Benjamin K. Smith (BenCreating), Sander Frenken (castelonia), Stephen Challener (Redshrike)
+- Licenses: CC-BY-SA 3.0, GPL 3.0
+- <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
+- <https://opengameart.org/content/lpc-zombie>
+- <https://opengameart.org/content/lpc-character-bases>

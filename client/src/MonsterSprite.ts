@@ -1,12 +1,21 @@
 import Phaser from "phaser";
 import { Dir } from "../../shared/protocol";
 import { MONSTERS, type MonsterDef, type MonsterId } from "../../shared/rpg";
-import { MONSTER_ART, attackAnim, monsterTexture, moveAnim, type MonsterArt } from "./world/monsterArt";
+import { MONSTER_ART, attackAnim, idleAnim, monsterReady, monsterTexture, moveAnim, type MonsterArt } from "./world/monsterArt";
 
 const FONT = "system-ui, -apple-system, Segoe UI, sans-serif";
 const BAR_W = 30;
 const BOSS_BAR_W = 64;
 const FLASH_MS = 80;
+/** Humanoids step this far toward what they hit. */
+const LUNGE_PX = 7;
+/** Unit steps for each facing (up, left, down, right). */
+const STEP = [
+  [0, -1],
+  [-1, 0],
+  [0, 1],
+  [1, 0],
+];
 
 /**
  * A monster in the field. Like PlayerSprite, the container sits at its feet
@@ -31,6 +40,9 @@ export class MonsterSprite {
   private barW: number;
   private frozen = false;
   private thaw?: Phaser.Time.TimerEvent;
+  /** Its texture exists (humanoids are put together the first time one appears). */
+  private ready = false;
+  private lungeTween?: Phaser.Tweens.Tween;
 
   moving = false;
   dir: number = Dir.Down;
@@ -53,7 +65,7 @@ export class MonsterSprite {
     this.ring = scene.add.graphics().setVisible(false);
     this.ring.lineStyle(2, 0xff5a4f, 1).strokeEllipse(0, 0, rx * 2, rx).lineStyle(1, 0xffd0c0, 0.7).strokeEllipse(0, 0, rx * 2 + 6, rx + 3);
 
-    this.sprite = scene.add.sprite(0, 0, monsterTexture(kind)).setOrigin(0.5, a.feet / a.frame).setScale(a.scale ?? 1);
+    this.sprite = scene.add.sprite(0, 0, "__DEFAULT").setOrigin(0.5, a.feet / a.frame).setScale(a.scale ?? 1).setVisible(false);
     this.barW = this.def.boss ? BOSS_BAR_W : BAR_W;
     this.bar = scene.add.graphics().setVisible(false);
     this.label = scene.add
@@ -71,7 +83,20 @@ export class MonsterSprite {
 
     this.container = scene.add.container(x, y, [this.ring, this.sprite, this.bar, this.label]).setDepth(y);
     this.drawBar();
-    this.sprite.play({ key: moveAnim(kind, this.dir), startFrame: Math.floor(Math.random() * 3) });
+    void monsterReady(scene, kind).then(() => {
+      if (this.dying) return;
+      this.ready = true;
+      this.sprite.setTexture(monsterTexture(kind)).setVisible(true);
+      // Out of step with its neighbours: start the loop on a random frame (a standing one has just the one).
+      const key = this.loopKey();
+      const frames = scene.anims.get(key)?.frames.length ?? 1;
+      this.sprite.play({ key, startFrame: Math.floor(Math.random() * Math.min(3, frames)) });
+    });
+  }
+
+  /** The loop for now: walking (or the pack's bobbing), or standing still. */
+  private loopKey() {
+    return !this.moving && this.art.idle ? idleAnim(this.kind, this.dir) : moveAnim(this.kind, this.dir);
   }
 
   get x() {
@@ -103,17 +128,27 @@ export class MonsterSprite {
 
   /** Per frame: the idle/move loop for the way it faces (quicker while moving). */
   animate() {
-    if (this.dying || this.frozen) return;
-    this.sprite.anims.timeScale = this.moving ? 1.6 : 1;
+    if (this.dying || this.frozen || !this.ready) return;
+    // The pack's monsters bob quicker while they move; humanoids walk at one pace.
+    this.sprite.anims.timeScale = this.moving && !this.art.parts ? 1.6 : 1;
     if (this.attacking) return;
-    const key = moveAnim(this.kind, this.dir);
+    const key = this.loopKey();
     if (this.sprite.anims.currentAnim?.key !== key) this.sprite.play(key);
   }
 
   /** Lunges/bites toward `dir`, then goes back to its loop. */
   attack(dir: number) {
-    if (this.dying || this.frozen) return;
+    if (this.dying || this.frozen || !this.ready) return;
     this.dir = dir;
+    if (this.art.parts) {
+      // Humanoids have no attack frames: a quick step at the target, and back.
+      const [sx, sy] = STEP[dir] ?? [0, 1];
+      this.lungeTween?.complete();
+      this.sprite.setPosition(0, 0);
+      this.animate();
+      this.lungeTween = this.scene.tweens.add({ targets: this.sprite, x: sx * LUNGE_PX, y: sy * LUNGE_PX, duration: 90, yoyo: true, ease: "Quad.Out" });
+      return;
+    }
     this.attacking = true;
     this.sprite.play(attackAnim(this.kind, dir));
     this.sprite.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
@@ -227,6 +262,7 @@ export class MonsterSprite {
 
   destroy() {
     this.dying = true;
+    this.lungeTween?.remove();
     this.thaw?.remove();
     this.ringTween?.remove();
     this.container.destroy();

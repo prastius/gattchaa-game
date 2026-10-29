@@ -213,6 +213,42 @@ export async function composeCharacter(key: string, opts: { sit?: boolean } = {}
   return canvas;
 }
 
+/** One piece of character art for a monster: a manifest item (category and id) and its colours by material. */
+export interface ArtPart {
+  category: string;
+  id: string;
+  colors?: Record<string, string>;
+}
+
+/**
+ * A walk sheet (576x256) put together from pieces of character art on the
+ * male body, for humanoid monsters: orcs, goblins, skeletons…
+ */
+export async function composeParts(parts: readonly ArtPart[]): Promise<HTMLCanvasElement> {
+  const m = await loadManifest();
+  const layers: { z: number; src: Promise<CanvasImageSource> }[] = [];
+  for (const part of parts) {
+    const it = findItem(m, part.category, part.id);
+    if (!it) {
+      console.warn("monster art: no", part.category, part.id);
+      continue;
+    }
+    const map = colorMap(m, it, part.colors ?? {});
+    for (const layer of it.layers) {
+      const file = layer.files.male?.walk;
+      if (file) layers.push({ z: layer.z, src: recolor(file, map, layer.frame) });
+    }
+  }
+  layers.sort((a, b) => a.z - b.z);
+  const sources = await Promise.all(layers.map((l) => l.src));
+  const canvas = document.createElement("canvas");
+  canvas.width = WALK_COLS * FRAME;
+  canvas.height = SHEET_H;
+  const ctx = canvas.getContext("2d")!;
+  for (const src of sources) ctx.drawImage(src, 0, 0);
+  return canvas;
+}
+
 /** Preloads every character layer so the creator feels instant (equipment loads when someone wears it). */
 export async function preloadCharacterArt(): Promise<void> {
   const m = await loadManifest();
@@ -354,12 +390,18 @@ const CARD_SKY: Record<MonsterId, [string, string]> = {
   gazer: ["#ffd9d9", "#d9707a"],
   ghost: ["#dff3d0", "#8fb57a"],
   pumpking: ["#ffe2a6", "#e8822a"],
+  goblin: ["#e2efc4", "#9cbf5e"],
+  orcWarrior: ["#e8dcc4", "#a88a5c"],
+  orcArcher: ["#d8e8d0", "#7c9a6c"],
+  orcSkeleton: ["#e6e2f0", "#8c86a6"],
+  orcZombie: ["#d6e4cc", "#6f8a62"],
+  orcWarlord: ["#ffd8a8", "#c0442c"],
 };
 
 /** A monster card: gold frame, the monster facing you, and a name plate (Ragnarok style). */
 async function drawCard(ctx: CanvasRenderingContext2D, monster: MonsterId) {
   const art = MONSTER_ART[monster];
-  const sheet = await loadImage(`monsters/${art.file}`);
+  const sheet = art.parts ? await composeParts(art.parts) : await loadImage(`monsters/${art.file}`);
   // Its standing frame, facing down.
   const frame = document.createElement("canvas");
   frame.width = frame.height = art.frame;

@@ -119,6 +119,8 @@ export const TITLES = def({
   ghostHunter: { name: "Ghost Hunter", tier: "rare", group: "Hunting", goal: { kind: "kills", n: 300, monster: "ghost" }, how: "Help defeat 300 Ghosts." },
   kingslayer: { name: "Kingslayer", tier: "epic", group: "Hunting", goal: { kind: "kills", n: 10, monster: "pumpking" }, aura: AURA_KINGSLAYER, how: "Help defeat the Pumpking 10 times." },
   monsterSlayer: { name: "Monster Slayer", tier: "epic", group: "Hunting", goal: { kind: "kills", n: 10_000 }, how: "Help defeat 10,000 monsters." },
+  orcSlayer: { name: "Orc Slayer", tier: "rare", group: "Hunting", goal: { kind: "kills", n: 500, monster: "orcWarrior" }, how: "Help defeat 500 Orc Warriors." },
+  warbreaker: { name: "Warbreaker", tier: "epic", group: "Hunting", goal: { kind: "kills", n: 10, monster: "orcWarlord" }, how: "Help defeat the Orc Warlord 10 times." },
 
   // ------------------------------------------------------------ collecting
   cardFinder: { name: "Card Finder", tier: "rare", group: "Collecting", goal: { kind: "cards", n: 1 }, how: "Find a monster card." },
