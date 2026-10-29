@@ -20,7 +20,7 @@ import { CLASSES, JOB_LEVEL, aClass, isClassId, isMonsterId } from "../../../sha
 import { SKILLS, type SkillId } from "../../../shared/skills";
 import { ITEMS, PICKUP_RANGE, RARITY, appearanceKey, cleanUpgrade, isItemId, parseCards } from "../../../shared/items";
 import { NPCS, type NpcDef } from "../../../shared/npcs";
-import { DOORS, INTERIOR_ZONE, PROPS, TOWN_AREA, inRect } from "../../../shared/town";
+import { DOORS, INTERIOR_ZONE, PROPS, TOWN_AREA, inRect, isSnowy } from "../../../shared/town";
 import { CharacterTextures, PlayerSprite } from "../PlayerSprite";
 import { MonsterSprite } from "../MonsterSprite";
 import { DropSprite } from "../DropSprite";
@@ -32,7 +32,7 @@ import { Town, preloadTown, type Hotspot } from "../world/town";
 import { SELLER_BUBBLE_LIFT, Shops } from "../world/shops";
 import { Interpolator, ServerClock } from "../interp";
 import { Daylight } from "../world/daylight";
-import { Critters } from "../world/ambience";
+import { Critters, Snowfall } from "../world/ambience";
 import { audio } from "../audio";
 import type { ChatUI } from "../ui/chat";
 import type { HUD } from "../ui/hud";
@@ -255,6 +255,8 @@ export class WorldScene extends Phaser.Scene {
   private daylight!: Daylight;
   /** Butterflies by day, fireflies at night. */
   private critters!: Critters;
+  /** Snow over Frostfell. */
+  private snow!: Snowfall;
   /** Inside the Gattchaa store (the interior zone)? */
   private indoors = false;
   private doorPendingUntil = 0;
@@ -273,6 +275,9 @@ export class WorldScene extends Phaser.Scene {
     this.load.image(WORLD_TEX.plants, `${ASSETS}plants.png`);
     this.load.image(WORLD_TEX.flowers, `${ASSETS}flowers.png`);
     this.load.image(WORLD_TEX.rocks, `${ASSETS}rocks.png`);
+    this.load.image(WORLD_TEX.terrainWinter, `${ASSETS}terrain-winter.png`);
+    this.load.image(WORLD_TEX.treesWinter, `${ASSETS}trees-winter.png`);
+    this.load.image(WORLD_TEX.plantsWinter, `${ASSETS}plants-winter.png`);
     preloadTown(this);
     preloadMonsters(this);
     this.load.spritesheet(WATER_FX, `${import.meta.env.BASE_URL}assets/town/water-fx.png`, { frameWidth: 32, frameHeight: 32 });
@@ -295,13 +300,14 @@ export class WorldScene extends Phaser.Scene {
         }
       }
     }
-    this.atlas = buildTerrainAtlas(this, WORLD_TEX.terrain, ATLAS_KEY, structs);
+    this.atlas = buildTerrainAtlas(this, WORLD_TEX.terrain, WORLD_TEX.terrainWinter, ATLAS_KEY, structs);
     registerDecorFrames(this);
     if (!this.anims.exists("glint-a")) {
       this.anims.create({ key: "glint-a", frames: this.anims.generateFrameNumbers(WATER_FX, { start: 0, end: 3 }), frameRate: 6, repeat: -1 });
       this.anims.create({ key: "glint-b", frames: this.anims.generateFrameNumbers(WATER_FX, { start: 4, end: 7 }), frameRate: 7, repeat: -1 });
     }
     this.critters = new Critters(this, this.world);
+    this.snow = new Snowfall(this);
     createMonsterAnims(this);
     this.fx = new Fx(this, () => this.textRes);
 
@@ -690,6 +696,7 @@ export class WorldScene extends Phaser.Scene {
     this.daylight.update(time, this.indoors);
     PlayerSprite.nightLight = this.daylight.lamps;
     this.critters.update(time, dt, this.cameras.main.worldView, this.daylight.night, this.indoors);
+    this.snow.update(this.cameras.main.worldView, !this.indoors && isSnowy(this.cameras.main.worldView.centerY / TILE_SIZE));
     audio.calm = this.indoors || this.daylight.night;
     if (this.doorPendingUntil && performance.now() > this.doorPendingUntil) {
       // The server said no (or lag): don't leave the screen black.
@@ -1712,8 +1719,9 @@ export class WorldScene extends Phaser.Scene {
         const tx = tx0 + x;
         const ty = ty0 + y;
         const [g, o] = tileCells(world, tx, ty);
-        gRow.push(atlas.terrain(g));
-        oRow.push(o ? atlas.terrain(o) : -1);
+        const snow = isSnowy(ty);
+        gRow.push(atlas.terrain(g, snow));
+        oRow.push(o ? atlas.terrain(o, snow) : -1);
         if (o) hasOverlay = true;
         const sk = structKey(world, tx, ty);
         const f = sk ? null : floorCell(world, tx, ty);
@@ -1729,6 +1737,7 @@ export class WorldScene extends Phaser.Scene {
             tx * TILE_SIZE + TILE_SIZE / 2 + jitter,
             ty * TILE_SIZE + TILE_SIZE - 3,
             hash2(tx, ty, world.seed + 12),
+            snow,
           );
           if (sprite) decor.push(sprite);
         } else if (hash2(tx, ty, world.seed + 61) < GLINT_CHANCE && world.corners(tx, ty).every(isWet)) {

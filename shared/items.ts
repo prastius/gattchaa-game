@@ -132,6 +132,12 @@ export const ITEMS = def({
   trollTooth: { name: "Troll Tooth", kind: "loot", rarity: "common", sell: 150, icon: "crystal_01e", desc: "As big as your fist, and never once brushed." },
   bloodRuby: { name: "Blood Ruby", kind: "loot", rarity: "common", sell: 170, icon: "crystal_01d", desc: "A dark red stone. Vampires say it's still warm." },
   minotaurCrown: { name: "Minotaur's Crown", kind: "loot", rarity: "rare", sell: 3000, icon: "helmet_02d", desc: "The Minotaur King's golden crown, with holes for the horns. Worth a fortune." },
+  yetiFur: { name: "Yeti Fur", kind: "loot", rarity: "common", sell: 190, icon: "scroll_01d", desc: "A thick white bundle, still full of snow. Furriers in town pay well for it." },
+  ramHorn: { name: "Ram Horn", kind: "loot", rarity: "common", sell: 200, icon: "gem_01i", desc: "A great curled horn, grey and ridged." },
+  frozenTear: { name: "Frozen Tear", kind: "loot", rarity: "common", sell: 215, icon: "crystal_01i", desc: "A drop of ice a Frost Shaman wept. It never melts." },
+  wightChain: { name: "Wight's Chain", kind: "loot", rarity: "common", sell: 230, icon: "ring_01c", desc: "A link of old mail, rimed with frost. Cold enough to burn." },
+  drakeScale: { name: "Drake Scale", kind: "loot", rarity: "common", sell: 250, icon: "gem_01j", desc: "An ice-blue scale as big as a plate." },
+  winterHeart: { name: "Heart of Winter", kind: "loot", rarity: "rare", sell: 4500, icon: "crystal_01h", desc: "A lump of ice from the Frost Giant's chest. It never melts, and collectors pay a fortune for it." },
 
   // ------------------------------------------------------------ smithing (one is used up by every upgrade)
   ironIngot: { name: "Iron Ingot", kind: "material", rarity: "common", price: 100, sell: 30, icon: "ingot_01a", desc: "Plain iron. The Blacksmith uses one for each upgrade up to +5." },
@@ -176,6 +182,14 @@ export const ITEMS = def({
   longbow: { name: "Longbow", kind: "equip", slot: "weapon", weapon: "bow", twoHanded: true, rarity: "uncommon", lv: 32, slots: 2, atk: 46, range: 230, sell: 2200, icon: "bow_01e", art: [{ id: "greatBowDark" }], desc: "Dark yew, taller than a werewolf. Its arrows fly far and hit hard." },
   sunfireBow: { name: "Sunfire Bow", kind: "equip", slot: "weapon", weapon: "bow", twoHanded: true, rarity: "legendary", lv: 38, slots: 2, atk: 64, crit: 8, range: 240, sell: 15_000, icon: "bow_02b", art: [{ id: "greatBowGold" }], desc: "Gold from tip to tip; its arrows burn like sunlight. Only the Minotaur King has ever dropped one." },
   serpentStaff: { name: "Serpent Staff", kind: "equip", slot: "weapon", weapon: "staff", rarity: "uncommon", lv: 32, slots: 2, atk: 46, mp: 120, range: 210, sell: 2200, icon: "staff_02c", art: [{ id: "serpent" }], desc: "Bent like a snake about to strike." },
+  // Frostfell.
+  iceSword: { name: "Ice Sword", kind: "equip", slot: "weapon", weapon: "sword", rarity: "uncommon", lv: 42, slots: 2, atk: 60, crit: 3, sell: 3200, art: [{ id: "swordSilver" }], desc: "A pale blade so cold it smokes in warm air." },
+  glacierLance: { name: "Glacier Lance", kind: "equip", slot: "weapon", weapon: "spear", twoHanded: true, rarity: "rare", lv: 46, slots: 2, atk: 88, crit: 4, sell: 6000, art: [{ id: "longspearSilver" }], desc: "A long white lance, its point as clear as ice. Needs both hands. Knights only." },
+  frostScythe: { name: "Frost Scythe", kind: "equip", slot: "weapon", weapon: "spear", twoHanded: true, rarity: "legendary", lv: 48, slots: 2, atk: 102, crit: 8, sell: 20_000, art: [{ id: "scythe" }], desc: "The Frost Giant reaps with it, and frost creeps along the blade wherever it swings. Needs both hands. Knights only." },
+  frostBow: { name: "Frost Bow", kind: "equip", slot: "weapon", weapon: "bow", twoHanded: true, rarity: "uncommon", lv: 42, slots: 2, atk: 54, range: 235, sell: 3200, icon: "bow_01b", art: [{ id: "bowSilver" }], desc: "Pale silver wood that bends without breaking, even in the deepest cold." },
+  glacierBow: { name: "Glacier Bow", kind: "equip", slot: "weapon", weapon: "bow", twoHanded: true, rarity: "rare", lv: 46, slots: 2, atk: 66, crit: 4, range: 245, sell: 6000, icon: "bow_03b", art: [{ id: "greatBowSilver" }], desc: "Silver from tip to tip. Its arrows fly further than any other." },
+  winterStaff: { name: "Winter Staff", kind: "equip", slot: "weapon", weapon: "staff", rarity: "uncommon", lv: 42, slots: 2, atk: 54, mp: 160, range: 220, sell: 3200, icon: "staff_01b", art: [{ id: "gnarledSilver" }], desc: "A twisted branch, silver with frost. It's always cold to the touch." },
+  auroraStaff: { name: "Aurora Staff", kind: "equip", slot: "weapon", weapon: "staff", rarity: "rare", lv: 46, slots: 2, atk: 66, mp: 220, range: 235, sell: 6000, art: [{ id: "crystalGreen" }], desc: "A green crystal that shimmers like the northern lights." },
   archmageStaff: { name: "Archmage Staff", kind: "equip", slot: "weapon", weapon: "staff", rarity: "legendary", lv: 38, slots: 2, atk: 64, mp: 200, range: 230, sell: 15_000, icon: "staff_03b", art: [{ id: "diamondGold" }], desc: "Gold, crowned with a stone full of light. A great mage carried it once; now the Minotaur King keeps it." },
 
   // ------------------------------------------------------------ shields
@@ -186,6 +200,7 @@ export const ITEMS = def({
   roundShield: { name: "Round Shield", kind: "equip", slot: "offhand", rarity: "uncommon", lv: 22, slots: 1, def: 8, hp: 50, sell: 450, icon: "shield_01c", art: [{ id: "roundShield" }], desc: "Black iron, round and dented. Orc warriors carry them into battle." },
   spartanShield: { name: "Spartan Shield", kind: "equip", slot: "offhand", rarity: "rare", lv: 27, slots: 1, def: 10, hp: 90, sell: 1200, icon: "shield_03e", art: [{ id: "spartan" }], desc: "A great bronze disc that covers you from chin to knee." },
   towerShield: { name: "Tower Shield", kind: "equip", slot: "offhand", rarity: "uncommon", lv: 33, slots: 1, def: 12, hp: 120, sell: 2000, art: [{ id: "scutum" }], desc: "Tall and curved, like a wall you can carry." },
+  frostShield: { name: "Frost Shield", kind: "equip", slot: "offhand", rarity: "rare", lv: 45, slots: 1, def: 16, hp: 220, sell: 5000, art: [{ id: "kiteBlue" }], desc: "An ice-blue kite shield, rimed with frost that never thaws." },
   engrailedShield: { name: "Engrailed Shield", kind: "equip", slot: "offhand", rarity: "rare", lv: 38, slots: 1, def: 14, hp: 170, sell: 4000, art: [{ id: "engrailed" }], desc: "Gold and red, with a scalloped edge. Vampires keep them as trophies." },
 
   // ------------------------------------------------------------ head
@@ -202,6 +217,9 @@ export const ITEMS = def({
   armet: { name: "Armet", kind: "equip", slot: "head", rarity: "uncommon", lv: 32, slots: 1, def: 9, hp: 120, sell: 1800, art: [{ id: "armet", colors: { metal: "steel" } }], desc: "A rounded steel helm that closes snugly round the face." },
   celestialHat: { name: "Celestial Hat", kind: "equip", slot: "head", rarity: "uncommon", lv: 33, slots: 1, atk: 3, def: 3, mp: 130, sell: 1800, art: [{ id: "celestial" }], desc: "Deep blue, stitched with silver stars and a crescent moon." },
   closeHelm: { name: "Close Helm", kind: "equip", slot: "head", rarity: "rare", lv: 37, slots: 1, def: 11, hp: 160, sell: 3800, art: [{ id: "closeHelm", colors: { metal: "gold" } }], desc: "Gilded steel, closed all round. Trolls wear them as hats." },
+  snowHood: { name: "Snow Hood", kind: "equip", slot: "head", rarity: "uncommon", lv: 42, slots: 1, atk: 5, def: 7, hp: 60, sell: 3000, art: [{ id: "hood", colors: { cloth: "sky" } }], hides: ["hair"], desc: "Pale blue wool for hiding in the snow." },
+  moonHat: { name: "Moon Hat", kind: "equip", slot: "head", rarity: "uncommon", lv: 43, slots: 1, atk: 4, def: 4, mp: 170, sell: 3000, art: [{ id: "celestialMoon", colors: { cloth: "sky" } }], desc: "Frost-blue, with a silver crescent moon. Frost Shamans wear them." },
+  valkyrieHelm: { name: "Valkyrie Helm", kind: "equip", slot: "head", rarity: "rare", lv: 46, slots: 1, atk: 3, def: 13, hp: 220, sell: 6000, art: [{ id: "norman", colors: { metal: "silver" } }, { id: "helmWings", colors: { metal: "silver" } }], desc: "Silver, with a wing on either side. Old heroes of the north wore them." },
   meadowCrown: { name: "Meadow Crown", kind: "equip", slot: "head", rarity: "legendary", lv: 10, slots: 1, atk: 4, def: 4, hp: 60, sell: 5000, art: [{ id: "crown" }], desc: "Said to belong to the first king of the meadow. Snapper Flowers hide it very, very rarely." },
 
   // ------------------------------------------------------------ body
@@ -215,18 +233,23 @@ export const ITEMS = def({
   wolfskinVest: { name: "Wolfskin Vest", kind: "equip", slot: "body", rarity: "uncommon", lv: 33, slots: 1, atk: 6, def: 8, hp: 80, sell: 1800, art: [{ id: "leatherArmor" }, { id: "capeTattered", colors: { cloth: "gray" } }], desc: "Leather under a grey wolf pelt. Warm, light and quiet." },
   mysticRobe: { name: "Mystic Robe", kind: "equip", slot: "body", rarity: "uncommon", lv: 34, slots: 1, atk: 6, def: 4, mp: 150, sell: 1800, art: [{ id: "tabardPurple" }, { id: "cape", colors: { cloth: "black" } }], desc: "Purple silk and a black cloak. Spells come easier wearing it." },
   goldPlate: { name: "Golden Plate", kind: "equip", slot: "body", rarity: "rare", lv: 38, slots: 1, def: 15, hp: 170, sell: 4500, art: [{ id: "plate", colors: { metal: "gold" } }, { id: "plateArms", colors: { metal: "gold" } }], desc: "Full plate, gilded from collar to knee. The Minotaur King wears the same." },
+  furCloak: { name: "Fur Cloak", kind: "equip", slot: "body", rarity: "uncommon", lv: 43, slots: 1, atk: 8, def: 9, hp: 100, sell: 3000, art: [{ id: "leatherArmor" }, { id: "capeTattered", colors: { cloth: "white" } }], desc: "Leather under a shaggy white yeti fur. Warm, light and quiet." },
+  winterRobe: { name: "Winter Robe", kind: "equip", slot: "body", rarity: "uncommon", lv: 44, slots: 1, atk: 8, def: 5, mp: 190, sell: 3000, art: [{ id: "tabardWhite", colors: { cloth: "sky" } }, { id: "cape", colors: { cloth: "navy" } }], desc: "Frost-blue wool under a deep blue cloak. Spells come easier in the cold." },
+  frostPlate: { name: "Frost Plate", kind: "equip", slot: "body", rarity: "rare", lv: 47, slots: 1, def: 19, hp: 240, sell: 6500, art: [{ id: "plate", colors: { metal: "silver" } }, { id: "plateArms", colors: { metal: "silver" } }, { id: "cape", colors: { cloth: "sky" } }], desc: "Silver plate and an ice-blue cape. Frost Wights still wear it, long after they died." },
   plateArmor: { name: "Plate Armour", kind: "equip", slot: "body", rarity: "rare", lv: 10, slots: 1, def: 6, hp: 40, sell: 600, art: [{ id: "plate" }, { id: "plateArms" }], desc: "Full steel plate. You clank, but you live." },
 
   // ------------------------------------------------------------ legs
   leatherPants: { name: "Leather Pants", kind: "equip", slot: "legs", rarity: "common", lv: 1, def: 1, price: 40, art: [{ id: "pants", colors: { cloth: "leather" } }], desc: "Tough trousers for rough grass." },
   ironGreaves: { name: "Iron Greaves", kind: "equip", slot: "legs", rarity: "uncommon", lv: 6, slots: 1, def: 2, hp: 10, sell: 140, art: [{ id: "greaves", colors: { metal: "iron" } }], desc: "Iron plates strapped over the legs." },
   steelGreaves: { name: "Steel Greaves", kind: "equip", slot: "legs", rarity: "uncommon", lv: 22, slots: 1, def: 4, hp: 30, sell: 400, art: [{ id: "greaves", colors: { metal: "silver" } }], desc: "Polished steel from knee to ankle." },
+  frostGreaves: { name: "Frost Greaves", kind: "equip", slot: "legs", rarity: "uncommon", lv: 44, slots: 1, def: 8, hp: 70, sell: 2600, art: [{ id: "greaves", colors: { metal: "silver" } }], desc: "Bright silver plates from knee to ankle, cold as ice." },
   goldGreaves: { name: "Golden Greaves", kind: "equip", slot: "legs", rarity: "uncommon", lv: 35, slots: 1, def: 6, hp: 50, sell: 1600, art: [{ id: "greaves", colors: { metal: "gold" } }], desc: "Gilded steel plates from knee to ankle." },
 
   // ------------------------------------------------------------ feet
   leatherBoots: { name: "Leather Boots", kind: "equip", slot: "feet", rarity: "common", lv: 1, slots: 1, def: 1, price: 40, art: [{ id: "boots", colors: { cloth: "leather" } }], desc: "Snake-proof, mostly." },
   ironBoots: { name: "Iron Boots", kind: "equip", slot: "feet", rarity: "uncommon", lv: 6, slots: 1, def: 2, hp: 10, sell: 130, art: [{ id: "ironBoots", colors: { metal: "iron" } }], desc: "Heavy, loud and very hard to bite through." },
   steelSabatons: { name: "Steel Sabatons", kind: "equip", slot: "feet", rarity: "uncommon", lv: 22, slots: 1, def: 4, hp: 25, sell: 400, art: [{ id: "ironBoots", colors: { metal: "silver" } }], desc: "Steel boots with pointed toes. Orc archers prize them." },
+  frostSabatons: { name: "Frost Sabatons", kind: "equip", slot: "feet", rarity: "uncommon", lv: 45, slots: 1, def: 8, hp: 60, sell: 2600, art: [{ id: "ironBoots", colors: { metal: "silver" } }], desc: "Bright silver boots that never slip on ice." },
   goldSabatons: { name: "Golden Sabatons", kind: "equip", slot: "feet", rarity: "uncommon", lv: 35, slots: 1, def: 6, hp: 45, sell: 1600, art: [{ id: "ironBoots", colors: { metal: "gold" } }], desc: "Gilded steel boots. They ring on the rocks." },
 
   // ------------------------------------------------------------ rings and amulets
@@ -240,6 +263,9 @@ export const ITEMS = def({
   wolfFang: { name: "Wolf Fang Necklace", kind: "equip", slot: "amulet", rarity: "uncommon", lv: 34, slots: 1, atk: 6, crit: 5, sell: 1800, icon: "necklace_03e", desc: "A werewolf's fang on a red cord. You hear howling when you wear it." },
   wildRing: { name: "Ring of the Wild", kind: "equip", slot: "ring", rarity: "rare", lv: 36, slots: 1, atk: 7, hp: 60, sell: 3000, icon: "ring_03a", desc: "Carved from a troll's knuckle bone, with a green stone." },
   minotaurHorn: { name: "Minotaur Horn", kind: "equip", slot: "amulet", rarity: "epic", lv: 40, slots: 1, atk: 12, hp: 180, sell: 9000, icon: "necklace_01d", desc: "A tip of the Minotaur King's horn, on a gold chain." },
+  snowflake: { name: "Snowflake Pendant", kind: "equip", slot: "amulet", rarity: "uncommon", lv: 44, slots: 1, atk: 7, mp: 80, crit: 4, sell: 3000, icon: "necklace_01b", desc: "A silver snowflake on a fine chain. No two are alike." },
+  frostRing: { name: "Frost Ring", kind: "equip", slot: "ring", rarity: "rare", lv: 46, slots: 1, atk: 3, def: 5, hp: 100, sell: 4500, icon: "ring_01b", desc: "A band of clear ice that never melts on your finger." },
+  giantsTooth: { name: "Frost Giant's Tooth", kind: "equip", slot: "amulet", rarity: "epic", lv: 48, slots: 1, atk: 14, def: 4, hp: 220, sell: 12_000, icon: "necklace_03c", desc: "One of the Frost Giant's teeth, as big as your hand, on a silver chain." },
   stingerPendant: { name: "Stinger Pendant", kind: "equip", slot: "amulet", rarity: "uncommon", lv: 7, slots: 1, atk: 3, sell: 220, icon: "necklace_03d", desc: "A hornet's stinger set in gold. Sharp in more ways than one." },
 
   // ------------------------------------------------------------ monster cards
@@ -266,6 +292,12 @@ export const ITEMS = def({
   trollCard: { name: "Troll Card", kind: "card", rarity: "epic", monster: "troll", fits: ["body"], prefix: "Trollish", hp: 150, sell: 0, desc: "Big, green and very hard to knock down." },
   vampireCard: { name: "Vampire Card", kind: "card", rarity: "epic", monster: "vampire", fits: ["ring"], prefix: "Bloodthirsty", drain: 4, sell: 0, desc: "A pale face with a thin smile." },
   minotaurKingCard: { name: "Minotaur King Card", kind: "card", rarity: "legendary", monster: "minotaurKing", fits: ["body"], prefix: "Mighty", atk: 6, def: 4, hp: 200, sell: 0, desc: "The Minotaur King, horns lowered, on a gold card." },
+  yetiCard: { name: "Yeti Card", kind: "card", rarity: "epic", monster: "yeti", fits: ["legs"], prefix: "Shaggy", def: 2, hp: 120, sell: 0, desc: "Big, white and very warm." },
+  ramhornCard: { name: "Ramhorn Card", kind: "card", rarity: "epic", monster: "ramhorn", fits: ["feet"], prefix: "Nimble", atk: 3, flee: 6, sell: 0, desc: "Sure-footed on the steepest ice." },
+  frostShamanCard: { name: "Frost Shaman Card", kind: "card", rarity: "epic", monster: "frostShaman", fits: ["head"], prefix: "Wintry", atk: 4, mp: 60, sell: 0, desc: "Its breath frosts the card over." },
+  frostWightCard: { name: "Frost Wight Card", kind: "card", rarity: "epic", monster: "frostWight", fits: ["ring"], prefix: "Frozen", def: 3, hp: 80, sell: 0, desc: "Still standing guard, long after death." },
+  frostDrakeCard: { name: "Frost Drake Card", kind: "card", rarity: "epic", monster: "frostDrake", fits: ["weapon"], prefix: "Draconic", atk: 6, crit: 3, sell: 0, desc: "Ice-blue scales and a cold, hungry eye." },
+  frostGiantCard: { name: "Frost Giant Card", kind: "card", rarity: "legendary", monster: "frostGiant", fits: ["amulet"], prefix: "Titanic", atk: 8, def: 4, hp: 250, sell: 0, desc: "The Frost Giant, axe raised, on a gold card." },
   snapperCard: { name: "Snapper Flower Card", kind: "card", rarity: "epic", monster: "snapper", fits: ["offhand"], prefix: "Thorny", def: 1, reflect: 15, sell: 0, desc: "Bite it and it bites back." },
 });
 

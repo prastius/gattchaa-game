@@ -845,6 +845,26 @@ export class Combat {
     return gold;
   }
 
+  /** Pays the ferry fare (the room checked you're with the captain). False if you can't sail now. */
+  payFare(id: string, fare: number): boolean {
+    const f = this.fighters.get(id);
+    if (!f || f.player.dead) return false;
+    if (this.duels.has(id)) {
+      this.fail(f, "Finish your duel first.");
+      return false;
+    }
+    if (f.gold < fare) {
+      this.hooks.notice(id, `The crossing costs ${goldText(fare)} gold: you have ${goldText(f.gold)}.`);
+      return false;
+    }
+    f.target = undefined;
+    if (fare > 0) {
+      f.gold -= fare;
+      this.traded(f);
+    }
+    return true;
+  }
+
   /** Gold changed hands: show it and save now. */
   private traded(f: Fighter) {
     this.changed(f);

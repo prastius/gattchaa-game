@@ -489,6 +489,28 @@ Window Awnings A
   LICENSE: OGA-BY 3.0
   DETAILS: Original by Lanea Zimmerman. Recolors by Eliza Wyatt.
 
+== Structure/Bridges ==
+Drawbridge A
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Reworked for tiling by Eliza Wyatt. Recolors by Eliza Wyatt.
+
+Rope Bridge A (rails, no rails)
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Reworked for tiling by Eliza Wyatt. Recolors by Eliza Wyatt.
+
+Wood Bridge A (rails, no rails)
+-------------------
+  ARTIST(S): Lanea Zimmerman (Sharm), Eliza Wyatt (DeathsDarling)
+  SOURCE: https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles
+  LICENSE: OGA-BY 3.0
+  DETAILS: Original by Lanea Zimmerman. Reworked for tiling by Eliza Wyatt. Recolors by Eliza Wyatt.
+
 == Objects/Furniture ==
 Barrel
 -------------------
@@ -1451,6 +1473,14 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://opengameart.org/content/lpc-celestial-wizard-hats>
 - <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
 
+### Celestial Wizard Moon Hat (hat/magic/celestial_moon)
+
+- Authors: Napsio (Vitruvian Studio), Michael Whitlock (bigbeargames), Tracy
+- Licenses: CC-BY 3.0
+- Notes: sheet_definitions/hat_magic_celestial.json
+- <https:/opengameart.org/content/lpc-celestial-wizard-hats>
+- <https:/opengameart.org/content/lpc-expanded-hats-facial-helmets>
+
 ### Close helm (hat/helmet/close)
 
 - Authors: bluecarrot16
@@ -1521,6 +1551,12 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://opengameart.org/content/lpc-expanded-sit-run-jump-more>
 - <https://opengameart.org/content/lpc-expanded-pants>
 
+### Curled Horns (head/horns/curled)
+
+- Authors: Nila122
+- Licenses: OGA-BY 3.0, GPL 3.0, CC-BY-SA 3.0
+- <https://opengameart.org/content/lpc-lizard-headgear>
+
 ### Curly long (hair/curly_long)
 
 - Authors: ElizaWy
@@ -1578,6 +1614,12 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://opengameart.org/content/lpc-hair>
 - <https://github.com/ElizaWy/LPC/blob/main/Characters/Hair>
 - <https://opengameart.org/content/lpc-expanded-sit-run-jump-more>
+
+### Fluffy Wolf Tail (body/tail/fluffy)
+
+- Authors: JaidynReiman
+- Licenses: OGA-BY 3.0+, CC-BY 3.0+, GPL 3.0
+- <https://opengameart.org/content/lpc-furry-ears-tails-for-rpg-sprites>
 
 ### Folded Rim Boots (feet/boots/fold)
 
@@ -1672,6 +1714,15 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Authors: bluecarrot16, Sander Frenken (castelonia), ElizaWy
 - Licenses: OGA-BY 3.0
 - <https://opengameart.org/content/lpc-shields>
+
+### Helmet wings (hat/accessory/wings)
+
+- Authors: bluecarrot16, DCSS authors
+- Licenses: CC0
+- <http://opengameart.org/content/dungeon-crawl-32x32-tiles>
+- <https://opengameart.org/content/cc0-headgear-icons>
+- <https://opengameart.org/content/lpc-helmets-mega-pack>
+- <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
 
 ### High and tight (hair/high_and_tight)
 
@@ -1837,6 +1888,14 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
 - Notes: edited for v3 bases and recolored by bluecarrot16, additional animations added by JaidynReiman
 - <https://opengameart.org/content/drakes-and-lizardfolk>
+
+### Lizard Wings (body/wings/lizard)
+
+- Authors: JaidynReiman, Nila122, bluecarrot16
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+- Notes: edited for v3 bases and recolored by bluecarrot16, sit/jump/run/emote/revised combat by JaidynReiman
+- <https://opengameart.org/content/drakes-and-lizardfolk>
+- <https://opengameart.org/content/lpc-wings-new-animations>
 
 ### Lob (hair/lob)
 
@@ -2057,6 +2116,13 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
 - <https://opengameart.org/content/lpc-walk-animations-for-bows>
 
+### Norman helm (hat/helmet/norman)
+
+- Authors: ElizaWy, Sander Frenken (castelonia)
+- Licenses: OGA-BY 3.0, CC-BY-SA 4.0, CC-BY-SA 3.0, GPL 3.0
+- <https://opengameart.org/content/lpc-realistic-helmet-pack>
+- <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
+
 ### Orc male (head/heads/orc/male)
 
 - Authors: bluecarrot16, Matthew Krohn (makrohn), Stephen Challener (Redshrike), Zi Ye
@@ -2245,6 +2311,12 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Licenses: OGA-BY 3.0
 - <https://opengameart.org/content/lpc-shields>
 
+### Scythe (weapon/polearm/scythe)
+
+- Authors: bluecarrot16
+- Licenses: CC-BY-SA 3.0
+- <https://opengameart.org/content/lpc-extended-weapon-animations>
+
 ### Shades (facial/glasses/shades)
 
 - Authors: JaidynReiman, Thane Brimhall (pennomi), laetissima
@@ -2258,6 +2330,14 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Licenses: CC0
 - Notes: Original by Dr. Jamgo, jump/sit/emote/run/revised combat by JaidynReiman
 - <https://opengameart.org/content/shadow-for-lpc-sprite>
+
+### Sheep (head/heads/sheep)
+
+- Authors: bluecarrot16, Daniel Eddeland (daneeklu), Napsio (Vitruvian Studio), JaidynReiman
+- Licenses: CC-BY 3.0, GPL 3.0
+- Notes: original sheep by daneeklu, adapted to modular head by bluecarrot16, color reduction by napsio (Vitruvian Studio) and JaidynReiman
+- <https://opengameart.org/content/lpc-style-farm-animals>
+- <http://opengameart.org/content/lpc-folk>
 
 ### Short Shorts (legs/shorts/short_shorts)
 
@@ -2597,6 +2677,15 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Authors: Benjamin K. Smith (BenCreating), bluecarrot16, Sander Frenken (castelonia)
 - Licenses: CC-BY-SA 3.0, GPL 3.0
 - <https://opengameart.org/content/lpc-medieval-weapons>
+
+### Wartotaur (head/heads/wartotaur)
+
+- Authors: bluecarrot16, Evert, Stephen Challener (Redshrike)
+- Licenses: OGA-BY 3.0, CC-BY 3.0
+- Notes: original "wart-o-taur" concept and sprite by Redshrike, extended to 4 directions and head extracted by Evert, cleanup and hurt/cast animations by bluecarrot16
+- <https://opengameart.org/content/tower-defense-prototyping-assets-4-monsters-some-tiles-a-background-image>
+- <https://opengameart.org/content/wartotaur-4-directions>
+- <https://opengameart.org/content/lpc-folk>
 
 ### Wavy (hair/wavy)
 

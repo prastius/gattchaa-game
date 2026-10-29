@@ -43,6 +43,7 @@ export const Floor = {
   CarpetRed: 10,
   CarpetBlue: 11,
   CarpetCream: 12,
+  Pier: 13, // wooden planks out over the water: the only floor you can walk on there
 } as const;
 export type Floor = (typeof Floor)[keyof typeof Floor];
 /** Floors that block movement. */
@@ -94,6 +95,22 @@ export const ORC_CAMP: Rect = { x: 68, y: 176, w: 16, h: 9 };
 /** The Minotaur King's lair on the highest ground of the Wildlands: old stones round a fire, clear of rocks. */
 export const MINOTAUR_LAIR: Rect = { x: 190, y: 52, w: 16, h: 10 };
 
+/**
+ * Frostfell (Lv 40–50), the snowy island across the sea south of the meadow:
+ * the world generator raises it here (tiles), and everything south of the snow
+ * line is drawn in winter art. The ferry docks are on either shore.
+ */
+export const FROSTFELL_ISLE = { cx: 200, cy: 452, rx: 104, ry: 70 };
+export const SNOW_LINE = 372;
+export const isSnowy = (ty: number) => ty >= SNOW_LINE;
+/** The Frost Giant's ring of standing stones on Frostfell's icy highlands: kept clear of trees and rocks. */
+export const FROST_LAIR: Rect = { x: 170, y: 458, w: 16, h: 10 };
+/** The ferry piers: out to sea from the meadow's south-east point, and from Frostfell's north shore. */
+export const PIERS = {
+  meadow: { x: 241, y: 331, w: 3, h: 6 },
+  frostfell: { x: 189, y: 396, w: 3, h: 7 },
+} satisfies Record<string, Rect>;
+
 /** Dirt roads (vertex rectangles) leading out of the three gates, and two paths north along the walls to the Wildlands. */
 export const ROADS: Rect[] = [
   { x: 189, y: 252, w: 6, h: 44 }, // south
@@ -101,6 +118,9 @@ export const ROADS: Rect[] = [
   { x: 258, y: 185, w: 66, h: 4 }, // east
   { x: 121, y: 118, w: 4, h: 68 }, // north from the west road
   { x: 259, y: 118, w: 4, h: 68 }, // north from the east road
+  { x: 195, y: 283, w: 47, h: 3 }, // east from the south road, towards the ferry…
+  { x: 241, y: 283, w: 3, h: 48 }, // …and down to the meadow's pier
+  { x: 189, y: 402, w: 3, h: 58 }, // Frostfell: from the pier up to the Frost Giant's stones
 ];
 /** Where the two paths north cross into the Wildlands (tile x of each path's middle, and the border's tile row). */
 export const WILD_CROSSINGS = [123, 261];
@@ -265,6 +285,8 @@ export const BUNTING: [TilePos, TilePos][] = [
 ];
 
 export const FLOORS: { rect: Rect; floor: Floor }[] = [
+  { rect: PIERS.meadow, floor: Floor.Pier },
+  { rect: PIERS.frostfell, floor: Floor.Pier },
   { rect: MARKET, floor: Floor.Slab },
   // A stone kerb round the Arena's sand.
   { rect: { x: ARENA.x - 1, y: ARENA.y - 1, w: ARENA.w + 2, h: 1 }, floor: Floor.StoneEdge },
@@ -529,6 +551,18 @@ const props: Prop[] = [
   { type: "campfire", x: 198, y: 57 },
   { type: "crate", x: 194, y: 53, variant: 1 },
   { type: "barrels", x: 201, y: 53 },
+
+  // ---- The Frost Giant's stones on Frostfell: six old pillars in a ring, and the bones of his last meal.
+  ...[FROST_LAIR.x + 1, FROST_LAIR.x + 7, FROST_LAIR.x + FROST_LAIR.w - 2].flatMap((x) =>
+    [FROST_LAIR.y + 1, FROST_LAIR.y + FROST_LAIR.h - 2].map((y): Prop => ({ type: "pillar", x, y })),
+  ),
+  { type: "crate", x: FROST_LAIR.x + 3, y: FROST_LAIR.y + 3, variant: 1 },
+  { type: "barrels", x: FROST_LAIR.x + 11, y: FROST_LAIR.y + 6 },
+
+  // ---- The ferry: crates and barrels waiting at the foot of each pier.
+  { type: "crate", x: PIERS.meadow.x + 4, y: PIERS.meadow.y - 2 },
+  { type: "barrel", x: PIERS.meadow.x + 5, y: PIERS.meadow.y - 2 },
+  { type: "barrels", x: PIERS.frostfell.x + 3, y: PIERS.frostfell.y + PIERS.frostfell.h + 1 },
 
   // ---- The park: benches by the pond, a campfire in the clearing, lamps where the trails start.
   { type: "bench", x: 141, y: 201, variant: 3 },

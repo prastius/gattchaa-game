@@ -9,6 +9,11 @@
 import {
   FLOORS,
   FORGE_YARD,
+  FROSTFELL_ISLE,
+  FROST_LAIR,
+  Floor,
+  PIERS,
+  isSnowy,
   ORC_CAMP,
   MINOTAUR_LAIR,
   GARDENS,
@@ -31,7 +36,10 @@ import { FIELDS } from "./rpg";
 
 export const TILE_SIZE = 32;
 export const WORLD_TILES_W = 384;
-export const WORLD_TILES_H = 384;
+export const WORLD_TILES_H = 512;
+/** The main island is shaped round this tile (the world grew south for Frostfell; this stays put). */
+const MAIN_CX = 192;
+const MAIN_CY = 192;
 export const WORLD_PX_W = WORLD_TILES_W * TILE_SIZE;
 export const WORLD_PX_H = WORLD_TILES_H * TILE_SIZE;
 export const WORLD_SEED = 20261015;
@@ -156,14 +164,20 @@ export class World {
   // ------------------------------------------------------------ generation
 
   private elevation(vx: number, vy: number): number {
-    const cx = this.width / 2;
-    const cy = this.height / 2;
-    const maxR = Math.min(cx, cy);
-    const dx = (vx - cx) / maxR;
-    const dy = (vy - cy) / maxR;
+    const dx = (vx - MAIN_CX) / MAIN_CX;
+    const dy = (vy - MAIN_CY) / MAIN_CY;
     const dist = Math.sqrt(dx * dx + dy * dy);
     const e = fbm(vx / 70, vy / 70, this.seed, 5);
-    return e * 1.2 - Math.pow(dist, 3.5) * 0.85 + 0.14;
+    return Math.max(e * 1.2 - Math.pow(dist, 3.5) * 0.85 + 0.14, this.isleElevation(vx, vy));
+  }
+
+  /** Frostfell rises out of the sea south of the meadow: its own hills, falling away to the shore. */
+  private isleElevation(vx: number, vy: number): number {
+    const { cx, cy, rx, ry } = FROSTFELL_ISLE;
+    const d = Math.hypot((vx - cx) / rx, (vy - cy) / ry);
+    if (d > 1.2) return -1;
+    const e = fbm(vx / 45, vy / 45, this.seed + 4242, 5);
+    return e * 1.1 - Math.pow(d, 3) * 0.9 + 0.12;
   }
 
   private generateTerrain() {
@@ -339,9 +353,10 @@ export class World {
     return { top: this.structTop[i], face: this.structFace[i], row: this.faceRow[i] };
   }
 
-  /** Trees and rocks stay out of town, the Blacksmith's yard, the orc camp, the Minotaur King's lair and off the roads. */
+  /** Trees and rocks stay out of town, the Blacksmith's yard, the bosses' camps, the piers and off the roads. */
   private isReserved(tx: number, ty: number): boolean {
-    if (inRect(TOWN_AREA, tx, ty) || inRect(FORGE_YARD, tx, ty) || inRect(ORC_CAMP, tx, ty) || inRect(MINOTAUR_LAIR, tx, ty)) return true;
+    if (inRect(TOWN_AREA, tx, ty) || inRect(FORGE_YARD, tx, ty) || inRect(ORC_CAMP, tx, ty) || inRect(MINOTAUR_LAIR, tx, ty) || inRect(FROST_LAIR, tx, ty)) return true;
+    if (Object.values(PIERS).some((p) => tx >= p.x - 3 && ty >= p.y - 3 && tx < p.x + p.w + 3 && ty < p.y + p.h + 3)) return true;
     if (tx < INTERIOR_ZONE.x + INTERIOR_ZONE.w + 2 && ty < INTERIOR_ZONE.y + INTERIOR_ZONE.h + 2) return true;
     return ROADS.some((r) => tx >= r.x - 2 && ty >= r.y - 2 && tx < r.x + r.w + 1 && ty < r.y + r.h + 1);
   }
@@ -450,7 +465,7 @@ export class World {
             d = [Decor.oak, Decor.oakTall, Decor.cypress, Decor.bush][Math.floor(r2 * 4)];
           } else if (r < 0.06) {
             d = r2 < 0.55 ? Decor.tallGrass : Decor.fern;
-          } else if (r < 0.1 && forest < (meadow ? 0.6 : 0.45)) {
+          } else if (r < 0.1 && forest < (meadow ? 0.6 : 0.45) && !isSnowy(ty)) {
             d = Decor.flowers;
           }
         } else if (allDirt) {
@@ -497,9 +512,9 @@ export class World {
     const tx = Math.floor(px / TILE_SIZE);
     const ty = Math.floor(py / TILE_SIZE);
     if (!this.inBounds(tx, ty)) return true;
-    // Water: the nearest vertex decides, which matches where the shoreline is drawn.
-    if (isWet(this.vertexAt(Math.round(px / TILE_SIZE), Math.round(py / TILE_SIZE)))) return true;
     const i = ty * this.width + tx;
+    // Water: the nearest vertex decides, which matches where the shoreline is drawn. Piers stand over it.
+    if (isWet(this.vertexAt(Math.round(px / TILE_SIZE), Math.round(py / TILE_SIZE))) && this.floor[i] !== Floor.Pier) return true;
     return this.solid[i] === 1 || DECOR_BLOCKS[this.decor[i]];
   }
 
@@ -553,9 +568,9 @@ export class World {
   }
 
   private findWildSpawn(rand: () => number): { x: number; y: number } {
-    const cx = this.width / 2;
-    const cy = this.height / 2;
-    for (let radius = 2; radius < this.width / 2; radius += 2) {
+    const cx = MAIN_CX;
+    const cy = MAIN_CY;
+    for (let radius = 2; radius < MAIN_CX; radius += 2) {
       for (let attempt = 0; attempt < 32; attempt++) {
         const a = rand() * Math.PI * 2;
         const r = rand() * radius;

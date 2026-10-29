@@ -402,6 +402,12 @@ const CARD_SKY: Record<MonsterId, [string, string]> = {
   troll: ["#dfe8c8", "#7f9a52"],
   vampire: ["#e8d0dc", "#7a2e4a"],
   minotaurKing: ["#ffe0a0", "#9a3a1c"],
+  yeti: ["#eef6fb", "#a9c4d6"],
+  ramhorn: ["#ece6da", "#8f8470"],
+  frostShaman: ["#dcefff", "#4f7fc4"],
+  frostWight: ["#e4ecf2", "#6f8394"],
+  frostDrake: ["#d6f1ff", "#3f8fc4"],
+  frostGiant: ["#e0f6ff", "#2f5f9a"],
 };
 
 /** A monster card: gold frame, the monster facing you, and a name plate (Ragnarok style). */

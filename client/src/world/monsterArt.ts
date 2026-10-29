@@ -8,7 +8,7 @@ import type { Missile } from "./fx";
 // left, down, right like the characters. Most sheets start with a three-column
 // idle/move loop; the attack columns follow.
 //
-// Orcs, goblins, the undead and the Wildlands' beastmen are put together from
+// Orcs, goblins, the undead and the beastmen of the Wildlands and Frostfell are put together from
 // character art instead (heads, bodies, tails, armour and weapons from the LPC
 // character generator), so they walk like people and lunge to attack.
 
@@ -205,6 +205,76 @@ export const MONSTER_ART: Record<MonsterId, MonsterArt> = {
       { category: "mob", id: "waraxe" },
     ],
     { scale: 1.7, w: 48, h: 90 },
+  ),
+  // Frostfell.
+  yeti: humanoid(
+    [
+      ...skin("fur_white"),
+      { category: "mob", id: "beastHead", colors: { body: "fur_white" } },
+    ],
+    { scale: 1.3, w: 34, h: 62 },
+  ),
+  ramhorn: humanoid(
+    [
+      ...skin("fur_tan"),
+      { category: "mob", id: "sheepHead" },
+      { category: "mob", id: "hornsCurled", colors: { body: "fur_grey" } },
+      { category: "bottom", id: "pants", colors: { cloth: "slate" } },
+      { category: "shoes", id: "boots", colors: { cloth: "brown" } },
+      { category: "gear", id: "leatherArmor" },
+      { category: "gear", id: "capeTattered", colors: { cloth: "white" } },
+      { category: "mob", id: "spear" },
+    ],
+    { scale: 1.1, w: 30, h: 54 },
+  ),
+  frostShaman: humanoid(
+    [
+      ...skin("blue"),
+      { category: "head", id: "male", colors: { body: "blue" } },
+      { category: "beard", id: "beard", colors: { hair: "white" } },
+      { category: "bottom", id: "pants", colors: { cloth: "navy" } },
+      { category: "shoes", id: "boots", colors: { cloth: "white" } },
+      { category: "gear", id: "cape", colors: { cloth: "navy" } },
+      { category: "gear", id: "tabardWhite", colors: { cloth: "sky" } },
+      { category: "gear", id: "celestialMoon", colors: { cloth: "sky" } },
+      { category: "gear", id: "gnarledSilver" },
+    ],
+    { missile: "ice", missileFrom: 60 },
+  ),
+  frostWight: humanoid(
+    [
+      { category: "mob", id: "skeletonBody" },
+      { category: "mob", id: "skullHead" },
+      { category: "gear", id: "capeTattered", colors: { cloth: "slate" } },
+      { category: "gear", id: "plate", colors: { metal: "silver" } },
+      { category: "gear", id: "plateArms", colors: { metal: "silver" } },
+      { category: "gear", id: "norman", colors: { metal: "silver" } },
+      { category: "gear", id: "kiteBlue" },
+      { category: "gear", id: "swordSilver" },
+    ],
+    { scale: 1.05, w: 28, h: 52 },
+  ),
+  frostDrake: humanoid(
+    [
+      ...skin("blue"),
+      { category: "mob", id: "lizardWings", colors: { body: "blue" } },
+      { category: "mob", id: "lizardTail", colors: { body: "blue" } },
+      { category: "mob", id: "lizardHead", colors: { body: "blue" } },
+    ],
+    { scale: 1.35, w: 36, h: 66 },
+  ),
+  frostGiant: humanoid(
+    [
+      ...skin("blue"),
+      { category: "mob", id: "trollHead", colors: { body: "blue" } },
+      { category: "gear", id: "cape", colors: { cloth: "white" } },
+      { category: "gear", id: "plate", colors: { metal: "silver" } },
+      { category: "gear", id: "greaves", colors: { metal: "silver" } },
+      { category: "gear", id: "ironBoots", colors: { metal: "iron" } },
+      { category: "gear", id: "viking" },
+      { category: "mob", id: "waraxe" },
+    ],
+    { scale: 1.9, w: 52, h: 98, missile: "ice", missileFrom: 70 },
   ),
 };
 

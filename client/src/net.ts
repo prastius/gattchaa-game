@@ -12,6 +12,7 @@ import {
   type CorrectMessage,
   type EmoteEvent,
   type EmoteMessage,
+  type FerryMessage,
   type FxEvent,
   type ItemDropMessage,
   type ItemUseMessage,
@@ -217,6 +218,10 @@ export class Net {
   /** Asks the Arena Master for the ranking. */
   arenaBoard(npc: string) {
     this.room.send("arena:board", { npc });
+  }
+
+  ferry(npc: string) {
+    this.room.send("ferry", { npc } satisfies FerryMessage);
   }
 
   /** Shows an earned title under your name ("" hides it). */

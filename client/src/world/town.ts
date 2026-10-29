@@ -12,6 +12,7 @@ import {
   BUNTING,
   CAFE,
   MARKET,
+  PIERS,
   SOUTH_WALL_Y,
   TOWN_AREA,
   TOWN_CX,
@@ -199,6 +200,7 @@ export function preloadTown(scene: Phaser.Scene) {
     [FLOOR_TEX.stone]: "wall-stone.png",
     [FLOOR_TEX.tile]: "floor-tile.png",
     [FLOOR_TEX.carpet]: "carpet-floral.png",
+    [FLOOR_TEX.pier]: "pier.png",
     [SHEETS.thrones]: "thrones.png",
     [SHEETS.loveseat]: "loveseat.png",
     [SHEETS.tableOrnate]: "table-ornate.png",
@@ -277,6 +279,7 @@ export class Town {
     this.facades();
     this.decorate();
     this.bunting();
+    this.ferry();
     this.decorateInterior();
     for (const d of DOORS) {
       const t = d.trigger;
@@ -457,11 +460,37 @@ export class Town {
       for (const oy of [3, 19]) dash(x0 * 32 - 1, ty * 32 + oy, false);
       if (ty % 4 === 0) stake(x0 * 32, ty * 32 + 16);
     }
-    for (const c of WILD_CROSSINGS) this.wildSign((c + 3.5) * 32, (WILD_BORDER_Y + 1) * 32);
+    for (const c of WILD_CROSSINGS) this.signpost((c + 3.5) * 32, (WILD_BORDER_Y + 1) * 32, "WILDLANDS", "⚔ OPEN PVP", "#ff8a7a");
   }
 
-  /** A signpost by the path: "WILDLANDS · Open PVP". */
-  private wildSign(x: number, bottom: number) {
+  /** The ferry moored alongside the end of each pier, and a signpost where the path to it leaves the south road. */
+  private ferry() {
+    const { meadow, frostfell } = PIERS;
+    this.boat((meadow.x + meadow.w) * 32 + 52, (meadow.y + meadow.h - 1) * 32);
+    this.boat((frostfell.x + frostfell.w) * 32 + 52, (frostfell.y + 2) * 32);
+    this.signpost(199.5 * 32, 283 * 32 - 2, "FERRY", "FROSTFELL →", "#bfe9ff");
+  }
+
+  /** A little sailing boat on the water, rocking gently. */
+  private boat(x: number, y: number) {
+    const g = this.scene.add.graphics().setPosition(x, y).setDepth(y + 12);
+    g.fillStyle(0x10202b, 0.22).fillEllipse(0, 12, 96, 14);
+    // Hull: dark planks under a lighter rail, and the deck inside.
+    g.fillStyle(0x3d2412, 1).fillRoundedRect(-46, -6, 92, 20, 9);
+    g.fillStyle(0x6b4423, 1).fillRoundedRect(-46, -6, 92, 12, 6);
+    g.fillStyle(0x9a6d42, 1).fillRoundedRect(-40, -11, 80, 12, 6);
+    g.fillStyle(0x7a5532, 1);
+    for (const bx of [-24, -6, 12, 30]) g.fillRect(bx, -10, 2, 10);
+    // Mast, a white sail and an orange Gattchaa pennant.
+    g.fillStyle(0x3a2616, 1).fillRect(-3, -70, 4, 64);
+    g.fillStyle(0xf4efe4, 1).fillTriangle(1, -66, 1, -14, 34, -18);
+    g.fillStyle(0xd9d1c1, 1).fillTriangle(-3, -60, -3, -16, -26, -18);
+    g.fillStyle(0xeb8224, 1).fillTriangle(1, -72, 16, -69, 1, -66);
+    this.scene.tweens.add({ targets: g, y: y + 2, angle: 1.2, duration: 1700, yoyo: true, repeat: -1, ease: "Sine.InOut" });
+  }
+
+  /** A wooden signpost by the path: a title and a coloured line under it. */
+  private signpost(x: number, bottom: number, title: string, line: string, color: string) {
     const g = this.scene.add.graphics().setDepth(bottom);
     const bw = 72;
     const bh = 30;
@@ -477,8 +506,8 @@ export class Town {
         .setOrigin(0.5, 0)
         .setResolution(this.textRes)
         .setDepth(bottom + 0.01);
-    text(top + 3, "WILDLANDS", "10px", "#fff4e0");
-    text(top + 16, "⚔ OPEN PVP", "9px", "#ff8a7a");
+    text(top + 3, title, "10px", "#fff4e0");
+    text(top + 16, line, "9px", color);
   }
 
   /** Strings of little flags between lamp posts over the Market Square, sagging a bit in the middle. */

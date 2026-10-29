@@ -96,6 +96,11 @@ export interface DoorMessage {
   id: string;
 }
 
+/** client -> server: pay the ferry captain and sail (see FERRY in npcs.ts) */
+export interface FerryMessage {
+  npc: string;
+}
+
 /** client -> server: auto-attack this monster while it's in reach ("" stops). */
 export interface TargetMessage {
   id: string;

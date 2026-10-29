@@ -8,7 +8,7 @@ import { MARKET_WANDER, PARK_WANDER, STORE_WANDER, TILE, WANDER_AREA, type Rect 
 import type { ShopProduct } from "./gattchaa";
 import { Dir } from "./protocol";
 
-export type NpcKind = "guide" | "shop" | "kuji" | "rooms" | "market" | "grading" | "pickup" | "crier" | "keeper" | "outfitter" | "jobs" | "smith" | "arena" | "local";
+export type NpcKind = "guide" | "shop" | "kuji" | "rooms" | "market" | "grading" | "pickup" | "crier" | "keeper" | "outfitter" | "jobs" | "smith" | "arena" | "ferry" | "local";
 
 export interface NpcDef {
   id: string;
@@ -267,7 +267,14 @@ export const NPCS: NpcDef[] = [
     dir: Dir.Down,
     greeting:
       "Off to the South Meadow? Slimes (Lv 1) by the road only fight back if you hit them. Grass Snakes (Lv 4) hide in the west grass. Hornets (Lv 7) in the east field sting on sight, and Snapper Flowers (Lv 10) guard the lake. Click a monster or press Space to attack. Hurt? Sit down (X) to heal faster, or rest inside the walls.",
-    chatter: ["Monsters past this gate. Stay sharp!", "Hornets in the east field sting first!", "Hurt? Sit down and rest a while.", "Level 10? Orin the Job Master is just inside the gate.", "Outgrown the meadow? Dusk Hollow is out the east gate."],
+    chatter: [
+      "Monsters past this gate. Stay sharp!",
+      "Hornets in the east field sting first!",
+      "Hurt? Sit down and rest a while.",
+      "Level 10? Orin the Job Master is just inside the gate.",
+      "Outgrown the meadow? Dusk Hollow is out the east gate.",
+      "Level 40? Follow the path east to the ferry. It sails to Frostfell.",
+    ],
   },
   {
     // Outside the east gate, where the road runs into Dusk Hollow.
@@ -319,6 +326,45 @@ export const NPCS: NpcDef[] = [
       "An Outlaw's bounty goes to whoever beats them.",
       "Bring White Potions. Bram sells them by the south gate.",
       "The Minotaur King waits on the highest ground…",
+      "Past level 40? The ferry south of the meadow sails to Frostfell.",
+    ],
+  },
+  {
+    // At the end of the meadow's pier, on its south-east point.
+    id: "ferry-meadow",
+    name: "Edda",
+    title: "Ferry Captain",
+    kind: "ferry",
+    look: look({ body: "female", hair: "braid", hairColor: "strawberry", skin: "light", top: "longsleeve", topColor: "navy", bottom: "pants", bottomColor: "charcoal", shoes: "boots", shoesColor: "black", hat: "bandana", hatColor: "navy" }),
+    ...at(242.5, 336.6),
+    dir: Dir.Down,
+    greeting:
+      "All aboard for Frostfell! It's an island of ice and snow across the sea, for adventurers of level 40 and up. Yetis, Ramhorns, Frost Shamans, Frost Wights and Frost Drakes live there, and the Frost Giant keeps a ring of stones on the highlands. The crossing costs 500 gold. The way back is free.",
+    chatter: [
+      "Ferry to Frostfell! 500 gold!",
+      "Wrap up warm. It's cold out there.",
+      "Frostfell is for level 40 and up!",
+      "The way back is always free.",
+      "I saw the Frost Giant once. Once was enough.",
+    ],
+  },
+  {
+    // At the end of Frostfell's pier, on the island's north shore.
+    id: "ferry-frostfell",
+    name: "Bjorn",
+    title: "Ferryman",
+    kind: "ferry",
+    look: look({ body: "male", hair: "long", hairColor: "platinum", beard: "beard", skin: "light", top: "longsleeve", topColor: "white", bottom: "pants", bottomColor: "slate", shoes: "foldBoots", shoesColor: "brown", hat: "hood", hatColor: "white" }),
+    ...at(190.5, 396.6),
+    dir: Dir.Up,
+    greeting:
+      "Welcome to Frostfell (Lv 40–50). Yetis (Lv 41) in the woods west of the pier jump anyone who comes close; Ramhorns (Lv 43) to the east only fight back. Frost Shamans (Lv 45) throw ice from the west shore, and the Frost Drakes (Lv 49) out east are slow but hit very hard. Frost Wights (Lv 47) patrol the icy highlands. Follow the path south to find the Frost Giant (Lv 54) in his ring of stones. When you've had enough of the cold, I'll sail you back for free.",
+    chatter: [
+      "Ferry back to the meadow! Free of charge!",
+      "Mind the Yetis by the pier!",
+      "Frost Shamans throw ice. Close in fast!",
+      "The Frost Giant waits at the end of the path…",
+      "Bring White Potions. Lots of them.",
     ],
   },
   {
@@ -442,7 +488,7 @@ export const NPCS: NpcDef[] = [
         "Isn't the park lovely? Walk round the pond, then sit by the campfire. Locals swap cards there at night.",
         ["What a lovely day for a walk.", "I come here to sort my binder.", "Campfire tonight, anyone?"]],
       ["theo", "Theo", PARK_WANDER, at(136, 232), { body: "male", hair: "curly", hairColor: "dark_brown", skin: "brown", top: "tshirt", topColor: "sky", bottom: "shorts", bottomColor: "navy", shoes: "sneakers", shoesColor: "white" },
-        "The west gate leads out to the wilds. Not much out there yet, but I hear monsters will roam those fields one day.",
+        "The west gate leads out to the Orc Woods. Don't go out there before level 20!",
         ["Nice day for a walk.", "I traded three cards by the campfire last night!", "This park is my favourite spot."]],
       ["kai", "Kai", MARKET_WANDER, at(176, 226), { body: "male", hair: "spiked", hairColor: "black", skin: "olive", top: "vneck", topColor: "orange", bottom: "cuffed", bottomColor: "charcoal", shoes: "sneakers", shoesColor: "black" },
         "Players sell their own cards in the Market Square. Walk up to anyone sitting under a sign and press E to see what they've got.",
@@ -466,6 +512,12 @@ export const NPCS: NpcDef[] = [
     }),
   ),
 ];
+
+/** The ferry: where each captain sails you, which way you face stepping off, the fare in gold, and the level the far shore is for. */
+export const FERRY: Record<string, { to: { x: number; y: number }; dir: number; fare: number; dest: string; lv?: number }> = {
+  "ferry-meadow": { to: at(190.5, 399.6), dir: Dir.Down, fare: 500, dest: "Frostfell", lv: 40 },
+  "ferry-frostfell": { to: at(242.5, 333.6), dir: Dir.Up, fare: 0, dest: "the South Meadow" },
+};
 
 /** What an NPC's stall offers right now (sold-out items last for featured stalls). */
 export function npcProducts(npc: NpcDef, products: readonly ShopProduct[]): ShopProduct[] {

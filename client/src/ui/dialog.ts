@@ -1,4 +1,4 @@
-import { NPCS, npcProducts, type NpcDef } from "../../../shared/npcs";
+import { FERRY, NPCS, npcProducts, type NpcDef } from "../../../shared/npcs";
 import { MACHINES, placeName } from "../../../shared/town";
 import {
   ROOM_MODES,
@@ -331,6 +331,9 @@ export class TownDialog {
       case "arena":
         this.arena(npc);
         break;
+      case "ferry":
+        this.ferry(npc);
+        break;
       case "keeper":
         this.body.append(this.tabs(npc, [["shops", "Shops"], ["find", "Find an item"]], this.keeperTab, (tab) => (this.keeperTab = tab), this.net.stats?.gold ?? 0));
         if (this.keeperTab === "find") this.marketFind();
@@ -397,6 +400,23 @@ export class TownDialog {
       cards.append(card);
     }
     this.body.append(cards);
+  }
+
+  // ------------------------------------------------------------------ the ferry
+
+  /** Sail to the other shore: the fare, and a word of warning for anyone not ready for it yet. */
+  private ferry(npc: NpcDef) {
+    const trip = FERRY[npc.id];
+    if (!trip) return;
+    const lv = this.net.stats?.lv ?? 1;
+    const gold = this.net.stats?.gold ?? 0;
+    if (trip.lv && lv < trip.lv) {
+      this.body.append(el("p", "dialog-note", `${trip.dest} is for level ${trip.lv} and up, and you're level ${lv}. Its monsters will make short work of you!`));
+    }
+    this.button(`Sail to ${trip.dest}`, trip.fare ? `${goldText(trip.fare)} gold · you have ${goldText(gold)}` : "Free of charge", () => {
+      this.net.ferry(npc.id);
+      if (gold >= trip.fare) this.close();
+    }, "primary");
   }
 
   // ------------------------------------------------------------------ the Arena Master

@@ -36,13 +36,13 @@ import {
   type UpgradeMessage,
 } from "../../../shared/protocol";
 import { DOORS, placeName } from "../../../shared/town";
-import type { DoorMessage } from "../../../shared/protocol";
+import type { DoorMessage, FerryMessage } from "../../../shared/protocol";
 import { CLASSES, LEVEL_CAP, aClass, isClassId } from "../../../shared/rpg";
 import { isSkillId } from "../../../shared/skills";
 import { PIONEERS, TITLES, isTitleId, type TitleShowMessage } from "../../../shared/titles";
 import type { ArenaBoard, DuelAnswerMessage, DuelAskMessage, DuelEndEvent } from "../../../shared/duels";
 import { BAG_SIZE, ITEMS, MAX_STACK, OUTFITTER_STOCK, SMITH_STOCK, cleanUpgrade, isItemId, isSlot, itemName } from "../../../shared/items";
-import { NPCS, type NpcKind } from "../../../shared/npcs";
+import { FERRY, NPCS, type NpcKind } from "../../../shared/npcs";
 import {
   SHOP_AWAY_HOURS,
   SHOP_ID_RE,
@@ -172,6 +172,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     look: (client: Client, msg: LookMessage) => this.handleLook(client, msg),
     chat: (client: Client, msg: ChatSend) => this.handleChat(client, msg),
     door: (client: Client, msg: DoorMessage) => this.handleDoor(client, msg),
+    ferry: (client: Client, msg: FerryMessage) => this.handleFerry(client, msg),
     sit: (client: Client, msg: SitMessage) => this.handleSit(client, msg),
     emote: (client: Client, msg: EmoteMessage) => this.handleEmote(client, msg),
     target: (client: Client, msg: TargetMessage) => this.handleTarget(client, msg),
@@ -516,7 +517,17 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     this.teleport(client, door.to.x, door.to.y, door.dir);
   }
 
-  /** Moves a player somewhere else entirely (doors, back to town); the client fades across. */
+  /** Sails with the ferry captain you're standing with, if you can pay the fare. */
+  private handleFerry(client: Client, msg: FerryMessage) {
+    if (!this.itemOk(client) || this.meta.get(client.sessionId)?.shop) return;
+    const npc = this.npcNear(client, msg?.npc, "ferry");
+    const trip = npc && FERRY[npc.id];
+    if (!trip || !this.combat.payFare(client.sessionId, trip.fare)) return;
+    this.teleport(client, trip.to.x, trip.to.y, trip.dir);
+    this.notice(client.sessionId, `You sail across the sea to ${trip.dest}.`);
+  }
+
+  /** Moves a player somewhere else entirely (doors, the ferry, back to town); the client fades across. */
   private teleport(client: Client, x: number, y: number, dir: number) {
     const player = this.state.players.get(client.sessionId);
     const meta = this.meta.get(client.sessionId);

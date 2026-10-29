@@ -235,6 +235,19 @@ const GEAR = [
   ["celestial", "Celestial hat", "headwear/hats/magic/hat_magic_celestial.json", { variant: "navy" }],
   ["tabardPurple", "Tabard (purple)", "torso/jacket/torso_jacket_tabard.json", { variant: "purple" }],
   ["tabardBlack", "Tabard (black)", "torso/jacket/torso_jacket_tabard.json", { variant: "black" }],
+  // Frostfell's gear.
+  ["swordSilver", "Silver arming sword", "weapons/sword/weapon_sword_arming.json", { variant: "silver" }],
+  ["longspearSilver", "Long spear (silver)", "weapons/polearm/weapon_polearm_longspear.json", { variant: "silver", walk128: true }],
+  ["scythe", "Scythe", "weapons/polearm/weapon_polearm_scythe.json"],
+  ["bowSilver", "Bow (silver)", "weapons/ranged/bow/weapon_ranged_bow_normal.json", { variant: "silver", walk128: true }],
+  ["greatBowSilver", "Great bow (silver)", "weapons/ranged/bow/weapon_ranged_bow_great.json", { variant: "silver", walk128: true }],
+  ["gnarledSilver", "Gnarled staff (silver)", "weapons/magic/weapon_magic_gnarled.json", { variant: "silver" }],
+  ["crystalGreen", "Crystal staff (green)", "weapons/magic/weapon_magic_crystal.json", { variant: "green" }],
+  ["kiteBlue", "Kite shield (blue)", "weapons/shields/shield_kite.json", { variant: "kite_blue_blue" }],
+  ["celestialMoon", "Celestial moon hat", "headwear/hats/magic/hat_magic_celestial_moon.json", { variant: "white" }],
+  ["norman", "Norman helmet", "headwear/helmets/helmets/hat_helmet_norman.json"],
+  ["helmWings", "Helmet wings", "headwear/helmets/accessories/hat_accessory_wings.json"],
+  ["tabardWhite", "Tabard (white)", "torso/jacket/torso_jacket_tabard.json", { variant: "white" }],
 ].map(([id, label, def, opts]) => ["gear", id, label, def, B, opts]);
 
 /**
@@ -261,6 +274,12 @@ const MOB_PARTS = [
   ["lizardTail", "Lizard tail", "body/lizard/tail_lizard.json"],
   ["wolfTail", "Wolf tail", "body/tails/tail_wolf.json", { variant: "fur_grey" }],
   ["flail", "Flail", "weapons/blunt/weapon_blunt_flail.json"],
+  // Frostfell.
+  ["beastHead", "Wartotaur head", "head/heads/beast/heads_wartotaur.json"],
+  ["sheepHead", "Sheep head", "head/heads/farm/heads_sheep.json"],
+  ["hornsCurled", "Curled horns", "head/appendages/head_horns_curled.json"],
+  ["lizardWings", "Lizard wings", "body/lizard/wings_lizard.json"],
+  ["wolfTailFluffy", "Fluffy wolf tail", "body/tails/tail_wolf_fluffy.json", { variant: "fur_white" }],
 ].map(([id, label, def, opts]) => ["mob", id, label, def, M, opts]);
 
 const PALETTES = {
@@ -290,6 +309,10 @@ const WORLD_FILES = {
   "plants.png": "Terrain/plants_summer.png",
   "flowers.png": "Terrain/flowers.png",
   "rocks.png": "Terrain/Rocks, Grasslands.png",
+  // Frostfell: the same sheets in winter (same layout, so the same cells and rects).
+  "terrain-winter.png": "Terrain/terrain_winter.png",
+  "trees-winter.png": "Terrain/trees_winter.png",
+  "plants-winter.png": "Terrain/plants_winter.png",
 };
 
 /** Town buildings, furniture and floors, also from LPC Revised (OGA-BY 3.0). */
@@ -317,6 +340,7 @@ const TOWN_FILES = {
   "pillar.png": "Structure/Pillars/Stone Pillar A.png",
   "door-arched.png": "Structure/Doors/64x64px Arched Doors/Arched Double Doors A.png",
   "windows-stone.png": "Structure/Windows/Stone Windows A.png",
+  "pier.png": "Structure/Bridges/Wood Bridge A - No Rails.png",
   "carpet-floral.png": "Structure/Floor/Floral Carpet A.png",
   "thrones.png": "Objects/Furniture/Seating/Thrones.png",
   "loveseat.png": "Objects/Furniture/Seating/Loveseat, Small - Formal A.png",
@@ -352,6 +376,7 @@ const TOWN_CREDIT_DIRS = [
   "Structure/Pillars",
   "Structure/Doors",
   "Structure/Windows",
+  "Structure/Bridges",
   "Objects/Furniture",
   "Objects/Furniture/Seating",
   "Objects/Small Items",

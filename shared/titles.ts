@@ -106,6 +106,7 @@ export const ALL_CARDS = Object.values(ITEMS).filter((it) => it.kind === "card")
 export const AURA_KINGSLAYER = 30;
 export const AURA_CARD_MASTER = 31;
 export const AURA_PIONEER = 32;
+export const AURA_GIANTSLAYER = 33;
 
 const def = <T extends Record<string, Omit<TitleDef, "id">>>(titles: T) =>
   Object.fromEntries(Object.entries(titles).map(([id, t]) => [id, { id, ...t }])) as { [K in keyof T]: TitleDef & { id: K } };
@@ -132,6 +133,8 @@ export const TITLES = def({
   warbreaker: { name: "Warbreaker", tier: "epic", group: "Hunting", goal: { kind: "kills", n: 10, monster: "orcWarlord" }, how: "Help defeat the Orc Warlord 10 times." },
   wolfsbane: { name: "Wolfsbane", tier: "rare", group: "Hunting", goal: { kind: "kills", n: 500, monster: "werewolf" }, how: "Help defeat 500 Werewolves." },
   matador: { name: "Matador", tier: "epic", group: "Hunting", goal: { kind: "kills", n: 10, monster: "minotaurKing" }, how: "Help defeat the Minotaur King 10 times." },
+  dragonslayer: { name: "Dragonslayer", tier: "rare", group: "Hunting", goal: { kind: "kills", n: 300, monster: "frostDrake" }, how: "Help defeat 300 Frost Drakes." },
+  giantslayer: { name: "Giantslayer", tier: "epic", group: "Hunting", goal: { kind: "kills", n: 10, monster: "frostGiant" }, aura: AURA_GIANTSLAYER, how: "Help defeat the Frost Giant 10 times." },
 
   // ------------------------------------------------------------ collecting
   cardFinder: { name: "Card Finder", tier: "rare", group: "Collecting", goal: { kind: "cards", n: 1 }, how: "Find a monster card." },

@@ -135,7 +135,13 @@ export type MonsterId =
   | "werewolf"
   | "troll"
   | "vampire"
-  | "minotaurKing";
+  | "minotaurKing"
+  | "yeti"
+  | "ramhorn"
+  | "frostShaman"
+  | "frostWight"
+  | "frostDrake"
+  | "frostGiant";
 
 export interface MonsterDef {
   id: MonsterId;
@@ -321,6 +327,57 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
       ["mithril", 1], ["starCrystal", 1], ["starCrystal", 0.6], ["minotaurHorn", 0.06], ["sunfireBow", 0.015], ["archmageStaff", 0.015], ["minotaurKingCard", 0.02],
     ],
   },
+
+  // ---------------------------------------------------------------- Frostfell (Lv 40–50), the snowy island across the sea
+  // Shaggy and short-tempered: they jump anyone who walks into their woods by the pier.
+  yeti: {
+    id: "yeti", name: "Yeti", level: 41, hp: 2900, atk: 50, def: 26, exp: 5200, gold: [52, 86], speed: 50, chase: 110, aggro: 60, range: 38, attackMs: 1600, radius: 14, respawnMs: 20_000,
+    drops: [
+      ["yetiFur", 0.6], ["whitePotion", 0.06], ["snowHood", 0.005], ["furCloak", 0.004], ["iceSword", 0.004],
+      ["mithril", 0.05], ["starCrystal", 0.008], ["yetiCard", 0.001],
+    ],
+  },
+  // Mountain beastmen with long spears: they only fight back.
+  ramhorn: {
+    id: "ramhorn", name: "Ramhorn", level: 43, hp: 3300, atk: 66, def: 34, exp: 5900, gold: [54, 90], speed: 45, chase: 90, aggro: 0, range: 48, attackMs: 1700, radius: 13, respawnMs: 20_000,
+    drops: [
+      ["ramHorn", 0.6], ["whitePotion", 0.06], ["frostShield", 0.004], ["frostGreaves", 0.005], ["frostBow", 0.004], ["glacierLance", 0.002],
+      ["mithril", 0.06], ["starCrystal", 0.008], ["ramhornCard", 0.001],
+    ],
+  },
+  // Throws shards of ice from afar at anyone it sees.
+  frostShaman: {
+    id: "frostShaman", name: "Frost Shaman", level: 45, hp: 2600, atk: 52, def: 24, exp: 6200, gold: [56, 94], speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 22_000,
+    drops: [
+      ["frozenTear", 0.55], ["whitePotion", 0.06], ["moonHat", 0.005], ["winterRobe", 0.004], ["winterStaff", 0.004], ["snowflake", 0.003],
+      ["mithril", 0.05], ["starCrystal", 0.01], ["frostShamanCard", 0.001],
+    ],
+  },
+  // Dead knights frozen in their armour, still on patrol. They charge anyone who comes near.
+  frostWight: {
+    id: "frostWight", name: "Frost Wight", level: 47, hp: 3500, atk: 60, def: 32, exp: 7200, gold: [58, 98], speed: 50, chase: 100, aggro: 60, range: 38, attackMs: 1600, radius: 13, respawnMs: 22_000,
+    drops: [
+      ["wightChain", 0.55], ["whitePotion", 0.07], ["valkyrieHelm", 0.003], ["frostPlate", 0.003], ["frostSabatons", 0.005], ["glacierBow", 0.002], ["frostRing", 0.003],
+      ["mithril", 0.06], ["starCrystal", 0.012], ["frostWightCard", 0.001],
+    ],
+  },
+  // Big, slow and armoured in ice-blue scales. Leave it be and it leaves you be.
+  frostDrake: {
+    id: "frostDrake", name: "Frost Drake", level: 49, hp: 4200, atk: 84, def: 30, exp: 8600, gold: [62, 104], speed: 40, chase: 80, aggro: 0, range: 44, attackMs: 1900, radius: 15, respawnMs: 24_000,
+    drops: [
+      ["drakeScale", 0.55], ["whitePotion", 0.08], ["glacierLance", 0.003], ["auroraStaff", 0.003], ["frostPlate", 0.003], ["valkyrieHelm", 0.003],
+      ["mithril", 0.06], ["starCrystal", 0.014], ["frostDrakeCard", 0.001],
+    ],
+  },
+  // Frostfell's boss, in his ring of stones on the icy highlands. Throws ice at anyone out of reach.
+  frostGiant: {
+    id: "frostGiant", name: "Frost Giant", level: 54, hp: 70_000, atk: 150, def: 48, exp: 150_000, gold: [3000, 6000], speed: 35, chase: 85, aggro: 150, range: 140, attackMs: 2000, radius: 26, respawnMs: 1_500_000,
+    boss: true, regen: 0.004,
+    drops: [
+      ["winterHeart", 1], ["whitePotion", 0.8], ["glacierLance", 0.2], ["glacierBow", 0.2], ["auroraStaff", 0.2], ["valkyrieHelm", 0.15], ["frostPlate", 0.15],
+      ["mithril", 1], ["starCrystal", 1], ["starCrystal", 0.7], ["giantsTooth", 0.06], ["frostScythe", 0.015], ["frostGiantCard", 0.02],
+    ],
+  },
 };
 
 export const isMonsterId = (id: unknown): id is MonsterId => typeof id === "string" && Object.hasOwn(MONSTERS, id);
@@ -419,6 +476,26 @@ export const FIELDS: Field[] = [
       { monster: "vampire", rect: { x: 234, y: 62, w: 34, h: 34 }, count: 8 },
       // The Minotaur King's lair, on the highest ground.
       { monster: "minotaurKing", rect: { x: 194, y: 54, w: 8, h: 6 }, count: 1 },
+    ],
+  },
+  {
+    // Across the sea south of the meadow: the ferry at the meadow's south-east point sails here.
+    id: "frostfell",
+    name: "Frostfell",
+    levels: "Lv 40–50",
+    area: { x: 116, y: 392, w: 156, h: 108 },
+    wild: true,
+    spawns: [
+      // Yetis in the woods west of the pier, Ramhorns in the woods east of it.
+      { monster: "yeti", rect: { x: 140, y: 408, w: 44, h: 24 }, count: 9 },
+      { monster: "ramhorn", rect: { x: 200, y: 410, w: 50, h: 22 }, count: 12 },
+      // Frost Shamans on the west shore, Frost Drakes in the east.
+      { monster: "frostShaman", rect: { x: 124, y: 432, w: 22, h: 44 }, count: 7 },
+      { monster: "frostDrake", rect: { x: 214, y: 440, w: 42, h: 28 }, count: 9 },
+      // Frost Wights patrol the icy highlands, all round the Frost Giant's stones.
+      { monster: "frostWight", rect: { x: 146, y: 432, w: 56, h: 22 }, count: 9 },
+      { monster: "frostWight", rect: { x: 146, y: 468, w: 66, h: 16 }, count: 6 },
+      { monster: "frostGiant", rect: { x: 174, y: 460, w: 8, h: 6 }, count: 1 },
     ],
   },
 ];

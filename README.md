@@ -81,8 +81,8 @@ This connects 100 bots that walk around (using the real collision code) and chat
 
 ```
 shared/       Code used by both client and server
-  world.ts        Seeded island generator (corner-based terrain), decorations, collision
-  town.ts         The town's layout: walls, quarters, buildings, props, doors, the park and the Market Square
+  world.ts        Seeded generator (corner-based terrain) for the main island and Frostfell, decorations, collision
+  town.ts         The town's layout: walls, quarters, buildings, props, doors, the park and the Market Square; roads, bosses' camps, Frostfell, the snow line and the piers
   appearance.ts   Character look: encode/decode/validate, random looks
   catalog.ts      Generated list of hair/clothes/colour options
   protocol.ts     Message types, name/chat sanitizing
@@ -116,7 +116,7 @@ client/       Phaser game
   src/world/town.ts        Buildings and furniture, lit windows at night, bunting, live shop displays
   src/world/shops.ts       Player shops: rugs, signs, the away seller's look-alike
   src/world/daylight.ts    Day and night (Batam time), lamp and fire glow
-  src/world/ambience.ts    Butterflies by day, fireflies at night
+  src/world/ambience.ts    Butterflies by day, fireflies at night, snow over Frostfell
   src/world/monsterArt.ts  Monster sprite sheets and their animations; humanoid monsters' parts
   src/world/fx.ts          Damage numbers, slashes, level-up light, arrows and magic bolts, skill effects
   src/scenes/WorldScene.ts   Chunk streaming, water glints, input, camera, interpolation
@@ -160,7 +160,7 @@ scripts/
 Ragnarok and TibiaME style: click a monster and your character fights it. Everything about a fight is decided on the server, and the numbers live in `shared/rpg.ts`.
 
 - **Classes.** Everyone starts as a Novice; at level 10 the Job Master makes you a Knight, Mage or Archer (see below). HP, MP, attack and defence grow by class as you level.
-- **Levels.** The cap is `LEVEL_CAP` (50 for now). The EXP curve (`expToNext`) is gentle through the Novice levels, then climbs to three times as much from the job change to level 13, so job levels take a few minutes each (about 4 at level 12, about 8 at level 18, 12 to 15 in the Orc Woods, 11 to 15 in the Wildlands, fighting on-level monsters with plain attacks). It keeps going past the cap, so raising it is a one-line change. At the cap, EXP stops filling.
+- **Levels.** The cap is `LEVEL_CAP` (50 for now). The EXP curve (`expToNext`) is gentle through the Novice levels, then climbs to three times as much from the job change to level 13, so job levels take a few minutes each (about 4 at level 12, about 8 at level 18, 12 to 15 in the Orc Woods, 11 to 15 in the Wildlands, 10 to 16 on Frostfell, fighting on-level monsters with plain attacks). It keeps going past the cap, so raising it is a one-line change. At the cap, EXP stops filling.
 - **Fields.** Monsters live outside the walls. The town (and the palace) is always safe: monsters never come in, and nobody can attack from inside. The first field is the **South Meadow**, out of the south gate (Rowan the Gate Guard explains it):
 
   | Monster | Level | Where | Behaviour |
@@ -203,7 +203,18 @@ Ragnarok and TibiaME style: click a monster and your character fights it. Everyt
   | Vampire | 39 | High ground, north-east | Casts dark bolts from 170 px; attacks on sight |
   | **Minotaur King** | 44 | His lair on the highest ground (`MINOTAUR_LAIR`) | Field boss: 45,000 HP, 20 min respawn, for a party of four |
 
-- **Field boss.** The Pumpking is Dusk Hollow's boss, Ragnarok's MVP style: one at a time, 12,000 HP, breathes fire from 150 px, heals only slowly when left alone, and comes back 10 minutes after it falls. It's drawn bigger, with its name and health always showing. The whole town hears when it rises again and who brought it down. A level 20 Knight can just about beat it alone with plenty of potions; a party shares the EXP by damage. It always drops King's Candy (600 gold at Bram), often a good piece of gear, and very rarely the Moonblade or the Pumpking Card. The Orc Woods' Orc Warlord is the same kind of boss, bigger (24,000 HP, back after 15 minutes), with the Dragon Spear and his own card as the rare prizes. The Wildlands' Minotaur King is the biggest yet (45,000 HP, back after 20 minutes), with the legendary Sunfire Bow, Archmage Staff and his own card as the rare prizes, and other players free to attack whoever fights him. Any monster can be a boss (`boss: true` in `MONSTERS`).
+  The fifth field is **Frostfell** (Lv 40–50), an island of snow and ice across the sea south of the meadow. The world grew from 384 to 512 tiles tall to fit it: the generator raises it with its own hills (`FROSTFELL_ISLE`, `isleElevation` in `shared/world.ts`) while the main island keeps its exact shape (it's centred on fixed `MAIN_CX`/`MAIN_CY`, not the map's middle). Everything south of `SNOW_LINE` is drawn from LPC's winter sheets (terrain, trees and plants share the summer layout, so only the texture changes), with snowfall over it (`Snowfall` in `ambience.ts`) and white land on the minimap. The only way there is **the ferry**: a path branches east off the south road to a wooden pier (`PIERS`, `Floor.Pier`, the one floor you can walk on over water) where Edda the Ferry Captain sails you across for 500 gold (`ferry` message, `FERRY` in `shared/npcs.ts`, `payFare` in `Combat`); Bjorn the Ferryman sails you back for free from Frostfell's pier:
+
+  | Monster | Level | Where | Behaviour |
+  | --- | --- | --- | --- |
+  | Yeti | 41 | Woods west of the pier | Attacks anyone close |
+  | Ramhorn | 43 | Woods east of the pier | Only fights back; reach 48 px (a spear) |
+  | Frost Shaman | 45 | The west shore | Throws ice from 170 px; attacks on sight |
+  | Frost Wight | 47 | The icy highlands | Attacks anyone close |
+  | Frost Drake | 49 | The east | Big and slow; only fights back; hits hardest |
+  | **Frost Giant** | 54 | His ring of stones on the highlands (`FROST_LAIR`) | Field boss: 70,000 HP, throws ice from 140 px, 25 min respawn, for a party of four at level 50 |
+
+- **Field boss.** The Pumpking is Dusk Hollow's boss, Ragnarok's MVP style: one at a time, 12,000 HP, breathes fire from 150 px, heals only slowly when left alone, and comes back 10 minutes after it falls. It's drawn bigger, with its name and health always showing. The whole town hears when it rises again and who brought it down. A level 20 Knight can just about beat it alone with plenty of potions; a party shares the EXP by damage. It always drops King's Candy (600 gold at Bram), often a good piece of gear, and very rarely the Moonblade or the Pumpking Card. The Orc Woods' Orc Warlord is the same kind of boss, bigger (24,000 HP, back after 15 minutes), with the Dragon Spear and his own card as the rare prizes. The Wildlands' Minotaur King is bigger again (45,000 HP, back after 20 minutes), with the legendary Sunfire Bow, Archmage Staff and his own card as the rare prizes, and other players free to attack whoever fights him. Frostfell's Frost Giant is the biggest yet (70,000 HP, back after 25 minutes), with the legendary Frost Scythe and his own card. Any monster can be a boss (`boss: true` in `MONSTERS`).
 
 - **Fighting.** You auto-attack once a second while the monster is in reach. Hits can miss (more often against higher levels), and 5 % are critical hits. The client only says what you're attacking and draws what the server reports: damage numbers, slashes, health bars.
 - **Rewards.** EXP is shared by everyone who hurt the monster, by how much damage they did. Monsters more than 5 levels below you give less (down to 10 %). Gold goes to whoever did the most damage. Level-ups heal you fully, and every 10th level is announced in chat.
@@ -244,6 +255,7 @@ Every item is in `shared/items.ts`: its stats, price, rarity, icon, and how it l
 - **Dusk Hollow gear.** Level 12–20 drops, all visible on the character: Wizard Hat, Ranger Hood (hides your hair), Horned Helm, Greathelm, Guard Tabard, Sage Tabard, Kite Shield, Crusader Shield, Rapier, Knight's Blade, Great Bow, Ember Staff, and the Pumpking's Moonblade. Each monster also has its own loot to sell (Sticky Silk, Bat Fang, Rock Shard, Gazer Lens, Ectoplasm).
 - **Orc Woods gear.** Level 22–30 drops: Scimitar, Katana, Composite Bow, Crossbow, Ring Staff, Diamond Staff, Round and Spartan Shields, Barbarian and Viking Helms, Scout Armour and Starry Cloak (both with a cape), Dark Plate, Steel Greaves and Sabatons, two rings and two amulets, and from the Orc Warlord the Warlord's Medal and the legendary Dragon Spear. **Spears** are a new weapon type (`spear` in `WEAPON_USERS`), for Knights only and two-handed: the Halberd and the Dragon Spear. Six more cards (Goblin, Orc Warrior, Orc Archer, Orc Skeleton, Orc Zombie and the legendary Orc Warlord Card) bring the total to 16.
 - **Wildlands gear.** Level 32–40 drops: Long Spear and Trident (spears), Flame Blade, Longbow, Serpent Staff, Tower and Engrailed Shields, Armet, Celestial Hat, Close Helm, Wolfskin Vest, Mystic Robe, Golden Plate, Greaves and Sabatons, the Ring of the Wild and Wolf Fang Necklace, and from the Minotaur King the Minotaur Horn and the legendary Sunfire Bow and Archmage Staff. Bram sells White Potions (250 HP) for the Wildlands. Six more cards (Boarman, Lizardman, Werewolf, Troll, Vampire and the legendary Minotaur King Card) bring the total to 22.
+- **Frostfell gear.** Level 42–48 drops: Ice Sword, Glacier Lance and the legendary Frost Scythe (spears), Frost and Glacier Bows, Winter and Aurora Staves, the Frost Shield, Snow Hood, Moon Hat and Valkyrie Helm (a helmet with wings), Fur Cloak, Winter Robe, Frost Plate, Frost Greaves and Sabatons, the Snowflake Pendant and Frost Ring, and from the Frost Giant his Tooth. LPC's "white" cloth is cream and its "ceramic" metal is tan, so the frost look is `sky` cloth and `silver` metal. Six more cards (Yeti, Ramhorn, Frost Shaman, Frost Wight, Frost Drake and the legendary Frost Giant Card) bring the total to 28.
 - **Saving.** The bag and equipment are saved with the rest of your progress, plus right away after buying, selling or finding something good. Guests keep their bag until they leave.
 - **Defence.** Damage is softened by defence rather than reduced by it (defence equal to the attack halves a hit), so armour always helps but never makes you untouchable.
 
@@ -286,7 +298,7 @@ Hilda the Blacksmith works by her forge fire outside the south gate, west of Row
 | +10 | 25% | 2,500 gold | Star Crystal |
 
 - **What it adds.** Weapons get ATK for every level: an eighth of their own ATK, at least 1 (Saber +2, Moonblade +4). Shields, helmets, armour, legs and boots get DEF +1 per level. Rings and amulets can't be upgraded. A worn upgrade counts straight away.
-- **Ingots.** Hilda sells Iron Ingots (100 gold); monsters drop them too. Mithril Ingots drop in Dusk Hollow, the Orc Woods and the Wildlands, and rarely from Snapper Flowers. Star Crystals come from Gazers and Ghosts (about 1 in 200 to 250), Orc Skeletons and Orc Zombies (about 1 in 125 to 170), the Wildlands' monsters past the Boarmen (about 1 in 100 to 170), the Pumpking (one kill in two), and the Orc Warlord and Minotaur King (always). The Pumpking also always carries a Mithril Ingot or two. Ingots are kept out of Bram's "sell all monster loot".
+- **Ingots.** Hilda sells Iron Ingots (100 gold); monsters drop them too. Mithril Ingots drop in Dusk Hollow, the Orc Woods, the Wildlands and Frostfell, and rarely from Snapper Flowers. Star Crystals come from Gazers and Ghosts (about 1 in 200 to 250), Orc Skeletons and Orc Zombies (about 1 in 125 to 170), the Wildlands' monsters past the Boarmen (about 1 in 100 to 170), Frostfell's monsters (about 1 in 70 to 125), the Pumpking (one kill in two), and the Orc Warlord, Minotaur King and Frost Giant (always). The Pumpking also always carries a Mithril Ingot or two. Ingots are kept out of Bram's "sell all monster loot".
 - **The cost of luck.** Simulated over 20,000 tries, reaching +7 takes about 10 tries (6,000 gold, 4 Mithril), +9 about 29 tries (32,000 gold, 19 Mithril, 3 Star Crystals), and +10 about 74 tries (100,000 gold, 50 Mithril, 16 Star Crystals).
 - **Names.** Upgraded gear goes first in the name: "+7 Double Stinging Saber". The bag shows the level in the item's corner and what the upgrades add. Upgrades stay on gear that's dropped and picked up again; Bram won't buy upgraded gear.
 - **Auras.** Wear anything at +7 or higher and everyone sees an aura at your feet: a blue ring at +7, violet with rising sparks at +9, and gold with a column of light at +10. Legendary gear (or a legendary card in gear) gives an orange aura that ranks between +9 and +10. The best one you qualify for shows (`auraOf` in `shared/items.ts`), unless your shown title has its own. At night auras glow like the street lamps (a glow above the night tint).
@@ -299,7 +311,7 @@ Earned by doing things, one shown under your name. The list is `TITLES` in `shar
 
 - **Deeds.** The server counts what each character does (`Deeds`: kills by monster, card kinds found fresh from monsters, legendary finds, best upgrade, failed upgrades, shop opened, gold earned in your shop) in `server/src/rooms/Titles.ts` and checks for new titles after each deed. Everyone who hurt a monster gets the kill. Deeds and titles are JSON columns on `characters` (migration v6), cleaned when loaded.
 - **Earning.** A new title gives a banner over the head (`title` fx), a chat line, and town news for epic and legendary ones. Characters saved before titles existed get their level titles quietly on join.
-- **Showing.** `title:show` picks an earned title; it syncs as `Player.title` and draws under the name in its rarity colour. A shown title with an aura (Kingslayer, Card Master, Pioneer) replaces the gear aura (`Player.aura`).
+- **Showing.** `title:show` picks an earned title; it syncs as `Player.title` and draws under the name in its rarity colour. A shown title with an aura (Kingslayer, Card Master, Pioneer, Giantslayer) replaces the gear aura (`Player.aura`).
 - **Pioneer.** When a signed-in player reaches `LEVEL_CAP`, the room claims a place in the `pioneers` table (first `PIONEERS` = 10 accounts per cap, numbered in order) and grants the title. Raising the cap opens 10 new places.
 - **The window.** T (or the medal button) lists every title by group with progress bars; a badge counts titles earned since you last looked. The server sends `titles` (earned, shown, progress) whenever something changes.
 

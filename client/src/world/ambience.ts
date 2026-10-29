@@ -202,3 +202,55 @@ export class Critters {
     this.flies.push({ img, glow, x: at.x, y: at.y, vx: 0, vy: 0, phase: Math.random() * 10, leaveAt: time + 20_000 + Math.random() * 30_000 });
   }
 }
+
+/** Snow drifting down over Frostfell: a light, endless fall over the view while the camera is on the island. */
+export class Snowfall {
+  private zone = new Phaser.Geom.Rectangle(0, 0, 1, 1);
+  private emitter: Phaser.GameObjects.Particles.ParticleEmitter;
+
+  constructor(scene: Phaser.Scene) {
+    if (!scene.textures.exists("snowflake")) {
+      const canvas = document.createElement("canvas");
+      canvas.width = canvas.height = 3;
+      const ctx = canvas.getContext("2d")!;
+      ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+      ctx.fillRect(0, 1, 3, 1);
+      ctx.fillRect(1, 0, 1, 3);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(1, 1, 1, 1);
+      scene.textures.addCanvas("snowflake", canvas);
+    }
+    this.emitter = scene.add
+      .particles(0, 0, "snowflake", {
+        emitZone: {
+          type: "random",
+          source: {
+            getRandomPoint: (p: Phaser.Types.Math.Vector2Like) => {
+              p.x = this.zone.x + Math.random() * this.zone.width;
+              p.y = this.zone.y + Math.random() * this.zone.height;
+            },
+          },
+        },
+        lifespan: { min: 3500, max: 6500 },
+        speedX: { min: -14, max: 6 },
+        speedY: { min: 16, max: 38 },
+        scale: { min: 0.7, max: 1.6 },
+        // Fades in where it appears and out before it goes, so flakes never pop.
+        alpha: { onEmit: () => 0, onUpdate: (_p: unknown, _k: string, t: number) => Math.sin(t * Math.PI) * 0.85 },
+        frequency: 55,
+        quantity: 2,
+        emitting: false,
+      })
+      // Over the world, under the night tint.
+      .setDepth(1e6 - 11);
+  }
+
+  update(view: Phaser.Geom.Rectangle, on: boolean) {
+    this.emitter.setPosition(view.x, view.y);
+    this.zone.setTo(-80, -40, view.width + 160, view.height + 40);
+    if (on !== this.emitter.emitting) {
+      if (on) this.emitter.start();
+      else this.emitter.stop();
+    }
+  }
+}
