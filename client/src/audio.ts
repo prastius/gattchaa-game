@@ -351,6 +351,44 @@ export class SoundSystem {
         this.tone(1200, t, 0.12, "sine", 0.06, 1800);
         this.tone(1500, t + 0.12, 0.25, "sine", 0.05, 2200);
         break;
+      case "pierce":
+        for (const dt of [0, 0.12]) {
+          this.noiseHit(t + dt, "bandpass", 2400, 0.14, 0.12, this.sfxBus);
+          this.tone(220, t + dt, 0.12, "square", 0.08, 90);
+        }
+        break;
+      case "brandish":
+        this.noiseHit(t, "bandpass", 1400, 0.25, 0.35, this.sfxBus);
+        this.tone(180, t, 0.3, "sawtooth", 0.05, 70);
+        break;
+      case "berserk":
+        [55, 58, 62].forEach((n, i) => this.tone(midiHz(n), t + i * 0.05, 0.4, "sawtooth", 0.05));
+        this.noiseHit(t, "lowpass", 500, 0.2, 0.3, this.sfxBus);
+        break;
+      case "meteor":
+        for (let i = 0; i < 4; i++) this.noiseHit(t + 0.2 + i * 0.06, "lowpass", 900, 0.2, 0.18, this.sfxBus);
+        this.tone(200, t, 0.3, "sawtooth", 0.05, 60);
+        break;
+      case "gust":
+        this.noiseHit(t, "highpass", 4000, 0.15, 0.7, this.sfxBus);
+        [84, 88, 91].forEach((n, i) => this.tone(midiHz(n), t + i * 0.05, 0.35, "sine", 0.04));
+        break;
+      case "lightning":
+        this.noiseHit(t, "highpass", 2500, 0.3, 0.25, this.sfxBus);
+        this.tone(1800, t, 0.08, "square", 0.05, 200);
+        break;
+      case "falcon":
+        this.tone(1600, t, 0.1, "sine", 0.06, 2400);
+        this.tone(2000, t + 0.1, 0.12, "sine", 0.05, 1400);
+        break;
+      case "snare":
+        this.noiseHit(t, "bandpass", 900, 0.12, 0.1, this.sfxBus);
+        this.tone(260, t + 0.08, 0.12, "triangle", 0.08, 180);
+        break;
+      case "sharp":
+        this.tone(520, t, 0.08, "triangle", 0.1, 160);
+        this.tone(1400, t + 0.06, 0.15, "sine", 0.05);
+        break;
     }
   }
 

@@ -16,7 +16,7 @@ import {
   type SitMessage,
   type TargetMessage,
 } from "../../../shared/protocol";
-import { CLASSES, JOB_LEVEL, aClass, isClassId, isMonsterId } from "../../../shared/rpg";
+import { CLASSES, JOB_LEVEL, aClass, isClassId, isMonsterId, type ClassId } from "../../../shared/rpg";
 import { SKILLS, type SkillId } from "../../../shared/skills";
 import { ITEMS, PICKUP_RANGE, RARITY, appearanceKey, cleanUpgrade, isItemId, parseCards } from "../../../shared/items";
 import { NPCS, type NpcDef } from "../../../shared/npcs";
@@ -138,6 +138,21 @@ const SKILL_HINT_MS = 900;
 const DOUBLE_SHOT_GAP_MS = 110;
 /** Arrow Rain's numbers show when the arrows land. */
 const RAIN_LAND_MS = 260;
+/** Meteors take a little longer to fall; the falcon to dive. */
+const METEOR_LAND_MS = 420;
+const FALCON_LAND_MS = 200;
+/** Skills that don't swing at the target (no slash where they land). */
+const NO_SLASH = new Set(["rain", "meteor", "lightning", "gust", "snare"]);
+/** Each job's colour, for the job-change light. */
+const JOB_TINT: Record<ClassId, number> = {
+  novice: 0xffd27a,
+  knight: 0xff8a5c,
+  mage: 0xb98cff,
+  archer: 0x7ddb6e,
+  lordKnight: 0xffb35c,
+  wizard: 0x8fb4ff,
+  hunter: 0xc8e86a,
+};
 /** Flight time of a missile between two bodies (same as Fx.missile). */
 const flightMsFor = (a: { x: number; mid: number }, t: { x: number; mid: number }) => flightMs(Math.hypot(t.x - a.x, t.mid - a.mid));
 const LOOT_CLICK_RANGE = 420;
@@ -974,7 +989,7 @@ export class WorldScene extends Phaser.Scene {
   private missileFor(ev: Extract<FxEvent, { k: "hit" | "miss" }>, a: { x: number; y: number; mob?: MonsterSprite }, t: { x: number; y: number }): Missile | undefined {
     if (ev.k === "hit" && ev.skill) {
       const fx = SKILLS[ev.skill].fx;
-      return fx === "fire" ? "fire" : fx === "arrows" ? "arrow" : undefined;
+      return fx === "fire" ? "fire" : fx === "arrows" || fx === "sharp" ? "arrow" : undefined;
     }
     if (a.mob) {
       const art = a.mob.art;
@@ -1239,7 +1254,7 @@ export class WorldScene extends Phaser.Scene {
         if (a && t) {
           if (a.mob) a.mob.attack(dirTo(t.x - a.x, t.y - a.y));
           // Swords swing; bows, staves and spells don't.
-          else if (!missile && (!skill || skill.fx === "bash")) a.player?.lunge(t.x - a.x, t.y - a.y);
+          else if (!missile && (!skill || skill.fx === "bash" || skill.fx === "pierce" || skill.fx === "brandish")) a.player?.lunge(t.x - a.x, t.y - a.y);
           if (ev.a === me && this.self) this.self.dir = dirTo(t.x - a.x, t.y - a.y);
         }
         if (!t) return;
@@ -1254,6 +1269,8 @@ export class WorldScene extends Phaser.Scene {
           delay = stagger + (stagger ? flightMsFor(a, t) : fly());
           if (ev.a === me && !skill) audio.shoot(missile !== "arrow");
         } else if (skill?.fx === "rain") delay = RAIN_LAND_MS;
+        else if (skill?.fx === "meteor") delay = METEOR_LAND_MS;
+        else if (skill?.fx === "falcon") delay = FALCON_LAND_MS;
         const land = () => {
           const tb = this.body(ev.t) ?? t;
           if (ev.k === "miss") {
@@ -1263,8 +1280,8 @@ export class WorldScene extends Phaser.Scene {
           }
           tb.mob?.flash();
           tb.player?.flash();
-          if (skill?.fx === "nova") this.fx.burst(tb.x, tb.mid, [0xffffff, 0xbfe9ff], 8);
-          else if (!a?.mob && !missile && skill?.fx !== "rain") this.fx.slash(tb.x, tb.mid);
+          if (skill?.fx === "nova" || skill?.fx === "gust") this.fx.burst(tb.x, tb.mid, [0xffffff, 0xbfe9ff], 8);
+          else if (!a?.mob && !missile && !(skill && NO_SLASH.has(skill.fx))) this.fx.slash(tb.x, tb.mid);
           const kind: NumberKind = ev.t === me ? "taken" : ev.a === me ? (ev.crit ? "crit" : "dealt") : "other";
           this.fx.number(tb.x, tb.top, ev.crit && kind !== "taken" ? `${ev.d}!` : String(ev.d), kind);
           if (ev.a === me) audio.hit(Boolean(ev.crit));
@@ -1306,6 +1323,36 @@ export class WorldScene extends Phaser.Scene {
           case "bash":
             if (t) this.fx.burst(t.x, t.mid, [0xffffff, 0xffd27a], 12);
             break;
+          case "pierce":
+            if (t) {
+              this.fx.burst(t.x, t.mid, [0xffffff, 0xffb35c], 14);
+              this.time.delayedCall(120, () => this.fx.burst(t.x, t.mid, [0xffffff, 0xffd27a], 14));
+            }
+            break;
+          case "brandish":
+            if (t) this.fx.whirl(t.x, t.y, s.radius ?? 70);
+            break;
+          case "berserk":
+            this.fx.aura(a.x, a.y, 0xff5a4d);
+            break;
+          case "meteor":
+            if (t) this.fx.meteor(t.x, t.y, s.radius ?? 100);
+            break;
+          case "gust":
+            if (t) this.fx.nova(t.x, t.y, s.radius ?? 100);
+            break;
+          case "lightning":
+            if (t) this.fx.lightning(t.x, t.y);
+            break;
+          case "falcon":
+            if (t) this.fx.falcon(a.x, a.y, t.x, t.y);
+            break;
+          case "snare":
+            if (t) this.fx.snare(t.x, t.y);
+            break;
+          case "sharp":
+            this.fx.burst(a.x, a.mid, [0xffe08a, 0xffffff], 8);
+            break;
           default:
             break;
         }
@@ -1319,11 +1366,14 @@ export class WorldScene extends Phaser.Scene {
         const b = this.body(ev.t);
         if (!isClassId(ev.cls)) return;
         const cls = CLASSES[ev.cls];
-        const tint = ev.cls === "knight" ? 0xff8a5c : ev.cls === "mage" ? 0xb98cff : 0x7ddb6e;
-        if (b) this.fx.levelUp(b.x, b.y, `${cls.name.toUpperCase()}!`, tint);
+        if (b) this.fx.levelUp(b.x, b.y, `${cls.name.toUpperCase()}!`, JOB_TINT[ev.cls]);
         if (ev.t === me) {
           audio.levelUp();
-          this.chat.addSystem(`You are now ${aClass(ev.cls)}! You have a skill point: open your skills (K) and learn one, then use it with key 1, 2 or 3.`);
+          this.chat.addSystem(
+            cls.from
+              ? `You are now ${aClass(ev.cls)}! Three new skills wait in your skills window (K), on keys 4, 5 and 6.`
+              : `You are now ${aClass(ev.cls)}! You have a skill point: open your skills (K) and learn one, then use it with key 1, 2 or 3.`,
+          );
         }
         return;
       }

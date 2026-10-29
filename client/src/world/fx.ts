@@ -296,6 +296,117 @@ export class Fx {
     return last;
   }
 
+  /** Meteor Storm: fireballs crashing down around a spot. Returns when the last one lands (ms). */
+  meteor(x: number, y: number, r: number): number {
+    let last = 0;
+    for (let i = 0; i < 6; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const d = Math.sqrt(Math.random()) * r;
+      const tx = x + Math.cos(a) * d;
+      const ty = y + Math.sin(a) * d * 0.55;
+      const delay = i * 50;
+      const orb = this.scene.add.image(tx + 70, ty - 230, ORB).setBlendMode(Phaser.BlendModes.ADD).setTint(0xff8a2a).setScale(0.6).setDepth(DEPTH).setAlpha(0);
+      const core = this.scene.add.circle(tx + 70, ty - 230, 4, 0xffe0a0).setDepth(DEPTH).setAlpha(0);
+      const trail = this.scene.add
+        .particles(0, 0, SPARK, {
+          follow: orb,
+          lifespan: { min: 200, max: 360 },
+          speed: { min: 5, max: 30 },
+          scale: { start: 1.8, end: 0 },
+          alpha: { start: 0.9, end: 0 },
+          tint: [0xff8a2a, 0xffd27a, 0xff4a1a],
+          frequency: 12,
+          blendMode: Phaser.BlendModes.ADD,
+          emitting: false,
+        })
+        .setDepth(DEPTH);
+      this.scene.time.delayedCall(delay, () => {
+        orb.setAlpha(1);
+        core.setAlpha(1);
+        trail.start();
+      });
+      this.scene.tweens.add({
+        targets: [orb, core],
+        x: tx,
+        y: ty,
+        delay,
+        duration: 260,
+        ease: "Quad.In",
+        onComplete: () => {
+          orb.destroy();
+          core.destroy();
+          trail.stop();
+          this.scene.time.delayedCall(400, () => trail.destroy());
+          this.burst(tx, ty, [0xff8a2a, 0xffd27a, 0xffffff], 12);
+          const ring = this.scene.add.ellipse(tx, ty, 40, 18).setStrokeStyle(2, 0xffb35c, 1).setDepth(DEPTH).setScale(0.3);
+          this.scene.tweens.add({ targets: ring, scale: 1.2, alpha: 0, duration: 300, ease: "Quad.Out", onComplete: () => ring.destroy() });
+        },
+      });
+      last = delay + 260;
+    }
+    return last;
+  }
+
+  /** Lightning Bolt: a jagged flash out of the sky onto the target. */
+  lightning(x: number, y: number) {
+    const pts: [number, number][] = [[x + Phaser.Math.Between(-30, 30), y - 260]];
+    while (pts[pts.length - 1][1] < y - 50) {
+      const [px, py] = pts[pts.length - 1];
+      pts.push([px + Phaser.Math.Between(-16, 16), py + Phaser.Math.Between(18, 34)]);
+    }
+    pts.push([x, y - 22]);
+    const g = this.scene.add.graphics().setDepth(DEPTH).setBlendMode(Phaser.BlendModes.ADD);
+    for (const [w, c, a] of [[8, 0x4f7fff, 0.45], [3, 0xbfd8ff, 1], [1, 0xffffff, 1]] as const) {
+      g.lineStyle(w, c, a).beginPath().moveTo(pts[0][0], pts[0][1]);
+      for (const [px, py] of pts.slice(1)) g.lineTo(px, py);
+      g.strokePath();
+    }
+    this.scene.tweens.add({ targets: g, alpha: 0, delay: 70, duration: 240, onComplete: () => g.destroy() });
+    const glow = this.scene.add.image(x, y - 22, ORB).setBlendMode(Phaser.BlendModes.ADD).setTint(0xbfd8ff).setScale(0.9).setDepth(DEPTH);
+    this.scene.tweens.add({ targets: glow, alpha: 0, scale: 1.4, duration: 300, onComplete: () => glow.destroy() });
+    this.burst(x, y - 22, [0xffffff, 0x9fc8ff, 0xfff6a0], 14);
+  }
+
+  /** Falcon Strike: a falcon swoops from above the hunter onto the target, then climbs away. */
+  falcon(x0: number, y0: number, x1: number, y1: number) {
+    const bird = this.scene.add.graphics().setDepth(DEPTH).setPosition(x0, y0 - 70);
+    bird.fillStyle(0x5a3a22, 1).fillTriangle(-13, -3, 0, -1, -4, 4).fillTriangle(13, -3, 0, -1, 4, 4);
+    bird.fillStyle(0x8a5a32, 1).fillEllipse(0, 1, 6, 9);
+    bird.fillStyle(0xf4efe4, 1).fillCircle(0, -3, 2);
+    bird.fillStyle(0xf2c14e, 1).fillTriangle(-1, -5, 1, -5, 0, -7);
+    bird.setScale(1.7).setRotation(Math.atan2(y1 - (y0 - 70), x1 - x0) + Math.PI / 2);
+    this.scene.tweens.add({
+      targets: bird,
+      x: x1,
+      y: y1 - 20,
+      duration: 200,
+      ease: "Quad.In",
+      onComplete: () => {
+        this.burst(x1, y1 - 20, [0xffffff, 0xd9c7a0], 8);
+        bird.setRotation(-0.6);
+        this.scene.tweens.add({ targets: bird, x: x1 + 90, y: y1 - 160, alpha: 0, duration: 420, ease: "Quad.Out", onComplete: () => bird.destroy() });
+      },
+    });
+  }
+
+  /** Ankle Snare: a ring of rope pulled tight round the target's feet. */
+  snare(x: number, y: number) {
+    const ring = this.scene.add.ellipse(x, y - 2, 40, 16).setStrokeStyle(3, 0x8a5a32, 1).setDepth(DEPTH).setScale(1.6).setAlpha(0);
+    const inner = this.scene.add.ellipse(x, y - 2, 40, 16).setStrokeStyle(1, 0xd9c7a0, 1).setDepth(DEPTH).setScale(1.6).setAlpha(0);
+    this.scene.tweens.add({ targets: [ring, inner], scale: 0.8, alpha: 1, duration: 220, ease: "Back.In" });
+    this.scene.tweens.add({
+      targets: [ring, inner],
+      alpha: 0,
+      delay: 1400,
+      duration: 400,
+      onComplete: () => {
+        ring.destroy();
+        inner.destroy();
+      },
+    });
+    this.scene.time.delayedCall(220, () => this.burst(x, y - 4, [0x8a5a32, 0x7ddb6e, 0xffffff], 10));
+  }
+
   /** A buff or a heal: a ring of light rising around someone. */
   aura(x: number, y: number, tint: number) {
     const glow = this.scene.add.image(x, y - 22, ORB).setBlendMode(Phaser.BlendModes.ADD).setTint(tint).setDepth(DEPTH).setScale(0.6, 1.1).setAlpha(0);

@@ -93,7 +93,7 @@ The town is always safe: monsters never come in, and nobody can attack anyone in
 | Sable | Bounty Hunter | North of town, by the path up from the west road | Explains the Wildlands and their PVP rules |
 | Edda | Ferry Captain | At the end of the pier on the meadow's south-east point | Sails you to Frostfell for 500 gold |
 | Bjorn | Ferryman | At the end of Frostfell's pier | Explains Frostfell, and sails you back for free |
-| Orin | Job Master | Just inside the south gate | Makes you a Knight, Mage or Archer at level 10 |
+| Orin | Job Master | Just inside the south gate | Makes you a Knight, Mage or Archer at level 10, and gives you your second job at level 50 |
 | Bram | Outfitter | Outside the south gate, east of the road | Sells potions and starter gear, buys loot |
 | Hilda | Blacksmith | Outside the south gate, west of Rowan | Upgrades gear from +0 to +10 |
 | Magnus | Arena Master | By the Arena, east of the Market Square | Explains duels and keeps the arena ranking |
@@ -222,7 +222,7 @@ Goblins, orcs, the undead and the beastmen of the Wildlands and Frostfell walk l
 - **Gold** goes to whoever did the most damage.
 - **Easy monsters give less.** A monster more than 5 levels below you gives 15% less EXP for each extra level, down to 10%.
 - **Level-ups** heal you fully. Every 10th level is announced in chat.
-- The level cap is **50** for now and will be raised step by step.
+- The level cap is **60** for now and will be raised step by step.
 
 ### EXP needed per level
 
@@ -244,8 +244,11 @@ The Novice levels go fast. From the job change at level 10, each level needs a l
 | 40 | 159,392 |
 | 45 | 230,530 |
 | 49 | 303,261 |
+| 50 | 323,924 |
+| 55 | 443,927 |
+| 59 | 562,245 |
 
-Fighting monsters of your own level, a level takes about 4 minutes at level 12, about 8 minutes at level 18, about 12 to 15 minutes in the Orc Woods (levels 20–30), about 11 to 15 minutes in the Wildlands (levels 30–40), and about 10 to 16 minutes on Frostfell (levels 40–50). Using your skills makes it quicker.
+Fighting monsters of your own level, a level takes about 4 minutes at level 12, about 8 minutes at level 18, about 12 to 15 minutes in the Orc Woods (levels 20–30), about 11 to 15 minutes in the Wildlands (levels 30–40), and about 10 to 16 minutes on Frostfell (levels 40–50). Past level 50 the levels take longer again: Frostfell's Frost Drakes and the Frost Giant still give full EXP up to about level 54, and new fields for levels 50–60 are coming. Using your skills makes it quicker.
 
 ### Healing and fainting
 
@@ -299,9 +302,24 @@ Everyone starts as a **Novice**. At **level 10**, visit **Orin the Job Master** 
 
 These numbers are without any gear. Your stats grow automatically every level; there are no stat points to spend.
 
+### Second jobs
+
+At **level 50**, go back to **Orin** and take your **second job**. Each job has one, and it's for life too:
+
+| First job | Second job | What changes | Lv 60 HP / MP / ATK / DEF |
+| --- | --- | --- | --- |
+| Knight | **Lord Knight** | Pierces armour, sweeps crowds aside, and fights harder the longer it lasts. +69 HP, +10 ATK at the change | 1,083 / 208 / 154 / 50 |
+| Mage | **Wizard** | Commands the sky: meteors, blizzards and lightning on whole crowds. +35 HP, +12 ATK at the change | 606 / 547 / 168 / 20 |
+| Archer | **Hunter** | A falcon on the arm and snares in the pack: pins the prey down, then never misses. +45 HP, +10 ATK at the change | 746 / 281 / 153 / 30 |
+
+- **You keep everything:** your level, EXP, gear, skills and skill points. A Lord Knight still wears Knight gear, a Wizard staves, a Hunter bows.
+- **Three new skills** join your first three, on keys **4, 5 and 6**.
+- Your stats grow a little faster from then on, so the change itself is a step up (you're fully healed too).
+- There's no gift weapon this time, and the whole town hears about it.
+
 ### Skill points
 
-- You get **1 skill point** at the job change, and **1 more every level** after that.
+- You get **1 skill point** at the job change, and **1 more every level** after that: 41 at level 50, 51 at level 60. That's enough to max five skills, but not all six, so choose.
 - Spend them in the skills window (**K**). Each skill goes up to **level 10** and gets stronger every level.
 - Use skills with keys **1–6** or the skill buttons. Each skill costs MP and has a cooldown, shown as a shadow on its button. There's also a short pause (0.7 s) between any two skills.
 - Aimed skills use your target. Without one, they pick the nearest monster and walk you into range.
@@ -335,7 +353,31 @@ These numbers are without any gear. Your stats grow automatically every level; t
 | Arrow Rain | 2 | Arrows fall on your target and every monster near it: 110% → 200% of ATK | 16 → 34 | 10 s |
 | Eagle Eye | 3 | ATK +6% → +15% and critical chance +12% → +30% for 20 s | 13 → 22 | 40 s |
 
-Frozen monsters turn icy blue and can't move or attack. While a buff is running, its skill button glows.
+**Lord Knight** (keeps Bash, Whirlwind and Guard on keys 1–3)
+
+| Skill | Key | What it does | MP | Cooldown |
+| --- | --- | --- | --- | --- |
+| Spiral Pierce | 4 | Two twisting thrusts, each 165% → 300% of ATK | 20 → 38 | 7 s |
+| Brandish | 5 | A wide sweep through your target and every monster next to it: 164% → 290% of ATK | 22 → 40 | 9 s |
+| Berserk | 6 | ATK +18% → +40% and critical chance +6% → +15% for 20 s | 22 → 40 | 45 s |
+
+**Wizard** (keeps Fire Bolt, Frost Nova and Heal on keys 1–3)
+
+| Skill | Key | What it does | MP | Cooldown |
+| --- | --- | --- | --- | --- |
+| Lightning Bolt | 4 | Lightning strikes your target from far away: 264% → 480% of ATK | 16 → 34 | 4 s |
+| Meteor Storm | 5 | Meteors crash down on your target and every monster near it: 144% → 270% of ATK | 33 → 60 | 12 s |
+| Storm Gust | 6 | A blizzard round your target: 99% → 180% of ATK to every monster in it, and they freeze for 2.2 → 4 s | 37 → 64 | 16 s |
+
+**Hunter** (keeps Double Shot, Arrow Rain and Eagle Eye on keys 1–3)
+
+| Skill | Key | What it does | MP | Cooldown |
+| --- | --- | --- | --- | --- |
+| Falcon Strike | 4 | Your falcon dives at your target three times from far away, each 88% → 160% of ATK | 18 → 36 | 5 s |
+| Ankle Snare | 5 | A snare on your target: 66% → 120% of ATK, and it can't move or attack for 3.3 → 6 s | 14 → 32 | 12 s |
+| Sharp Shooting | 6 | One perfect arrow: always a critical hit (1.5× and ignores defence), 176% → 320% of ATK. Needs a bow | 18 → 36 | 6 s |
+
+Frozen (and snared) monsters turn icy blue and can't move or attack. While a buff is running, its skill button glows.
 
 ## 7. Items and equipment
 
@@ -644,7 +686,7 @@ Fight other players, just for fun or for the ranking. **Nobody ever loses EXP, g
 | Duels work anywhere, even inside the town | Only the two duelists can hurt each other; nobody else can join in |
 | You can't duel while minding your shop | Close the shop first |
 
-Skills work on players too: Bash, Double Shot and Fire Bolt hit your opponent, and Whirlwind, Frost Nova and Arrow Rain catch them if they're close (Frost Nova doesn't freeze players). Evade cards help against player attacks as well.
+Skills work on players too: aimed skills (Bash, Double Shot, Fire Bolt, Spiral Pierce, Lightning Bolt, Falcon Strike, Sharp Shooting…) hit your opponent, and area skills (Whirlwind, Frost Nova, Arrow Rain, Brandish, Meteor Storm, Storm Gust) catch them if they're close. Freezes and snares don't work on players. Evade cards help against player attacks as well.
 
 ### The Arena and the ranking
 
@@ -668,7 +710,7 @@ North of town, past a dashed red line with little red flags, lie **the Wildlands
 | Who | Players from **level 20**. Below that, you can't attack anyone and nobody can attack you |
 | How | Click (or tap) a player, then **Attack**. An Outlaw is attacked with a single click, like a monster |
 | Damage | Player hits do **half damage**, as in duels. Potions and healing work as usual |
-| Skills | Bash, Double Shot and Fire Bolt hit the player you aim at. Whirlwind, Frost Nova and Arrow Rain only catch the player you're fighting, never bystanders, and Frost Nova doesn't freeze players |
+| Skills | Aimed skills hit the player you aim at. Area skills only catch the player you're fighting, never bystanders. Freezes and snares don't work on players |
 | Duelists | Two players in a duel only fight each other; nobody else can join in |
 
 ### Outlaws and bounties
@@ -703,7 +745,8 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 | Champion | Rare | Reach level 30 |
 | Hero | Epic | Reach level 40 |
 | Legend | Legendary | Reach level 50 |
-| Pioneer ✦ | Legendary | Be one of the first 10 players to reach the level cap (now 50). Signed-in players only |
+| Mythic | Legendary | Reach level 60 |
+| Pioneer ✦ | Legendary | Be one of the first 10 players to reach the level cap (now 60). Signed-in players only |
 | **Hunting** | | |
 | Slime Squasher | Common | Help defeat 100 Slimes |
 | Monster Hunter | Uncommon | Help defeat 1,000 monsters |
@@ -799,6 +842,7 @@ Every monster also drops its own card (see Monster cards) and often potions.
 11. **Level 35–40:** Werewolves in the north-west woods, Trolls on the highlands, Vampires on the high ground to the north-east. From 40, bring a party for the **Minotaur King**, and watch your back.
 12. **Level 40–45:** Take the path east off the south road to **Edda**'s pier and sail to **Frostfell** (500 gold). Yetis jump you in the woods west of the pier; Ramhorns to the east only fight back. Then the Frost Shamans on the west shore: close in fast, they throw ice.
 13. **Level 45–50:** Frost Wights on the icy highlands and Frost Drakes in the east. At 50, bring a party of four for the **Frost Giant** at the end of the path. **Bjorn** sails you home for free.
+14. **Level 50:** Back to **Orin** for your second job: **Lord Knight**, **Wizard** or **Hunter**. Spend your new points on the skills on keys 4–6, then keep hunting Frost Drakes and the Frost Giant on the way to 60.
 
 Along the way, open your titles (T) now and then: you'll have earned a few.
 
@@ -806,8 +850,7 @@ Sell your monster loot to Bram whenever your bag fills up, and sit down (X) to h
 
 ## 15. Coming next
 
-- **Raising the level cap** past 50, with **second jobs** for Knights, Mages and Archers.
-- **New fields and monsters** for the levels above 50.
+- **New fields and monsters** for levels 50–60, then the cap goes up again.
 
 ---
 

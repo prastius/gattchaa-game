@@ -1,4 +1,4 @@
-import { CLASSES, JOB_LEVEL, isClassId } from "../../../shared/rpg";
+import { CLASSES, JOB_LEVEL, SECOND_JOBS, SECOND_JOB_LEVEL, aClass, isClassId } from "../../../shared/rpg";
 import { WEAPON_NAMES } from "../../../shared/items";
 import { GLOBAL_COOLDOWN_MS, SKILLS, SKILL_MAX, skillsOf, type SkillDef, type SkillId } from "../../../shared/skills";
 import { packIcon } from "../character";
@@ -176,6 +176,13 @@ export class SkillsUI {
     hint.className = "skills-hint";
     hint.textContent = `Keys 1–${this.mine.length} (or the skill buttons) use your skills. You get a skill point every level.`;
     this.list.append(hint);
+    const next = SECOND_JOBS[st.cls];
+    if (next) {
+      const more = document.createElement("p");
+      more.className = "skills-hint";
+      more.textContent = `At level ${SECOND_JOB_LEVEL}, Orin the Job Master makes you ${aClass(next)}, with three more skills: ${skillsOf(next).filter((k) => k.cls === next).map((k) => k.name).join(", ")}.`;
+      this.list.append(more);
+    }
   }
 
   private row(s: SkillDef, i: number, points: number): HTMLElement {

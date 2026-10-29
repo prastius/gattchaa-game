@@ -118,6 +118,7 @@ export const TITLES = def({
   champion: { name: "Champion", tier: "rare", group: "Levels", goal: { kind: "level", n: 30 }, how: "Reach level 30." },
   hero: { name: "Hero", tier: "epic", group: "Levels", goal: { kind: "level", n: 40 }, how: "Reach level 40." },
   legend: { name: "Legend", tier: "legendary", group: "Levels", goal: { kind: "level", n: 50 }, how: "Reach level 50." },
+  mythic: { name: "Mythic", tier: "legendary", group: "Levels", goal: { kind: "level", n: 60 }, how: "Reach level 60." },
   pioneer: {
     name: "Pioneer", tier: "legendary", group: "Levels", goal: { kind: "pioneer" }, aura: AURA_PIONEER,
     how: `Be one of the first ${PIONEERS} players to reach the level cap (now ${LEVEL_CAP}). Signed-in players only.`,

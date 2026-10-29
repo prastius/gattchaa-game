@@ -377,8 +377,14 @@ export const NPCS: NpcDef[] = [
     ...at(198.5, 241.6),
     dir: Dir.Left,
     greeting:
-      "Every hero starts as a Novice. Reach level 10 out in the meadow and come back to me: I'll make you a Knight, a Mage or an Archer. Choose well, for a job is for life.",
-    chatter: ["Knight, Mage or Archer… which will you be?", "Level 10, and not a day before!", "A job is for life. Choose well.", "Your skills grow with every level."],
+      "Every hero starts as a Novice. Reach level 10 out in the meadow and come back to me: I'll make you a Knight, a Mage or an Archer. Choose well, for a job is for life. Reach level 50 and come back once more: Knights become Lord Knights, Mages become Wizards, and Archers become Hunters.",
+    chatter: [
+      "Knight, Mage or Archer… which will you be?",
+      "Level 10, and not a day before!",
+      "A job is for life. Choose well.",
+      "Your skills grow with every level.",
+      "Level 50? Come and see me about your second job!",
+    ],
   },
   {
     id: "outfitter",

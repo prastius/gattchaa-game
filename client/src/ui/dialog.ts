@@ -46,7 +46,7 @@ import {
   type ItemStack,
   type Slot,
 } from "../../../shared/items";
-import { CLASSES, JOBS, JOB_LEVEL, JOB_WEAPON, aClass, isClassId, statsFor, type ClassId } from "../../../shared/rpg";
+import { CLASSES, JOBS, JOB_LEVEL, JOB_WEAPON, SECOND_JOBS, SECOND_JOB_LEVEL, aClass, isClassId, statsFor, type ClassId } from "../../../shared/rpg";
 import { skillsOf } from "../../../shared/skills";
 import { PVP_DAMAGE, RATING_START, type ArenaBoard } from "../../../shared/duels";
 import { FRAME, composeCharacter, itemIcon } from "../character";
@@ -353,6 +353,8 @@ export class TownDialog {
     const st = this.net.stats;
     const lv = st?.lv ?? 1;
     if (st && st.cls !== "novice" && isClassId(st.cls)) {
+      const next = SECOND_JOBS[st.cls];
+      if (next) return this.secondJob(npc, st.cls, next, lv);
       this.body.append(el("p", "dialog-empty", `You are ${aClass(st.cls)} now. Every level brings a skill point: spend them in your skills (K).`));
       this.button("Open my skills", "K", () => this.openSkills?.(), "primary");
       return;
@@ -417,6 +419,57 @@ export class TownDialog {
       this.net.ferry(npc.id);
       if (gold >= trip.fare) this.close();
     }, "primary");
+  }
+
+  /** A Knight, Mage or Archer: what their second job is like, and (from level 50) the step up. */
+  private secondJob(npc: NpcDef, cls: ClassId, next: ClassId, lv: number) {
+    const c = CLASSES[next];
+    if (this.jobConfirm === next) {
+      this.body.append(el("p", "job-confirm", `Become ${aClass(next)}? You keep everything you've learned, and there's no going back.`));
+      this.button(`Yes, make me ${aClass(next)}`, "Three new skills on keys 4 to 6", () => {
+        this.jobConfirm = undefined;
+        this.net.chooseJob(npc.id, next);
+      }, "primary");
+      this.button("Let me think again", undefined, () => {
+        this.jobConfirm = undefined;
+        this.render(`npc:${npc.id}`, false);
+      });
+      return;
+    }
+    const ready = lv >= SECOND_JOB_LEVEL;
+    this.body.append(
+      el(
+        "p",
+        "dialog-note",
+        ready
+          ? `You've come a long way, ${CLASSES[cls].name}. You're ready for your second job.`
+          : `You're level ${lv}. At level ${SECOND_JOB_LEVEL}, come back and I'll make you ${aClass(next)}. Frostfell, across the sea, is the place to get there.`,
+      ),
+    );
+    const at = Math.max(lv, SECOND_JOB_LEVEL);
+    const now = statsFor(cls, at);
+    const then = statsFor(next, at);
+    const card = el("div", `job-card job-${next}`);
+    card.append(
+      el("div", "job-name", c.name),
+      el("p", "job-blurb", c.blurb),
+      el("div", "job-stats", `At level ${at}: HP ${then.maxHp} (+${then.maxHp - now.maxHp}) · MP ${then.maxMp} (+${then.maxMp - now.maxMp}) · ATK ${then.atk} (+${then.atk - now.atk}) · DEF ${then.def} (+${then.def - now.def})`),
+      el("div", "job-skills", `Keeps your ${CLASSES[cls].name} skills and gear, and adds: ${skillsOf(next).filter((k) => k.cls === next).map((k) => k.name).join(", ")}`),
+    );
+    const b = el("button", "job-choose", ready ? `Become ${aClass(next)}` : `Level ${SECOND_JOB_LEVEL} needed`);
+    b.type = "button";
+    b.disabled = !ready;
+    b.addEventListener("click", () => {
+      audio.blip();
+      this.jobConfirm = next;
+      this.render(`npc:${npc.id}`, false);
+      this.body.scrollTop = 0;
+    });
+    card.append(b);
+    const cards = el("div", "job-cards");
+    cards.append(card);
+    this.body.append(cards);
+    this.button("Open my skills", "K", () => this.openSkills?.());
   }
 
   // ------------------------------------------------------------------ the Arena Master

@@ -2152,6 +2152,18 @@ button.dialog-link:disabled {
   --job: #7ddb6e;
 }
 
+.job-lordKnight {
+  --job: #ffb35c;
+}
+
+.job-wizard {
+  --job: #8fb4ff;
+}
+
+.job-hunter {
+  --job: #c8e86a;
+}
+
 .job-name {
   color: var(--job);
   font-size: 15px;

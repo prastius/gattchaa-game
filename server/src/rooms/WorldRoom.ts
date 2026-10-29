@@ -1018,7 +1018,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       return reply(`Test command: job set to ${CLASSES[arg].name} (jobs need level 10).`);
     }
     reply(
-      `Test commands: /level <1-${LEVEL_CAP}>, /item <id> [count or +upgrade], /gold <amount>, /job <novice|knight|mage|archer>, /title <id>. Item ids: ${Object.keys(ITEMS).join(", ")}. Title ids: ${Object.keys(TITLES).join(", ")}`,
+      `Test commands: /level <1-${LEVEL_CAP}>, /item <id> [count or +upgrade], /gold <amount>, /job <novice|knight|mage|archer|lordKnight|wizard|hunter>, /title <id>. Item ids: ${Object.keys(ITEMS).join(", ")}. Title ids: ${Object.keys(TITLES).join(", ")}`,
     );
   }
 

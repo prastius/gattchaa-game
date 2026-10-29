@@ -7,6 +7,8 @@ import {
   JOBS,
   JOB_LEVEL,
   JOB_WEAPON,
+  SECOND_JOBS,
+  SECOND_JOB_LEVEL,
   LEVEL_CAP,
   aClass,
   MONSTERS,
@@ -49,7 +51,7 @@ import {
   type Slot,
 } from "../../../shared/items";
 import { MAX_PRICE, SHOP_WARES, goldText, isPrice, type ShopWare, type WarePick } from "../../../shared/vending";
-import { GLOBAL_COOLDOWN_MS, SKILLS, SKILL_MAX, cleanSkills, pointsLeft, type SkillDef, type SkillId, type SkillLevels } from "../../../shared/skills";
+import { GLOBAL_COOLDOWN_MS, SKILLS, SKILL_MAX, cleanSkills, hasSkill, pointsLeft, type SkillDef, type SkillId, type SkillLevels } from "../../../shared/skills";
 import { TITLES, type TitleDef, type TitleId, type TitlesMessage } from "../../../shared/titles";
 import {
   DUEL_ASK_COOLDOWN_MS,
@@ -403,6 +405,11 @@ export class Combat {
     f.buffs.clear();
     this.restat(f);
     f.dirty = true;
+    const first = CLASSES[cls].from;
+    if (first) {
+      this.changeJob(id, first);
+      if (f.player.lv < SECOND_JOB_LEVEL) return this.hooks.notice(id, `Test command: you're ${aClass(first)}. ${CLASSES[cls].name} needs level ${SECOND_JOB_LEVEL}.`);
+    }
     if (cls !== "novice") this.changeJob(id, cls);
   }
 
@@ -1259,10 +1266,13 @@ export class Combat {
   /**
    * Novice -> Knight, Mage or Archer, for good (the room checked you're with
    * the Job Master): the class's stats, its weapon, and a first skill point.
+   * From level 50 a first job goes on to its second job the same way.
    */
   changeJob(id: string, cls: ClassId) {
     const f = this.fighters.get(id);
-    if (!f || f.player.dead || !JOBS.includes(cls)) return;
+    if (!f || f.player.dead) return;
+    if (SECOND_JOBS[f.cls] === cls) return this.secondJob(f, cls);
+    if (!JOBS.includes(cls)) return;
     if (f.cls !== "novice") return this.hooks.notice(id, `You're already ${aClass(f.cls)}.`);
     if (f.player.lv < JOB_LEVEL) return this.hooks.notice(id, `Come back at level ${JOB_LEVEL}.`);
 
@@ -1296,11 +1306,28 @@ export class Combat {
     this.save(f);
   }
 
+  /**
+   * Knight -> Lord Knight, Mage -> Wizard, Archer -> Hunter: better stats,
+   * three more skills (keys 4 to 6), and everything learned so far is kept.
+   */
+  private secondJob(f: Fighter, cls: ClassId) {
+    if (f.player.lv < SECOND_JOB_LEVEL) return this.hooks.notice(f.id, `Come back at level ${SECOND_JOB_LEVEL}.`);
+    f.cls = cls;
+    f.player.cls = cls;
+    this.restat(f);
+    f.player.hp = f.stats.maxHp;
+    f.mp = f.stats.maxMp;
+    this.changed(f);
+    this.hooks.emit(f.pos.x, f.pos.y, { k: "job", t: f.id, cls });
+    this.hooks.jobChange(f.id, cls);
+    this.save(f);
+  }
+
   /** Spends a skill point. */
   learnSkill(id: string, skill: SkillId) {
     const f = this.fighters.get(id);
     const s = SKILLS[skill];
-    if (!f || s.cls !== f.cls) return;
+    if (!f || !hasSkill(f.cls, s)) return;
     const lv = f.skills[skill] ?? 0;
     if (lv >= SKILL_MAX) return;
     if (pointsLeft(f.cls, f.player.lv, f.skills) <= 0) return this.hooks.notice(id, "No skill points left. You get one every level.");
@@ -1313,7 +1340,7 @@ export class Combat {
   useSkill(id: string, skill: SkillId, targetId?: string) {
     const f = this.fighters.get(id);
     const s = SKILLS[skill];
-    if (!f || f.player.dead || s.cls !== f.cls) return;
+    if (!f || f.player.dead || !hasSkill(f.cls, s)) return;
     const lv = f.skills[skill] ?? 0;
     if (lv < 1) return this.fail(f, `Learn ${s.name} first (K)`);
     const now = Date.now();
@@ -1355,6 +1382,7 @@ export class Combat {
 
     if (s.kind === "strike" && mob) {
       for (let i = 0; i < (s.hits ?? 1) && this.mobs.has(mob.id); i++) this.skillHit(f, mob, s, lv, now);
+      if (s.freezeMs && this.mobs.has(mob.id)) this.freeze(mob, s.freezeMs(lv), now);
     } else if (s.kind === "strike" && foe) {
       for (let i = 0; i < (s.hits ?? 1); i++) this.foeSkillHit(f, foe, s, lv, Boolean(duel));
     } else if (s.kind === "burst" || s.kind === "rain") {
@@ -1365,12 +1393,7 @@ export class Combat {
       for (const m of [...this.mobs.values()]) {
         if (dist(at, m) > (s.radius ?? 0) + m.def.radius) continue;
         this.skillHit(f, m, s, lv, now);
-        if (s.freezeMs && this.mobs.has(m.id)) {
-          const ms = s.freezeMs(lv);
-          m.frozenUntil = now + ms;
-          this.halt(m);
-          this.hooks.emit(m.x, m.y, { k: "freeze", t: m.id, ms });
-        }
+        if (s.freezeMs && this.mobs.has(m.id)) this.freeze(m, s.freezeMs(lv), now);
       }
     } else {
       if (s.heal) {
@@ -1385,10 +1408,17 @@ export class Combat {
     }
   }
 
+  /** A monster can't move or bite for `ms` (Frost Nova, Storm Gust, Ankle Snare). */
+  private freeze(mob: Mob, ms: number, now: number) {
+    mob.frozenUntil = now + ms;
+    this.halt(mob);
+    this.hooks.emit(mob.x, mob.y, { k: "freeze", t: mob.id, ms });
+  }
+
   /** One hit of a skill: skills never miss, and every monster they touch fights back. */
   private skillHit(f: Fighter, mob: Mob, s: SkillDef, lv: number, now: number) {
     this.provoke(mob, f, now);
-    const { damage, crit } = rollDamage(Math.round(f.stats.atk * (s.power?.(lv) ?? 1)), mob.def.def, f.stats.crit);
+    const { damage, crit } = rollDamage(Math.round(f.stats.atk * (s.power?.(lv) ?? 1)), mob.def.def, s.sureCrit ? 1 : f.stats.crit);
     this.hurt(mob, f, damage, { ...(crit && { crit: 1 as const }), skill: s.id as SkillId });
   }
 
@@ -1396,7 +1426,7 @@ export class Combat {
   private foeSkillHit(f: Fighter, g: Fighter, s: SkillDef, lv: number, duel: boolean) {
     if (duel ? !this.duels.has(f.id) : this.foe(f, g.id) !== g) return;
     this.aggress(f, g, Date.now());
-    const { damage, crit } = rollDamage(Math.round(f.stats.atk * (s.power?.(lv) ?? 1)), g.stats.def, f.stats.crit);
+    const { damage, crit } = rollDamage(Math.round(f.stats.atk * (s.power?.(lv) ?? 1)), g.stats.def, s.sureCrit ? 1 : f.stats.crit);
     this.hurtFoe(f, g, damage, { ...(crit && { crit: 1 as const }), skill: s.id as SkillId });
   }
 

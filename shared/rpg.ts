@@ -8,7 +8,7 @@ import { TILE, TOWN_AREA, INTERIOR_ZONE, inRect, type Rect } from "./town";
 import type { Bonus, ItemId } from "./items";
 
 /** Highest level for now; raised step by step. The EXP curve already continues past it. */
-export const LEVEL_CAP = 50;
+export const LEVEL_CAP = 60;
 
 /**
  * EXP needed to go from `level` to the next one. Gentle through the Novice
@@ -22,11 +22,13 @@ export function expToNext(level: number): number {
 
 // ---------------------------------------------------------------- classes
 
-export type ClassId = "novice" | "knight" | "mage" | "archer";
+export type ClassId = "novice" | "knight" | "mage" | "archer" | "lordKnight" | "wizard" | "hunter";
 
 export interface ClassDef {
   id: ClassId;
   name: string;
+  /** Second jobs: the first job they grow out of (they keep its weapons, gear and skills). */
+  from?: ClassId;
   /** What the Job Master says about it. */
   blurb: string;
   /** [at level 1, gained per level] */
@@ -60,9 +62,25 @@ export const CLASSES: Record<ClassId, ClassDef> = {
     id: "archer", name: "Archer", blurb: "A bow and quick feet. Hits from far away and picks the fight.",
     hp: [44, 11], mp: [18, 4], atk: [7, 2.3], def: [1, 0.45], range: 40, attackMs: 1000, deathExpLoss: 0.03,
   },
+  // Second jobs, from level 50. Each grows a little faster than its first job, so the change itself is a step up.
+  lordKnight: {
+    id: "lordKnight", name: "Lord Knight", from: "knight", blurb: "A Knight who has seen every battlefield. Pierces armour, sweeps crowds aside, and fights harder the longer it lasts.",
+    hp: [80, 17], mp: [20, 3.2], atk: [10, 2.45], def: [3, 0.8], range: 40, attackMs: 1000, deathExpLoss: 0.03,
+  },
+  wizard: {
+    id: "wizard", name: "Wizard", from: "mage", blurb: "A Mage who commands the sky: meteors, blizzards and lightning, raining down on whole crowds.",
+    hp: [40, 9.6], mp: [40, 8.6], atk: [9, 2.7], def: [2, 0.32], range: 40, attackMs: 1200, deathExpLoss: 0.03,
+  },
+  hunter: {
+    id: "hunter", name: "Hunter", from: "archer", blurb: "An Archer with a falcon on the arm and snares in the pack. Pins the prey down, then never misses.",
+    hp: [50, 11.8], mp: [22, 4.4], atk: [9, 2.45], def: [2, 0.48], range: 40, attackMs: 1000, deathExpLoss: 0.03,
+  },
 };
 
 export const isClassId = (id: unknown): id is ClassId => typeof id === "string" && Object.hasOwn(CLASSES, id);
+
+/** The first job a class belongs to: a Lord Knight is still a Knight (itself for first jobs and Novices). */
+export const jobLine = (cls: ClassId): ClassId => CLASSES[cls].from ?? cls;
 
 /** "a Knight", "an Archer". */
 export const aClass = (cls: ClassId) => `${/^[AEIOU]/.test(CLASSES[cls].name) ? "an" : "a"} ${CLASSES[cls].name}`;
@@ -73,6 +91,10 @@ export const JOB_LEVEL = 10;
 export const JOBS: ClassId[] = ["knight", "mage", "archer"];
 /** The weapon each job starts with, a gift from the Job Master. */
 export const JOB_WEAPON: Partial<Record<ClassId, ItemId>> = { knight: "squireSword", mage: "apprenticeStaff", archer: "huntingBow" };
+/** A first job can become its second job from this level, again with the Job Master. */
+export const SECOND_JOB_LEVEL = 50;
+/** Each first job's second job. */
+export const SECOND_JOBS: Partial<Record<ClassId, ClassId>> = { knight: "lordKnight", mage: "wizard", archer: "hunter" };
 
 /** Skill points earned so far: one at the job change and one more every level after. */
 export const skillPoints = (cls: ClassId, level: number) => (cls === "novice" ? 0 : Math.max(0, level - JOB_LEVEL + 1));

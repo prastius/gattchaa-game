@@ -4,7 +4,7 @@
 // draws icons, gear on characters and the shop lists). Item ids are saved in
 // the database, so never rename one; retire it instead.
 
-import type { ClassId, MonsterId } from "./rpg";
+import { jobLine, type ClassId, type MonsterId } from "./rpg";
 
 /** Equipment slots, in the order the bag window shows them. */
 export const SLOTS = ["weapon", "offhand", "head", "body", "legs", "feet", "ring", "amulet"] as const;
@@ -328,17 +328,18 @@ export const OUTFITTER_STOCK: ItemId[] = [
 /** "a Dagger", "an Apprentice Staff". */
 export const withArticle = (name: string) => `${/^[AEIOU]/i.test(name) ? "an" : "a"} ${name}`;
 
-/** Whether a class may wear this. */
+/** Whether a class may wear this (second jobs wear whatever their first job does). */
 export function canWear(cls: ClassId, it: ItemDef): boolean {
-  if (it.classes && !it.classes.includes(cls)) return false;
-  return !it.weapon || WEAPON_USERS[it.weapon].includes(cls);
+  const line = jobLine(cls);
+  if (it.classes && !it.classes.includes(line)) return false;
+  return !it.weapon || WEAPON_USERS[it.weapon].includes(line);
 }
 
 /** Who may wear it, when not everyone may ("Knights only"). */
 export function wearersText(it: ItemDef): string {
   const who = it.classes ?? (it.weapon ? WEAPON_USERS[it.weapon] : undefined);
   if (!who || who.length >= 4) return "";
-  const names: Record<ClassId, string> = { novice: "Novices", knight: "Knights", mage: "Mages", archer: "Archers" };
+  const names: Partial<Record<ClassId, string>> = { novice: "Novices", knight: "Knights", mage: "Mages", archer: "Archers" };
   return `${who.map((c) => names[c]).join(" and ")} only`;
 }
 
