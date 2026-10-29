@@ -126,6 +126,12 @@ export const ITEMS = def({
   oldBone: { name: "Old Bone", kind: "loot", rarity: "common", sell: 85, icon: "gem_01g", desc: "Very old, very large, and still rattling a little." },
   rottenBandage: { name: "Rotten Bandage", kind: "loot", rarity: "common", sell: 95, icon: "scroll_01a", desc: "Don't ask what it was wrapped around." },
   warlordBanner: { name: "Warlord's Banner", kind: "loot", rarity: "rare", sell: 1500, icon: "scroll_01e", desc: "The Orc Warlord's own war banner. Collectors pay a fortune for it." },
+  boarHide: { name: "Boar Hide", kind: "loot", rarity: "common", sell: 110, icon: "scroll_01h", desc: "Thick and bristly. Leatherworkers in town pay well for it." },
+  lizardScale: { name: "Lizard Scale", kind: "loot", rarity: "common", sell: 120, icon: "gem_01c", desc: "A hard blue scale, as big as your hand." },
+  wolfPelt: { name: "Wolf Pelt", kind: "loot", rarity: "common", sell: 130, icon: "scroll_01b", desc: "Thick grey fur. It smells faintly of wet dog." },
+  trollTooth: { name: "Troll Tooth", kind: "loot", rarity: "common", sell: 150, icon: "crystal_01e", desc: "As big as your fist, and never once brushed." },
+  bloodRuby: { name: "Blood Ruby", kind: "loot", rarity: "common", sell: 170, icon: "crystal_01d", desc: "A dark red stone. Vampires say it's still warm." },
+  minotaurCrown: { name: "Minotaur's Crown", kind: "loot", rarity: "rare", sell: 3000, icon: "helmet_02d", desc: "The Minotaur King's golden crown, with holes for the horns. Worth a fortune." },
 
   // ------------------------------------------------------------ smithing (one is used up by every upgrade)
   ironIngot: { name: "Iron Ingot", kind: "material", rarity: "common", price: 100, sell: 30, icon: "ingot_01a", desc: "Plain iron. The Blacksmith uses one for each upgrade up to +5." },
@@ -135,6 +141,7 @@ export const ITEMS = def({
   // ------------------------------------------------------------ potions
   redPotion: { name: "Red Potion", kind: "use", rarity: "common", heal: 40, price: 12, icon: "potion_02a", desc: "Restores 40 HP." },
   orangePotion: { name: "Orange Potion", kind: "use", rarity: "common", heal: 100, price: 40, icon: "potion_02f", desc: "Restores 100 HP." },
+  whitePotion: { name: "White Potion", kind: "use", rarity: "common", heal: 250, price: 120, icon: "potion_02h", desc: "Restores 250 HP." },
 
   // ------------------------------------------------------------ weapons
   dagger: { name: "Dagger", kind: "equip", slot: "weapon", weapon: "dagger", rarity: "common", lv: 1, slots: 1, atk: 3, price: 50, icon: "sword_01b", art: [{ id: "dagger" }], desc: "Short, light and better than your fists." },
@@ -162,6 +169,14 @@ export const ITEMS = def({
   crossbow: { name: "Crossbow", kind: "equip", slot: "weapon", weapon: "bow", twoHanded: true, rarity: "rare", lv: 27, slots: 2, atk: 40, crit: 4, range: 220, sell: 1800, icon: "bow_03a", art: [{ id: "crossbow" }], desc: "Its bolts punch through orc armour. Archers only." },
   ringStaff: { name: "Ring Staff", kind: "equip", slot: "weapon", weapon: "staff", rarity: "uncommon", lv: 22, slots: 2, atk: 30, mp: 65, range: 190, sell: 900, icon: "staff_01c", art: [{ id: "loop" }], desc: "A bronze hoop on a staff. Magic swirls round and round inside it." },
   diamondStaff: { name: "Diamond Staff", kind: "equip", slot: "weapon", weapon: "staff", rarity: "rare", lv: 27, slots: 2, atk: 40, mp: 90, range: 200, sell: 1800, icon: "staff_03e", art: [{ id: "diamond" }], desc: "A silver staff crowned with a clear stone that drinks in the light." },
+  // The Wildlands.
+  longSpear: { name: "Long Spear", kind: "equip", slot: "weapon", weapon: "spear", twoHanded: true, rarity: "uncommon", lv: 32, slots: 2, atk: 62, sell: 2200, art: [{ id: "longspear" }], desc: "Twice as tall as you, with a steel point. Needs both hands. Knights only." },
+  trident: { name: "Trident", kind: "equip", slot: "weapon", weapon: "spear", twoHanded: true, rarity: "rare", lv: 37, slots: 2, atk: 74, crit: 4, sell: 4200, art: [{ id: "trident" }], desc: "Three steel prongs. Lizardmen guard them like treasure. Needs both hands. Knights only." },
+  flameBlade: { name: "Flame Blade", kind: "equip", slot: "weapon", weapon: "sword", rarity: "rare", lv: 36, slots: 2, atk: 54, crit: 6, sell: 4000, icon: "sword_03e", art: [{ id: "glowswordRed" }], desc: "A blade of living fire. It never cools, even in the rain." },
+  longbow: { name: "Longbow", kind: "equip", slot: "weapon", weapon: "bow", twoHanded: true, rarity: "uncommon", lv: 32, slots: 2, atk: 46, range: 230, sell: 2200, icon: "bow_01e", art: [{ id: "greatBowDark" }], desc: "Dark yew, taller than a werewolf. Its arrows fly far and hit hard." },
+  sunfireBow: { name: "Sunfire Bow", kind: "equip", slot: "weapon", weapon: "bow", twoHanded: true, rarity: "legendary", lv: 38, slots: 2, atk: 64, crit: 8, range: 240, sell: 15_000, icon: "bow_02b", art: [{ id: "greatBowGold" }], desc: "Gold from tip to tip; its arrows burn like sunlight. Only the Minotaur King has ever dropped one." },
+  serpentStaff: { name: "Serpent Staff", kind: "equip", slot: "weapon", weapon: "staff", rarity: "uncommon", lv: 32, slots: 2, atk: 46, mp: 120, range: 210, sell: 2200, icon: "staff_02c", art: [{ id: "serpent" }], desc: "Bent like a snake about to strike." },
+  archmageStaff: { name: "Archmage Staff", kind: "equip", slot: "weapon", weapon: "staff", rarity: "legendary", lv: 38, slots: 2, atk: 64, mp: 200, range: 230, sell: 15_000, icon: "staff_03b", art: [{ id: "diamondGold" }], desc: "Gold, crowned with a stone full of light. A great mage carried it once; now the Minotaur King keeps it." },
 
   // ------------------------------------------------------------ shields
   woodShield: { name: "Wooden Shield", kind: "equip", slot: "offhand", rarity: "common", lv: 1, slots: 1, def: 2, price: 60, icon: "shield_01a", art: [{ id: "shield" }], desc: "Solid maple. Stops a slime, mostly." },
@@ -170,6 +185,8 @@ export const ITEMS = def({
   guardShield: { name: "Guard Shield", kind: "equip", slot: "offhand", rarity: "uncommon", lv: 5, slots: 1, def: 3, hp: 15, sell: 120, icon: "shield_02a", art: [{ id: "shield", colors: { wood: "walnut" } }], desc: "Dark walnut, made for the town guard." },
   roundShield: { name: "Round Shield", kind: "equip", slot: "offhand", rarity: "uncommon", lv: 22, slots: 1, def: 8, hp: 50, sell: 450, icon: "shield_01c", art: [{ id: "roundShield" }], desc: "Black iron, round and dented. Orc warriors carry them into battle." },
   spartanShield: { name: "Spartan Shield", kind: "equip", slot: "offhand", rarity: "rare", lv: 27, slots: 1, def: 10, hp: 90, sell: 1200, icon: "shield_03e", art: [{ id: "spartan" }], desc: "A great bronze disc that covers you from chin to knee." },
+  towerShield: { name: "Tower Shield", kind: "equip", slot: "offhand", rarity: "uncommon", lv: 33, slots: 1, def: 12, hp: 120, sell: 2000, art: [{ id: "scutum" }], desc: "Tall and curved, like a wall you can carry." },
+  engrailedShield: { name: "Engrailed Shield", kind: "equip", slot: "offhand", rarity: "rare", lv: 38, slots: 1, def: 14, hp: 170, sell: 4000, art: [{ id: "engrailed" }], desc: "Gold and red, with a scalloped edge. Vampires keep them as trophies." },
 
   // ------------------------------------------------------------ head
   leatherCap: { name: "Leather Cap", kind: "equip", slot: "head", rarity: "common", lv: 1, def: 1, price: 40, art: [{ id: "capLeather" }], desc: "Keeps the sun and the bees off." },
@@ -182,6 +199,9 @@ export const ITEMS = def({
   greathelm: { name: "Greathelm", kind: "equip", slot: "head", rarity: "rare", lv: 18, slots: 1, def: 5, hp: 60, sell: 650, art: [{ id: "greathelm" }], desc: "A steel bucket with eye slits. Heavy, and very safe." },
   barbarianHelm: { name: "Barbarian Helm", kind: "equip", slot: "head", rarity: "uncommon", lv: 22, slots: 1, def: 6, hp: 60, sell: 450, art: [{ id: "barbarian", colors: { metal: "iron" } }], desc: "Thick iron with cheek guards. Smells faintly of orc." },
   vikingHelm: { name: "Viking Helm", kind: "equip", slot: "head", rarity: "rare", lv: 27, slots: 1, atk: 2, def: 8, hp: 100, sell: 1200, art: [{ id: "viking" }], desc: "A steel cap with two great horns. You feel braver just wearing it." },
+  armet: { name: "Armet", kind: "equip", slot: "head", rarity: "uncommon", lv: 32, slots: 1, def: 9, hp: 120, sell: 1800, art: [{ id: "armet", colors: { metal: "steel" } }], desc: "A rounded steel helm that closes snugly round the face." },
+  celestialHat: { name: "Celestial Hat", kind: "equip", slot: "head", rarity: "uncommon", lv: 33, slots: 1, atk: 3, def: 3, mp: 130, sell: 1800, art: [{ id: "celestial" }], desc: "Deep blue, stitched with silver stars and a crescent moon." },
+  closeHelm: { name: "Close Helm", kind: "equip", slot: "head", rarity: "rare", lv: 37, slots: 1, def: 11, hp: 160, sell: 3800, art: [{ id: "closeHelm", colors: { metal: "gold" } }], desc: "Gilded steel, closed all round. Trolls wear them as hats." },
   meadowCrown: { name: "Meadow Crown", kind: "equip", slot: "head", rarity: "legendary", lv: 10, slots: 1, atk: 4, def: 4, hp: 60, sell: 5000, art: [{ id: "crown" }], desc: "Said to belong to the first king of the meadow. Snapper Flowers hide it very, very rarely." },
 
   // ------------------------------------------------------------ body
@@ -192,17 +212,22 @@ export const ITEMS = def({
   scoutArmor: { name: "Scout Armour", kind: "equip", slot: "body", rarity: "uncommon", lv: 22, slots: 1, atk: 3, def: 5, hp: 40, sell: 450, art: [{ id: "leatherArmor" }, { id: "capeTattered", colors: { cloth: "forest" } }], desc: "Light leather and a ragged green cape, for moving quietly through the woods." },
   starryCloak: { name: "Starry Cloak", kind: "equip", slot: "body", rarity: "rare", lv: 25, slots: 1, atk: 4, def: 3, mp: 90, sell: 900, art: [{ id: "tabardLavender" }, { id: "cape", colors: { cloth: "navy" } }], desc: "A deep blue cloak that sparkles like the night sky." },
   darkPlate: { name: "Dark Plate", kind: "equip", slot: "body", rarity: "rare", lv: 26, slots: 1, def: 10, hp: 90, sell: 1500, art: [{ id: "plate", colors: { metal: "iron" } }, { id: "plateArms", colors: { metal: "iron" } }], desc: "Blackened steel plate, cold to the touch. Old orc dead still wear it." },
+  wolfskinVest: { name: "Wolfskin Vest", kind: "equip", slot: "body", rarity: "uncommon", lv: 33, slots: 1, atk: 6, def: 8, hp: 80, sell: 1800, art: [{ id: "leatherArmor" }, { id: "capeTattered", colors: { cloth: "gray" } }], desc: "Leather under a grey wolf pelt. Warm, light and quiet." },
+  mysticRobe: { name: "Mystic Robe", kind: "equip", slot: "body", rarity: "uncommon", lv: 34, slots: 1, atk: 6, def: 4, mp: 150, sell: 1800, art: [{ id: "tabardPurple" }, { id: "cape", colors: { cloth: "black" } }], desc: "Purple silk and a black cloak. Spells come easier wearing it." },
+  goldPlate: { name: "Golden Plate", kind: "equip", slot: "body", rarity: "rare", lv: 38, slots: 1, def: 15, hp: 170, sell: 4500, art: [{ id: "plate", colors: { metal: "gold" } }, { id: "plateArms", colors: { metal: "gold" } }], desc: "Full plate, gilded from collar to knee. The Minotaur King wears the same." },
   plateArmor: { name: "Plate Armour", kind: "equip", slot: "body", rarity: "rare", lv: 10, slots: 1, def: 6, hp: 40, sell: 600, art: [{ id: "plate" }, { id: "plateArms" }], desc: "Full steel plate. You clank, but you live." },
 
   // ------------------------------------------------------------ legs
   leatherPants: { name: "Leather Pants", kind: "equip", slot: "legs", rarity: "common", lv: 1, def: 1, price: 40, art: [{ id: "pants", colors: { cloth: "leather" } }], desc: "Tough trousers for rough grass." },
   ironGreaves: { name: "Iron Greaves", kind: "equip", slot: "legs", rarity: "uncommon", lv: 6, slots: 1, def: 2, hp: 10, sell: 140, art: [{ id: "greaves", colors: { metal: "iron" } }], desc: "Iron plates strapped over the legs." },
   steelGreaves: { name: "Steel Greaves", kind: "equip", slot: "legs", rarity: "uncommon", lv: 22, slots: 1, def: 4, hp: 30, sell: 400, art: [{ id: "greaves", colors: { metal: "silver" } }], desc: "Polished steel from knee to ankle." },
+  goldGreaves: { name: "Golden Greaves", kind: "equip", slot: "legs", rarity: "uncommon", lv: 35, slots: 1, def: 6, hp: 50, sell: 1600, art: [{ id: "greaves", colors: { metal: "gold" } }], desc: "Gilded steel plates from knee to ankle." },
 
   // ------------------------------------------------------------ feet
   leatherBoots: { name: "Leather Boots", kind: "equip", slot: "feet", rarity: "common", lv: 1, slots: 1, def: 1, price: 40, art: [{ id: "boots", colors: { cloth: "leather" } }], desc: "Snake-proof, mostly." },
   ironBoots: { name: "Iron Boots", kind: "equip", slot: "feet", rarity: "uncommon", lv: 6, slots: 1, def: 2, hp: 10, sell: 130, art: [{ id: "ironBoots", colors: { metal: "iron" } }], desc: "Heavy, loud and very hard to bite through." },
   steelSabatons: { name: "Steel Sabatons", kind: "equip", slot: "feet", rarity: "uncommon", lv: 22, slots: 1, def: 4, hp: 25, sell: 400, art: [{ id: "ironBoots", colors: { metal: "silver" } }], desc: "Steel boots with pointed toes. Orc archers prize them." },
+  goldSabatons: { name: "Golden Sabatons", kind: "equip", slot: "feet", rarity: "uncommon", lv: 35, slots: 1, def: 6, hp: 45, sell: 1600, art: [{ id: "ironBoots", colors: { metal: "gold" } }], desc: "Gilded steel boots. They ring on the rocks." },
 
   // ------------------------------------------------------------ rings and amulets
   copperRing: { name: "Copper Ring", kind: "equip", slot: "ring", rarity: "common", lv: 1, atk: 1, price: 120, icon: "ring_01a", desc: "A simple band that makes you feel a little braver." },
@@ -212,6 +237,9 @@ export const ITEMS = def({
   guardianRing: { name: "Guardian Ring", kind: "equip", slot: "ring", rarity: "rare", lv: 28, slots: 1, def: 4, hp: 60, sell: 1500, icon: "ring_02b", desc: "A blue stone set in silver. It hums when danger is near." },
   tuskNecklace: { name: "Tusk Necklace", kind: "equip", slot: "amulet", rarity: "uncommon", lv: 22, slots: 1, atk: 4, crit: 4, sell: 600, icon: "necklace_02c", desc: "Orc tusks on a leather cord. Wear it and orcs think twice." },
   warlordMedal: { name: "Warlord's Medal", kind: "equip", slot: "amulet", rarity: "epic", lv: 30, slots: 1, atk: 8, hp: 120, sell: 5000, icon: "necklace_03b", desc: "A heavy gold medal from the Orc Warlord's own chest." },
+  wolfFang: { name: "Wolf Fang Necklace", kind: "equip", slot: "amulet", rarity: "uncommon", lv: 34, slots: 1, atk: 6, crit: 5, sell: 1800, icon: "necklace_03e", desc: "A werewolf's fang on a red cord. You hear howling when you wear it." },
+  wildRing: { name: "Ring of the Wild", kind: "equip", slot: "ring", rarity: "rare", lv: 36, slots: 1, atk: 7, hp: 60, sell: 3000, icon: "ring_03a", desc: "Carved from a troll's knuckle bone, with a green stone." },
+  minotaurHorn: { name: "Minotaur Horn", kind: "equip", slot: "amulet", rarity: "epic", lv: 40, slots: 1, atk: 12, hp: 180, sell: 9000, icon: "necklace_01d", desc: "A tip of the Minotaur King's horn, on a gold chain." },
   stingerPendant: { name: "Stinger Pendant", kind: "equip", slot: "amulet", rarity: "uncommon", lv: 7, slots: 1, atk: 3, sell: 220, icon: "necklace_03d", desc: "A hornet's stinger set in gold. Sharp in more ways than one." },
 
   // ------------------------------------------------------------ monster cards
@@ -232,6 +260,12 @@ export const ITEMS = def({
   orcSkeletonCard: { name: "Orc Skeleton Card", kind: "card", rarity: "epic", monster: "orcSkeleton", fits: ["offhand"], prefix: "Bony", def: 4, sell: 0, desc: "Nothing but bone, and very hard to break." },
   orcZombieCard: { name: "Orc Zombie Card", kind: "card", rarity: "epic", monster: "orcZombie", fits: ["legs"], prefix: "Undying", hp: 100, sell: 0, desc: "It just keeps walking." },
   orcWarlordCard: { name: "Orc Warlord Card", kind: "card", rarity: "legendary", monster: "orcWarlord", fits: ["head"], prefix: "Heroic", atk: 5, def: 3, hp: 100, sell: 0, desc: "The Orc Warlord himself, roaring on a gold card." },
+  boarmanCard: { name: "Boarman Card", kind: "card", rarity: "epic", monster: "boarman", fits: ["amulet"], prefix: "Charging", atk: 5, sell: 0, desc: "Head down, tusks first." },
+  lizardmanCard: { name: "Lizardman Card", kind: "card", rarity: "epic", monster: "lizardman", fits: ["offhand"], prefix: "Scaled", def: 3, hp: 80, sell: 0, desc: "Scales as hard as steel." },
+  werewolfCard: { name: "Werewolf Card", kind: "card", rarity: "epic", monster: "werewolf", fits: ["weapon"], prefix: "Feral", atk: 4, crit: 5, sell: 0, desc: "It howls when the moon comes out." },
+  trollCard: { name: "Troll Card", kind: "card", rarity: "epic", monster: "troll", fits: ["body"], prefix: "Trollish", hp: 150, sell: 0, desc: "Big, green and very hard to knock down." },
+  vampireCard: { name: "Vampire Card", kind: "card", rarity: "epic", monster: "vampire", fits: ["ring"], prefix: "Bloodthirsty", drain: 4, sell: 0, desc: "A pale face with a thin smile." },
+  minotaurKingCard: { name: "Minotaur King Card", kind: "card", rarity: "legendary", monster: "minotaurKing", fits: ["body"], prefix: "Mighty", atk: 6, def: 4, hp: 200, sell: 0, desc: "The Minotaur King, horns lowered, on a gold card." },
   snapperCard: { name: "Snapper Flower Card", kind: "card", rarity: "epic", monster: "snapper", fits: ["offhand"], prefix: "Thorny", def: 1, reflect: 15, sell: 0, desc: "Bite it and it bites back." },
 });
 
@@ -243,6 +277,7 @@ export const item = (id: ItemId): ItemDef => ITEMS[id];
 export const OUTFITTER_STOCK: ItemId[] = [
   "redPotion",
   "orangePotion",
+  "whitePotion",
   "dagger",
   "shortSword",
   "squireSword",

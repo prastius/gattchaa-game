@@ -64,6 +64,7 @@ import {
   type DuelAskEvent,
   type DuelStartEvent,
 } from "../../../shared/duels";
+import { OUTLAW_MS, PVP_COMBAT_MS, PVP_RECOUNT_MS, bountyOf, pvpBlock, type PvpSide } from "../../../shared/pvp";
 import type { Progress } from "../db";
 import { Monster, type Player } from "./WorldState";
 import { Inventory, type GearAt } from "./Inventory";
@@ -182,6 +183,10 @@ interface Fighter {
   /** Deeds and titles. */
   book: TitleBook;
   titlesDirty: boolean;
+  /** An Outlaw until then (0: not one). */
+  outlawUntil: number;
+  /** The last player to attack them in the Wildlands, and when. */
+  pvpBy?: { id: string; at: number };
 }
 
 interface Mob {
@@ -236,6 +241,10 @@ export class Combat {
   /** Open challenges by challenger: whom, and until when. */
   private asks = new Map<string, { to: string; until: number }>();
   private askedAt = new Map<string, number>();
+  /** Outlaws who left the game, by name, and until when: coming back doesn't clear their name. */
+  private outlaws = new Map<string, number>();
+  /** "winner>loser" names, and when that last counted towards titles. */
+  private beatenAt = new Map<string, number>();
   private nextId = 0;
   private saveAt = Date.now() + SAVE_MS;
 
@@ -292,7 +301,12 @@ export class Combat {
       bagDirty: true,
       book,
       titlesDirty: true,
+      outlawUntil: 0,
     };
+    const outlaw = this.outlaws.get(player.name) ?? 0;
+    this.outlaws.delete(player.name);
+    if (outlaw > Date.now()) f.outlawUntil = outlaw;
+    player.outlaw = f.outlawUntil > 0;
     player.lv = lv;
     player.cls = cls;
     player.mhp = s.maxHp;
@@ -311,6 +325,11 @@ export class Combat {
     if (!f) return;
     const duel = this.duels.get(id);
     if (duel) this.endDuel(duel, duel.a === id ? duel.b : duel.a, `${f.player.name} left`);
+    const now = Date.now();
+    // Leaving mid-fight in the Wildlands counts as being beaten by whoever attacked you last.
+    const by = f.pvpBy && now - f.pvpBy.at < PVP_COMBAT_MS && !f.player.dead ? this.fighters.get(f.pvpBy.id) : undefined;
+    if (by && by !== f && !by.player.dead) this.beaten(f, by);
+    if (f.outlawUntil > now) this.outlaws.set(f.player.name, f.outlawUntil);
     this.asks.delete(id);
     this.askedAt.delete(id);
     for (const [from, ask] of this.asks) if (ask.to === id) this.asks.delete(from);
@@ -333,12 +352,16 @@ export class Combat {
     for (const f of this.fighters.values()) this.save(f);
   }
 
-  /** Attack this monster whenever it's in reach ("" stops). */
+  /** Attack this monster (or player) whenever it's in reach ("" stops). */
   setTarget(id: string, mobId: string) {
     const f = this.fighters.get(id);
     if (!f || f.player.dead) return;
     if (!mobId) f.target = undefined;
-    else if (this.mobs.has(mobId) || this.opponentId(f) === mobId) f.target = mobId;
+    else if (this.mobs.has(mobId) || this.opponentId(f) === mobId || this.foe(f, mobId)) f.target = mobId;
+    else {
+      const g = this.fighters.get(mobId);
+      if (g && g !== f) this.fail(f, pvpBlock(this.side(f), this.side(g)));
+    }
   }
 
   /** Back on your feet in town: full health. Returns false if they weren't knocked out. */
@@ -407,12 +430,20 @@ export class Combat {
       this.fight(f, now);
       this.regen(f, now);
       this.expireBuffs(f, now);
+      if (f.player.outlaw && now >= f.outlawUntil) {
+        f.player.outlaw = false;
+        f.outlawUntil = 0;
+        f.sheetDirty = true;
+        this.hooks.notice(f.id, "You're no longer an Outlaw.");
+      }
     }
     this.tickDuels(now);
 
     if (now >= this.saveAt) {
       this.saveAt = now + SAVE_MS;
       for (const f of this.fighters.values()) if (f.dirty) this.save(f);
+      for (const [key, at] of this.beatenAt) if (now - at >= PVP_RECOUNT_MS) this.beatenAt.delete(key);
+      for (const [name, until] of this.outlaws) if (now >= until) this.outlaws.delete(name);
     }
     for (const f of this.fighters.values()) {
       if (f.sheetDirty) {
@@ -445,7 +476,7 @@ export class Combat {
 
   private fight(f: Fighter, now: number) {
     if (!f.target || f.player.dead) return;
-    if (!f.target.startsWith(MONSTER_ID_PREFIX)) return this.duelFight(f, now);
+    if (!f.target.startsWith(MONSTER_ID_PREFIX)) return this.playerFight(f, now);
     const mob = this.mobs.get(f.target);
     if (!mob) {
       f.target = undefined;
@@ -600,7 +631,8 @@ export class Combat {
     } else f.mpAcc = 0;
   }
 
-  private knockOut(f: Fighter) {
+  /** Down to 0 HP: knocked out until they go back to town (`loseExp` false: beaten by a player while not an Outlaw). */
+  private knockOut(f: Fighter, loseExp = true) {
     // A monster got a duelist: the other one wins.
     const duel = this.duels.get(f.id);
     if (duel) this.endDuel(duel, duel.a === f.id ? duel.b : duel.a, `${f.player.name} fainted`);
@@ -610,7 +642,8 @@ export class Combat {
     p.moving = false;
     p.sit = false;
     f.target = undefined;
-    f.exp = Math.max(0, f.exp - Math.floor(expToNext(p.lv) * CLASSES[f.cls].deathExpLoss));
+    f.pvpBy = undefined;
+    if (loseExp) f.exp = Math.max(0, f.exp - Math.floor(expToNext(p.lv) * CLASSES[f.cls].deathExpLoss));
     f.dirty = f.sheetDirty = true;
     for (const mob of this.mobs.values()) if (mob.target === f.id) this.giveUp(mob);
     this.hooks.emit(f.pos.x, f.pos.y, { k: "down", t: f.id });
@@ -634,6 +667,7 @@ export class Combat {
       points: pointsLeft(f.cls, f.player.lv, f.skills),
       buffs: [...f.buffs].map(([id, b]) => ({ id, ms: Math.max(0, b.until - now) })),
       saved: f.saved,
+      ...(f.player.outlaw && { outlaw: Math.max(0, f.outlawUntil - now) }),
     };
   }
 
@@ -878,11 +912,18 @@ export class Combat {
     return d && (d.a === f.id ? d.b : d.a);
   }
 
-  /** Your duel opponent, if that's who `id` is and the countdown is over. */
+  /** The player `id`, if `f` may hit them now: their duel opponent once the countdown is over, or anyone fair game in the Wildlands. */
   private foe(f: Fighter, id: string | undefined): Fighter | undefined {
+    if (!id || id.startsWith(MONSTER_ID_PREFIX)) return undefined;
     const d = this.duels.get(f.id);
-    if (!d || !id || id !== this.opponentId(f) || Date.now() < d.startsAt) return undefined;
-    return this.fighters.get(id);
+    if (d) return id === this.opponentId(f) && Date.now() >= d.startsAt ? this.fighters.get(id) : undefined;
+    const g = this.fighters.get(id);
+    return g && g !== f && !pvpBlock(this.side(f), this.side(g)) ? g : undefined;
+  }
+
+  /** What the PVP rules need to know about someone. */
+  private side(f: Fighter): PvpSide {
+    return { x: f.pos.x, y: f.pos.y, lv: f.player.lv, dead: f.player.dead, duel: f.player.duel };
   }
 
   /** Ranked: both in the Arena's ring, and both signed in (the ranking is kept per account). */
@@ -944,11 +985,11 @@ export class Combat {
     if (d && f) this.endDuel(d, d.a === id ? d.b : d.a, `${f.player.name} gave up`);
   }
 
-  /** Auto-attacks on your duel opponent (the countdown has to be over). */
-  private duelFight(f: Fighter, now: number) {
+  /** Auto-attacks on a player: your duel opponent (once the countdown is over), or anyone fair game in the Wildlands. */
+  private playerFight(f: Fighter, now: number) {
     const g = this.foe(f, f.target);
     if (!g) {
-      // Still counting down: wait. The duel is over: stop.
+      // A duel still counting down: wait. The duel is over, or they're out of bounds: stop.
       if (!this.duels.has(f.id)) f.target = undefined;
       return;
     }
@@ -958,6 +999,7 @@ export class Combat {
     f.nextAttackAt = now + s.attackMs;
     f.player.sit = false;
     f.player.dir = dirTo(g.pos.x - f.pos.x, g.pos.y - f.pos.y);
+    this.aggress(f, g, now);
     // Grass Snake and Ghost Cards help against players too.
     if (Math.random() >= hitChance(f.player.lv, g.player.lv) * (1 - g.stats.flee)) {
       f.lastCombatAt = g.lastCombatAt = now;
@@ -968,7 +1010,7 @@ export class Combat {
     this.hurtFoe(f, g, damage, crit ? { crit: 1 } : {});
   }
 
-  /** One duelist hits the other, for PVP_DAMAGE of the damage. Whoever drops to 0 HP loses. */
+  /** One player hits another, for PVP_DAMAGE of the damage. Whoever drops to 0 HP loses the duel, or is beaten. */
   private hurtFoe(f: Fighter, g: Fighter, raw: number, flags: { crit?: 1; skill?: SkillId }) {
     const damage = Math.max(1, Math.round(raw * PVP_DAMAGE));
     const dealt = Math.min(damage, g.player.hp);
@@ -977,8 +1019,60 @@ export class Combat {
     f.lastCombatAt = g.lastCombatAt = Date.now();
     this.hooks.emit(g.pos.x, g.pos.y, { k: "hit", a: f.id, t: g.id, d: damage, ...flags });
     this.drain(f, dealt);
+    if (g.player.hp > 0) return;
     const d = this.duels.get(f.id);
-    if (d && g.player.hp <= 0) this.endDuel(d, f.id, `${g.player.name} was beaten`);
+    if (d) this.endDuel(d, f.id, `${g.player.name} was beaten`);
+    else this.beaten(g, f);
+  }
+
+  // ---------------------------------------------------------------- open PVP (the Wildlands)
+
+  /** `f` attacks `g` in the Wildlands: unless `g` is an Outlaw, that makes `f` one (or keeps them one a while longer). */
+  private aggress(f: Fighter, g: Fighter, now: number) {
+    if (this.duels.has(f.id)) return;
+    const fresh = g.pvpBy?.id !== f.id || now - g.pvpBy.at > PVP_COMBAT_MS;
+    g.pvpBy = { id: f.id, at: now };
+    if (!g.player.outlaw) {
+      if (!f.player.outlaw) {
+        this.hooks.notice(
+          f.id,
+          `You attacked ${g.player.name}, who isn't an Outlaw: now you are one, for ${OUTLAW_MS / 60_000} minutes. If someone beats you meanwhile, you lose EXP and a bounty from your gold.`,
+        );
+      }
+      f.outlawUntil = now + OUTLAW_MS;
+      f.player.outlaw = true;
+      f.sheetDirty = true;
+    }
+    if (fresh) this.hooks.notice(g.id, `${f.player.name} is attacking you!${g.player.outlaw ? "" : " Fighting back won't make you an Outlaw."}`);
+  }
+
+  /** `f` beat `g` in the Wildlands. An Outlaw pays: EXP like any knock-out, and a bounty from their gold to `f`. */
+  private beaten(g: Fighter, f: Fighter) {
+    const now = Date.now();
+    const outlaw = g.player.outlaw;
+    const bounty = outlaw ? bountyOf(g.gold) : 0;
+    // Paid for: their name is clean again.
+    g.outlawUntil = 0;
+    g.player.outlaw = false;
+    if (bounty) {
+      g.gold -= bounty;
+      f.gold += bounty;
+      g.sheetDirty = f.dirty = f.sheetDirty = true;
+      this.hooks.tell(f.id, { k: "gain", exp: 0, gold: bounty });
+    }
+    this.knockOut(g, outlaw);
+    // Beating the same player over and over only counts once in a while.
+    const key = `${f.player.name}>${g.player.name}`;
+    if (now - (this.beatenAt.get(key) ?? -Infinity) >= PVP_RECOUNT_MS) {
+      this.beatenAt.set(key, now);
+      f.book.deeds.pvpWins++;
+      if (outlaw) f.book.deeds.bounties++;
+      this.deed(f);
+    }
+    const gold = bounty ? ` and a bounty of ${goldText(bounty)} gold` : "";
+    this.hooks.notice(f.id, outlaw ? `You beat the Outlaw ${g.player.name}${bounty ? ` and claimed a bounty of ${goldText(bounty)} gold` : ""}!` : `You beat ${g.player.name}!`);
+    this.hooks.notice(g.id, outlaw ? `${f.player.name} beat you. As an Outlaw, you lost EXP${gold}.` : `${f.player.name} beat you. You lost nothing, as you weren't an Outlaw.`);
+    this.save(f);
   }
 
   /** Over: both healed (unless a monster knocked one out), deeds counted, and the room settles the rest. */
@@ -1242,12 +1336,12 @@ export class Combat {
     if (s.kind === "strike" && mob) {
       for (let i = 0; i < (s.hits ?? 1) && this.mobs.has(mob.id); i++) this.skillHit(f, mob, s, lv, now);
     } else if (s.kind === "strike" && foe) {
-      for (let i = 0; i < (s.hits ?? 1); i++) this.foeSkillHit(f, foe, s, lv);
+      for (let i = 0; i < (s.hits ?? 1); i++) this.foeSkillHit(f, foe, s, lv, Boolean(duel));
     } else if (s.kind === "burst" || s.kind === "rain") {
       const at = aimed ?? f.pos;
-      // A duel opponent in the blast is hit too (but never frozen).
-      const opp = this.foe(f, this.opponentId(f));
-      if (opp && dist(at, opp.pos) <= (s.radius ?? 0) + PLAYER_RADIUS) this.foeSkillHit(f, opp, s, lv);
+      // Your duel opponent, or the player you're fighting, is hit too if in the blast (but never frozen). Nobody else is.
+      const opp = this.foe(f, this.opponentId(f) ?? f.target);
+      if (opp && dist(at, opp.pos) <= (s.radius ?? 0) + PLAYER_RADIUS) this.foeSkillHit(f, opp, s, lv, Boolean(duel));
       for (const m of [...this.mobs.values()]) {
         if (dist(at, m) > (s.radius ?? 0) + m.def.radius) continue;
         this.skillHit(f, m, s, lv, now);
@@ -1278,9 +1372,10 @@ export class Combat {
     this.hurt(mob, f, damage, { ...(crit && { crit: 1 as const }), skill: s.id as SkillId });
   }
 
-  /** One hit of a skill on your duel opponent (unless an earlier hit already won it). */
-  private foeSkillHit(f: Fighter, g: Fighter, s: SkillDef, lv: number) {
-    if (!this.duels.has(f.id)) return;
+  /** One hit of a skill on a player (unless an earlier hit already won the duel, or beat them). */
+  private foeSkillHit(f: Fighter, g: Fighter, s: SkillDef, lv: number, duel: boolean) {
+    if (duel ? !this.duels.has(f.id) : this.foe(f, g.id) !== g) return;
+    this.aggress(f, g, Date.now());
     const { damage, crit } = rollDamage(Math.round(f.stats.atk * (s.power?.(lv) ?? 1)), g.stats.def, f.stats.crit);
     this.hurtFoe(f, g, damage, { ...(crit && { crit: 1 as const }), skill: s.id as SkillId });
   }

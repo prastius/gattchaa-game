@@ -42,6 +42,7 @@ import type { SkillsUI } from "../ui/skills";
 import type { TitlesUI } from "../ui/titles";
 import type { DuelUI } from "../ui/duel";
 import { PLAYER_RADIUS } from "../../../shared/duels";
+import { OUTLAW_MS, PVP_MIN_LEVEL, inPvpZone, pvpBlock, type PvpSide } from "../../../shared/pvp";
 import { TITLES, isTitleId, type TitleDef } from "../../../shared/titles";
 import type { Net } from "../net";
 import type { Shop } from "../shop";
@@ -73,6 +74,9 @@ interface Chunk {
 
 /** Synced fields shared by players and NPCs (live schema instances, mutated in place by the SDK). */
 type Synced = PlayerView & { ts: number };
+
+/** What the PVP rules need to know about a player. */
+const sideOf = (s: Synced): PvpSide => ({ x: s.x, y: s.y, lv: s.lv ?? 1, dead: s.dead, duel: s.duel });
 
 interface Entity {
   sprite: PlayerSprite;
@@ -231,6 +235,8 @@ export class WorldScene extends Phaser.Scene {
   private hovered?: string;
   private wasDead = false;
   private noTargetHintAt = 0;
+  /** Hides the Wildlands banner. */
+  private zoneTimer?: number;
   private sitTipShown = false;
   private clock = new ServerClock();
   private self?: PlayerSprite;
@@ -306,6 +312,7 @@ export class WorldScene extends Phaser.Scene {
     this.scale.on(Phaser.Scale.Events.RESIZE, () => this.applyZoom());
 
     this.town = new Town(this, this.textRes);
+    this.town.wildBorder((tx, ty) => !this.world.corners(tx, ty).some(isWet));
     this.daylight = new Daylight(this, this.town.lights, this.town.nightWindows);
     this.shop.onChange((data) => this.town.update(data, this.shop.openRooms));
 
@@ -350,6 +357,7 @@ export class WorldScene extends Phaser.Scene {
     this.hud.onSkills(() => this.toggleSkills());
     this.hud.onTitles(() => this.toggleTitles());
     this.titles.onUnseen = (n) => this.hud.setNewTitles(n);
+    this.hud.onPvp = (on) => this.zoneBanner(on);
     // A duel begins: aim at the opponent (the fighting itself waits for the countdown).
     this.net.onDuelStart.add((ev) => this.setTarget(ev.opp));
     this.net.onDuelEnd.add(() => {
@@ -604,6 +612,7 @@ export class WorldScene extends Phaser.Scene {
       if (me) {
         this.self.setLook(appearanceKey(me.state.look, me.state.gear)); // wardrobe and gear changes come back via state
         this.self.setAura(me.state.aura ?? 0);
+        this.self.setOutlaw(Boolean(me.state.outlaw));
         this.showTitle(this.self, me.state.title);
         this.updateHealth(me.state);
       }
@@ -637,9 +646,10 @@ export class WorldScene extends Phaser.Scene {
       if (!e.npc) {
         sprite.dead = Boolean(s.dead);
         sprite.setAura(s.aura ?? 0);
+        sprite.setOutlaw(Boolean(s.outlaw));
         this.showTitle(sprite, s.title);
-        // Duelists' health shows for everyone watching.
-        sprite.setHp(s.hp ?? 0, s.mhp ?? 0, (s.hp ?? 0) < (s.mhp ?? 0) || Boolean(s.duel));
+        // Duelists' health shows for everyone watching, and everyone's in the Wildlands.
+        sprite.setHp(s.hp ?? 0, s.mhp ?? 0, (s.hp ?? 0) < (s.mhp ?? 0) || Boolean(s.duel) || (this.hud.pvp && inPvpZone(s.x, s.y)));
       }
       sprite.animate();
     };
@@ -852,13 +862,56 @@ export class WorldScene extends Phaser.Scene {
     return s.range !== undefined ? s.range + radius : this.myReach(radius);
   }
 
-  /** Where your target is and how big: a monster, or your duel opponent. */
+  /** Where your target is and how big: a monster, your duel opponent, or a player you may fight in the Wildlands. */
   private targetSpot(id = this.target): { x: number; y: number; radius: number; mob?: MobEntity; player?: Entity } | undefined {
     if (!id) return undefined;
     const mob = this.monsters.get(id);
     if (mob) return { x: mob.sprite.x, y: mob.sprite.y, radius: mob.sprite.def.radius, mob };
-    const player = id === this.duel.opponent ? this.entities.get(id) : undefined;
+    const player = id === this.duel.opponent || !this.pvpWhy(id) ? this.entities.get(id) : undefined;
     return player && { x: player.sprite.x, y: player.sprite.y, radius: PLAYER_RADIUS, player };
+  }
+
+  /** Why you can't attack this player outside a duel ("" if you can: you're both fair game in the Wildlands). */
+  private pvpWhy(id: string): string {
+    const me = this.entities.get(this.room.sessionId)?.state;
+    const them = id !== this.room.sessionId ? this.entities.get(id)?.state : undefined;
+    return me && them ? pvpBlock(sideOf(me), sideOf(them)) : "Nobody to fight";
+  }
+
+  /** Clicking them attacks at once: you may, and it costs nothing more (they're an Outlaw, you already are, or you're already fighting them). */
+  private quickAttack(id: string): boolean {
+    if (id === this.duel.opponent) return true;
+    if (this.pvpWhy(id)) return false;
+    const me = this.entities.get(this.room.sessionId)?.state;
+    return id === this.target || Boolean(this.entities.get(id)?.state.outlaw) || Boolean(me?.outlaw);
+  }
+
+  /** Crossing into the Wildlands (or back out): a banner for a few seconds, and a line in the chat. */
+  private zoneBanner(on: boolean) {
+    const sub = !on
+      ? "Players can't attack you here."
+      : this.myLevel < PVP_MIN_LEVEL
+        ? `You're under level ${PVP_MIN_LEVEL}: players can't attack you, and you can't attack them.`
+        : "Other players can attack you here.";
+    const banner = document.getElementById("zone-banner")!;
+    const head = document.createElement("b");
+    head.textContent = on ? "⚔ Wildlands · Open PVP" : "Back on safe ground";
+    const line = document.createElement("span");
+    line.textContent = sub;
+    banner.replaceChildren(head, line);
+    banner.classList.toggle("safe", !on);
+    banner.hidden = false;
+    requestAnimationFrame(() => banner.classList.add("in"));
+    clearTimeout(this.zoneTimer);
+    this.zoneTimer = window.setTimeout(() => {
+      banner.classList.remove("in");
+      this.zoneTimer = window.setTimeout(() => (banner.hidden = true), 300);
+    }, 3500);
+    if (on && this.myLevel >= PVP_MIN_LEVEL) {
+      this.chat.addSystem(
+        `You entered the Wildlands: other players can attack you here. Hitting a player who isn't an Outlaw makes you one for ${OUTLAW_MS / 60_000} minutes. Click a player to see your choices.`,
+      );
+    }
   }
 
   /**
@@ -1032,21 +1085,23 @@ export class WorldScene extends Phaser.Scene {
     this.net.useItem(best);
   }
 
-  /** Click/tap on a monster (or your duel opponent) attacks it. */
+  /** Click/tap on a monster attacks it; so does one on your duel opponent, or an Outlaw in the Wildlands. */
   private tryTarget(p: Phaser.Input.Pointer): boolean {
-    const opp = this.duel.opponent;
-    const id = this.monsterAt(p) ?? (opp && this.playerAt(p) === opp ? opp : undefined);
+    const player = this.playerAt(p);
+    const id = this.monsterAt(p) ?? (player && this.quickAttack(player) ? player : undefined);
     if (!id) return false;
     this.setTarget(id);
     return true;
   }
 
-  /** Click/tap on another player: their card, with a duel challenge. */
+  /** Click/tap on another player: their card, with a duel challenge (and in the Wildlands, an Attack button). */
   private tryPlayer(p: Phaser.Input.Pointer): boolean {
     const id = this.playerAt(p);
     const e = id && this.entities.get(id);
     if (!id || !e) return false;
-    this.duel.openCard(id, { name: e.state.name, lv: e.state.lv, cls: e.state.cls, title: e.state.title });
+    const s = e.state;
+    const attack = this.pvpWhy(id) ? undefined : () => this.setTarget(id);
+    this.duel.openCard(id, { name: s.name, lv: s.lv, cls: s.cls, title: s.title, outlaw: s.outlaw }, attack);
     return true;
   }
 
@@ -1121,7 +1176,7 @@ export class WorldScene extends Phaser.Scene {
       this.status.showTarget(mob.sprite.def.name, mob.sprite.def.level, mob.state.hp, mob.sprite.def.hp, color);
     } else if (t?.player) {
       const s = t.player.state;
-      this.status.showTarget(s.name, s.lv ?? 1, s.hp ?? 0, s.mhp ?? 1, "#ff8a7a");
+      this.status.showTarget(s.outlaw ? `☠ ${s.name}` : s.name, s.lv ?? 1, s.hp ?? 0, s.mhp ?? 1, "#ff8a7a");
     }
 
     // Desktop: point at a monster (or loot) to see its name.

@@ -1135,6 +1135,89 @@ button {
   }
 }
 
+/* ---------- The Wildlands (open PVP) ---------- */
+
+/* Crossing into (or out of) the Wildlands: a banner under your character for a few seconds, clear of the buttons. */
+.zone-banner {
+  position: fixed;
+  top: 62%;
+  left: 50%;
+  z-index: 6;
+  transform: translate(-50%, -50%);
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  padding: 10px 18px;
+  border-radius: 12px;
+  background: rgba(19, 19, 19, 0.86);
+  border: 1px solid rgba(229, 83, 75, 0.7);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.zone-banner.in {
+  opacity: 1;
+}
+
+.zone-banner.safe {
+  border-color: rgba(123, 211, 137, 0.6);
+}
+
+.zone-banner b {
+  display: block;
+  font-size: 18px;
+  color: #ff6b5e;
+  letter-spacing: 0.02em;
+}
+
+.zone-banner.safe b {
+  color: #8fe39b;
+}
+
+.zone-banner span {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+/* "· Wildlands (Lv 30–40) · PVP" in red at the top. */
+.hud-place.pvp {
+  color: #ff8a7a;
+  font-weight: 700;
+}
+
+/* Under your gold while you're an Outlaw: how long it lasts. */
+.status-outlaw {
+  margin-top: 4px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(229, 83, 75, 0.22);
+  color: #ff8a7a;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.player-card-attack {
+  width: 100%;
+  margin-bottom: 6px;
+  align-items: center;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  background: #c8443c;
+  border-color: #c8443c;
+  color: #fff;
+}
+
+.player-card-outlaw {
+  color: #ff6b5e;
+  font-weight: 700;
+}
+
 /* ---------- Titles ---------- */
 
 .titles-list {

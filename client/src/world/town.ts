@@ -15,12 +15,15 @@ import {
   SOUTH_WALL_Y,
   TOWN_AREA,
   TOWN_CX,
+  WILD_BORDER_Y,
+  WILD_CROSSINGS,
   inRect,
   propAnchor,
   type Prop,
   type PropType,
 } from "../../../shared/town";
 import { NPCS, npcProducts } from "../../../shared/npcs";
+import { FIELDS } from "../../../shared/rpg";
 import { ROOM_MODES, type ShopProduct, type ShopRoom, type ShopSnapshot } from "../../../shared/gattchaa";
 import { FLOOR_TEX } from "./terrainTiles";
 import { GLOW, makeGlowTexture, type Light } from "./daylight";
@@ -420,6 +423,62 @@ export class Town {
         this.banner(f.x, f.y, depth + 0.1);
       }
     }
+  }
+
+  /**
+   * Where the Wildlands start (open PVP past it): a dashed red line on the
+   * ground, red pennants on stakes along it, and a sign by each path north.
+   */
+  wildBorder(isLand: (tx: number, ty: number) => boolean) {
+    const wild = FIELDS.find((f) => f.pvp);
+    if (!wild) return;
+    const { x: x0, y: y0, w } = wild.area;
+    const line = this.scene.add.graphics().setDepth(-0.3);
+    const dash = (x: number, y: number, horizontal: boolean) => {
+      const [dw, dh] = horizontal ? [11, 3] : [3, 11];
+      line.fillStyle(0x10202b, 0.45).fillRect(x - 1, y - 1, dw + 2, dh + 2);
+      line.fillStyle(0xd84a3f, 0.85).fillRect(x, y, dw, dh);
+    };
+    const stake = (px: number, py: number) => {
+      const g = this.scene.add.graphics().setDepth(py);
+      g.fillStyle(0x4a3520, 1).fillRect(px - 1, py - 20, 2, 20);
+      g.fillStyle(0xd84a3f, 1).fillTriangle(px + 1, py - 20, px + 12, py - 16, px + 1, py - 12);
+      g.fillStyle(0x10202b, 0.3).fillEllipse(px, py, 8, 3);
+    };
+    // Along the south edge, west to east…
+    for (let tx = x0; tx < x0 + w; tx++) {
+      if (!isLand(tx, WILD_BORDER_Y)) continue;
+      for (const ox of [3, 19]) dash(tx * 32 + ox, WILD_BORDER_Y * 32 - 1, true);
+      if (tx % 4 === 0 && !WILD_CROSSINGS.some((c) => Math.abs(tx - c) <= 3)) stake(tx * 32 + 16, WILD_BORDER_Y * 32 + 2);
+    }
+    // …and up the west edge.
+    for (let ty = y0; ty < WILD_BORDER_Y; ty++) {
+      if (!isLand(x0, ty)) continue;
+      for (const oy of [3, 19]) dash(x0 * 32 - 1, ty * 32 + oy, false);
+      if (ty % 4 === 0) stake(x0 * 32, ty * 32 + 16);
+    }
+    for (const c of WILD_CROSSINGS) this.wildSign((c + 3.5) * 32, (WILD_BORDER_Y + 1) * 32);
+  }
+
+  /** A signpost by the path: "WILDLANDS · Open PVP". */
+  private wildSign(x: number, bottom: number) {
+    const g = this.scene.add.graphics().setDepth(bottom);
+    const bw = 72;
+    const bh = 30;
+    const top = bottom - 48;
+    g.fillStyle(0x10202b, 0.3).fillEllipse(x, bottom, 14, 4);
+    g.fillStyle(0x4a3520, 1).fillRect(x - 2, top + bh - 2, 4, bottom - top - bh + 2);
+    g.fillStyle(0x2b1d10, 1).fillRect(x - bw / 2 - 1, top - 1, bw + 2, bh + 2);
+    g.fillStyle(0x7a5532, 1).fillRect(x - bw / 2, top, bw, bh);
+    g.fillStyle(0x8c6440, 1).fillRect(x - bw / 2, top, bw, 2);
+    const text = (y: number, s: string, size: string, color: string) =>
+      this.scene.add
+        .text(x, y, s, { fontFamily: FONT, fontSize: size, fontStyle: "bold", color, stroke: "#2b1d10", strokeThickness: 2 })
+        .setOrigin(0.5, 0)
+        .setResolution(this.textRes)
+        .setDepth(bottom + 0.01);
+    text(top + 3, "WILDLANDS", "10px", "#fff4e0");
+    text(top + 16, "⚔ OPEN PVP", "9px", "#ff8a7a");
   }
 
   /** Strings of little flags between lamp posts over the Market Square, sagging a bit in the middle. */

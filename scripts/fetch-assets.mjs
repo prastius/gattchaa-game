@@ -220,6 +220,21 @@ const GEAR = [
   ["viking", "Viking helmet", "headwear/helmets/helmets/hat_helmet_spangenhelm_viking.json"],
   ["cape", "Cape", "torso/cape/cape_solid.json"],
   ["capeTattered", "Tattered cape", "torso/cape/cape_tattered.json"],
+  // The Wildlands' gear.
+  ["longspear", "Long spear", "weapons/polearm/weapon_polearm_longspear.json", { variant: "steel", walk128: true }],
+  ["trident", "Trident", "weapons/polearm/weapon_polearm_trident.json", { variant: "steel", walk128: true }],
+  ["glowswordRed", "Glowsword (red)", "weapons/sword/weapon_sword_glowsword.json", { variant: "red" }],
+  ["greatBowDark", "Great bow (dark)", "weapons/ranged/bow/weapon_ranged_bow_great.json", { variant: "dark", walk128: true }],
+  ["greatBowGold", "Great bow (gold)", "weapons/ranged/bow/weapon_ranged_bow_great.json", { variant: "gold", walk128: true }],
+  ["serpent", "Serpent staff", "weapons/magic/weapon_magic_s.json", { variant: "dark" }],
+  ["diamondGold", "Diamond staff (gold)", "weapons/magic/weapon_magic_diamond.json", { variant: "gold" }],
+  ["scutum", "Scutum", "weapons/shields/scutum/shield_scutum.json"],
+  ["engrailed", "Engrailed shield", "weapons/shields/engrailed/shield_two_engrailed.json"],
+  ["armet", "Armet", "headwear/helmets/helmets/hat_helmet_armet.json"],
+  ["closeHelm", "Close helm", "headwear/helmets/helmets/hat_helmet_close.json"],
+  ["celestial", "Celestial hat", "headwear/hats/magic/hat_magic_celestial.json", { variant: "navy" }],
+  ["tabardPurple", "Tabard (purple)", "torso/jacket/torso_jacket_tabard.json", { variant: "purple" }],
+  ["tabardBlack", "Tabard (black)", "torso/jacket/torso_jacket_tabard.json", { variant: "black" }],
 ].map(([id, label, def, opts]) => ["gear", id, label, def, B, opts]);
 
 /**
@@ -237,6 +252,15 @@ const MOB_PARTS = [
   ["waraxe", "War axe", "weapons/blunt/weapon_blunt_waraxe.json"],
   ["mace", "Mace", "weapons/blunt/weapon_blunt_mace.json"],
   ["spear", "Spear", "weapons/polearm/weapon_polearm_spear.json", { variant: "iron" }],
+  ["boarHead", "Boarman head", "head/heads/beast/heads_boarman.json"],
+  ["lizardHead", "Lizard head", "head/heads/reptile/heads_lizard_male.json"],
+  ["wolfHead", "Wolf head", "head/heads/beast/heads_wolf_male.json"],
+  ["trollHead", "Troll head", "head/heads/fantasy/heads_troll.json"],
+  ["vampireHead", "Vampire head", "head/heads/undead/heads_vampire.json"],
+  ["minotaurHead", "Minotaur head", "head/heads/beast/heads_minotaur.json"],
+  ["lizardTail", "Lizard tail", "body/lizard/tail_lizard.json"],
+  ["wolfTail", "Wolf tail", "body/tails/tail_wolf.json", { variant: "fur_grey" }],
+  ["flail", "Flail", "weapons/blunt/weapon_blunt_flail.json"],
 ].map(([id, label, def, opts]) => ["mob", id, label, def, M, opts]);
 
 const PALETTES = {

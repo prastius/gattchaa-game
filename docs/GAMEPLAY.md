@@ -6,7 +6,7 @@ The game has three parts:
 
 1. **Hanging out.** The town is a meeting place. Chat, sit by the fountain, visit the Gattchaa staff, and run your own shop in the Market Square: trade gear, ingots and monster cards for gold, and show off your real cards.
 2. **Adventure.** Outside the walls, monsters wait in fields sorted by level. Level up, choose a job, find gear and monster cards, and upgrade your equipment.
-3. **Player vs player.** Challenge anyone to a duel, and climb the ranking in the Arena.
+3. **Player vs player.** Challenge anyone to a duel, climb the ranking in the Arena, or fight anyone (and be fought) in the Wildlands, the open PVP field north of town.
 
 > **One rule about money.** Real cards are bought and paid for only on gattchaaoripa.com. In-game gold buys in-game things (potions, gear, upgrades, other players' loot) and never real cards.
 
@@ -29,6 +29,7 @@ The game has three parts:
 | Attack a monster | Click it, or press **Space** for the nearest one | Tap it, or the sword button |
 | Challenge someone to a duel | Click them, then **Challenge to a duel** | Tap them, then the same button |
 | Attack your duel opponent | Click them, or **Space** | Tap them, or the sword button |
+| Attack a player in the Wildlands | Click them, then **Attack** (an Outlaw: just click them) | Tap them, then the same |
 | Use a skill | Keys **1** to **6**, or the skill buttons | The skill buttons (above the chat) |
 | Drink a potion | **Q** | The potion button |
 | Bag and equipment | **I** | The bag button |
@@ -56,7 +57,7 @@ Gattchaa Town is a walled royal town in the middle of an island, with gates to t
 - **The Market Square** (by the south gate) is where players run their own shops.
 - **The lakeside park** runs along the west wall, with a pond, benches and a campfire.
 - **The Collectors' Café** is in the east quarter, with **the Arena** behind it: a ring of sand where players duel, with benches for the crowd.
-- **The gates** lead to the monster fields: south to the South Meadow, east to Dusk Hollow.
+- **The gates** lead to the monster fields: south to the South Meadow, east to Dusk Hollow, west to the Orc Woods. From the west and east roads, paths run north along the town walls to the Wildlands.
 
 The town is always safe: monsters never come in, and nobody can attack anyone inside the walls, except in a duel both players agreed to.
 
@@ -89,6 +90,7 @@ The town is always safe: monsters never come in, and nobody can attack anyone in
 | Rowan | Gate Guard | Outside the south gate | Explains the South Meadow |
 | Mara | Ranger | Outside the east gate | Explains Dusk Hollow |
 | Gregor | Scout | Outside the west gate | Explains the Orc Woods |
+| Sable | Bounty Hunter | North of town, by the path up from the west road | Explains the Wildlands and their PVP rules |
 | Orin | Job Master | Just inside the south gate | Makes you a Knight, Mage or Archer at level 10 |
 | Bram | Outfitter | Outside the south gate, east of the road | Sells potions and starter gear, buys loot |
 | Hilda | Blacksmith | Outside the south gate, west of Rowan | Upgrades gear from +0 to +10 |
@@ -144,6 +146,7 @@ Shops also show as orange dots on the minimap.
 | South Meadow | 1–10 | Out of the south gate | Rowan |
 | Dusk Hollow | 10–20 | Out of the east gate | Mara |
 | Orc Woods | 20–30 | Out of the west gate | Gregor |
+| Wildlands (open PVP) | 30–40 | Up the paths north along the town walls, from the west or east road | Sable |
 
 **South Meadow**
 
@@ -171,12 +174,23 @@ Shops also show as orange dots on the minimap.
 | --- | --- | --- | --- | --- |
 | Goblin | 20 | 1,000 | The grass north of the west road | Fast, attacks anyone who comes close |
 | Orc Warrior | 23 | 1,400 | The rocky ground south of the road | Tough and hits hard, but only fights back |
-| Orc Archer | 25 | 1,300 | Up north, along the town wall | Shoots arrows from far away, attacks on sight |
+| Orc Archer | 25 | 1,300 | Up north, west of the path to the Wildlands | Shoots arrows from far away, attacks on sight |
 | Orc Skeleton | 27 | 1,700 | West of the inlet | Attacks anyone who comes close |
 | Orc Zombie | 29 | 2,100 | Far to the south | Very slow, but hits the hardest |
 | **Orc Warlord** (boss) | 33 | 24,000 | His camp, where the west road ends | See "Field bosses" below |
 
-Goblins, orcs and the undead walk like people, carry real weapons (war axes, maces, bows) and lunge at you when they strike.
+**Wildlands** (open PVP: other players can attack you here, see "Open PVP: the Wildlands". Grass and woods round rocky highlands, home to the beastmen)
+
+| Monster | Lv | HP | Where | Behaviour |
+| --- | --- | --- | --- | --- |
+| Boarman | 31 | 2,100 | The grass past the west path | Charges anyone who comes close |
+| Lizardman | 33 | 2,500 | The dry ground past the east path | Only fights back. Its trident reaches further than a sword |
+| Werewolf | 35 | 2,400 | The north-west woods | Fast, attacks anyone who comes close |
+| Troll | 37 | 3,100 | The highlands in the middle | Huge and slow, only fights back, hits very hard |
+| Vampire | 39 | 2,500 | The high ground to the north-east | Casts dark bolts from far away, attacks on sight |
+| **Minotaur King** (boss) | 44 | 45,000 | His lair on the highest ground | See "Field bosses" below |
+
+Goblins, orcs, the undead and the Wildlands' beastmen walk like people, carry real weapons (war axes, maces, flails, tridents, bows) and lunge at you when they strike.
 
 ### How fighting works
 
@@ -210,9 +224,11 @@ The Novice levels go fast. From the job change at level 10, each level needs a l
 | 20 | 23,802 |
 | 25 | 41,723 |
 | 30 | 68,377 |
+| 35 | 106,537 |
 | 40 | 159,392 |
+| 45 | 230,530 |
 
-Fighting monsters of your own level, a level takes about 4 minutes at level 12, about 8 minutes at level 18, and about 12 to 15 minutes in the Orc Woods (levels 20–30). Using your skills makes it quicker.
+Fighting monsters of your own level, a level takes about 4 minutes at level 12, about 8 minutes at level 18, about 12 to 15 minutes in the Orc Woods (levels 20–30), and about 11 to 15 minutes in the Wildlands (levels 30–40). Using your skills makes it quicker.
 
 ### Healing and fainting
 
@@ -220,6 +236,7 @@ Fighting monsters of your own level, a level takes about 4 minutes at level 12, 
 - **Sit down** (X) to heal 3× faster. Resting **inside the town walls** doubles that again.
 - **Potions** heal straight away, even in the middle of a fight: one every 0.8 seconds. Q drinks the smallest potion that heals you fully.
 - **Fainting.** At 0 HP you faint and wake up back in town, fully healed. Novices lose nothing. Knights, Mages and Archers lose 3% of a level's EXP.
+- **Beaten by another player** in the Wildlands, you lose nothing, unless you're an Outlaw (see "Open PVP: the Wildlands").
 
 ### Field bosses
 
@@ -237,6 +254,13 @@ Fighting monsters of your own level, a level takes about 4 minutes at level 12, 
 - When he falls, the whole town hears who brought him down. He comes back **15 minutes** later.
 - He's meant for a party: three or four players around level 28–30.
 - **He always drops** the Warlord's Banner (sells for 1,500 gold), a Mithril Ingot and a Star Crystal (often two). He often drops good gear (Halberd, Viking Helm, Spartan Shield, Crossbow, Diamond Staff, Katana). Rarely he drops the **Warlord's Medal** (6%), and very rarely the legendary **Dragon Spear** or **Orc Warlord Card** (2% each).
+
+**The Minotaur King** rules the Wildlands from his lair on the highest ground: four old stones round a fire.
+
+- He has 45,000 HP, swings a huge war axe, and heals slowly if left alone. He's drawn very big, horned, in gold plate and a dark red cape.
+- When he falls, the whole town hears who brought him down. He comes back **20 minutes** later.
+- He lives in the Wildlands, so **other players can attack you while you fight him**. He's meant for a party of four around level 40: four level-42 players beat him in under two minutes, with one of them taking the hits and drinking potions.
+- **He always drops** the Minotaur's Crown (sells for 3,000 gold), a Mithril Ingot and a Star Crystal (often two), and usually a White Potion. He often drops good gear (Trident, Close Helm, Engrailed Shield, Golden Plate, Flame Blade). Rarely he drops the **Minotaur Horn** (6%), and very rarely the legendary **Minotaur King Card** (2%), **Sunfire Bow** or **Archmage Staff** (1.5% each).
 
 ## 6. Jobs and skills
 
@@ -313,7 +337,7 @@ Frozen monsters turn icy blue and can't move or attack. While a buff is running,
 - Monsters drop loot on the ground around them. Rarer loot glows.
 - For the first **15 seconds**, only the player who did the most damage can pick it up (it looks faded to everyone else). After that, anyone can.
 - Loot disappears after **90 seconds**. Click it to walk over and pick it up.
-- Every monster drops its own loot to sell (Slime Jelly, Snake Scale, Wild Honey, Bloom Crystal, Sticky Silk, Bat Fang, Rock Shard, Gazer Lens, Ectoplasm), plus potions, now and then gear, ingots for the Blacksmith, and very rarely its card.
+- Every monster drops its own loot to sell (Slime Jelly, Snake Scale, Wild Honey, Bloom Crystal, Sticky Silk, Bat Fang, Rock Shard, Gazer Lens, Ectoplasm, Goblin Charm, Orc Tusk, Orcish Arrowhead, Old Bone, Rotten Bandage, Boar Hide, Lizard Scale, Wolf Pelt, Troll Tooth, Blood Ruby), plus potions, now and then gear, ingots for the Blacksmith, and very rarely its card.
 
 ### Bram the Outfitter
 
@@ -323,6 +347,7 @@ Bram stands outside the south gate. He sells:
 | --- | --- |
 | Red Potion (heals 40 HP) | 12 |
 | Orange Potion (heals 100 HP) | 40 |
+| White Potion (heals 250 HP) | 120 |
 | Dagger | 50 |
 | Short Sword | 160 |
 | Squire's Longsword (Knights) | 900 |
@@ -355,19 +380,26 @@ He also **buys** almost anything, and has a one-click "sell all monster loot" bu
 | Moonblade (epic) | 20 | ATK +32, Critical +6% | Novice, Knight | 2 | Pumpking |
 | Scimitar | 22 | ATK +30, Critical +3% | Novice, Knight | 2 | Goblin, Orc Warrior |
 | Katana | 27 | ATK +40, Critical +6% | Novice, Knight | 2 | Orc Skeleton, Orc Warlord |
+| Flame Blade | 36 | ATK +54, Critical +6% | Novice, Knight | 2 | Troll, Vampire, Minotaur King |
 | Halberd (spear, both hands) | 25 | ATK +50 | Knight | 2 | Orc Warrior, Orc Warlord |
 | Dragon Spear (legendary, spear, both hands) | 30 | ATK +66, Critical +8% | Knight | 2 | Orc Warlord |
+| Long Spear (spear, both hands) | 32 | ATK +62 | Knight | 2 | Boarman, Lizardman |
+| Trident (spear, both hands) | 37 | ATK +74, Critical +4% | Knight | 2 | Lizardman, Minotaur King |
 | Hunting Bow | 10 | ATK +9, reach 170 | Archer | 1 | Orin (job gift), Bram |
 | Recurve Bow | 12 | ATK +14, reach 190 | Archer | 2 | Snapper Flower |
 | Great Bow | 16 | ATK +23, reach 210 | Archer | 2 | Gazer, Pumpking |
 | Composite Bow | 22 | ATK +30, reach 210 | Archer | 2 | Orc Archer |
 | Crossbow | 27 | ATK +40, Critical +4%, reach 220 | Archer | 2 | Orc Archer, Orc Warlord |
+| Longbow | 32 | ATK +46, reach 230 | Archer | 2 | Werewolf |
+| Sunfire Bow (legendary) | 38 | ATK +64, Critical +8%, reach 240 | Archer | 2 | Minotaur King |
 | Apprentice Staff | 10 | ATK +9, MP +15, reach 150 | Mage | 1 | Orin (job gift), Bram |
 | Gnarled Staff | 12 | ATK +14, MP +25, reach 160 | Mage | 2 | Snapper Flower |
 | Crystal Staff | 15 | ATK +19, MP +40, reach 170 | Mage | 2 | Snapper Flower |
 | Ember Staff | 16 | ATK +23, MP +50, reach 180 | Mage | 2 | Gazer, Pumpking |
 | Ring Staff | 22 | ATK +30, MP +65, reach 190 | Mage | 2 | Goblin, Orc Archer |
 | Diamond Staff | 27 | ATK +40, MP +90, reach 200 | Mage | 2 | Orc Zombie, Orc Warlord |
+| Serpent Staff | 32 | ATK +46, MP +120, reach 210 | Mage | 2 | Lizardman |
+| Archmage Staff (legendary) | 38 | ATK +64, MP +200, reach 230 | Mage | 2 | Minotaur King |
 
 **Spears** are new for Knights (in Ragnarok, Knights carry spears). They hit harder than swords but need both hands, so no shield.
 
@@ -381,6 +413,8 @@ He also **buys** almost anything, and has a one-click "sell all monster loot" bu
 | Crusader Shield | 18 | DEF +7, HP +45 | Ghost, Pumpking |
 | Round Shield | 22 | DEF +8, HP +50 | Orc Warrior |
 | Spartan Shield | 27 | DEF +10, HP +90 | Orc Skeleton, Orc Warlord |
+| Tower Shield | 33 | DEF +12, HP +120 | Lizardman |
+| Engrailed Shield | 38 | DEF +14, HP +170 | Vampire, Minotaur King |
 
 **Head**
 
@@ -396,6 +430,9 @@ He also **buys** almost anything, and has a one-click "sell all monster loot" bu
 | Greathelm | 18 | DEF +5, HP +60 | Ghost, Pumpking |
 | Barbarian Helm | 22 | DEF +6, HP +60 | Orc Warrior |
 | Viking Helm | 27 | ATK +2, DEF +8, HP +100 | Orc Zombie, Orc Warlord |
+| Armet | 32 | DEF +9, HP +120 | Boarman |
+| Celestial Hat | 33 | ATK +3, DEF +3, MP +130 | Vampire |
+| Close Helm | 37 | DEF +11, HP +160 | Troll, Minotaur King |
 | Meadow Crown (legendary) | 10 | ATK +4, DEF +4, HP +60 | Snapper Flower (1 in 2,000) |
 
 **Armour, legs and feet**
@@ -410,12 +447,17 @@ He also **buys** almost anything, and has a one-click "sell all monster loot" bu
 | Scout Armour | Armour | 22 | ATK +3, DEF +5, HP +40 | Goblin |
 | Starry Cloak | Armour | 25 | ATK +4, DEF +3, MP +90 | Orc Zombie |
 | Dark Plate | Armour | 26 | DEF +10, HP +90 | Orc Skeleton, Orc Zombie |
+| Wolfskin Vest | Armour | 33 | ATK +6, DEF +8, HP +80 | Boarman, Werewolf |
+| Mystic Robe | Armour | 34 | ATK +6, DEF +4, MP +150 | Vampire |
+| Golden Plate | Armour | 38 | DEF +15, HP +170 | Troll, Minotaur King |
 | Leather Pants | Legs | 1 | DEF +1 (no card slot) | Bram, Slime |
 | Iron Greaves | Legs | 6 | DEF +2, HP +10 | Hornet, Rock Worm |
 | Steel Greaves | Legs | 22 | DEF +4, HP +30 | Orc Warrior |
+| Golden Greaves | Legs | 35 | DEF +6, HP +50 | Lizardman |
 | Leather Boots | Feet | 1 | DEF +1 | Bram, Slime, Grass Snake |
 | Iron Boots | Feet | 6 | DEF +2, HP +10 | Hornet |
 | Steel Sabatons | Feet | 22 | DEF +4, HP +25 | Orc Archer |
+| Golden Sabatons | Feet | 35 | DEF +6, HP +45 | Werewolf |
 
 **Rings and amulets**
 
@@ -429,6 +471,9 @@ He also **buys** almost anything, and has a one-click "sell all monster loot" bu
 | Guardian Ring | Ring | 28 | DEF +4, HP +60 | Orc Skeleton |
 | Tusk Necklace | Amulet | 22 | ATK +4, Critical +4% | Goblin |
 | Warlord's Medal (epic) | Amulet | 30 | ATK +8, HP +120 | Orc Warlord |
+| Ring of the Wild | Ring | 36 | ATK +7, HP +60 | Troll |
+| Wolf Fang Necklace | Amulet | 34 | ATK +6, Critical +5% | Werewolf |
+| Minotaur Horn (epic) | Amulet | 40 | ATK +12, HP +180 | Minotaur King |
 
 ## 8. Monster cards
 
@@ -452,6 +497,12 @@ Ragnarok style: every monster very rarely drops **its own card**. A card goes in
 | Orc Skeleton Card | Orc Skeleton | Shield | Bony | DEF +4 | 1 in 1,000 |
 | Orc Zombie Card | Orc Zombie | Legs | Undying | HP +100 | 1 in 1,000 |
 | Orc Warlord Card (legendary) | Orc Warlord | Head | Heroic | ATK +5, DEF +3, HP +100 | 1 in 50 kills |
+| Boarman Card | Boarman | Amulet | Charging | ATK +5 | 1 in 1,000 |
+| Lizardman Card | Lizardman | Shield | Scaled | DEF +3, HP +80 | 1 in 1,000 |
+| Werewolf Card | Werewolf | Weapon | Feral | ATK +4, Critical +5% | 1 in 1,000 |
+| Troll Card | Troll | Armour | Trollish | HP +150 | 1 in 1,000 |
+| Vampire Card | Vampire | Ring | Bloodthirsty | 4% of the damage you deal heals you | 1 in 1,000 |
+| Minotaur King Card (legendary) | Minotaur King | Armour | Mighty | ATK +6, DEF +4, HP +200 | 1 in 50 kills |
 
 - **Card slots.** Most gear has one slot and the better weapons have two. In the bag, small dots in the corner of an item show its slots: hollow when free, gold when filled. The Leather Cap, Leather Pants, Copper Ring and Clover Charm have no slots.
 - **Putting a card in.** In the bag, pick the card and press **Put in gear** (or double-click it). The gear it fits lights up, worn or in the bag. Pick one and confirm.
@@ -493,8 +544,8 @@ Ragnarok style: every monster very rarely drops **its own card**. A card goes in
 | Ingot | Used for | Where to get it |
 | --- | --- | --- |
 | Iron Ingot | +1 to +5 | Hilda sells them (100 gold). Hornets, Snapper Flowers, Grubs, Night Bats and Rock Worms drop them |
-| Mithril Ingot | +6 to +8 | Dusk Hollow and Orc Woods monsters (Orc Zombies and Rock Worms most often), rarely Snapper Flowers. Both bosses always drop one |
-| Star Crystal | +9 and +10 | Gazers and Ghosts (about 1 in 200 to 250), Orc Skeletons and Orc Zombies (about 1 in 125 to 170), the Pumpking (one kill in two) and the Orc Warlord (always, often two) |
+| Mithril Ingot | +6 to +8 | Dusk Hollow, Orc Woods and Wildlands monsters (Trolls, Orc Zombies and Rock Worms most often), rarely Snapper Flowers. Every boss always drops one |
+| Star Crystal | +9 and +10 | Gazers and Ghosts (about 1 in 200 to 250), Orc Skeletons and Orc Zombies (about 1 in 125 to 170), Lizardmen, Werewolves, Trolls and Vampires (about 1 in 100 to 170), the Pumpking (one kill in two), and the Orc Warlord and Minotaur King (always, often two) |
 
 ### What it really costs
 
@@ -556,7 +607,35 @@ The Arena is the ring of sand behind the café. **A duel counts for the ranking 
 - **Magnus the Arena Master** explains the rules and shows your place, rating and wins and losses, plus the ten best players.
 - Guests can duel anywhere, but only signed-in players are ranked.
 
-## 11. Titles
+## 11. Open PVP: the Wildlands
+
+North of town, past a dashed red line with little red flags, lie **the Wildlands** (levels 30–40). There's no law up there: **players can attack each other without asking.** Two paths run north along the town walls, one from the west road and one from the east road, with a sign where each crosses the line. **Sable the Bounty Hunter** waits by the west path to explain the rules. The minimap shows the Wildlands in red, and a banner tells you when you cross in or out.
+
+### The rules
+
+| Rule | |
+| --- | --- |
+| Where | Only inside the Wildlands. Step back over the line and nobody can touch you. The town and the other fields stay safe |
+| Who | Players from **level 20**. Below that, you can't attack anyone and nobody can attack you |
+| How | Click (or tap) a player, then **Attack**. An Outlaw is attacked with a single click, like a monster |
+| Damage | Player hits do **half damage**, as in duels. Potions and healing work as usual |
+| Skills | Bash, Double Shot and Fire Bolt hit the player you aim at. Whirlwind, Frost Nova and Arrow Rain only catch the player you're fighting, never bystanders, and Frost Nova doesn't freeze players |
+| Duelists | Two players in a duel only fight each other; nobody else can join in |
+
+### Outlaws and bounties
+
+- **Attack a player who isn't an Outlaw and you become one**, for **3 minutes** from your latest such attack. Your name turns red with a skull (☠), and a timer shows under your gold.
+- **Hitting an Outlaw is always free.** So fighting back when someone attacks you never makes you an Outlaw: your attacker already is one.
+- **Beaten by a player while you're not an Outlaw, you lose nothing.** You wake up in town as after any fainting, with all your EXP and gold.
+- **Beaten while you are an Outlaw,** you lose EXP like any fainting (3% of a level), and a **bounty of 5% of your gold** (at most 5,000) goes to whoever beat you. Then your name is clean again.
+- **Fainting to a monster** works as usual, wherever you are.
+- **Leaving the game mid-fight** (within 10 seconds of another player's attack) counts as being beaten by them. Leaving and coming back doesn't clear an Outlaw's name either.
+
+### Wildlands titles
+
+Beating players counts towards the Wildlands titles (see Titles): **Raider** (10 players), **Bounty Hunter** (25 Outlaws) and **Reaper** (250 players). Beating the same player again only counts once every 10 minutes, so nobody can farm a friend.
+
+## 12. Titles
 
 Titles are earned by doing things in the game. Open your titles with **T** (or the medal button) to see every title, the ones you've earned, and how far along you are with the rest. Pick one to **show under your name**, in its rarity colour, for everyone to see, or hide it again.
 
@@ -565,6 +644,7 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 - "Help defeat" means you hurt the monster before it fell: everyone in a fight gets the count, not just the one who landed the last hit.
 - Cards and legendary items only count when they're **fresh from a monster**, not when someone hands them to you.
 - Characters from before titles existed get their level titles straight away when they come back.
+- Players beaten in the Wildlands count once every 10 minutes for the same player.
 
 | Title | Rarity | How to earn it |
 | --- | --- | --- |
@@ -583,10 +663,12 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 | Monster Slayer | Epic | Help defeat 10,000 monsters |
 | Orc Slayer | Rare | Help defeat 500 Orc Warriors |
 | Warbreaker | Epic | Help defeat the Orc Warlord 10 times |
+| Wolfsbane | Rare | Help defeat 500 Werewolves |
+| Matador | Epic | Help defeat the Minotaur King 10 times |
 | **Collecting** | | |
 | Card Finder | Rare | Find a monster card |
 | Card Collector | Epic | Find 5 different monster cards |
-| Card Master ✦ | Legendary | Find every kind of monster card (16 so far) |
+| Card Master ✦ | Legendary | Find every kind of monster card (22 so far) |
 | Lucky | Epic | Find a legendary item |
 | **The forge** | | |
 | Shiny | Rare | Upgrade any gear to +7 |
@@ -596,6 +678,10 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 | Good Sport | Common | Fight 10 duels, win or lose (a draw counts) |
 | Duelist | Uncommon | Win 10 duels |
 | Gladiator | Epic | Win 50 duels in the Arena's ring |
+| **The Wildlands** | | |
+| Raider | Uncommon | Beat 10 players in the Wildlands |
+| Bounty Hunter | Rare | Beat 25 Outlaws in the Wildlands |
+| Reaper | Epic | Beat 250 players in the Wildlands |
 | **Town** | | |
 | Shopkeeper | Uncommon | Open your own shop in the Market Square |
 | Merchant | Rare | Earn 100,000 gold selling things in your shop |
@@ -611,7 +697,7 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 
 Pioneer places are counted per level cap: when the cap goes up, the first 10 players to reach the new cap become Pioneers too.
 
-## 12. Monster reference
+## 13. Monster reference
 
 | Monster | Lv | HP | ATK | DEF | EXP | Gold | Notable drops |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -631,10 +717,16 @@ Pioneer places are counted per level cap: when the cap goes up, the first 10 pla
 | Orc Skeleton | 27 | 1,700 | 48 | 24 | 1,800 | 34–56 | Katana, Spartan Shield, Dark Plate, Guardian Ring, Mithril Ingot, Star Crystal |
 | Orc Zombie | 29 | 2,100 | 52 | 20 | 2,200 | 36–60 | Starry Cloak, Diamond Staff, Viking Helm, Dark Plate, Mithril Ingot, Star Crystal |
 | Orc Warlord | 33 | 24,000 | 90 | 30 | 40,000 | 1,000–2,000 | See "Field bosses" |
+| Boarman | 31 | 2,100 | 46 | 22 | 2,500 | 38–62 | Armet, Wolfskin Vest, Long Spear, White Potion, Mithril Ingot |
+| Lizardman | 33 | 2,500 | 58 | 30 | 2,900 | 40–66 | Tower Shield, Long Spear, Serpent Staff, Golden Greaves, Trident, Mithril Ingot, Star Crystal |
+| Werewolf | 35 | 2,400 | 50 | 20 | 3,200 | 42–70 | Longbow, Wolfskin Vest, Golden Sabatons, Wolf Fang Necklace, Mithril Ingot, Star Crystal |
+| Troll | 37 | 3,100 | 76 | 24 | 4,300 | 46–76 | Close Helm, Golden Plate, Ring of the Wild, Flame Blade, Mithril Ingot, Star Crystal |
+| Vampire | 39 | 2,500 | 52 | 22 | 4,300 | 48–80 | Celestial Hat, Mystic Robe, Engrailed Shield, Flame Blade, Mithril Ingot, Star Crystal |
+| Minotaur King | 44 | 45,000 | 120 | 40 | 90,000 | 2,000–4,000 | See "Field bosses" |
 
 Every monster also drops its own card (see Monster cards) and often potions.
 
-## 13. A good path for new players
+## 14. A good path for new players
 
 1. **Level 1–4:** Slimes by the road, south of town. Buy a few Red Potions and a Dagger or Short Sword from Bram.
 2. **Level 4–7:** Grass Snakes in the west grass. Wear what you find.
@@ -645,14 +737,17 @@ Every monster also drops its own card (see Monster cards) and often potions.
 7. **Level 20:** Team up for the **Pumpking**. Save your Mithril and Star Crystals for **Hilda**, and aim for your first aura at +7. Ten Pumpking fights make you a **Kingslayer**.
 8. **Level 20–25:** Out of the **west gate** into the **Orc Woods**: Goblins in the grass north of the road, then Orc Warriors on the rocks south of it. Knights, try a **Halberd** from level 25.
 9. **Level 25–30:** Orc Archers up north, Orc Skeletons west of the inlet, and Orc Zombies far to the south. At 30, gather a party for the **Orc Warlord**.
+10. **Level 30–35:** Take the path north from the west road, past **Sable**, into the **Wildlands**. Read her rules first: other players can attack you up there. Boarmen roam past the west path; Lizardmen past the east path only fight back. Bram's **White Potions** heal 250 HP.
+11. **Level 35–40:** Werewolves in the north-west woods, Trolls on the highlands, Vampires on the high ground to the north-east. From 40, bring a party for the **Minotaur King**, and watch your back.
 
 Along the way, open your titles (T) now and then: you'll have earned a few.
 
 Sell your monster loot to Bram whenever your bag fills up, and sit down (X) to heal faster between fights. Spare gear, ingots and cards are worth more to other players: open a shop in the Market Square, or look in theirs for what you need.
 
-## 14. Coming next
+## 15. Coming next
 
-- **New fields and monsters** above level 30. The level cap (50) goes up once there's content to reach it.
+- **New fields and monsters** above level 40. The level cap (50) goes up once there's content to reach it.
+- **Second jobs**, once the cap passes 50.
 
 ---
 

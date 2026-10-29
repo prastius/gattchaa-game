@@ -28,9 +28,14 @@ export interface Deeds {
   duels: number;
   duelWins: number;
   arenaWins: number;
+  /** Players beaten in the Wildlands, and how many of them were Outlaws. */
+  pvpWins: number;
+  bounties: number;
 }
 
-export const noDeeds = (): Deeds => ({ kills: {}, cards: [], legendary: 0, bestUp: 0, upFails: 0, shop: false, sold: 0, duels: 0, duelWins: 0, arenaWins: 0 });
+export const noDeeds = (): Deeds => ({
+  kills: {}, cards: [], legendary: 0, bestUp: 0, upFails: 0, shop: false, sold: 0, duels: 0, duelWins: 0, arenaWins: 0, pvpWins: 0, bounties: 0,
+});
 
 const count = (raw: unknown) => (Number.isFinite(Number(raw)) ? Math.max(0, Math.floor(Number(raw))) : 0);
 
@@ -51,6 +56,8 @@ export function cleanDeeds(raw: unknown): Deeds {
   d.duels = count(r.duels);
   d.duelWins = count(r.duelWins);
   d.arenaWins = count(r.arenaWins);
+  d.pvpWins = count(r.pvpWins);
+  d.bounties = count(r.bounties);
   return d;
 }
 
@@ -69,11 +76,13 @@ export type TitleGoal =
   | { kind: "sold"; n: number }
   /** Fight `n` duels, win `n` duels, or win `n` ranked duels in the Arena. */
   | { kind: "duels"; n: number; won?: "any" | "ranked" }
+  /** Beat `n` players in the Wildlands (or `n` Outlaws). */
+  | { kind: "pvp"; n: number; outlaws?: true }
   /** One of the first PIONEERS players to reach the level cap. */
   | { kind: "pioneer" };
 
-export type TitleGroup = "Levels" | "Hunting" | "Collecting" | "The forge" | "The Arena" | "Town";
-export const TITLE_GROUPS: TitleGroup[] = ["Levels", "Hunting", "Collecting", "The forge", "The Arena", "Town"];
+export type TitleGroup = "Levels" | "Hunting" | "Collecting" | "The forge" | "The Arena" | "The Wildlands" | "Town";
+export const TITLE_GROUPS: TitleGroup[] = ["Levels", "Hunting", "Collecting", "The forge", "The Arena", "The Wildlands", "Town"];
 
 export interface TitleDef {
   id: string;
@@ -121,6 +130,8 @@ export const TITLES = def({
   monsterSlayer: { name: "Monster Slayer", tier: "epic", group: "Hunting", goal: { kind: "kills", n: 10_000 }, how: "Help defeat 10,000 monsters." },
   orcSlayer: { name: "Orc Slayer", tier: "rare", group: "Hunting", goal: { kind: "kills", n: 500, monster: "orcWarrior" }, how: "Help defeat 500 Orc Warriors." },
   warbreaker: { name: "Warbreaker", tier: "epic", group: "Hunting", goal: { kind: "kills", n: 10, monster: "orcWarlord" }, how: "Help defeat the Orc Warlord 10 times." },
+  wolfsbane: { name: "Wolfsbane", tier: "rare", group: "Hunting", goal: { kind: "kills", n: 500, monster: "werewolf" }, how: "Help defeat 500 Werewolves." },
+  matador: { name: "Matador", tier: "epic", group: "Hunting", goal: { kind: "kills", n: 10, monster: "minotaurKing" }, how: "Help defeat the Minotaur King 10 times." },
 
   // ------------------------------------------------------------ collecting
   cardFinder: { name: "Card Finder", tier: "rare", group: "Collecting", goal: { kind: "cards", n: 1 }, how: "Find a monster card." },
@@ -140,6 +151,11 @@ export const TITLES = def({
   goodSport: { name: "Good Sport", tier: "common", group: "The Arena", goal: { kind: "duels", n: 10 }, how: "Fight 10 duels, win or lose." },
   duelist: { name: "Duelist", tier: "uncommon", group: "The Arena", goal: { kind: "duels", n: 10, won: "any" }, how: "Win 10 duels." },
   gladiator: { name: "Gladiator", tier: "epic", group: "The Arena", goal: { kind: "duels", n: 50, won: "ranked" }, how: "Win 50 duels in the Arena's ring." },
+
+  // ------------------------------------------------------------ the wildlands (open PVP)
+  raider: { name: "Raider", tier: "uncommon", group: "The Wildlands", goal: { kind: "pvp", n: 10 }, how: "Beat 10 players in the Wildlands." },
+  bountyHunter: { name: "Bounty Hunter", tier: "rare", group: "The Wildlands", goal: { kind: "pvp", n: 25, outlaws: true }, how: "Beat 25 Outlaws in the Wildlands." },
+  reaper: { name: "Reaper", tier: "epic", group: "The Wildlands", goal: { kind: "pvp", n: 250 }, how: "Beat 250 players in the Wildlands." },
 
   // ------------------------------------------------------------ town
   shopkeeper: { name: "Shopkeeper", tier: "uncommon", group: "Town", goal: { kind: "shop" }, how: "Open your own shop in the Market Square." },
@@ -175,6 +191,10 @@ export function titleProgress(t: TitleDef, d: Deeds, level: number): [number, nu
       return [Math.min(d.sold, g.n), g.n];
     case "duels": {
       const n = g.won === "ranked" ? d.arenaWins : g.won === "any" ? d.duelWins : d.duels;
+      return [Math.min(n, g.n), g.n];
+    }
+    case "pvp": {
+      const n = g.outlaws ? d.bounties : d.pvpWins;
       return [Math.min(n, g.n), g.n];
     }
     case "pioneer":

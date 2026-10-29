@@ -8,9 +8,9 @@ import type { Missile } from "./fx";
 // left, down, right like the characters. Most sheets start with a three-column
 // idle/move loop; the attack columns follow.
 //
-// Orcs, goblins and the undead are put together from character art instead
-// (heads, bodies, armour and weapons from the LPC character generator), so
-// they walk like people and lunge to attack.
+// Orcs, goblins, the undead and the Wildlands' beastmen are put together from
+// character art instead (heads, bodies, tails, armour and weapons from the LPC
+// character generator), so they walk like people and lunge to attack.
 
 export interface MonsterArt {
   /** A sheet from the monster pack… */
@@ -140,6 +140,71 @@ export const MONSTER_ART: Record<MonsterId, MonsterArt> = {
       { category: "gear", id: "halberd" },
     ],
     { scale: 1.6, w: 44, h: 84 },
+  ),
+  // The Wildlands.
+  boarman: humanoid(
+    [
+      ...skin("fur_brown"),
+      { category: "mob", id: "boarHead", colors: { body: "fur_brown" } },
+      { category: "bottom", id: "pants", colors: { cloth: "leather" } },
+      { category: "shoes", id: "boots", colors: { cloth: "brown" } },
+      { category: "gear", id: "leatherArmor" },
+      { category: "mob", id: "flail" },
+    ],
+    { scale: 1.1, w: 30, h: 54 },
+  ),
+  lizardman: humanoid(
+    [
+      ...skin("green"),
+      { category: "mob", id: "lizardTail", colors: { body: "green" } },
+      { category: "mob", id: "lizardHead", colors: { body: "green" } },
+      { category: "bottom", id: "shorts", colors: { cloth: "teal" } },
+      { category: "gear", id: "legion", colors: { metal: "bronze" } },
+      { category: "gear", id: "roundShield" },
+      { category: "gear", id: "trident" },
+    ],
+    { scale: 1.05, w: 28, h: 52 },
+  ),
+  werewolf: humanoid(
+    [
+      ...skin("fur_grey"),
+      { category: "mob", id: "wolfTail" },
+      { category: "mob", id: "wolfHead", colors: { body: "fur_grey" } },
+      { category: "bottom", id: "pants", colors: { cloth: "slate" } },
+    ],
+    { scale: 1.1, w: 30, h: 54 },
+  ),
+  troll: humanoid(
+    [
+      ...skin("pale_green"),
+      { category: "mob", id: "trollHead", colors: { body: "pale_green" } },
+      { category: "bottom", id: "shorts", colors: { cloth: "brown" } },
+      { category: "mob", id: "mace" },
+    ],
+    { scale: 1.35, w: 36, h: 66 },
+  ),
+  vampire: humanoid(
+    [
+      ...skin("lavender"),
+      { category: "mob", id: "vampireHead", colors: { body: "lavender" } },
+      { category: "gear", id: "cape", colors: { cloth: "red" } },
+      { category: "bottom", id: "formal", colors: { cloth: "black" } },
+      { category: "shoes", id: "shoes", colors: { cloth: "black" } },
+      { category: "gear", id: "tabardBlack" },
+    ],
+    { scale: 1.05, w: 28, h: 52, missile: "bolt", missileFrom: 60 },
+  ),
+  minotaurKing: humanoid(
+    [
+      ...skin("fur_copper"),
+      { category: "mob", id: "minotaurHead", colors: { body: "fur_copper" } },
+      { category: "gear", id: "cape", colors: { cloth: "maroon" } },
+      { category: "gear", id: "plate", colors: { metal: "gold" } },
+      { category: "gear", id: "greaves", colors: { metal: "gold" } },
+      { category: "gear", id: "ironBoots", colors: { metal: "iron" } },
+      { category: "mob", id: "waraxe" },
+    ],
+    { scale: 1.7, w: 48, h: 90 },
   ),
 };
 

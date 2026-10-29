@@ -292,8 +292,34 @@ export const NPCS: NpcDef[] = [
     ...at(123.5, 183.6),
     dir: Dir.Down,
     greeting:
-      "The Orc Woods (Lv 20–30) start here. Goblins (Lv 20) in the grass north of the road jump anyone who comes close. Orc Warriors (Lv 23) on the rocks south of the road only fight back, but they hit hard. Orc Archers (Lv 25) shoot from up north along the wall. West of the inlet the Orc Skeletons (Lv 27) rattle about, and far to the south the Orc Zombies (Lv 29) never stop walking. Where the road ends, the Orc Warlord (Lv 33) keeps his camp. Bring friends.",
-    chatter: ["The Orc Woods are no place for beginners!", "Goblins hide in the grass north of the road.", "Orc Archers shoot from up north. Keep moving!", "The Warlord's camp is where the road ends…", "Level 20? You're ready for the woods."],
+      "The Orc Woods (Lv 20–30) start here. Goblins (Lv 20) in the grass north of the road jump anyone who comes close. Orc Warriors (Lv 23) on the rocks south of the road only fight back, but they hit hard. Orc Archers (Lv 25) shoot from up north. West of the inlet the Orc Skeletons (Lv 27) rattle about, and far to the south the Orc Zombies (Lv 29) never stop walking. Where the road ends, the Orc Warlord (Lv 33) keeps his camp. Bring friends.",
+    chatter: [
+      "The Orc Woods are no place for beginners!",
+      "Goblins hide in the grass north of the road.",
+      "Orc Archers shoot from up north. Keep moving!",
+      "The Warlord's camp is where the road ends…",
+      "Level 20? You're ready for the woods.",
+      "Past level 30? Take the path north to the Wildlands. Mind the other players!",
+    ],
+  },
+  {
+    // Beside the path north from the west road, just short of the Wildlands' border.
+    id: "bounty",
+    name: "Sable",
+    title: "Bounty Hunter",
+    kind: "local",
+    look: look({ body: "female", hair: "long", hairColor: "black", skin: "olive", top: "longsleeve", topColor: "black", bottom: "leggings", bottomColor: "charcoal", shoes: "boots", shoesColor: "black", hat: "bandana", hatColor: "red" }),
+    ...at(119.6, 139.6),
+    dir: Dir.Down,
+    greeting:
+      "Past the red line lie the Wildlands (Lv 30–40), and there's no law up there: players can attack each other. Hit someone who isn't an Outlaw and you become one for 3 minutes. Get beaten while you're an Outlaw and you lose EXP, and a bounty from your gold goes to whoever beat you. Fight back, or hunt Outlaws, and you lose nothing. Players under level 20 can't fight or be fought. Inside: Boarmen (Lv 31), Lizardmen (Lv 33), Werewolves (Lv 35), Trolls (Lv 37), Vampires (Lv 39), and the Minotaur King (Lv 44) on the highest ground.",
+    chatter: [
+      "Past the red line, anyone can attack you!",
+      "Red names are Outlaws. Hunting them costs you nothing.",
+      "An Outlaw's bounty goes to whoever beats them.",
+      "Bring White Potions. Bram sells them by the south gate.",
+      "The Minotaur King waits on the highest ground…",
+    ],
   },
   {
     // Just inside the south gate: Novices walk past him on their way out, and come back at level 10.

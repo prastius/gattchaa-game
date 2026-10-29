@@ -91,13 +91,20 @@ export const MARKET_WANDER: Rect = { x: 158, y: 213, w: 68, h: 29 };
 export const FORGE_YARD: Rect = { x: 174, y: 258, w: 13, h: 5 };
 /** The Orc Warlord's camp where the west road ends: kept clear of trees too. */
 export const ORC_CAMP: Rect = { x: 68, y: 176, w: 16, h: 9 };
+/** The Minotaur King's lair on the highest ground of the Wildlands: old stones round a fire, clear of rocks. */
+export const MINOTAUR_LAIR: Rect = { x: 190, y: 52, w: 16, h: 10 };
 
-/** Dirt roads (vertex rectangles) leading out of the three gates. */
+/** Dirt roads (vertex rectangles) leading out of the three gates, and two paths north along the walls to the Wildlands. */
 export const ROADS: Rect[] = [
   { x: 189, y: 252, w: 6, h: 44 }, // south
   { x: 60, y: 185, w: 66, h: 4 }, // west
   { x: 258, y: 185, w: 66, h: 4 }, // east
+  { x: 121, y: 118, w: 4, h: 68 }, // north from the west road
+  { x: 259, y: 118, w: 4, h: 68 }, // north from the east road
 ];
+/** Where the two paths north cross into the Wildlands (tile x of each path's middle, and the border's tile row). */
+export const WILD_CROSSINGS = [123, 261];
+export const WILD_BORDER_Y = 136;
 
 /** Names for parts of town, for "where is this shop?" (first match wins). */
 const PLACES: { name: string; rect: Rect }[] = [
@@ -514,6 +521,14 @@ const props: Prop[] = [
   { type: "crate", x: 79, y: 179 },
   { type: "barrel", x: 81, y: 181 },
   { type: "crate", x: 70, y: 182 },
+
+  // ---- The Minotaur King's lair: four old stones round his fire, and what he took from travellers.
+  ...[MINOTAUR_LAIR.x + 1, MINOTAUR_LAIR.x + MINOTAUR_LAIR.w - 2].flatMap((x) =>
+    [MINOTAUR_LAIR.y + 1, MINOTAUR_LAIR.y + MINOTAUR_LAIR.h - 2].map((y): Prop => ({ type: "pillar", x, y })),
+  ),
+  { type: "campfire", x: 198, y: 57 },
+  { type: "crate", x: 194, y: 53, variant: 1 },
+  { type: "barrels", x: 201, y: 53 },
 
   // ---- The park: benches by the pond, a campfire in the clearing, lamps where the trails start.
   { type: "bench", x: 141, y: 201, variant: 3 },

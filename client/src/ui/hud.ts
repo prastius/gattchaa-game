@@ -1,7 +1,8 @@
-import { DECOR, TILE_SIZE, Terrain, type World } from "../../../shared/world";
-import { Floor } from "../../../shared/town";
+import { DECOR, TILE_SIZE, Terrain, isWet, type World } from "../../../shared/world";
+import { Floor, inRect } from "../../../shared/town";
 import { EMOTES, EMOTE_NAMES } from "../../../shared/protocol";
-import { fieldAt, inSafeZone } from "../../../shared/rpg";
+import { FIELDS, fieldAt, inSafeZone } from "../../../shared/rpg";
+import { inPvpZone } from "../../../shared/pvp";
 
 export interface Dot {
   x: number;
@@ -55,6 +56,10 @@ export class HUD {
   private shops: readonly Dot[] = [];
   /** Outside the town walls, where monsters roam. */
   inField = false;
+  /** In the Wildlands, where players can fight each other. */
+  pvp = false;
+  /** Crossed into the Wildlands (true) or back out. */
+  onPvp?: (on: boolean) => void;
 
   constructor(private world: World) {
     // Pre-render the whole map once at 1px per tile.
@@ -75,9 +80,11 @@ export class HUD {
             ? (FLOOR_RGB[floor] ?? [200, 200, 200])
             : (TERRAIN_RGB[world.vertexAt(tx, ty)] ?? [0, 0, 0]);
         const d = DECOR[world.decorAt(tx, ty)];
-        const k = d.block ? 0.62 : 1;
+        // The Wildlands' land has a red cast, so you can see where PVP starts.
+        const pvp = !isWet(world.vertexAt(tx, ty)) && FIELDS.some((f) => f.pvp && inRect(f.area, tx, ty));
+        const k = (d.block ? 0.62 : 1) * (pvp ? 0.8 : 1);
         const o = (ty * world.width + tx) * 4;
-        img.data[o] = r * k;
+        img.data[o] = Math.min(255, r * k + (pvp ? 48 : 0));
         img.data[o + 1] = g * k;
         img.data[o + 2] = b * k;
         img.data[o + 3] = 255;
@@ -197,9 +204,15 @@ export class HUD {
     this.online.textContent = siteOnline > 0 ? `${onlineCount} in town · ${siteOnline} on Gattchaa` : `${onlineCount} in town`;
     if (self) {
       const field = fieldAt(self.x, self.y);
-      const place = this.indoors ? "Gattchaa Palace" : field ? `${field.name} (${field.levels})` : "";
+      const place = this.indoors ? "Gattchaa Palace" : field ? `${field.name} (${field.levels})${field.pvp ? " · PVP" : ""}` : "";
       if (this.place.textContent !== place) this.place.textContent = place;
       this.place.hidden = !place;
+      const pvp = !this.indoors && inPvpZone(self.x, self.y);
+      this.place.classList.toggle("pvp", pvp);
+      if (pvp !== this.pvp) {
+        this.pvp = pvp;
+        this.onPvp?.(pvp);
+      }
       this.coords.hidden = this.indoors;
       this.coords.textContent = `${Math.floor(self.x / TILE_SIZE)}, ${Math.floor(self.y / TILE_SIZE)}`;
       this.inField = !this.indoors && !inSafeZone(self.x, self.y);

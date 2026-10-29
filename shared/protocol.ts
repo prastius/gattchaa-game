@@ -121,6 +121,8 @@ export interface StatsMessage {
   buffs: { id: SkillId; ms: number }[];
   /** Signed in, so progress is saved. Guests start over next visit. */
   saved: boolean;
+  /** An Outlaw (see shared/pvp.ts): for how much longer (ms). */
+  outlaw?: number;
 }
 
 /** client -> server: use a bag slot (wear it, or drink it). */
@@ -167,7 +169,7 @@ export interface SkillLearnMessage {
   id: string;
 }
 
-/** client -> server: use a skill (on `t`, a monster id, or your current target). */
+/** client -> server: use a skill (on `t`, a monster or player id, or your current target). */
 export interface SkillUseMessage {
   id: string;
   t?: string;
@@ -251,6 +253,8 @@ export interface PlayerView {
   title?: string;
   /** Session id of their duel opponent ("" = none). */
   duel?: string;
+  /** An Outlaw: attacked an innocent player in the Wildlands not long ago. */
+  outlaw?: boolean;
 }
 
 /** Read-only shape of an item lying on the ground. */

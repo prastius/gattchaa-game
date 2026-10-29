@@ -536,7 +536,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     const meta = this.meta.get(client.sessionId);
     if (!meta || meta.shop) return;
     const id = typeof msg?.id === "string" ? msg.id.slice(0, 16) : "";
-    // (A player id is accepted only for your duel opponent.)
+    // (A player id is accepted only for your duel opponent, or someone fair game in the Wildlands.)
     this.combat.setTarget(client.sessionId, id);
   }
 

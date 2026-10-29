@@ -129,7 +129,13 @@ export type MonsterId =
   | "orcArcher"
   | "orcSkeleton"
   | "orcZombie"
-  | "orcWarlord";
+  | "orcWarlord"
+  | "boarman"
+  | "lizardman"
+  | "werewolf"
+  | "troll"
+  | "vampire"
+  | "minotaurKing";
 
 export interface MonsterDef {
   id: MonsterId;
@@ -264,6 +270,57 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
       ["mithril", 1], ["starCrystal", 1], ["starCrystal", 0.5], ["warlordMedal", 0.06], ["dragonSpear", 0.02], ["orcWarlordCard", 0.02],
     ],
   },
+
+  // ---------------------------------------------------------------- the Wildlands (Lv 30–40), north of town: open PVP
+  // Boarmen roam the grass just past the border and charge anyone who comes near.
+  boarman: {
+    id: "boarman", name: "Boarman", level: 31, hp: 2100, atk: 46, def: 22, exp: 2500, gold: [38, 62], speed: 50, chase: 110, aggro: 60, range: 38, attackMs: 1600, radius: 13, respawnMs: 18_000,
+    drops: [
+      ["boarHide", 0.6], ["whitePotion", 0.04], ["orangePotion", 0.06], ["armet", 0.005], ["wolfskinVest", 0.004], ["longSpear", 0.004],
+      ["mithril", 0.05], ["boarmanCard", 0.001],
+    ],
+  },
+  // Scaly and stubborn: only fights back, but its spear reaches further than a sword.
+  lizardman: {
+    id: "lizardman", name: "Lizardman", level: 33, hp: 2500, atk: 58, def: 30, exp: 2900, gold: [40, 66], speed: 40, chase: 85, aggro: 0, range: 48, attackMs: 1700, radius: 13, respawnMs: 20_000,
+    drops: [
+      ["lizardScale", 0.6], ["whitePotion", 0.05], ["towerShield", 0.005], ["longSpear", 0.005], ["serpentStaff", 0.004], ["goldGreaves", 0.004], ["trident", 0.002],
+      ["mithril", 0.05], ["starCrystal", 0.006], ["lizardmanCard", 0.001],
+    ],
+  },
+  // Fast, and quick with its claws. Hunts anyone in the woods.
+  werewolf: {
+    id: "werewolf", name: "Werewolf", level: 35, hp: 2400, atk: 50, def: 20, exp: 3200, gold: [42, 70], speed: 65, chase: 120, aggro: 60, range: 36, attackMs: 1300, radius: 13, respawnMs: 20_000,
+    drops: [
+      ["wolfPelt", 0.6], ["whitePotion", 0.05], ["longbow", 0.005], ["wolfskinVest", 0.004], ["goldSabatons", 0.004], ["wolfFang", 0.003],
+      ["mithril", 0.05], ["starCrystal", 0.007], ["werewolfCard", 0.001],
+    ],
+  },
+  // Huge and slow. Leave it alone and it leaves you alone.
+  troll: {
+    id: "troll", name: "Troll", level: 37, hp: 3100, atk: 76, def: 24, exp: 4300, gold: [46, 76], speed: 30, chase: 70, aggro: 0, range: 42, attackMs: 2000, radius: 16, respawnMs: 22_000,
+    drops: [
+      ["trollTooth", 0.6], ["whitePotion", 0.07], ["closeHelm", 0.004], ["goldPlate", 0.003], ["wildRing", 0.003], ["flameBlade", 0.002],
+      ["mithril", 0.06], ["starCrystal", 0.008], ["trollCard", 0.001],
+    ],
+  },
+  // Casts dark bolts from afar at anyone it sees.
+  vampire: {
+    id: "vampire", name: "Vampire", level: 39, hp: 2500, atk: 52, def: 22, exp: 4300, gold: [48, 80], speed: 45, chase: 90, aggro: 110, range: 170, attackMs: 2000, radius: 12, respawnMs: 22_000,
+    drops: [
+      ["bloodRuby", 0.55], ["whitePotion", 0.06], ["celestialHat", 0.005], ["mysticRobe", 0.004], ["engrailedShield", 0.003], ["flameBlade", 0.002],
+      ["mithril", 0.05], ["starCrystal", 0.01], ["vampireCard", 0.001],
+    ],
+  },
+  // The Wildlands' boss, in his lair on the highest ground.
+  minotaurKing: {
+    id: "minotaurKing", name: "Minotaur King", level: 44, hp: 45_000, atk: 120, def: 40, exp: 90_000, gold: [2000, 4000], speed: 35, chase: 85, aggro: 150, range: 52, attackMs: 1800, radius: 24, respawnMs: 1_200_000,
+    boss: true, regen: 0.004,
+    drops: [
+      ["minotaurCrown", 1], ["whitePotion", 0.8], ["trident", 0.2], ["closeHelm", 0.2], ["engrailedShield", 0.2], ["goldPlate", 0.15], ["flameBlade", 0.15],
+      ["mithril", 1], ["starCrystal", 1], ["starCrystal", 0.6], ["minotaurHorn", 0.06], ["sunfireBow", 0.015], ["archmageStaff", 0.015], ["minotaurKingCard", 0.02],
+    ],
+  },
 };
 
 export const isMonsterId = (id: unknown): id is MonsterId => typeof id === "string" && Object.hasOwn(MONSTERS, id);
@@ -286,6 +343,8 @@ export interface Field {
   area: Rect;
   /** Left as the land is (trees and rocks stay). Otherwise the world generator thins the trees into open meadow. */
   wild?: boolean;
+  /** Open PVP: players may fight each other here (see shared/pvp.ts). */
+  pvp?: boolean;
   spawns: SpawnGroup[];
 }
 
@@ -335,12 +394,31 @@ export const FIELDS: Field[] = [
       // Goblins in the grass north of the west road, right outside the gate; orc warriors on the rocky ground south of it.
       { monster: "goblin", rect: { x: 94, y: 158, w: 24, h: 22 }, count: 10 },
       { monster: "orcWarrior", rect: { x: 92, y: 198, w: 28, h: 24 }, count: 12 },
-      // Archers up north along the wall; skeletons west of the inlet; zombies far to the south.
-      { monster: "orcArcher", rect: { x: 96, y: 110, w: 24, h: 18 }, count: 7 },
+      // Archers up north (out of bowshot of the path to the Wildlands); skeletons west of the inlet; zombies far to the south.
+      { monster: "orcArcher", rect: { x: 96, y: 110, w: 18, h: 18 }, count: 7 },
       { monster: "orcSkeleton", rect: { x: 60, y: 138, w: 24, h: 20 }, count: 8 },
       { monster: "orcZombie", rect: { x: 66, y: 228, w: 52, h: 26 }, count: 10 },
       // The Orc Warlord's camp, where the west road ends.
       { monster: "orcWarlord", rect: { x: 70, y: 178, w: 10, h: 10 }, count: 1 },
+    ],
+  },
+  {
+    id: "wildlands",
+    name: "Wildlands",
+    levels: "Lv 30–40",
+    area: { x: 120, y: 16, w: 216, h: 120 },
+    wild: true,
+    pvp: true,
+    spawns: [
+      // Boarmen in the grass past the west path, lizardmen on the dry ground past the east path.
+      { monster: "boarman", rect: { x: 128, y: 112, w: 40, h: 22 }, count: 10 },
+      { monster: "lizardman", rect: { x: 222, y: 110, w: 40, h: 24 }, count: 12 },
+      // Deeper in: werewolves in the north-west woods, trolls on the highlands, vampires on the high ground to the north-east.
+      { monster: "werewolf", rect: { x: 126, y: 58, w: 44, h: 32 }, count: 9 },
+      { monster: "troll", rect: { x: 178, y: 86, w: 44, h: 24 }, count: 10 },
+      { monster: "vampire", rect: { x: 234, y: 62, w: 34, h: 34 }, count: 8 },
+      // The Minotaur King's lair, on the highest ground.
+      { monster: "minotaurKing", rect: { x: 194, y: 54, w: 8, h: 6 }, count: 1 },
     ],
   },
 ];

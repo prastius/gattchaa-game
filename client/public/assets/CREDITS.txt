@@ -1203,6 +1203,14 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Licenses: CC0
 - <https://opengameart.org/content/lpc-hair>
 
+### Armet (hat/helmet/armet)
+
+- Authors: bluecarrot16, Johannes Sjölund (wulax), JaidynReiman
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+- Notes: previously called helmet/armor, original version by Johannes Sjölund (wulax), adjustments by bluecarrot16, color reduction by JaidynReiman
+- <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+- <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
+
 ### Arming Sword (weapon/sword/arming)
 
 - Authors: ElizaWy; walk and down by JaidynReiman
@@ -1345,6 +1353,15 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
 - <https://opengameart.org/content/lpc-7-womens-shirts>
 
+### Boarman (head/heads/boarman)
+
+- Authors: Benjamin K. Smith (BenCreating), Daniel Eddeland (daneeklu)
+- Licenses: CC-BY 3.0, GPL 2.0
+- Notes: pig by daneeklu adapted to boarman by BenCreating, placed to v3 bases by bluecarrot16
+- <https://opengameart.org/content/lpc-style-farm-animals>
+- <https://opengameart.org/content/lpc-wild-boar>
+- <https://opengameart.org/content/lpc-boarman>
+
 ### Bob (hair/bob)
 
 - Authors: ElizaWy, bluecarrot16
@@ -1425,6 +1442,21 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing>
 - <https://opengameart.org/content/lpc-expanded-sit-run-jump-more>
 - <https://opengameart.org/content/lpc-expanded-simple-shirts>
+
+### Celestial Wizard Hat (hat/magic/celestial)
+
+- Authors: Napsio (Vitruvian Studio), Michael Whitlock (bigbeargames), Tracy
+- Licenses: CC-BY 3.0
+- Notes: Original by Tracy, Adapted to ULPC by Big Bear Games, reduced colors by Napsio
+- <https://opengameart.org/content/lpc-celestial-wizard-hats>
+- <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
+
+### Close helm (hat/helmet/close)
+
+- Authors: bluecarrot16
+- Licenses: OGA-BY 3.0, CC-BY 3.0, CC-BY 4.0, GPL 2.0, GPL 3.0
+- <https://opengameart.org/content/lpc-helmets>
+- <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
 
 ### Cornrows (hair/cornrows)
 
@@ -1531,6 +1563,12 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://opengameart.org/content/lpc-hair>
 - <https://github.com/ElizaWy/LPC/blob/main/Characters/Hair>
 - <https://opengameart.org/content/lpc-expanded-sit-run-jump-more>
+
+### Flail (weapon/blunt/flail)
+
+- Authors: Benjamin K. Smith (BenCreating), bluecarrot16, Sander Frenken (castelonia)
+- Licenses: CC-BY-SA 3.0, GPL 3.0
+- <https://opengameart.org/content/lpc-medieval-weapons>
 
 ### Flat top fade (hair/flat_top_fade)
 
@@ -1785,6 +1823,21 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Notes: adapted to v3 bases by bluecarrot16, jump/run/sit/combat and teen by JaidynReiman, color reduction to 6 colors inspired by Napsio (Vitruvian Studio)
 - <https://opengameart.org/content/lpc-roman-armor>
 
+### Lizard male (head/heads/lizard/male)
+
+- Authors: bluecarrot16, Benjamin K. Smith (BenCreating), Nila122
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+- Notes: original lizard/drake by Nila122, reworked by BenCreating, modular head and further revisions by bluecarrot16. Nila122 gave blanket permission to MedicineStorm to use Nila122's LPC assets under OGA-BY 3.0 (where original or derived only from other works under OGA-BY).
+- <https://opengameart.org/content/drakes-and-lizardfolk>
+- <https://opengameart.org/content/lpc-character-bases>
+
+### Lizard tail (body/tail/lizard)
+
+- Authors: Nila122, bluecarrot16, JaidynReiman
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+- Notes: edited for v3 bases and recolored by bluecarrot16, additional animations added by JaidynReiman
+- <https://opengameart.org/content/drakes-and-lizardfolk>
+
 ### Lob (hair/lob)
 
 - Authors: bluecarrot16
@@ -1815,6 +1868,13 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing>
 - <https://opengameart.org/content/lpc-expanded-sit-run-jump-more>
 - <https://opengameart.org/content/lpc-expanded-pants>
+
+### Long spear (weapon/polearm/longspear)
+
+- Authors: Pierre Vigier (pvigier), Johannes Sjölund (wulax), Inboxninja
+- Licenses: CC-BY-SA 3.0
+- Notes: original by wulax from expansion_pack-0.04 walk animations adapted from those by pvigier, split into layers and tweaked for v3 character bases by bluecarrot16
+- <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
 
 ### Long straight (hair/long_straight)
 
@@ -1941,6 +2001,15 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Licenses: CC-BY-SA 3.0, GPL 3.0
 - <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
 - <https://opengameart.org/content/lpc-expanded-hair>
+
+### Minotaur (head/heads/minotaur)
+
+- Authors: Evert, Nila122, Daniel Eddeland (daneeklu)
+- Licenses: CC-BY-SA 3.0, GPL 3.0
+- Notes: original cow by daneeklu, combined with horns by Nila122 and adapted to minotaur by Evert
+- <https://opengameart.org/content/lpc-style-farm-animals>
+- <https://opengameart.org/content/lpc-lizard-headgear>
+- <https://opengameart.org/content/lpc-faun-and-minotaur>
 
 ### Mop (hair/mop)
 
@@ -2133,6 +2202,14 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
 - <https://opengameart.org/content/lpc-shields-pack>
 
+### S staff (weapon/magic/s)
+
+- Authors: LordNeo, Michael Whitlock (bigbeargames), bluecarrot16
+- Licenses: CC0
+- Notes: Wooden staff by LordNeo, first adapted to LPC by bigbeargames; re-drawn and walk animations added by bluecarrot16
+- <https://opengameart.org/content/staff-64-x64>
+- <https://opengameart.org/content/lpc-magic-staff>
+
 ### Saber (weapon/sword/saber)
 
 - Authors: Daniel Eddeland (daneeklu), Johannes Sjölund (wulax), gr3yh47, bluecarrot16
@@ -2161,6 +2238,12 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Authors: Pierre Vigier and DCSS artists (see https://github.com/crawl/tiles/blob/master/ARTISTS.md)
 - Licenses: OGA-BY 3.0
 - <https://opengameart.org/content/lpc-dcss-swords>
+
+### Scutum shield (shield/scutum)
+
+- Authors: bluecarrot16, Sander Frenken (castelonia)
+- Licenses: OGA-BY 3.0
+- <https://opengameart.org/content/lpc-shields>
 
 ### Shades (facial/glasses/shades)
 
@@ -2402,12 +2485,29 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://opengameart.org/content/lpc-relm-hair-xlong-ponytail>
 - <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
 
+### Trident (weapon/polearm/trident)
+
+- Authors: Daniel Eddeland (daneeklu), gr3yh47, Johannes Sjölund (wulax)
+- Licenses: CC-BY-SA 3.0
+- Notes: original "trident" by daneeklu and gr3yh47; adapted to opposite hand and split into layers by bluecarrot16
+- <https://opengameart.org/content/lpc-weapons-two-bows-a-spear-and-a-trident>
+- <https://opengameart.org/content/lpc-extended-weapon-animations>
+
 ### Trimmed Beard (beards/beard/trimmed)
 
 - Authors: ElizaWy
 - Licenses: OGA-BY 3.0
 - <https://github.com/ElizaWy/LPC/tree/main/Characters/Hair>
 - <https://opengameart.org/content/lpc-expanded-sit-run-jump-more>
+
+### Troll (head/heads/troll)
+
+- Authors: bluecarrot16, AntumDeluge, Tuomo Untinen (reemax)
+- Licenses: CC-BY 3.0
+- Notes: original "Muscleman/Ogre/Minotaur" by Reemax, modified to "Troll" by AntumDeluge, edited to LPC style and converted to modular head by bluecarrot16
+- <https://opengameart.org/content/musclemanogreminotaur>
+- <https://opengameart.org/content/trolls-0>
+- <https://opengameart.org/content/lpc-folk>
 
 ### TShirt (torso/clothes/shortsleeve/tshirt)
 
@@ -2464,12 +2564,26 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Licenses: CC0
 - <https://opengameart.org/content/lpc-hair>
 
+### Two engrailed shield (shield/two_engrailed)
+
+- Authors: bluecarrot16, Sander Frenken (castelonia)
+- Licenses: OGA-BY 3.0
+- <https://opengameart.org/content/lpc-shields>
+
 ### Unkempt (hair/unkempt)
 
 - Authors: JaidynReiman, Manuel Riecke (MrBeast)
 - Licenses: CC-BY-SA 3.0, GPL 3.0
 - <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
 - <https://opengameart.org/content/lpc-expanded-hair>
+
+### Vampire (head/heads/vampire)
+
+- Authors: Stephen Challener (Redshrike), bluecarrot16
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+- Notes: original head by Redshrike, gaunt version by bluecarrot16, vampire fangs by bluecarrot16
+- <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
+- <https://opengameart.org/content/lpc-folk>
 
 ### Viking spangenhelm (hat/helmet/spangenhelm_viking)
 
@@ -2499,6 +2613,22 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://opengameart.org/content/lpc-items-and-game-effects>
 - <https://opengameart.org/content/lpc-pointed-hats>
 - <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
+
+### Wolf male (head/heads/wolf/male)
+
+- Authors: bluecarrot16, Sander Frenken (castelonia), Benjamin K. Smith (BenCreating), William.Thompsonj, Stephen Challener (Redshrike)
+- Licenses: CC-BY-SA 3.0, GPL 3.0
+- Notes: original wolf animation by Redshrike, commissioned by William.Thompsonj; wolfman sprite by BenCreating, commissioned by castelonia; tweaks and headless version by bluecarrot16
+- <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
+- <https://opengameart.org/content/lpc-wolf-animation>
+- <https://opengameart.org/content/lpc-wolfman>
+- <https://opengameart.org/content/lpc-character-bases>
+
+### Wolf Tail (body/tail/wolf)
+
+- Authors: JaidynReiman
+- Licenses: OGA-BY 3.0+, CC-BY 3.0+, GPL 3.0
+- <https://opengameart.org/content/lpc-furry-ears-tails-for-rpg-sprites>
 
 ### XLong Wavy (hair/xlong_wavy)
 

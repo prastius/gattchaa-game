@@ -160,7 +160,7 @@ scripts/
 Ragnarok and TibiaME style: click a monster and your character fights it. Everything about a fight is decided on the server, and the numbers live in `shared/rpg.ts`.
 
 - **Classes.** Everyone starts as a Novice; at level 10 the Job Master makes you a Knight, Mage or Archer (see below). HP, MP, attack and defence grow by class as you level.
-- **Levels.** The cap is `LEVEL_CAP` (50 for now). The EXP curve (`expToNext`) is gentle through the Novice levels, then climbs to three times as much from the job change to level 13, so job levels take a few minutes each (about 4 at level 12, about 8 at level 18, 12 to 15 in the Orc Woods, fighting on-level monsters with plain attacks). It keeps going past the cap, so raising it is a one-line change. At the cap, EXP stops filling.
+- **Levels.** The cap is `LEVEL_CAP` (50 for now). The EXP curve (`expToNext`) is gentle through the Novice levels, then climbs to three times as much from the job change to level 13, so job levels take a few minutes each (about 4 at level 12, about 8 at level 18, 12 to 15 in the Orc Woods, 11 to 15 in the Wildlands, fighting on-level monsters with plain attacks). It keeps going past the cap, so raising it is a one-line change. At the cap, EXP stops filling.
 - **Fields.** Monsters live outside the walls. The town (and the palace) is always safe: monsters never come in, and nobody can attack from inside. The first field is the **South Meadow**, out of the south gate (Rowan the Gate Guard explains it):
 
   | Monster | Level | Where | Behaviour |
@@ -187,17 +187,28 @@ Ragnarok and TibiaME style: click a monster and your character fights it. Everyt
   | --- | --- | --- | --- |
   | Goblin | 20 | Grass north of the west road | Fast; attacks anyone close |
   | Orc Warrior | 23 | Rocky ground south of the road | Tough; only fights back |
-  | Orc Archer | 25 | North, along the town wall | Shoots arrows from 180 px; attacks on sight |
+  | Orc Archer | 25 | North, west of the path to the Wildlands | Shoots arrows from 180 px; attacks on sight |
   | Orc Skeleton | 27 | West of the inlet | Attacks anyone close |
   | Orc Zombie | 29 | Far south | Very slow; hits hardest |
   | **Orc Warlord** | 33 | His camp where the west road ends (`ORC_CAMP`) | Field boss: 24,000 HP, 15 min respawn, for a party |
 
-- **Field boss.** The Pumpking is Dusk Hollow's boss, Ragnarok's MVP style: one at a time, 12,000 HP, breathes fire from 150 px, heals only slowly when left alone, and comes back 10 minutes after it falls. It's drawn bigger, with its name and health always showing. The whole town hears when it rises again and who brought it down. A level 20 Knight can just about beat it alone with plenty of potions; a party shares the EXP by damage. It always drops King's Candy (600 gold at Bram), often a good piece of gear, and very rarely the Moonblade or the Pumpking Card. The Orc Woods' Orc Warlord is the same kind of boss, bigger (24,000 HP, back after 15 minutes), with the Dragon Spear and his own card as the rare prizes. Any monster can be a boss (`boss: true` in `MONSTERS`).
+  The fourth field is the **Wildlands** (Lv 30–40), north of town, up two paths that run along the walls from the west and east roads: grass and woods round rocky highlands. It's the one **open PVP** field (`pvp: true`, see "Open PVP" below). Sable the Bounty Hunter explains it:
+
+  | Monster | Level | Where | Behaviour |
+  | --- | --- | --- | --- |
+  | Boarman | 31 | Grass past the west path | Charges anyone close |
+  | Lizardman | 33 | Dry ground past the east path | Only fights back; reach 48 px (a trident) |
+  | Werewolf | 35 | North-west woods | Fast; attacks anyone close |
+  | Troll | 37 | The highlands | Huge and slow; only fights back |
+  | Vampire | 39 | High ground, north-east | Casts dark bolts from 170 px; attacks on sight |
+  | **Minotaur King** | 44 | His lair on the highest ground (`MINOTAUR_LAIR`) | Field boss: 45,000 HP, 20 min respawn, for a party of four |
+
+- **Field boss.** The Pumpking is Dusk Hollow's boss, Ragnarok's MVP style: one at a time, 12,000 HP, breathes fire from 150 px, heals only slowly when left alone, and comes back 10 minutes after it falls. It's drawn bigger, with its name and health always showing. The whole town hears when it rises again and who brought it down. A level 20 Knight can just about beat it alone with plenty of potions; a party shares the EXP by damage. It always drops King's Candy (600 gold at Bram), often a good piece of gear, and very rarely the Moonblade or the Pumpking Card. The Orc Woods' Orc Warlord is the same kind of boss, bigger (24,000 HP, back after 15 minutes), with the Dragon Spear and his own card as the rare prizes. The Wildlands' Minotaur King is the biggest yet (45,000 HP, back after 20 minutes), with the legendary Sunfire Bow, Archmage Staff and his own card as the rare prizes, and other players free to attack whoever fights him. Any monster can be a boss (`boss: true` in `MONSTERS`).
 
 - **Fighting.** You auto-attack once a second while the monster is in reach. Hits can miss (more often against higher levels), and 5 % are critical hits. The client only says what you're attacking and draws what the server reports: damage numbers, slashes, health bars.
 - **Rewards.** EXP is shared by everyone who hurt the monster, by how much damage they did. Monsters more than 5 levels below you give less (down to 10 %). Gold goes to whoever did the most damage. Level-ups heal you fully, and every 10th level is announced in chat.
 - **Healing.** Out of combat you regain HP and MP slowly. Sitting (X) is 3 times faster, and resting inside the walls doubles that again.
-- **Fainting.** At 0 HP you faint and return to town fully healed. Novices lose no EXP; Knights, Mages and Archers lose 3 % of a level.
+- **Fainting.** At 0 HP you faint and return to town fully healed. Novices lose no EXP; Knights, Mages and Archers lose 3 % of a level. Beaten by a player in the Wildlands, only an Outlaw loses anything.
 - **Saving.** Signed-in players' progress is saved on every level-up and faint, every 30 s, and when they leave. Guests can fight too, but start over next visit.
 - **Server cost.** Monsters only think while a player is near their spawn area, and fight events go only to players close enough to see them. 20 bots fighting at once used about 5 % of one CPU core.
 - **Testing.** Outside production (`NODE_ENV` not `production`), chat commands help: `/level 25` jumps to a level, `/item saber` (or `/item redPotion 20`, `/item hornetCard`, `/item moonblade +10`) adds items, `/gold 1000` sets your gold, `/job archer` turns you into a class (from level 10; `/job novice` goes back), `/title kingslayer` hands you a title. To test duels you need a second player (another window, or a bot). Shops need a signed-in seller (run the Gattchaa mock to sign in) and a second player to buy. `/help` lists every item id.
@@ -228,10 +239,11 @@ Every item is in `shared/items.ts`: its stats, price, rarity, icon, and how it l
 - **Rarity.** Common, Uncommon (green), Rare (blue), Epic (purple) and Legendary (orange). Rare finds get a chat line; a Legendary find is announced to the whole town. On the ground, rarer loot glows, and Legendary loot sends up a pillar of light.
 - **Loot.** Each monster has a drop table in `shared/rpg.ts` (every entry rolled on its own): its own monster loot (Slime Jelly, Snake Scale, Wild Honey, Bloom Crystal), potions, and now and then a piece of gear. Loot lands on the ground around the monster. For 15 seconds only the player who did the most damage can take it (it looks faded to everyone else); then anyone can. It fades away after 90 seconds. Click it to walk over and pick it up.
 - **Bag.** 30 slots. Potions and loot stack up to 99. Click an item for its details, double-click to wear or drink it. You can drop things on the ground, where anyone can pick them up.
-- **Potions.** Red Potions heal 40 HP, Orange Potions 100 HP, one every 0.8 s, even mid-fight. Q drinks the smallest one that heals you fully.
+- **Potions.** Red Potions heal 40 HP, Orange Potions 100 HP, White Potions 250 HP, one every 0.8 s, even mid-fight. Q drinks the smallest one that heals you fully.
 - **The Outfitter.** Bram stands outside the south gate, across from Rowan. He sells potions and starter gear (Dagger, Short Sword, Wooden Shield, Leather Cap, Chain Coif, Leather Armour, Leather Pants and Boots, Copper Ring, Clover Charm) and buys anything with a price, with a one-click "sell all monster loot". Better gear only comes from monsters.
 - **Dusk Hollow gear.** Level 12–20 drops, all visible on the character: Wizard Hat, Ranger Hood (hides your hair), Horned Helm, Greathelm, Guard Tabard, Sage Tabard, Kite Shield, Crusader Shield, Rapier, Knight's Blade, Great Bow, Ember Staff, and the Pumpking's Moonblade. Each monster also has its own loot to sell (Sticky Silk, Bat Fang, Rock Shard, Gazer Lens, Ectoplasm).
 - **Orc Woods gear.** Level 22–30 drops: Scimitar, Katana, Composite Bow, Crossbow, Ring Staff, Diamond Staff, Round and Spartan Shields, Barbarian and Viking Helms, Scout Armour and Starry Cloak (both with a cape), Dark Plate, Steel Greaves and Sabatons, two rings and two amulets, and from the Orc Warlord the Warlord's Medal and the legendary Dragon Spear. **Spears** are a new weapon type (`spear` in `WEAPON_USERS`), for Knights only and two-handed: the Halberd and the Dragon Spear. Six more cards (Goblin, Orc Warrior, Orc Archer, Orc Skeleton, Orc Zombie and the legendary Orc Warlord Card) bring the total to 16.
+- **Wildlands gear.** Level 32–40 drops: Long Spear and Trident (spears), Flame Blade, Longbow, Serpent Staff, Tower and Engrailed Shields, Armet, Celestial Hat, Close Helm, Wolfskin Vest, Mystic Robe, Golden Plate, Greaves and Sabatons, the Ring of the Wild and Wolf Fang Necklace, and from the Minotaur King the Minotaur Horn and the legendary Sunfire Bow and Archmage Staff. Bram sells White Potions (250 HP) for the Wildlands. Six more cards (Boarman, Lizardman, Werewolf, Troll, Vampire and the legendary Minotaur King Card) bring the total to 22.
 - **Saving.** The bag and equipment are saved with the rest of your progress, plus right away after buying, selling or finding something good. Guests keep their bag until they leave.
 - **Defence.** Damage is softened by defence rather than reduced by it (defence equal to the attack halves a hit), so armour always helps but never makes you untouchable.
 
@@ -274,7 +286,7 @@ Hilda the Blacksmith works by her forge fire outside the south gate, west of Row
 | +10 | 25% | 2,500 gold | Star Crystal |
 
 - **What it adds.** Weapons get ATK for every level: an eighth of their own ATK, at least 1 (Saber +2, Moonblade +4). Shields, helmets, armour, legs and boots get DEF +1 per level. Rings and amulets can't be upgraded. A worn upgrade counts straight away.
-- **Ingots.** Hilda sells Iron Ingots (100 gold); monsters drop them too. Mithril Ingots drop in Dusk Hollow (Rock Worms most often) and rarely from Snapper Flowers. Star Crystals come from Gazers and Ghosts (about 1 in 200 to 250), Orc Skeletons and Orc Zombies (about 1 in 125 to 170), the Pumpking (one kill in two) and the Orc Warlord (always). The Pumpking also always carries a Mithril Ingot or two. Ingots are kept out of Bram's "sell all monster loot".
+- **Ingots.** Hilda sells Iron Ingots (100 gold); monsters drop them too. Mithril Ingots drop in Dusk Hollow, the Orc Woods and the Wildlands, and rarely from Snapper Flowers. Star Crystals come from Gazers and Ghosts (about 1 in 200 to 250), Orc Skeletons and Orc Zombies (about 1 in 125 to 170), the Wildlands' monsters past the Boarmen (about 1 in 100 to 170), the Pumpking (one kill in two), and the Orc Warlord and Minotaur King (always). The Pumpking also always carries a Mithril Ingot or two. Ingots are kept out of Bram's "sell all monster loot".
 - **The cost of luck.** Simulated over 20,000 tries, reaching +7 takes about 10 tries (6,000 gold, 4 Mithril), +9 about 29 tries (32,000 gold, 19 Mithril, 3 Star Crystals), and +10 about 74 tries (100,000 gold, 50 Mithril, 16 Star Crystals).
 - **Names.** Upgraded gear goes first in the name: "+7 Double Stinging Saber". The bag shows the level in the item's corner and what the upgrades add. Upgrades stay on gear that's dropped and picked up again; Bram won't buy upgraded gear.
 - **Auras.** Wear anything at +7 or higher and everyone sees an aura at your feet: a blue ring at +7, violet with rising sparks at +9, and gold with a column of light at +10. Legendary gear (or a legendary card in gear) gives an orange aura that ranks between +9 and +10. The best one you qualify for shows (`auraOf` in `shared/items.ts`), unless your shown title has its own. At night auras glow like the street lamps (a glow above the night tint).
@@ -300,6 +312,16 @@ Player vs player by agreement only. The rules are in `shared/duels.ts`; the figh
 - **Endings.** 0 HP loses; giving up (`duel:quit`), leaving the game or fainting to a monster forfeits; 2 minutes or more than 16 tiles apart is a draw. Both are healed afterwards; nobody loses anything.
 - **Ranked.** A duel is ranked when both stand in `ARENA` (the ring behind the café) at the start and both are signed in; leaving the ring then forfeits. Ratings are Elo (start 1,000, K 32) in the `arena` table (migration v7), and a ranked win is town news. Magnus the Arena Master (`arena:board`) shows the top 10 and your place.
 - **Titles.** Deeds count duels fought, won, and won in the ring: Good Sport, Duelist, Gladiator.
+
+## Open PVP
+
+In the Wildlands, players fight without asking. The rules are in `shared/pvp.ts` (shared, so the client knows who can be clicked to attack); the fighting is in `Combat` ("open PVP"), reusing the duel code (`foe`, `hurtFoe`, `PVP_DAMAGE`).
+
+- **Who may hit whom.** `pvpBlock` says why not, or "": both players inside a field with `pvp: true`, both level `PVP_MIN_LEVEL` (20) or more, neither knocked out nor in a duel. The client uses the same check: clicking a fair-game player opens their card with an **Attack** button, clicking an Outlaw (or anyone, when you're one already) attacks at once. `target` accepts a player id when `foe` allows it; area skills only catch the player you're fighting.
+- **Outlaws.** Striking a player who isn't an Outlaw (`aggress`) makes you one for `OUTLAW_MS` (3 minutes) from your latest such strike. It syncs as `Player.outlaw` (a red name with a skull) and as `outlaw` (ms left) in your sheet. Outlaws who leave are remembered by name until it runs out.
+- **Beaten.** `beaten`: an innocent loses nothing (`knockOut` without the EXP loss). An Outlaw loses EXP like any faint and `bountyOf` their gold (5 %, at most 5,000) goes to the winner; their name is clean again. Leaving within `PVP_COMBAT_MS` (10 s) of another player's attack counts as being beaten by them (a dropped connection still gets its 20 s to come back first).
+- **Titles.** Deeds `pvpWins` and `bounties`: Raider, Bounty Hunter, Reaper. The same winner and loser count once per `PVP_RECOUNT_MS` (10 minutes), so friends can't farm each other.
+- **On screen.** A dashed red line with flags marks the border (`wildBorder` in the client's `Town`), with a sign by each path (`WILD_CROSSINGS`); the minimap tints the Wildlands red; crossing shows a banner; the place reads "· PVP" in red; health bars show for everyone in the field.
 
 ## Gattchaa shop data
 
