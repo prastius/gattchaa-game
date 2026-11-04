@@ -67,8 +67,8 @@ export class DuelUI {
 
   // ------------------------------------------------------------------ the player card
 
-  /** Someone else was clicked: who they are, a challenge button, and (in the Wildlands) `attack` them. */
-  openCard(id: string, p: PlayerInfo, attack?: () => void) {
+  /** Someone else was clicked: who they are, a challenge button, (in the Wildlands) `attack` them, and a party invite (or why not). */
+  openCard(id: string, p: PlayerInfo, attack?: () => void, party?: { go?: () => void; note: string }) {
     this.card.replaceChildren();
     const head = el("div", "player-card-head");
     head.append(el("b", "", p.name));
@@ -106,7 +106,19 @@ export class DuelUI {
       this.closeCard();
     });
     const note = el("p", "player-card-note", this.duel ? "Finish your duel first." : "In the Arena's ring, it counts for the ranking. Nobody loses anything.");
-    this.card.append(head, about, ...fight, challenge, note);
+    const together: HTMLElement[] = [];
+    if (party?.go) {
+      const invite = el("button", "dialog-link player-card-party", "👥 Invite to party");
+      invite.type = "button";
+      invite.addEventListener("click", () => {
+        audio.blip();
+        party.go!();
+        this.closeCard();
+      });
+      together.push(invite);
+    }
+    if (party) together.push(el("p", "player-card-note", party.note));
+    this.card.append(head, about, ...fight, challenge, note, ...together);
     this.card.hidden = false;
   }
 

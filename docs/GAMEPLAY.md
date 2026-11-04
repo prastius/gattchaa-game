@@ -28,6 +28,8 @@ The game has three parts:
 | Talk to someone, use a machine or stall | Walk up and press **E** (or click it) | Tap it |
 | Attack a monster | Click it, or press **Space** for the nearest one | Tap it, or the sword button |
 | Challenge someone to a duel | Click them, then **Challenge to a duel** | Tap them, then the same button |
+| Invite someone to your party | Click them, then **Invite to party** | Tap them, then the same button |
+| Talk to your party only | Type **/p** and your message in the chat | The same |
 | Attack your duel opponent | Click them, or **Space** | Tap them, or the sword button |
 | Attack a player in the Wildlands | Click them, then **Attack** (an Outlaw: just click them) | Tap them, then the same |
 | Use a skill | Keys **1** to **6**, or the skill buttons | The skill buttons (above the chat) |
@@ -234,7 +236,7 @@ Goblins, orcs, the undead and the beastmen of the Wildlands, Frostfell and Raven
 
 ### Rewards
 
-- **EXP** is shared by everyone who hurt the monster, by how much damage each person did. So a party sharing a boss all get EXP.
+- **EXP** is shared by everyone who hurt the monster, by how much damage each person did. **In a party**, what the party earned is shared evenly by every member close by, with a bonus (see "Parties").
 - **Gold** goes to whoever did the most damage.
 - **Easy monsters give less.** A monster more than 5 levels below you gives 15% less EXP for each extra level, down to 10%.
 - **Level-ups** heal you fully. Every 10th level is announced in chat.
@@ -424,7 +426,7 @@ Frozen (and snared) monsters turn icy blue and can't move or attack. While a buf
 ### Loot
 
 - Monsters drop loot on the ground around them. Rarer loot glows.
-- For the first **15 seconds**, only the player who did the most damage can pick it up (it looks faded to everyone else). After that, anyone can.
+- For the first **15 seconds**, only the player who did the most damage (and their party) can pick it up (it looks faded to everyone else). After that, anyone can.
 - Loot disappears after **90 seconds**. Click it to walk over and pick it up.
 - Every monster drops its own loot to sell (Slime Jelly, Snake Scale, Wild Honey, Bloom Crystal, Sticky Silk, Bat Fang, Rock Shard, Gazer Lens, Ectoplasm, Goblin Charm, Orc Tusk, Orcish Arrowhead, Old Bone, Rotten Bandage, Boar Hide, Lizard Scale, Wolf Pelt, Troll Tooth, Blood Ruby, Yeti Fur, Ram Horn, Frozen Tear, Wight's Chain, Drake Scale, Wraith Essence, Gargoyle Shard, Rusted Key, Bone Dust, Golem's Heart), plus potions, now and then gear, ingots for the Blacksmith, and very rarely its card.
 
@@ -760,6 +762,7 @@ North of town, past a dashed red line with little red flags, lie **the Wildlands
 | Damage | Player hits do **half damage**, as in duels. Potions and healing work as usual |
 | Skills | Aimed skills hit the player you aim at. Area skills only catch the player you're fighting, never bystanders. Freezes and snares don't work on players |
 | Duelists | Two players in a duel only fight each other; nobody else can join in |
+| Parties | Members of the same party can't attack each other (a duel between them is still fine) |
 
 ### Outlaws and bounties
 
@@ -788,7 +791,31 @@ Both rankings show **your own place** too, with how many players and Outlaws you
 
 Beating players counts towards the Wildlands titles (see Titles): **Raider** (10 players), **Bounty Hunter** (25 Outlaws) and **Reaper** (250 players). Beating the same player again only counts once every 10 minutes, so nobody can farm a friend.
 
-## 12. Titles
+## 12. Parties
+
+Hunt together, Ragnarok style. **Click (or tap) another player** and press **Invite to party**. They get a pop-up and have 30 seconds to press **Join**. Whoever invites first becomes the party's **leader** (♛).
+
+- **Up to 6** in a party. Only the leader invites new members, and can remove anyone with the × by their name.
+- **Your party** shows under your status (on phones, at the bottom left, above the skill bar): everyone's name, level, job and health, wherever they are. Party members' names show in **green** above their heads, and they're **green dots** on your minimap.
+- **Party chat:** type **/p** and a message (for example `/p meet at the west gate`). Only your party sees it, in green.
+- **Leaving:** press **Leave** on the party panel. Leaving the game leaves the party too. If the leader leaves, the next member becomes the leader; a party of one breaks up.
+
+### Sharing EXP
+
+When a monster falls, the EXP your party earned from it (everyone's damage added up) is **shared evenly** by every member who's alive and close by, about 30 tiles, **even the ones who never hit it**. So whoever takes the hits, or stands back and heals, levels up as fast as whoever lands the blows.
+
+- **A bonus for each member:** every member sharing a kill after the first adds **10%**. Two of you share 110% of the monster's EXP, three share 120%, a full party of six shares 150%.
+- Each member's share then gets their own level penalty, as usual (monsters far below your level give less).
+- **Everyone sharing must be within 15 levels** of each other. If the party's spread is wider, that kill goes by damage, just as if you weren't in a party.
+- Every member who shared a kill counts it for their titles ("help defeat").
+
+### Loot and fighting
+
+- Loot from a monster your party fought is yours to pick up for the first 15 seconds, whoever in the party did the most damage.
+- Gold still goes to whoever did the most damage.
+- In the Wildlands, members of the same party **can't attack each other**.
+
+## 13. Titles
 
 Titles are earned by doing things in the game. Open your titles with **T** (or the medal button) to see every title, the ones you've earned, and how far along you are with the rest. Pick one to **show under your name**, in its rarity colour, for everyone to see, or hide it again.
 
@@ -856,7 +883,7 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 
 Pioneer places are counted per level cap: when the cap goes up, the first 10 players to reach the new cap become Pioneers too.
 
-## 13. Monster reference
+## 14. Monster reference
 
 | Monster | Lv | HP | ATK | DEF | EXP | Gold | Notable drops |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -897,7 +924,7 @@ Pioneer places are counted per level cap: when the cap goes up, the first 10 pla
 
 Every monster also drops its own card (see Monster cards) and often potions.
 
-## 14. A good path for new players
+## 15. A good path for new players
 
 1. **Level 1–4:** Slimes by the road, south of town. Buy a few Red Potions and a Dagger or Short Sword from Bram.
 2. **Level 4–7:** Grass Snakes in the west grass. Wear what you find.
@@ -916,11 +943,11 @@ Every monster also drops its own card (see Monster cards) and often potions.
 15. **Level 50–55:** Down the east road past the Pumpking to **Finn**'s boat, and over to **Ravenmoor** (800 gold). Wraiths in the woods by the pier dodge plain attacks: use your skills. Then the Gargoyles either side of the castle.
 16. **Level 55–60:** Dark Knights below the castle gate, Liches in the east, Flesh Golems in the south. At 60, bring a party of four into the castle for the **Fallen King**. **Corvin** rows you home for free.
 
-Along the way, open your titles (T) now and then: you'll have earned a few.
+Along the way, open your titles (T) now and then: you'll have earned a few. And from the Orc Woods on, hunt in a party: the bosses are made for four.
 
 Sell your monster loot to Bram whenever your bag fills up, and sit down (X) to heal faster between fights. Spare gear, ingots and cards are worth more to other players: open a shop in the Market Square, or look in theirs for what you need.
 
-## 15. Coming next
+## 16. Coming next
 
 - **Raising the level cap** past 60, with new fields above it.
 

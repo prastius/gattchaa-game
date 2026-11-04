@@ -92,13 +92,16 @@ shared/       Code used by both client and server
   skills.ts       Class skills: what each does per level, MP, cooldowns, and how it looks
   titles.ts       Titles: how each is earned (deeds), its rarity and aura, and progress counting
   duels.ts        Duel rules (ranges, timers, PvP damage, the Arena ring) and the arena rating maths (Elo)
+  pvp.ts          Open PVP rules (who may fight whom, Outlaws, bounties) and Sable's board
+  party.ts        Party rules: size, EXP sharing and its bonus, and the party messages
 server/       Colyseus server
   src/rooms/WorldRoom.ts   Joins, interest management, movement validation, chat, emotes, wardrobe, sitting, shops, trading
   src/rooms/WorldState.ts  Synced state
   src/rooms/Combat.ts      Monsters (spawning, AI), auto-attacks, EXP, level-ups, knockouts, loot, using items, jobs and skills, upgrades, titles and duels
   src/rooms/Titles.ts      A character's deeds and titles (bookkeeping only)
   src/rooms/Inventory.ts   A character's bag and equipment
-  src/rooms/Drops.ts       Items on the ground: first pick for the top fighter, then anyone; they fade after 90 s
+  src/rooms/Drops.ts       Items on the ground: first pick for the top fighter (and their party), then anyone; they fade after 90 s
+  src/rooms/Parties.ts     Parties: invites, leaving and removing, the leader, and keeping members up to date
   src/db.ts                SQLite: accounts, sessions, characters, open shops
   src/api.ts               Sign-in with Gattchaa, shop details
   src/gattchaa.ts          Gattchaa Town API client + webhooks
@@ -120,7 +123,7 @@ client/       Phaser game
   src/world/monsterArt.ts  Monster sprite sheets and their animations; humanoid monsters' parts
   src/world/fx.ts          Damage numbers, slashes, level-up light, arrows and magic bolts, skill effects
   src/scenes/WorldScene.ts   Chunk streaming, water glints, input, camera, interpolation
-  src/ui/                  Creator, chat, HUD + minimap + emote picker, status panel (HP/MP/EXP), bag, skills (bar and window), NPC and shop panels
+  src/ui/                  Creator, chat, HUD + minimap + emote picker, status panel (HP/MP/EXP), bag, skills (bar and window), NPC and shop panels, duels, the party panel
   public/assets/           Downloaded art + manifest (committed)
 scripts/
   fetch-assets.mjs   Re-downloads the art from pinned commits and regenerates catalog + credits
@@ -351,6 +354,17 @@ In the Wildlands, players fight without asking. The rules are in `shared/pvp.ts`
 - **Titles.** Deeds `pvpWins` and `bounties`: Raider, Bounty Hunter, Reaper. The same winner and loser count once per `PVP_RECOUNT_MS` (10 minutes), so friends can't farm each other.
 - **Sable's board.** Sable is an NPC of kind `bounty`: `wild:board` sends the `WildBoard` (`shared/pvp.ts`). "Most wanted" is live (`Combat.wanted()`: every Outlaw online, biggest `bountyOf` first). The rankings live in the `wildlands` table (migration v9: all-time and this week's players beaten, Outlaws and bounty gold per account); a win is added by the `pvpWin` hook, only when it counts for the titles (the `PVP_RECOUNT_MS` rule), and only for signed-in players. The week is `weekOf` (Mondays at midnight, Batam time); a row from an older week starts its weekly count again on its next win. Ties go to more Outlaws, then whoever got there first, and your own place counts the same way. A new weekly leader with `TOP_HUNTER_NEWS` (3) wins or more is town news.
 - **On screen.** A dashed red line with flags marks the border (`wildBorder` in the client's `Town`), with a sign by each path (`WILD_CROSSINGS`); the minimap tints the Wildlands red; crossing shows a banner; the place reads "· PVP" in red; health bars show for everyone in the field.
+
+## Parties
+
+Ragnarok-style parties of up to `PARTY_MAX` (6). The rules are in `shared/party.ts`; who's with whom is `server/src/rooms/Parties.ts`; the sharing is in `Combat`.
+
+- **Joining.** `party:invite` (the leader, or anyone not in a party) sends `party:ask`; `party:answer` yes starts a party with the inviter or joins theirs. `party:leave` and `party:kick` (leader only). The party id sits on each member's synced `Player.party`; nothing is saved, and leaving the game leaves the party (the leader passes to the next member; a party of one breaks up).
+- **The panel.** Every `PARTY_UPDATE_MS` (1 s) and on every change, each member gets `party` (`PartyMessage`: every member's name, job, level, health and position, wherever they are) for the panel under the status and the green minimap dots. Party mates' names are green.
+- **EXP.** In `Combat.reward`, the damage of a party's members is added up, and that share of the monster's EXP is split evenly by every member alive within `PARTY_SHARE_PX` (960 px) of it, hit or not, with `PARTY_BONUS` (+10 %) per member after the first (`partyShare`), and then each member's own `expFactor`. If those members are more than `PARTY_LEVEL_GAP` (15) levels apart, that party's kill goes by damage. Everyone sharing gets the kill deed.
+- **Loot.** A drop carries its owner's party (`Drop.party`): the whole party may pick it up during the owner's 15 s. Gold still goes to the top damager.
+- **PVP.** `pvpBlock` refuses a party mate ("They're in your party"); duels between them still work.
+- **Chat.** `/p message` (or `/party`) goes only to the party (`ChatMessage.party`), works in production too, and isn't kept in the town's history.
 
 ## Gattchaa shop data
 

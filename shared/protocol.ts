@@ -81,6 +81,8 @@ export interface ChatMessage {
   text: string;
   ts: number;
   system?: boolean;
+  /** Said to the speaker's party only (/p). */
+  party?: true;
 }
 
 /** server -> client: the server moved you (rejected move, or you went through a door) */
@@ -260,6 +262,8 @@ export interface PlayerView {
   duel?: string;
   /** An Outlaw: attacked an innocent player in the Wildlands not long ago. */
   outlaw?: boolean;
+  /** Their party's id ("" or missing: none). */
+  party?: string;
 }
 
 /** Read-only shape of an item lying on the ground. */
@@ -268,8 +272,10 @@ export interface DropView {
   n: number;
   x: number;
   y: number;
-  /** Session id of whoever has first pick ("" = anyone may take it). */
+  /** Session id of whoever has first pick ("" = anyone may take it)… */
   owner: string;
+  /** …and their party, who may take it too ("" = none). */
+  party?: string;
   /** Cards in a dropped piece of equipment (see cardString in items.ts). */
   cards?: string;
   /** How far a dropped piece of equipment was upgraded (0 = not). */

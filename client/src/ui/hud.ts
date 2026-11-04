@@ -61,6 +61,8 @@ export class HUD {
   private emotePicker = document.getElementById("emotes")!;
   /** Open player shops, shown on the minimap. */
   private shops: readonly Dot[] = [];
+  /** Your party, however far away: green dots on the minimap. */
+  private party: readonly Dot[] = [];
   /** Outside the town walls, where monsters roam. */
   inField = false;
   /** In the Wildlands, where players can fight each other. */
@@ -187,6 +189,10 @@ export class HUD {
     this.sitBtn.hidden = on;
   }
 
+  setParty(members: readonly Dot[]) {
+    this.party = members;
+  }
+
   setShops(shops: readonly Dot[]) {
     this.shops = shops;
   }
@@ -248,6 +254,13 @@ export class HUD {
     }
     ctx.fillStyle = "#ff5fa2";
     for (const o of others) ctx.fillRect(mx(o.x) - 1.5, my(o.y) - 1.5, 3, 3);
+    // Your party: bigger green dots with a dark rim.
+    for (const m of this.party) {
+      ctx.fillStyle = "#131313";
+      ctx.fillRect(Math.round(mx(m.x)) - 3, Math.round(my(m.y)) - 3, 6, 6);
+      ctx.fillStyle = "#7ddb6e";
+      ctx.fillRect(Math.round(mx(m.x)) - 2, Math.round(my(m.y)) - 2, 4, 4);
+    }
     if (self) {
       ctx.fillStyle = "#ffffff";
       ctx.strokeStyle = "#000000";

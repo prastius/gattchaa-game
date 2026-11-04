@@ -39,6 +39,7 @@ import type { HUD } from "../ui/hud";
 import type { StatusPanel } from "../ui/status";
 import type { BagPanel } from "../ui/bag";
 import type { SkillsUI } from "../ui/skills";
+import type { PartyUI } from "../ui/party";
 import type { TitlesUI } from "../ui/titles";
 import type { DuelUI } from "../ui/duel";
 import { PLAYER_RADIUS } from "../../../shared/duels";
@@ -63,6 +64,7 @@ export interface WorldSceneData {
   skills: SkillsUI;
   titles: TitlesUI;
   duel: DuelUI;
+  party: PartyUI;
 }
 
 interface Chunk {
@@ -76,7 +78,7 @@ interface Chunk {
 type Synced = PlayerView & { ts: number };
 
 /** What the PVP rules need to know about a player. */
-const sideOf = (s: Synced): PvpSide => ({ x: s.x, y: s.y, lv: s.lv ?? 1, dead: s.dead, duel: s.duel });
+const sideOf = (s: Synced): PvpSide => ({ x: s.x, y: s.y, lv: s.lv ?? 1, dead: s.dead, duel: s.duel, party: s.party });
 
 interface Entity {
   sprite: PlayerSprite;
@@ -210,6 +212,7 @@ export class WorldScene extends Phaser.Scene {
   private skills!: SkillsUI;
   private titles!: TitlesUI;
   private duel!: DuelUI;
+  private party!: PartyUI;
   /** A skill pressed while the target was out of range: cast once we've walked close enough. */
   private pendingSkill?: { id: SkillId; at: number };
   private skillHintAt = 0;
@@ -674,6 +677,7 @@ export class WorldScene extends Phaser.Scene {
         sprite.dead = Boolean(s.dead);
         sprite.setAura(s.aura ?? 0);
         sprite.setOutlaw(Boolean(s.outlaw));
+        sprite.setParty(Boolean(s.party) && s.party === this.party.id);
         this.showTitle(sprite, s.title);
         // Duelists' health shows for everyone watching, and everyone's in the Wildlands.
         sprite.setHp(s.hp ?? 0, s.mhp ?? 0, (s.hp ?? 0) < (s.mhp ?? 0) || Boolean(s.duel) || (this.hud.pvp && inPvpZone(s.x, s.y)));
@@ -708,7 +712,10 @@ export class WorldScene extends Phaser.Scene {
       sprite.setHp(s.hp);
       sprite.animate();
     }
-    for (const d of this.drops.values()) d.sprite.locked = Boolean(d.state.owner) && d.state.owner !== this.room.sessionId;
+    // Loot with a first pick is faded, unless it's yours or your party's.
+    for (const d of this.drops.values()) {
+      d.sprite.locked = Boolean(d.state.owner) && d.state.owner !== this.room.sessionId && !(d.state.party && d.state.party === this.party.id);
+    }
     this.updateTarget();
     this.updatePendingSkill(now);
     this.clock.update(dt, starved);
@@ -737,6 +744,7 @@ export class WorldScene extends Phaser.Scene {
       const others: { x: number; y: number }[] = [];
       for (const [id, { sprite }] of this.entities) if (id !== this.room.sessionId) others.push(sprite);
       const state = this.room.state as { online?: number; siteOnline?: number };
+      this.hud.setParty(this.party.others);
       this.hud.update(this.self, others, state.online ?? this.entities.size, state.siteOnline ?? 0);
       this.bag.tick();
     }
@@ -1132,7 +1140,7 @@ export class WorldScene extends Phaser.Scene {
     if (!id || !e) return false;
     const s = e.state;
     const attack = this.pvpWhy(id) ? undefined : () => this.setTarget(id);
-    this.duel.openCard(id, { name: s.name, lv: s.lv, cls: s.cls, title: s.title, outlaw: s.outlaw }, attack);
+    this.duel.openCard(id, { name: s.name, lv: s.lv, cls: s.cls, title: s.title, outlaw: s.outlaw }, attack, this.party.inviteFor(id, s.party));
     return true;
   }
 

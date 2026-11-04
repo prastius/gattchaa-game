@@ -64,6 +64,8 @@ import { Drop, Monster, Player, PlayerShop, WorldState } from "./WorldState";
 import { NpcBrain } from "./NpcBrain";
 import { Combat } from "./Combat";
 import { Drops } from "./Drops";
+import { Parties } from "./Parties";
+import type { PartyAnswerMessage, PartyInviteMessage, PartyKickMessage } from "../../../shared/party";
 import { feed } from "../gattchaa";
 import { db, parseWares, type Account, type Mail, type Progress } from "../db";
 import type { Announcement, MarketListing, NpcSay } from "../../../shared/gattchaa";
@@ -154,6 +156,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
   private brain!: NpcBrain;
   private combat!: Combat;
   private drops!: Drops;
+  private parties!: Parties;
   /** Fight events waiting to go out, per session; sent once per tick. */
   private fx = new Map<string, FxEvent[]>();
   private stopAnnouncements?: () => void;
@@ -207,6 +210,19 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       if (this.itemOk(client) && typeof msg?.from === "string") this.combat.answerDuel(client.sessionId, msg.from.slice(0, 16), msg.yes === true);
     },
     "duel:quit": (client: Client) => this.combat.quitDuel(client.sessionId),
+    "party:invite": (client: Client, msg: PartyInviteMessage) => {
+      const to = typeof msg?.t === "string" ? msg.t.slice(0, 16) : "";
+      if (this.itemOk(client) && this.state.players.has(to)) this.parties.invite(client.sessionId, to);
+    },
+    "party:answer": (client: Client, msg: PartyAnswerMessage) => {
+      if (this.itemOk(client) && typeof msg?.from === "string") this.parties.answer(client.sessionId, msg.from.slice(0, 16), msg.yes === true);
+    },
+    "party:leave": (client: Client) => {
+      if (this.itemOk(client)) this.parties.leave(client.sessionId);
+    },
+    "party:kick": (client: Client, msg: PartyKickMessage) => {
+      if (this.itemOk(client) && typeof msg?.t === "string") this.parties.remove(client.sessionId, msg.t.slice(0, 16));
+    },
     "arena:board": (client: Client, msg: { npc?: string }) => {
       if (!this.itemOk(client) || !this.npcNear(client, msg?.npc, "arena")) return;
       const account = this.meta.get(client.sessionId)?.account;
@@ -262,6 +278,10 @@ export class WorldRoom extends Room<{ state: WorldState }> {
 
     this.brain = new NpcBrain(world, feed, this.now, (msg: NpcSay) => this.broadcast("npc:say", msg));
     for (const [id, npc] of this.brain.npcs) this.state.npcs.set(id, npc);
+    this.parties = new Parties(this.state.players, {
+      send: (id, type, msg) => this.clients.getById(id)?.send(type, msg),
+      notice: (id, text) => this.notice(id, text),
+    });
     this.drops = new Drops(this.state.drops, world, (drop) => {
       for (const client of this.clients) if (client.view?.has(drop)) client.view.remove(drop);
     });
@@ -328,6 +348,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       this.brain.tick(NPC_TICK_MS);
       this.combat.tick(NPC_TICK_MS);
       this.drops.tick(Date.now());
+      this.parties.tick(Date.now());
       this.flushFx();
       this.state.siteOnline = feed.online;
     }, NPC_TICK_MS);
@@ -441,6 +462,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
   onLeave(client: Client) {
     // First, while the session still owns its account (progress is saved under it).
     this.combat.leave(client.sessionId);
+    this.parties.leave(client.sessionId, "gone");
     const player = this.state.players.get(client.sessionId);
     const meta = this.meta.get(client.sessionId);
     this.state.players.delete(client.sessionId);
@@ -721,6 +743,8 @@ export class WorldRoom extends Room<{ state: WorldState }> {
 
     const text = sanitizeChat(msg?.text);
     if (!text) return;
+    const party = /^\/p(?:arty)? +(.+)$/i.exec(text);
+    if (party) return this.partyChat(client, player.name, party[1]);
     if (text.startsWith("/")) return this.command(client, text);
 
     const now = Date.now();
@@ -732,6 +756,19 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     meta.lastChatAt = now;
 
     this.publish(this.makeMessage(client.sessionId, player.name, text));
+  }
+
+  /** /p: a line for the speaker's party only (not kept in the town's chat history). */
+  private partyChat(client: Client, name: string, text: string) {
+    const meta = this.meta.get(client.sessionId);
+    const members = this.parties.members(client.sessionId);
+    if (!meta) return;
+    if (!members.length) return client.send("chat", this.makeMessage("", "System", "You're not in a party. Click another player to invite them.", true));
+    const now = Date.now();
+    if (meta.lastChatAt + CHAT_COOLDOWN_MS > now) return;
+    meta.lastChatAt = now;
+    const msg: ChatMessage = { ...this.makeMessage(client.sessionId, name, text), party: true };
+    for (const id of members) this.clients.getById(id)?.send("chat", msg);
   }
 
   // ---------------------------------------------------------------- player shops

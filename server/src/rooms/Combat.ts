@@ -67,6 +67,7 @@ import {
   type DuelStartEvent,
 } from "../../../shared/duels";
 import { OUTLAW_MS, PVP_COMBAT_MS, PVP_RECOUNT_MS, bountyOf, pvpBlock, type PvpSide, type WantedRow } from "../../../shared/pvp";
+import { PARTY_LEVEL_GAP, PARTY_SHARE_PX, partyShare } from "../../../shared/party";
 import type { Progress } from "../db";
 import { Monster, type Player } from "./WorldState";
 import { Inventory, type GearAt } from "./Inventory";
@@ -543,9 +544,10 @@ export class Combat {
     this.hooks.emit(mob.x, mob.y, { k: "down", t: mob.id });
     const top = this.reward(mob);
     if (mob.def.boss) this.hooks.boss(mob.def, "down", GROUP_FIELDS[mob.group].name, top);
-    // Each drop is rolled on its own; whoever did the most damage gets first pick.
+    // Each drop is rolled on its own; whoever did the most damage (and their party) gets first pick.
+    const party = (top && this.fighters.get(top)?.player.party) || "";
     for (const [item, chance] of mob.def.drops) {
-      if (Math.random() < chance) this.drops.spawn({ id: item, n: 1 }, mob.x, mob.y, { owner: top ?? "" });
+      if (Math.random() < chance) this.drops.spawn({ id: item, n: 1 }, mob.x, mob.y, { owner: top ?? "", party });
     }
     this.hooks.despawn(mob.state);
     this.monsters.delete(mob.id);
@@ -565,11 +567,30 @@ export class Combat {
       if (f && !f.player.dead) earners.push({ f, dmg });
     }
     const top = earners.reduce<{ f: Fighter; dmg: number } | undefined>((best, e) => (!best || e.dmg > best.dmg ? e : best), undefined);
+    // EXP by damage, except that what a party earned is shared evenly by every
+    // member close by (with a bonus each), as long as they're within a few levels.
+    const shares = new Map<Fighter, number>();
+    const add = (f: Fighter, exp: number) => shares.set(f, (shares.get(f) ?? 0) + exp);
+    const byParty = new Map<string, number>();
     for (const { f, dmg } of earners) {
+      if (f.player.party) byParty.set(f.player.party, (byParty.get(f.player.party) ?? 0) + dmg);
+      else add(f, mob.def.exp * (dmg / total));
+    }
+    for (const [party, dmg] of byParty) {
+      const near = [...this.fighters.values()].filter((g) => g.player.party === party && !g.player.dead && dist(g.pos, mob) <= PARTY_SHARE_PX);
+      const lvs = near.map((g) => g.player.lv);
+      if (near.length > 1 && Math.max(...lvs) - Math.min(...lvs) <= PARTY_LEVEL_GAP) {
+        for (const g of near) add(g, partyShare(mob.def.exp * (dmg / total), near.length));
+      } else {
+        for (const e of earners) if (e.f.player.party === party) add(e.f, mob.def.exp * (e.dmg / total));
+      }
+    }
+    if (top && !shares.has(top.f)) shares.set(top.f, 0);
+    for (const [f, share] of shares) {
       const kills = f.book.deeds.kills;
       kills[mob.def.id] = (kills[mob.def.id] ?? 0) + 1;
       this.deed(f);
-      const exp = this.gainExp(f, Math.floor(mob.def.exp * (dmg / total) * expFactor(f.player.lv, mob.def.level)));
+      const exp = this.gainExp(f, Math.floor(share * expFactor(f.player.lv, mob.def.level)));
       const gold = f === top?.f ? randInt(mob.def.gold) : 0;
       if (gold) {
         f.gold += gold;
@@ -784,7 +805,7 @@ export class Combat {
     if (!f || !d || f.player.dead) return;
     // The client walks up first; allow for it being a step ahead of us.
     if (dist(f.pos, d) > PICKUP_RANGE + 2 * REACH_SLACK) return;
-    if (d.owner && d.owner !== id) return this.hooks.notice(id, "That's someone else's loot for a few more seconds.");
+    if (d.owner && d.owner !== id && !(d.party && d.party === f.player.party)) return this.hooks.notice(id, "That's someone else's loot for a few more seconds.");
     const item = ITEMS[d.item as ItemId];
     if (!item) return this.drops.remove(dropId);
     const got = f.inv.add(item.id as ItemId, d.n, this.drops.extras(d));
@@ -961,7 +982,7 @@ export class Combat {
 
   /** What the PVP rules need to know about someone. */
   private side(f: Fighter): PvpSide {
-    return { x: f.pos.x, y: f.pos.y, lv: f.player.lv, dead: f.player.dead, duel: f.player.duel };
+    return { x: f.pos.x, y: f.pos.y, lv: f.player.lv, dead: f.player.dead, duel: f.player.duel, party: f.player.party };
   }
 
   /** Ranked: both in the Arena's ring, and both signed in (the ranking is kept per account). */

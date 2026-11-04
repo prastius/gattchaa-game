@@ -32,6 +32,8 @@ export const Player = schema(
     duel: t.string().default(""),
     /** Attacked a player who wasn't an Outlaw, in the Wildlands, not long ago (see shared/pvp.ts). */
     outlaw: t.boolean().default(false),
+    /** Their party's id ("" = none; see Parties.ts). */
+    party: t.string().default(""),
   },
   "Player",
 );
@@ -97,6 +99,8 @@ export const Drop = schema(
     y: t.uint16(),
     /** Session id of whoever gets first pick; cleared when anyone may take it. */
     owner: t.string().default(""),
+    /** …and the owner's party ("" = none), who may take it too. */
+    party: t.string().default(""),
     /** Cards in a dropped piece of equipment ("hornetCard.hornetCard"). */
     cards: t.string().default(""),
     /** How far a dropped piece of equipment was upgraded (0 = not). */

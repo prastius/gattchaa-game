@@ -7,6 +7,9 @@ import { ORB, SPARK } from "./world/fx";
 import { AURA_LEGENDARY } from "../../shared/items";
 import { AURA_CARD_MASTER, AURA_GIANTSLAYER, AURA_KINGSLAYER, AURA_PIONEER } from "../../shared/titles";
 
+/** The name colour of someone in your party. */
+const PARTY_NAME = "#7ddb6e";
+
 const BUBBLE_MS = 6000;
 const STRIDE_PX = 15; // distance walked per animation frame
 const FEET_Y = 58; // feet line inside the 64px LPC frame
@@ -133,6 +136,7 @@ export class PlayerSprite {
   private nameText: string;
   private nameColor: string;
   private outlaw = false;
+  private partyMate = false;
   private lungeTween?: Phaser.Tweens.Tween;
   /** The aura, when there is one: on the ground behind the body, and motes rising in front of it. */
   private auraBox: Phaser.GameObjects.Container;
@@ -366,7 +370,14 @@ export class PlayerSprite {
   setOutlaw(on: boolean) {
     if (on === this.outlaw) return;
     this.outlaw = on;
-    this.label.setText(on ? `☠ ${this.nameText}` : this.nameText).setColor(on ? "#ff5a4f" : this.nameColor);
+    this.label.setText(on ? `☠ ${this.nameText}` : this.nameText).setColor(on ? "#ff5a4f" : this.partyMate ? PARTY_NAME : this.nameColor);
+  }
+
+  /** Members of your party wear their name in green (an Outlaw's red still wins). */
+  setParty(on: boolean) {
+    if (on === this.partyMate) return;
+    this.partyMate = on;
+    if (!this.outlaw) this.label.setColor(on ? PARTY_NAME : this.nameColor);
   }
 
   /** A quick step toward what you're hitting, and back. */

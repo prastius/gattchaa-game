@@ -33,6 +33,7 @@ import type { ChatUI } from "./ui/chat";
 import { audio } from "./audio";
 import type { HUD } from "./ui/hud";
 import type { WildBoard } from "../../shared/pvp";
+import type { PartyAnswerMessage, PartyAskEvent, PartyInviteMessage, PartyKickMessage, PartyMessage } from "../../shared/party";
 
 function serverUrl(): string {
   if (import.meta.env.VITE_SERVER_URL) return import.meta.env.VITE_SERVER_URL;
@@ -63,6 +64,8 @@ export class Net {
   readonly onBag = new Set<(b: BagMessage) => void>();
   readonly onTitles = new Set<(t: TitlesMessage) => void>();
   readonly onDuelAsk = new Set<(ev: DuelAskEvent) => void>();
+  readonly onParty = new Set<(p: PartyMessage | null) => void>();
+  readonly onPartyAsk = new Set<(ev: PartyAskEvent) => void>();
   readonly onDuelStart = new Set<(ev: DuelStartEvent) => void>();
   readonly onDuelEnd = new Set<(ev: DuelEndEvent) => void>();
   readonly onArenaBoard = new Set<(b: ArenaBoard) => void>();
@@ -127,6 +130,12 @@ export class Net {
     room.onMessage("wild:board", (b: WildBoard) => {
       for (const fn of this.onWildBoard) fn(b);
     });
+    room.onMessage("party", (p: PartyMessage | null) => {
+      for (const fn of this.onParty) fn(p);
+    });
+    room.onMessage("party:ask", (ev: PartyAskEvent) => {
+      for (const fn of this.onPartyAsk) fn(ev);
+    });
 
     room.onDrop((code, reason) => {
       console.warn("connection dropped", code, reason);
@@ -147,9 +156,10 @@ export class Net {
     const text = sanitizeChat(raw);
     if (!text) return false;
     this.room.send("chat", { text } satisfies ChatSend);
-    // Local echo: no waiting for the server round trip.
-    this.chat.add({ id: 0, from: this.room.sessionId, name: this.myName, text, ts: Date.now() });
-    this.onBubble?.(this.room.sessionId, text);
+    // Local echo: no waiting for the server round trip. /p is said to your party only.
+    const party = /^\/p(?:arty)? +(.+)$/i.exec(text);
+    this.chat.add({ id: 0, from: this.room.sessionId, name: this.myName, text: party ? party[1] : text, ts: Date.now(), ...(party && { party: true as const }) });
+    this.onBubble?.(this.room.sessionId, party ? party[1] : text);
     return true;
   }
 
@@ -207,6 +217,27 @@ export class Net {
   }
 
   /** Challenges a player (their session id) to a duel. */
+  /** Your session id. */
+  get sessionId(): string {
+    return this.room.sessionId;
+  }
+
+  inviteParty(t: string) {
+    this.room.send("party:invite", { t } satisfies PartyInviteMessage);
+  }
+
+  answerParty(from: string, yes: boolean) {
+    this.room.send("party:answer", { from, yes } satisfies PartyAnswerMessage);
+  }
+
+  leaveParty() {
+    this.room.send("party:leave");
+  }
+
+  kickParty(t: string) {
+    this.room.send("party:kick", { t } satisfies PartyKickMessage);
+  }
+
   askDuel(t: string) {
     this.room.send("duel:ask", { t } satisfies DuelAskMessage);
   }

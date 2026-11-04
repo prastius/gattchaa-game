@@ -93,6 +93,13 @@ export class ChatUI {
     } else if (msg.system) {
       li.className = "system";
       li.textContent = msg.text;
+    } else if (msg.party) {
+      // Said to the party only.
+      li.className = "party-line";
+      const name = document.createElement("span");
+      name.className = "name";
+      name.textContent = `[Party] ${msg.name}:`;
+      li.append(name, document.createTextNode(msg.text));
     } else {
       const name = document.createElement("span");
       name.className = "name";

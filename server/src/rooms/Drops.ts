@@ -35,9 +35,9 @@ export class Drops {
 
   /**
    * Puts a stack on the ground near (x, y). Monster loot passes `loot`, whose
-   * owner (the top fighter) gets first pick for a while.
+   * owner (the top fighter) and their party get first pick for a while.
    */
-  spawn(stack: ItemStack, x: number, y: number, loot?: { owner: string }) {
+  spawn(stack: ItemStack, x: number, y: number, loot?: { owner: string; party?: string }) {
     let px = x;
     let py = y;
     for (let i = 0; i < 6; i++) {
@@ -54,7 +54,7 @@ export class Drops {
     const owner = loot?.owner ?? "";
     while (this.entries.size >= MAX_DROPS) this.remove(this.entries.keys().next().value!);
     const id = String(++this.nextId);
-    const drop = new Drop({ item: stack.id, n: stack.n, x: Math.round(px), y: Math.round(py), owner, cards: cardString(stack.cards), up: stack.up ?? 0 });
+    const drop = new Drop({ item: stack.id, n: stack.n, x: Math.round(px), y: Math.round(py), owner, party: (owner && loot?.party) || "", cards: cardString(stack.cards), up: stack.up ?? 0 });
     const now = Date.now();
     this.entries.set(id, { drop, ownerUntil: owner ? now + OWNER_MS : 0, expiresAt: now + EXPIRE_MS, loot: Boolean(loot) });
     this.drops.set(id, drop);
@@ -88,6 +88,7 @@ export class Drops {
     for (const e of this.entries.values()) {
       if (e.drop.owner !== owner) continue;
       e.drop.owner = "";
+      e.drop.party = "";
       e.ownerUntil = 0;
     }
   }
@@ -98,6 +99,7 @@ export class Drops {
       else if (e.ownerUntil && now >= e.ownerUntil) {
         e.ownerUntil = 0;
         e.drop.owner = "";
+        e.drop.party = "";
       }
     }
   }

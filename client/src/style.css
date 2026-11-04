@@ -1189,6 +1189,109 @@ button {
   font-weight: 700;
 }
 
+/* ---------- Your party (under your status) ---------- */
+
+.party {
+  pointer-events: auto;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: var(--panel);
+  border: 1px solid rgba(125, 219, 110, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11.5px;
+}
+
+.party-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #9be88f;
+  font-weight: 700;
+}
+
+.party-leave,
+.party-kick {
+  padding: 1px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-dim);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.party-leave:hover,
+.party-kick:hover {
+  color: #ff8a7a;
+  border-color: #ff8a7a;
+}
+
+.party-member {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.party-name {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.party-name span {
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.party-name small {
+  color: var(--ink-dim);
+  font-size: 10.5px;
+}
+
+.party-kick {
+  margin-left: auto;
+  padding: 0 5px;
+  line-height: 1.3;
+}
+
+.party-member.me .party-name span {
+  color: #ffe680;
+}
+
+.party-member.down {
+  opacity: 0.5;
+}
+
+.party-hp {
+  height: 6px;
+  padding: 0;
+}
+
+/* Phones: the buttons run under the status panel, so the party waits bottom left, above the skill bar. */
+@media (max-width: 600px) {
+  .party {
+    position: fixed;
+    left: 12px;
+    bottom: 240px;
+    width: 150px;
+  }
+}
+
+/* The invite to someone's party: the duel challenge's look, in green. */
+.party-ask {
+  border-color: rgba(125, 219, 110, 0.6);
+}
+
+.party-ask .duel-ask-time i {
+  background: #7ddb6e;
+}
+
 /* Under your gold while you're an Outlaw: how long it lasts. */
 .status-outlaw {
   margin-top: 4px;
@@ -1370,6 +1473,11 @@ button {
 #chat-log .system {
   color: var(--system);
   font-style: italic;
+}
+
+#chat-log .party-line,
+#chat-log .party-line .name {
+  color: #9be88f;
 }
 
 #chat-input {
