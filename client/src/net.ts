@@ -32,6 +32,7 @@ import type { Announcement, NpcSay } from "../../shared/gattchaa";
 import type { ChatUI } from "./ui/chat";
 import { audio } from "./audio";
 import type { HUD } from "./ui/hud";
+import type { WildBoard } from "../../shared/pvp";
 
 function serverUrl(): string {
   if (import.meta.env.VITE_SERVER_URL) return import.meta.env.VITE_SERVER_URL;
@@ -65,6 +66,7 @@ export class Net {
   readonly onDuelStart = new Set<(ev: DuelStartEvent) => void>();
   readonly onDuelEnd = new Set<(ev: DuelEndEvent) => void>();
   readonly onArenaBoard = new Set<(b: ArenaBoard) => void>();
+  readonly onWildBoard = new Set<(b: WildBoard) => void>();
   /** Your latest character sheet. */
   stats?: StatsMessage;
   /** Your bag and equipment, as of the server's last word. */
@@ -121,6 +123,9 @@ export class Net {
     });
     room.onMessage("arena:board", (b: ArenaBoard) => {
       for (const fn of this.onArenaBoard) fn(b);
+    });
+    room.onMessage("wild:board", (b: WildBoard) => {
+      for (const fn of this.onWildBoard) fn(b);
     });
 
     room.onDrop((code, reason) => {
@@ -218,6 +223,10 @@ export class Net {
   /** Asks the Arena Master for the ranking. */
   arenaBoard(npc: string) {
     this.room.send("arena:board", { npc });
+  }
+
+  wildBoard(npc: string) {
+    this.room.send("wild:board", { npc });
   }
 
   ferry(npc: string) {

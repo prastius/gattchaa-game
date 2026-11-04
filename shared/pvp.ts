@@ -49,3 +49,45 @@ export function pvpBlock(a: PvpSide, b: PvpSide): string {
 
 /** What an Outlaw carrying `gold` pays whoever beats them. */
 export const bountyOf = (gold: number) => Math.min(BOUNTY_MAX, Math.floor(Math.max(0, gold) * BOUNTY_SHARE));
+
+// ---------------------------------------------------------------- Sable's board: the best hunters, and who's wanted
+
+const DAY_MS = 86_400_000;
+const WEEK_MS = 7 * DAY_MS;
+/** The weekly board starts again every Monday at midnight, Batam time (UTC+7). */
+const BATAM_MS = 7 * 3_600_000;
+/** The week a moment falls in, counted in Mondays (1 January 1970 was a Thursday). */
+export const weekOf = (ms: number) => Math.floor((ms + BATAM_MS + 3 * DAY_MS) / WEEK_MS);
+/** When that week's board starts again: the next Monday at midnight, Batam time. */
+export const weekEndsAt = (week: number) => (week + 1) * WEEK_MS - 3 * DAY_MS - BATAM_MS;
+/** The town hears about a new top hunter of the week once they have at least this many wins. */
+export const TOP_HUNTER_NEWS = 3;
+
+/** A hunter on the board: players beaten in the Wildlands, and how many of them were Outlaws (with the bounty gold). */
+export interface WildRow {
+  name: string;
+  wins: number;
+  bounties: number;
+  gold: number;
+}
+/** Someone who's an Outlaw right now, and what they're worth to whoever beats them. */
+export interface WantedRow {
+  name: string;
+  lv: number;
+  bounty: number;
+  /** How long until their name is clean again. */
+  ms: number;
+  /** It's you. */
+  you?: true;
+}
+/** server -> client (Sable): who's wanted, and the best hunters this week and of all time. */
+export interface WildBoard {
+  wanted: WantedRow[];
+  week: WildRow[];
+  all: WildRow[];
+  /** Your own lines and places (signed-in players with a win on the board). */
+  me?: { week?: WildRow & { rank: number }; all?: WildRow & { rank: number } };
+  /** When the weekly board starts again (ms since 1970). */
+  resetAt: number;
+  saved: boolean;
+}

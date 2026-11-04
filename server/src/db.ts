@@ -6,6 +6,7 @@ import { DatabaseSync } from "node:sqlite";
 import { RATING_START, ratingChange, type ArenaRow } from "../../shared/duels";
 import { cleanStack, itemName, type ItemStack } from "../../shared/items";
 import { cleanWares, stackText, type ShopWare } from "../../shared/vending";
+import type { WildBoard, WildRow } from "../../shared/pvp";
 
 // Saved game data, in one SQLite file: no database server to run, and a backup
 // is a copy of the file. Holds Gattchaa-linked accounts, their sign-in
@@ -161,6 +162,20 @@ const MIGRATIONS = [
      at INTEGER NOT NULL
    );
    CREATE INDEX mail_account ON mail (account_id);`,
+  // v9: Sable's board in the Wildlands: players beaten (all time, and this week), Outlaws among them, bounty gold.
+  `CREATE TABLE wildlands (
+     account_id INTEGER PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,
+     wins INTEGER NOT NULL DEFAULT 0,
+     bounties INTEGER NOT NULL DEFAULT 0,
+     gold INTEGER NOT NULL DEFAULT 0,
+     week INTEGER NOT NULL DEFAULT 0,
+     week_wins INTEGER NOT NULL DEFAULT 0,
+     week_bounties INTEGER NOT NULL DEFAULT 0,
+     week_gold INTEGER NOT NULL DEFAULT 0,
+     updated_at INTEGER NOT NULL
+   );
+   CREATE INDEX wildlands_wins ON wildlands (wins DESC);
+   CREATE INDEX wildlands_week ON wildlands (week, week_wins DESC);`,
 ];
 
 const ACCOUNT_COLS = "id, gattchaa_id AS gattchaaId, display_name AS displayName, name, look";
@@ -309,6 +324,72 @@ export class Db {
     if (!mine) return { top };
     const { above } = this.db.prepare("SELECT COUNT(*) AS above FROM arena WHERE rating > ?").get(mine.rating) as { above: number };
     return { top, me: { ...mine, rank: above + 1 } };
+  }
+
+  // ------------------------------------------------------------ the Wildlands
+
+  /**
+   * A player beaten in the Wildlands (one that counts: the same pair only once
+   * in a while). A new week starts the weekly count again. Returns the week's
+   * leader before and after, and the winner's wins this week.
+   */
+  wildWin(accountId: number, outlaw: boolean, bounty: number, week: number): { before?: number; after?: number; weekWins: number } {
+    return this.transaction(() => {
+      const leader = () =>
+        (this.db.prepare("SELECT account_id AS id FROM wildlands WHERE week = ? ORDER BY week_wins DESC, week_bounties DESC, updated_at ASC LIMIT 1").get(week) as
+          | { id: number }
+          | undefined)?.id;
+      const before = leader();
+      const b = outlaw ? 1 : 0;
+      this.db
+        .prepare(
+          `INSERT INTO wildlands (account_id, wins, bounties, gold, week, week_wins, week_bounties, week_gold, updated_at) VALUES (?, 1, ?, ?, ?, 1, ?, ?, ?)
+           ON CONFLICT(account_id) DO UPDATE SET wins = wins + 1, bounties = bounties + excluded.bounties, gold = gold + excluded.gold,
+             week_wins = CASE WHEN week = excluded.week THEN week_wins + 1 ELSE 1 END,
+             week_bounties = CASE WHEN week = excluded.week THEN week_bounties ELSE 0 END + excluded.week_bounties,
+             week_gold = CASE WHEN week = excluded.week THEN week_gold ELSE 0 END + excluded.week_gold,
+             week = excluded.week, updated_at = excluded.updated_at`,
+        )
+        .run(accountId, b, bounty, week, b, bounty, Date.now());
+      const { weekWins } = this.db.prepare("SELECT week_wins AS weekWins FROM wildlands WHERE account_id = ?").get(accountId) as { weekWins: number };
+      return { before, after: leader(), weekWins };
+    });
+  }
+
+  /** The best `n` hunters this week and of all time, and (for a signed-in player) their own lines and places. */
+  wildBoard(n: number, week: number, accountId?: number): Pick<WildBoard, "week" | "all" | "me"> {
+    const name = "COALESCE(NULLIF(a.name, ''), a.display_name) AS name";
+    const allCols = `${name}, w.wins, w.bounties, w.gold`;
+    const weekCols = `${name}, w.week_wins AS wins, w.week_bounties AS bounties, w.week_gold AS gold`;
+    const from = "FROM wildlands w JOIN accounts a ON a.id = w.account_id";
+    const all = this.db.prepare(`SELECT ${allCols} ${from} ORDER BY w.wins DESC, w.bounties DESC, w.updated_at ASC LIMIT ?`).all(n) as unknown as WildRow[];
+    const weekly = this.db
+      .prepare(`SELECT ${weekCols} ${from} WHERE w.week = ? ORDER BY w.week_wins DESC, w.week_bounties DESC, w.updated_at ASC LIMIT ?`)
+      .all(week, n) as unknown as WildRow[];
+    if (accountId === undefined) return { week: weekly, all };
+    // Your place counts everyone the board puts ahead of you, with the same tie-breaks.
+    const me: NonNullable<WildBoard["me"]> = {};
+    const mine = this.db.prepare(`SELECT ${allCols}, w.updated_at AS at ${from} WHERE w.account_id = ?`).get(accountId) as (WildRow & { at: number }) | undefined;
+    if (mine) {
+      const { above } = this.db
+        .prepare("SELECT COUNT(*) AS above FROM wildlands WHERE wins > ? OR (wins = ? AND (bounties > ? OR (bounties = ? AND updated_at < ?)))")
+        .get(mine.wins, mine.wins, mine.bounties, mine.bounties, mine.at) as { above: number };
+      const { at: _, ...row } = mine;
+      me.all = { ...row, rank: above + 1 };
+    }
+    const mineWeek = this.db.prepare(`SELECT ${weekCols}, w.updated_at AS at ${from} WHERE w.account_id = ? AND w.week = ?`).get(accountId, week) as
+      | (WildRow & { at: number })
+      | undefined;
+    if (mineWeek) {
+      const { above } = this.db
+        .prepare(
+          "SELECT COUNT(*) AS above FROM wildlands WHERE week = ? AND (week_wins > ? OR (week_wins = ? AND (week_bounties > ? OR (week_bounties = ? AND updated_at < ?))))",
+        )
+        .get(week, mineWeek.wins, mineWeek.wins, mineWeek.bounties, mineWeek.bounties, mineWeek.at) as { above: number };
+      const { at: _, ...row } = mineWeek;
+      me.week = { ...row, rank: above + 1 };
+    }
+    return { week: weekly, all, me };
   }
 
   /**

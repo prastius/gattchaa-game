@@ -461,6 +461,8 @@ export class Town {
       if (ty % 4 === 0) stake(x0 * 32, ty * 32 + 16);
     }
     for (const c of WILD_CROSSINGS) this.signpost((c + 3.5) * 32, (WILD_BORDER_Y + 1) * 32, "WILDLANDS", "⚔ OPEN PVP", "#ff8a7a");
+    // Sable's board, across the west path from her.
+    this.signpost(126.8 * 32, 140.6 * 32, "WANTED", "☠ BOUNTIES", "#ffd27a");
   }
 
   /** A boat moored alongside the end of each pier, and a signpost where each path to one leaves its road. */

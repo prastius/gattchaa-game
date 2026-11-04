@@ -8,7 +8,7 @@ import { MARKET_WANDER, PARK_WANDER, STORE_WANDER, TILE, WANDER_AREA, type Rect 
 import type { ShopProduct } from "./gattchaa";
 import { Dir } from "./protocol";
 
-export type NpcKind = "guide" | "shop" | "kuji" | "rooms" | "market" | "grading" | "pickup" | "crier" | "keeper" | "outfitter" | "jobs" | "smith" | "arena" | "ferry" | "local";
+export type NpcKind = "guide" | "shop" | "kuji" | "rooms" | "market" | "grading" | "pickup" | "crier" | "keeper" | "outfitter" | "jobs" | "smith" | "arena" | "ferry" | "bounty" | "local";
 
 export interface NpcDef {
   id: string;
@@ -321,7 +321,7 @@ export const NPCS: NpcDef[] = [
     id: "bounty",
     name: "Sable",
     title: "Bounty Hunter",
-    kind: "local",
+    kind: "bounty",
     look: look({ body: "female", hair: "long", hairColor: "black", skin: "olive", top: "longsleeve", topColor: "black", bottom: "leggings", bottomColor: "charcoal", shoes: "boots", shoesColor: "black", hat: "bandana", hatColor: "red" }),
     ...at(119.6, 139.6),
     dir: Dir.Down,
@@ -334,6 +334,8 @@ export const NPCS: NpcDef[] = [
       "Bring White Potions. Bram sells them by the south gate.",
       "The Minotaur King waits on the highest ground…",
       "Past level 40? The ferry south of the meadow sails to Frostfell.",
+      "Want to see who's wanted? Come and read my board.",
+      "Top hunter of the week? Your name goes on my board.",
     ],
   },
   {

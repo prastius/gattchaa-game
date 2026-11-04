@@ -49,6 +49,7 @@ import {
 import { CLASSES, JOBS, JOB_LEVEL, JOB_WEAPON, SECOND_JOBS, SECOND_JOB_LEVEL, aClass, isClassId, statsFor, type ClassId } from "../../../shared/rpg";
 import { skillsOf } from "../../../shared/skills";
 import { PVP_DAMAGE, RATING_START, type ArenaBoard } from "../../../shared/duels";
+import type { WildBoard } from "../../../shared/pvp";
 import { FRAME, composeCharacter, itemIcon } from "../character";
 import type { Shop } from "../shop";
 import type { Vending } from "../vending";
@@ -149,6 +150,9 @@ export class TownDialog {
   private forgeNote?: { ok: boolean; up: number; item: string };
   /** The Arena Master's ranking, as of the last time you asked. */
   private board?: ArenaBoard;
+  /** Sable's board, and which part of it you're reading. */
+  private wild?: WildBoard;
+  private wildTab: "wanted" | "week" | "all" = "wanted";
   /** Which side of the Market Keeper's window is showing, and what you searched for. */
   private keeperTab: "shops" | "find" = "shops";
   private marketQuery = "";
@@ -191,6 +195,10 @@ export class TownDialog {
     net.onArenaBoard.add((b) => {
       this.board = b;
       if (this.openKind === "arena") this.render(this.openTarget!, false);
+    });
+    net.onWildBoard.add((b) => {
+      this.wild = b;
+      if (this.openKind === "bounty") this.render(this.openTarget!, false);
     });
   }
 
@@ -334,6 +342,9 @@ export class TownDialog {
       case "ferry":
         this.ferry(npc);
         break;
+      case "bounty":
+        this.hunters(npc);
+        break;
       case "keeper":
         this.body.append(this.tabs(npc, [["shops", "Shops"], ["find", "Find an item"]], this.keeperTab, (tab) => (this.keeperTab = tab), this.net.stats?.gold ?? 0));
         if (this.keeperTab === "find") this.marketFind();
@@ -402,6 +413,66 @@ export class TownDialog {
       cards.append(card);
     }
     this.body.append(cards);
+  }
+
+  // ------------------------------------------------------------------ the Bounty Hunter
+
+  /** Sable's board: who's an Outlaw right now (and their bounty), and the best hunters this week and of all time. */
+  private hunters(npc: NpcDef) {
+    if (!this.wild || this.renderFresh) this.net.wildBoard(npc.id);
+    this.body.append(
+      this.tabs(npc, [["wanted", "Most wanted"], ["week", "This week"], ["all", "All time"]], this.wildTab, (tab) => {
+        this.wildTab = tab;
+        this.net.wildBoard(npc.id);
+      }, this.net.stats?.gold ?? 0),
+    );
+    const b = this.wild;
+    if (!b) return void this.body.append(el("p", "dialog-empty", "Reading the board…"));
+    if (this.wildTab === "wanted") {
+      if (!b.wanted.length) {
+        this.body.append(el("p", "dialog-empty", "No Outlaws right now. The Wildlands are quiet… for now."));
+      } else {
+        const list = el("ol", "arena-board wanted-board");
+        for (const w of b.wanted) {
+          const s = Math.ceil(w.ms / 1000);
+          const row = el("li", w.you ? "me" : "");
+          row.append(
+            el("span", "wanted-skull", "☠"),
+            el("span", "arena-name", `${w.name} · Lv ${w.lv}`),
+            el("span", "arena-rating", `${goldText(w.bounty)} gold`),
+            el("span", "arena-wl", `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")} left`),
+          );
+          list.append(row);
+        }
+        this.body.append(list);
+      }
+      this.body.append(el("p", "dialog-note", "Beat an Outlaw in the Wildlands and their bounty is yours: 5% of their gold, at most 5,000. Hunting Outlaws never makes you one."));
+      return;
+    }
+    const rows = this.wildTab === "week" ? b.week : b.all;
+    const mine = this.wildTab === "week" ? b.me?.week : b.me?.all;
+    if (!b.saved) this.body.append(el("p", "dialog-note", "Sign in with Gattchaa to get your name on the board."));
+    else if (mine) this.body.append(el("p", "arena-me", `You: #${mine.rank} · ${mine.wins} beaten · ${mine.bounties} Outlaw${mine.bounties === 1 ? "" : "s"} (${goldText(mine.gold)} gold in bounties)`));
+    else this.body.append(el("p", "dialog-empty", this.wildTab === "week" ? "You haven't beaten anyone up there this week." : "You haven't beaten anyone up there yet."));
+    this.section(this.wildTab === "week" ? "Top hunters this week" : "Top hunters of all time");
+    if (!rows.length) this.body.append(el("p", "dialog-empty", this.wildTab === "week" ? "Nobody yet this week. The board is yours for the taking!" : "Nobody yet. Be the first!"));
+    else {
+      const list = el("ol", "arena-board");
+      rows.forEach((r, i) => {
+        const row = el("li", mine && r.name === mine.name && mine.rank === i + 1 ? "me" : "");
+        row.append(el("span", "arena-rank", `${i + 1}`), el("span", "arena-name", r.name), el("span", "arena-rating", `${r.wins} beaten`), el("span", "arena-wl", `${r.bounties} ☠`));
+        list.append(row);
+      });
+      this.body.append(list);
+    }
+    const days = Math.max(1, Math.ceil((b.resetAt - Date.now()) / 86_400_000));
+    this.body.append(
+      el(
+        "p",
+        "dialog-note",
+        `${this.wildTab === "week" ? `The weekly board starts again every Monday (in ${days} day${days === 1 ? "" : "s"}). ` : ""}Only signed-in players are ranked, and beating the same player again only counts once every 10 minutes. ☠ counts the Outlaws among them.`,
+      ),
+    );
   }
 
   // ------------------------------------------------------------------ the ferry

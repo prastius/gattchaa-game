@@ -90,7 +90,7 @@ The town is always safe: monsters never come in, and nobody can attack anyone in
 | Rowan | Gate Guard | Outside the south gate | Explains the South Meadow |
 | Mara | Ranger | Outside the east gate | Explains Dusk Hollow |
 | Gregor | Scout | Outside the west gate | Explains the Orc Woods |
-| Sable | Bounty Hunter | North of town, by the path up from the west road | Explains the Wildlands and their PVP rules |
+| Sable | Bounty Hunter | North of town, by the path up from the west road | Explains the Wildlands and their PVP rules, and keeps the board of who's wanted and the best hunters |
 | Edda | Ferry Captain | At the end of the pier on the meadow's south-east point | Sails you to Frostfell for 500 gold |
 | Bjorn | Ferryman | At the end of Frostfell's pier | Explains Frostfell, and sails you back for free |
 | Finn | Boatman | At the end of the pier where the east road meets the sea | Rows you to Ravenmoor for 800 gold |
@@ -748,7 +748,7 @@ The Arena is the ring of sand behind the café. **A duel counts for the ranking 
 
 ## 11. Open PVP: the Wildlands
 
-North of town, past a dashed red line with little red flags, lie **the Wildlands** (levels 30–40). There's no law up there: **players can attack each other without asking.** Two paths run north along the town walls, one from the west road and one from the east road, with a sign where each crosses the line. **Sable the Bounty Hunter** waits by the west path to explain the rules. The minimap shows the Wildlands in red, and a banner tells you when you cross in or out.
+North of town, past a dashed red line with little red flags, lie **the Wildlands** (levels 30–40). There's no law up there: **players can attack each other without asking.** Two paths run north along the town walls, one from the west road and one from the east road, with a sign where each crosses the line. **Sable the Bounty Hunter** waits by the west path to explain the rules, with her **WANTED** board across the path. The minimap shows the Wildlands in red, and a banner tells you when you cross in or out.
 
 ### The rules
 
@@ -769,6 +769,20 @@ North of town, past a dashed red line with little red flags, lie **the Wildlands
 - **Beaten while you are an Outlaw,** you lose EXP like any fainting (3% of a level), and a **bounty of 5% of your gold** (at most 5,000) goes to whoever beat you. Then your name is clean again.
 - **Fainting to a monster** works as usual, wherever you are.
 - **Leaving the game mid-fight** (within 10 seconds of another player's attack) counts as being beaten by them. Leaving and coming back doesn't clear an Outlaw's name either.
+
+### Sable's board
+
+Talk to **Sable** (press E by her) to read her board. It has three pages:
+
+- **Most wanted:** everyone who's an Outlaw right now, the biggest bounty first, with their level, their bounty and how long until their name is clean again. Your own name is marked if you're on it.
+- **This week:** the ten best hunters this week, by players beaten in the Wildlands. Level on that, whoever beat more Outlaws goes first. The weekly board starts again every **Monday at midnight**, Batam time.
+- **All time:** the same, since the board began.
+
+Both rankings show **your own place** too, with how many players and Outlaws you've beaten and the bounty gold you've collected.
+
+- **Only signed-in players are ranked.** Guests can read the board, but their wins don't go on it.
+- A win only counts when it would count for the titles: beating the same player again within 10 minutes doesn't count again.
+- When someone takes the lead for the week (with at least 3 players beaten), the whole town hears about it.
 
 ### Wildlands titles
 
@@ -909,7 +923,6 @@ Sell your monster loot to Bram whenever your bag fills up, and sit down (X) to h
 ## 15. Coming next
 
 - **Raising the level cap** past 60, with new fields above it.
-- **A ranking board** for the Wildlands' player fights.
 
 ---
 

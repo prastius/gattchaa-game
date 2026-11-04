@@ -66,7 +66,7 @@ import {
   type DuelAskEvent,
   type DuelStartEvent,
 } from "../../../shared/duels";
-import { OUTLAW_MS, PVP_COMBAT_MS, PVP_RECOUNT_MS, bountyOf, pvpBlock, type PvpSide } from "../../../shared/pvp";
+import { OUTLAW_MS, PVP_COMBAT_MS, PVP_RECOUNT_MS, bountyOf, pvpBlock, type PvpSide, type WantedRow } from "../../../shared/pvp";
 import type { Progress } from "../db";
 import { Monster, type Player } from "./WorldState";
 import { Inventory, type GearAt } from "./Inventory";
@@ -128,6 +128,8 @@ export interface CombatHooks {
   titleEarned(id: string, title: TitleDef): void;
   /** Someone reached the level cap: maybe a Pioneer (the room knows the accounts). */
   reachedCap(id: string, cap: number): void;
+  /** `id` beat another player in the Wildlands, and it counts (`outlaw`: they were one, and paid `bounty`). */
+  pvpWin(id: string, outlaw: boolean, bounty: number): void;
   /** Someone challenged `to` to a duel. */
   duelAsk(to: string, ev: DuelAskEvent): void;
   /** A duel began (told to each duelist). */
@@ -852,6 +854,15 @@ export class Combat {
     return gold;
   }
 
+  /** Everyone who's an Outlaw right now, the biggest bounty first (for Sable's board). */
+  wanted(): WantedRow[] {
+    const now = Date.now();
+    return [...this.fighters.values()]
+      .filter((f) => f.player.outlaw && f.outlawUntil > now)
+      .map((f) => ({ name: f.player.name, lv: f.player.lv, bounty: bountyOf(f.gold), ms: f.outlawUntil - now }))
+      .sort((a, b) => b.bounty - a.bounty || b.ms - a.ms);
+  }
+
   /** Pays the ferry fare (the room checked you're with the captain). False if you can't sail now. */
   payFare(id: string, fare: number): boolean {
     const f = this.fighters.get(id);
@@ -1095,6 +1106,7 @@ export class Combat {
       f.book.deeds.pvpWins++;
       if (outlaw) f.book.deeds.bounties++;
       this.deed(f);
+      this.hooks.pvpWin(f.id, outlaw, bounty);
     }
     const gold = bounty ? ` and a bounty of ${goldText(bounty)} gold` : "";
     this.hooks.notice(f.id, outlaw ? `You beat the Outlaw ${g.player.name}${bounty ? ` and claimed a bounty of ${goldText(bounty)} gold` : ""}!` : `You beat ${g.player.name}!`);

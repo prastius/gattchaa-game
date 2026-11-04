@@ -43,6 +43,7 @@ import { PIONEERS, TITLES, isTitleId, type TitleShowMessage } from "../../../sha
 import type { ArenaBoard, DuelAnswerMessage, DuelAskMessage, DuelEndEvent } from "../../../shared/duels";
 import { BAG_SIZE, ITEMS, MAX_STACK, OUTFITTER_STOCK, SMITH_STOCK, cleanUpgrade, isItemId, isSlot, itemName } from "../../../shared/items";
 import { FERRY, NPCS, type NpcKind } from "../../../shared/npcs";
+import { TOP_HUNTER_NEWS, weekEndsAt, weekOf, type WildBoard } from "../../../shared/pvp";
 import {
   SHOP_AWAY_HOURS,
   SHOP_ID_RE,
@@ -211,6 +212,20 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       const account = this.meta.get(client.sessionId)?.account;
       client.send("arena:board", { ...db.arenaBoard(10, account?.id), saved: Boolean(account) } satisfies ArenaBoard);
     },
+    "wild:board": (client: Client, msg: { npc?: string }) => {
+      if (!this.itemOk(client) || !this.npcNear(client, msg?.npc, "bounty")) return;
+      const account = this.meta.get(client.sessionId)?.account;
+      const week = weekOf(Date.now());
+      client.send("wild:board", {
+        ...db.wildBoard(10, week, account?.id),
+        wanted: this.combat
+          .wanted()
+          .slice(0, 10)
+          .map((w) => (w.name === this.state.players.get(client.sessionId)?.name ? { ...w, you: true as const } : w)),
+        resetAt: weekEndsAt(week),
+        saved: Boolean(account),
+      } satisfies WildBoard);
+    },
     "title:show": (client: Client, msg: TitleShowMessage) => {
       const id = msg?.id;
       if (this.itemOk(client) && (id === "" || isTitleId(id))) this.combat.showTitle(client.sessionId, id);
@@ -271,6 +286,15 @@ export class WorldRoom extends Room<{ state: WorldState }> {
         if (event === "rise") return this.system(`👑 The ${def.name} has risen in the ${field}!`);
         const name = by && this.state.players.get(by)?.name;
         this.system(name ? `🏆 ${name} defeated the ${def.name}!` : `🏆 The ${def.name} has fallen!`);
+      },
+      pvpWin: (id, outlaw, bounty) => {
+        const account = this.meta.get(id)?.account;
+        const name = this.state.players.get(id)?.name;
+        if (!account || !name) return;
+        const r = db.wildWin(account.id, outlaw, bounty, weekOf(Date.now()));
+        if (r.after === account.id && r.before !== account.id && r.weekWins >= TOP_HUNTER_NEWS) {
+          this.system(`🏹 ${name} is now the Wildlands' top hunter this week, with ${r.weekWins} players beaten!`);
+        }
       },
       jobChange: (id, cls) => {
         const name = this.state.players.get(id)?.name;

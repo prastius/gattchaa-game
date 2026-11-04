@@ -2772,3 +2772,9 @@ button.dialog-link:disabled {
   color: var(--ink-dim);
   font-size: 12px;
 }
+
+/* Sable's board: the Outlaws, with a skull where the rank would be. */
+.wanted-skull {
+  color: #ff6b6b;
+  font-weight: 700;
+}
