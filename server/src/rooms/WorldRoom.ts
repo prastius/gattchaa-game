@@ -65,6 +65,18 @@ import { NpcBrain } from "./NpcBrain";
 import { Combat } from "./Combat";
 import { Drops } from "./Drops";
 import { Parties } from "./Parties";
+import { Guilds } from "./Guilds";
+import {
+  GUILD_FOUND_GOLD,
+  isGuildRank,
+  type GuildAnswerMessage,
+  type GuildFoundMessage,
+  type GuildInviteMessage,
+  type GuildKickMessage,
+  type GuildLeadMessage,
+  type GuildNoticeMessage,
+  type GuildRankMessage,
+} from "../../../shared/guild";
 import type { PartyAnswerMessage, PartyInviteMessage, PartyKickMessage } from "../../../shared/party";
 import { feed } from "../gattchaa";
 import { db, parseWares, type Account, type Mail, type Progress } from "../db";
@@ -157,6 +169,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
   private combat!: Combat;
   private drops!: Drops;
   private parties!: Parties;
+  private guilds!: Guilds;
   /** Fight events waiting to go out, per session; sent once per tick. */
   private fx = new Map<string, FxEvent[]>();
   private stopAnnouncements?: () => void;
@@ -223,6 +236,34 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     "party:kick": (client: Client, msg: PartyKickMessage) => {
       if (this.itemOk(client) && typeof msg?.t === "string") this.parties.remove(client.sessionId, msg.t.slice(0, 16));
     },
+    "guild:found": (client: Client, msg: GuildFoundMessage) => {
+      if (this.itemOk(client) && this.npcNear(client, msg?.npc, "guild")) this.guilds.found(client.sessionId, msg.name, msg.emblem);
+    },
+    "guild:invite": (client: Client, msg: GuildInviteMessage) => {
+      const to = typeof msg?.t === "string" ? msg.t.slice(0, 16) : "";
+      if (this.itemOk(client) && this.state.players.has(to)) this.guilds.invite(client.sessionId, to);
+    },
+    "guild:answer": (client: Client, msg: GuildAnswerMessage) => {
+      if (this.itemOk(client) && typeof msg?.from === "string") this.guilds.answer(client.sessionId, msg.from.slice(0, 16), msg.yes === true);
+    },
+    "guild:leave": (client: Client) => {
+      if (this.itemOk(client)) this.guilds.leave(client.sessionId);
+    },
+    "guild:kick": (client: Client, msg: GuildKickMessage) => {
+      if (this.itemOk(client) && Number.isInteger(msg?.id)) this.guilds.kick(client.sessionId, msg.id);
+    },
+    "guild:rank": (client: Client, msg: GuildRankMessage) => {
+      if (this.itemOk(client) && Number.isInteger(msg?.id) && isGuildRank(msg.rank)) this.guilds.setRank(client.sessionId, msg.id, msg.rank);
+    },
+    "guild:lead": (client: Client, msg: GuildLeadMessage) => {
+      if (this.itemOk(client) && Number.isInteger(msg?.id)) this.guilds.lead(client.sessionId, msg.id);
+    },
+    "guild:notice": (client: Client, msg: GuildNoticeMessage) => {
+      if (this.itemOk(client) && typeof msg?.text === "string") this.guilds.setNotice(client.sessionId, msg.text);
+    },
+    "guild:get": (client: Client) => {
+      if (this.itemOk(client)) this.guilds.refresh(client.sessionId);
+    },
     "arena:board": (client: Client, msg: { npc?: string }) => {
       if (!this.itemOk(client) || !this.npcNear(client, msg?.npc, "arena")) return;
       const account = this.meta.get(client.sessionId)?.account;
@@ -281,6 +322,14 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     this.parties = new Parties(this.state.players, {
       send: (id, type, msg) => this.clients.getById(id)?.send(type, msg),
       notice: (id, text) => this.notice(id, text),
+    });
+    this.guilds = new Guilds(this.state.players, {
+      send: (id, type, msg) => this.clients.getById(id)?.send(type, msg),
+      notice: (id, text) => this.notice(id, text),
+      news: (text) => this.system(text),
+      sessionOf: (accountId) => this.sessionOf.get(accountId),
+      accountOf: (id) => this.meta.get(id)?.account?.id,
+      pay: (id, gold) => this.combat.spend(id, gold, "Founding a guild"),
     });
     this.drops = new Drops(this.state.drops, world, (drop) => {
       for (const client of this.clients) if (client.view?.has(drop)) client.view.remove(drop);
@@ -349,6 +398,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       this.combat.tick(NPC_TICK_MS);
       this.drops.tick(Date.now());
       this.parties.tick(Date.now());
+      this.guilds.tick(Date.now());
       this.flushFx();
       this.state.siteOnline = feed.online;
     }, NPC_TICK_MS);
@@ -431,6 +481,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     this.meta.set(client.sessionId, meta);
     this.combat.join(client.sessionId, player, meta, account && db.progress(account.id), Boolean(account));
     this.state.online = this.clients.length;
+    this.guilds.enter(client.sessionId);
 
     if (account && shop) {
       Object.assign(shop, { owner: client.sessionId, name, look });
@@ -463,6 +514,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     // First, while the session still owns its account (progress is saved under it).
     this.combat.leave(client.sessionId);
     this.parties.leave(client.sessionId, "gone");
+    this.guilds.exit(client.sessionId);
     const player = this.state.players.get(client.sessionId);
     const meta = this.meta.get(client.sessionId);
     this.state.players.delete(client.sessionId);
@@ -745,6 +797,8 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     if (!text) return;
     const party = /^\/p(?:arty)? +(.+)$/i.exec(text);
     if (party) return this.partyChat(client, player.name, party[1]);
+    const guild = /^\/g(?:uild)? +(.+)$/i.exec(text);
+    if (guild) return this.guildChat(client, player.name, guild[1]);
     if (text.startsWith("/")) return this.command(client, text);
 
     const now = Date.now();
@@ -768,6 +822,19 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     if (meta.lastChatAt + CHAT_COOLDOWN_MS > now) return;
     meta.lastChatAt = now;
     const msg: ChatMessage = { ...this.makeMessage(client.sessionId, name, text), party: true };
+    for (const id of members) this.clients.getById(id)?.send("chat", msg);
+  }
+
+  /** /g: a line for the speaker's guild mates who are here (not kept in the town's chat history). */
+  private guildChat(client: Client, name: string, text: string) {
+    const meta = this.meta.get(client.sessionId);
+    const members = this.guilds.members(client.sessionId);
+    if (!meta) return;
+    if (!members.length) return client.send("chat", this.makeMessage("", "System", `You're not in a guild. Leopold, by the fountain plaza, founds one for ${GUILD_FOUND_GOLD.toLocaleString("en-US")} gold.`, true));
+    const now = Date.now();
+    if (meta.lastChatAt + CHAT_COOLDOWN_MS > now) return;
+    meta.lastChatAt = now;
+    const msg: ChatMessage = { ...this.makeMessage(client.sessionId, name, text), guild: true };
     for (const id of members) this.clients.getById(id)?.send("chat", msg);
   }
 

@@ -34,6 +34,9 @@ export const Player = schema(
     outlaw: t.boolean().default(false),
     /** Their party's id ("" = none; see Parties.ts). */
     party: t.string().default(""),
+    /** Their guild's name and emblem ("" = none; see Guilds.ts and shared/guild.ts). */
+    guild: t.string().default(""),
+    emblem: t.uint8().default(0),
   },
   "Player",
 );

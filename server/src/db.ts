@@ -7,11 +7,12 @@ import { RATING_START, ratingChange, type ArenaRow } from "../../shared/duels";
 import { cleanStack, itemName, type ItemStack } from "../../shared/items";
 import { cleanWares, stackText, type ShopWare } from "../../shared/vending";
 import type { WildBoard, WildRow } from "../../shared/pvp";
+import type { GuildRank } from "../../shared/guild";
 
 // Saved game data, in one SQLite file: no database server to run, and a backup
 // is a copy of the file. Holds Gattchaa-linked accounts, their sign-in
 // sessions, their characters' progress, the player shops open in town (and
-// what they sell), and mail: gold and items waiting for their owner.
+// what they sell), mail: gold and items waiting for their owner, and guilds.
 //
 // Default file: server/data/town.db (same relative path from src/ and build/).
 // DB_PATH overrides it. Live backup: sqlite3 server/data/town.db ".backup town-backup.db"
@@ -58,6 +59,23 @@ export interface Sale {
   seller: number;
   /** What's left in the shop afterwards. */
   wares: ShopWare[];
+}
+
+/** A guild, and someone's place in it. */
+export interface GuildRow {
+  id: number;
+  name: string;
+  emblem: number;
+  notice: string;
+}
+export interface GuildMemberRow {
+  accountId: number;
+  name: string;
+  cls: string;
+  lv: number;
+  rank: GuildRank;
+  /** When they were last in town or last saved (ms). */
+  seen: number;
 }
 
 /** A character's progress: class, level and what they carry. */
@@ -176,6 +194,22 @@ const MIGRATIONS = [
    );
    CREATE INDEX wildlands_wins ON wildlands (wins DESC);
    CREATE INDEX wildlands_week ON wildlands (week, week_wins DESC);`,
+  // v10: guilds. Names are unique whatever their case; a member is an account,
+  // in one guild at most, with a rank (0 member, 1 officer, 2 leader).
+  `CREATE TABLE guilds (
+     id INTEGER PRIMARY KEY,
+     name TEXT NOT NULL UNIQUE COLLATE NOCASE,
+     emblem INTEGER NOT NULL DEFAULT 0,
+     notice TEXT NOT NULL DEFAULT '',
+     created_at INTEGER NOT NULL
+   );
+   CREATE TABLE guild_members (
+     account_id INTEGER PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,
+     guild_id INTEGER NOT NULL REFERENCES guilds(id) ON DELETE CASCADE,
+     rank INTEGER NOT NULL DEFAULT 0,
+     joined_at INTEGER NOT NULL
+   );
+   CREATE INDEX guild_members_guild ON guild_members (guild_id);`,
 ];
 
 const ACCOUNT_COLS = "id, gattchaa_id AS gattchaaId, display_name AS displayName, name, look";
@@ -408,6 +442,80 @@ export class Db {
   }
 
   // ------------------------------------------------------------ shops
+
+  // ---------------------------------------------------------------- guilds
+
+  /** The guild an account is in, and its rank there. */
+  guildOf(accountId: number): (GuildRow & { rank: GuildRank }) | undefined {
+    return this.db
+      .prepare("SELECT g.id, g.name, g.emblem, g.notice, m.rank FROM guild_members m JOIN guilds g ON g.id = m.guild_id WHERE m.account_id = ?")
+      .get(accountId) as (GuildRow & { rank: GuildRank }) | undefined;
+  }
+
+  guild(id: number): GuildRow | undefined {
+    return this.db.prepare("SELECT id, name, emblem, notice FROM guilds WHERE id = ?").get(id) as GuildRow | undefined;
+  }
+
+  /** Is this name taken (whatever its case)? */
+  guildNameTaken(name: string): boolean {
+    return Boolean(this.db.prepare("SELECT 1 FROM guilds WHERE name = ?").get(name));
+  }
+
+  /** A new guild, with its founder as leader. Undefined if the name was taken in the meantime. */
+  createGuild(name: string, emblem: number, founder: number): number | undefined {
+    return this.transaction(() => {
+      if (this.guildNameTaken(name)) return undefined;
+      const now = Date.now();
+      const id = Number(this.db.prepare("INSERT INTO guilds (name, emblem, notice, created_at) VALUES (?, ?, '', ?)").run(name, emblem, now).lastInsertRowid);
+      this.db.prepare("INSERT INTO guild_members (account_id, guild_id, rank, joined_at) VALUES (?, ?, 2, ?)").run(founder, id, now);
+      return id;
+    });
+  }
+
+  /** Everyone in a guild, with their character's name, job, level and when they were last seen. */
+  guildMembers(guildId: number): GuildMemberRow[] {
+    return this.db
+      .prepare(
+        `SELECT m.account_id AS accountId, a.name, COALESCE(c.class, 'novice') AS cls, COALESCE(c.level, 1) AS lv, m.rank,
+                MAX(a.seen_at, COALESCE(c.updated_at, 0)) AS seen
+           FROM guild_members m JOIN accounts a ON a.id = m.account_id LEFT JOIN characters c ON c.account_id = m.account_id
+          WHERE m.guild_id = ?`,
+      )
+      .all(guildId) as unknown as GuildMemberRow[];
+  }
+
+  guildSize(guildId: number): number {
+    return (this.db.prepare("SELECT COUNT(*) AS n FROM guild_members WHERE guild_id = ?").get(guildId) as { n: number }).n;
+  }
+
+  joinGuild(guildId: number, accountId: number) {
+    this.db.prepare("INSERT INTO guild_members (account_id, guild_id, rank, joined_at) VALUES (?, ?, 0, ?)").run(accountId, guildId, Date.now());
+  }
+
+  leaveGuild(accountId: number) {
+    this.db.prepare("DELETE FROM guild_members WHERE account_id = ?").run(accountId);
+  }
+
+  setGuildRank(accountId: number, rank: GuildRank) {
+    this.db.prepare("UPDATE guild_members SET rank = ? WHERE account_id = ?").run(rank, accountId);
+  }
+
+  /** The leader hands over: they become an officer, the other the leader. */
+  passGuild(from: number, to: number) {
+    this.transaction(() => {
+      this.db.prepare("UPDATE guild_members SET rank = 1 WHERE account_id = ?").run(from);
+      this.db.prepare("UPDATE guild_members SET rank = 2 WHERE account_id = ?").run(to);
+    });
+  }
+
+  setGuildNotice(guildId: number, notice: string) {
+    this.db.prepare("UPDATE guilds SET notice = ? WHERE id = ?").run(notice, guildId);
+  }
+
+  /** The guild is gone (its members with it). */
+  deleteGuild(guildId: number) {
+    this.db.prepare("DELETE FROM guilds WHERE id = ?").run(guildId);
+  }
 
   shops(): ShopRow[] {
     return this.db.prepare(`SELECT ${SHOP_COLS} FROM shops`).all() as unknown as ShopRow[];

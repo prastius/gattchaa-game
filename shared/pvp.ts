@@ -36,6 +36,8 @@ export interface PvpSide {
   duel?: string;
   /** Their party ("" or missing: none). Party members never fight each other out here. */
   party?: string;
+  /** Their guild ("" or missing: none). Nor do guild mates. */
+  guild?: string;
 }
 
 /** Why `a` can't attack `b` right now ("" if they can). */
@@ -43,6 +45,7 @@ export function pvpBlock(a: PvpSide, b: PvpSide): string {
   if (a.dead || b.dead) return "Nobody to fight";
   if (a.duel || b.duel) return a.duel ? "Finish your duel first" : "They're in a duel";
   if (a.party && a.party === b.party) return "They're in your party";
+  if (a.guild && a.guild === b.guild) return "They're in your guild";
   if (!inPvpZone(a.x, a.y)) return "Players can only fight in the Wildlands";
   if (!inPvpZone(b.x, b.y)) return "They're outside the Wildlands";
   if (a.lv < PVP_MIN_LEVEL) return `You can fight players from level ${PVP_MIN_LEVEL}`;

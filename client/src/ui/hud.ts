@@ -55,6 +55,7 @@ export class HUD {
   private skillsBtn = document.getElementById("skills-btn") as HTMLButtonElement;
   private skillsCount = document.getElementById("skills-count")!;
   private titlesBtn = document.getElementById("titles-btn") as HTMLButtonElement;
+  private guildBtn = document.getElementById("guild-btn") as HTMLButtonElement;
   private titlesNew = document.getElementById("titles-new")!;
   private shopBtn = document.getElementById("shop-btn") as HTMLButtonElement;
   private shopLabel = document.getElementById("shop-label")!;
@@ -145,6 +146,10 @@ export class HUD {
 
   onTitles(fn: () => void) {
     this.titlesBtn.addEventListener("click", fn);
+  }
+
+  onGuild(fn: () => void) {
+    this.guildBtn.addEventListener("click", fn);
   }
 
   /** Titles earned since you last looked: a badge on the titles button. */

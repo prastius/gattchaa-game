@@ -904,6 +904,19 @@ export class Combat {
     return true;
   }
 
+  /** Pays for something the room sells (founding a guild). False, having said why, if they can't. */
+  spend(id: string, gold: number, what: string): boolean {
+    const f = this.fighters.get(id);
+    if (!f) return false;
+    if (f.gold < gold) {
+      this.hooks.notice(id, `${what} costs ${goldText(gold)} gold: you have ${goldText(f.gold)}.`);
+      return false;
+    }
+    f.gold -= gold;
+    this.traded(f);
+    return true;
+  }
+
   /** Gold changed hands: show it and save now. */
   private traded(f: Fighter) {
     this.changed(f);
@@ -982,7 +995,7 @@ export class Combat {
 
   /** What the PVP rules need to know about someone. */
   private side(f: Fighter): PvpSide {
-    return { x: f.pos.x, y: f.pos.y, lv: f.player.lv, dead: f.player.dead, duel: f.player.duel, party: f.player.party };
+    return { x: f.pos.x, y: f.pos.y, lv: f.player.lv, dead: f.player.dead, duel: f.player.duel, party: f.player.party, guild: f.player.guild };
   }
 
   /** Ranked: both in the Arena's ring, and both signed in (the ranking is kept per account). */

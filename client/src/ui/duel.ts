@@ -1,4 +1,5 @@
 import { CLASSES, isClassId } from "../../../shared/rpg";
+import { emblemOf } from "../../../shared/guild";
 import { RARITY } from "../../../shared/items";
 import { TITLES, isTitleId, type TitleDef } from "../../../shared/titles";
 import type { DuelAskEvent, DuelEndEvent, DuelStartEvent } from "../../../shared/duels";
@@ -28,6 +29,9 @@ export interface PlayerInfo {
   cls?: string;
   title?: string;
   outlaw?: boolean;
+  /** Their guild ("" or missing: none) and its emblem. */
+  guild?: string;
+  emblem?: number;
 }
 
 const clock = (ms: number) => {
@@ -68,7 +72,7 @@ export class DuelUI {
   // ------------------------------------------------------------------ the player card
 
   /** Someone else was clicked: who they are, a challenge button, (in the Wildlands) `attack` them, and a party invite (or why not). */
-  openCard(id: string, p: PlayerInfo, attack?: () => void, party?: { go?: () => void; note: string }) {
+  openCard(id: string, p: PlayerInfo, attack?: () => void, party?: { go?: () => void; note: string }, guild?: { go?: () => void; note: string }) {
     this.card.replaceChildren();
     const head = el("div", "player-card-head");
     head.append(el("b", "", p.name));
@@ -86,6 +90,13 @@ export class DuelUI {
       about.append(" · ", tag);
     }
     if (p.outlaw) about.append(" · ", el("span", "player-card-outlaw", "☠ Outlaw"));
+    const guildLine: HTMLElement[] = [];
+    if (p.guild) {
+      const { symbol, color } = emblemOf(p.emblem ?? 0);
+      const line = el("div", "player-card-guild", `${symbol} ${p.guild}`);
+      line.style.color = color;
+      guildLine.push(line);
+    }
     const fight: HTMLElement[] = [];
     if (attack) {
       const button = el("button", "dialog-link player-card-attack", `⚔ Attack ${p.name}`);
@@ -118,7 +129,18 @@ export class DuelUI {
       together.push(invite);
     }
     if (party) together.push(el("p", "player-card-note", party.note));
-    this.card.append(head, about, ...fight, challenge, note, ...together);
+    if (guild?.go) {
+      const invite = el("button", "dialog-link player-card-guild-invite", "🛡 Invite to guild");
+      invite.type = "button";
+      invite.addEventListener("click", () => {
+        audio.blip();
+        guild.go!();
+        this.closeCard();
+      });
+      together.push(invite);
+    }
+    if (guild) together.push(el("p", "player-card-note", guild.note));
+    this.card.append(head, about, ...guildLine, ...fight, challenge, note, ...together);
     this.card.hidden = false;
   }
 

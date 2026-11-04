@@ -100,6 +100,13 @@ export class ChatUI {
       name.className = "name";
       name.textContent = `[Party] ${msg.name}:`;
       li.append(name, document.createTextNode(msg.text));
+    } else if (msg.guild) {
+      // Said to the guild only.
+      li.className = "guild-line";
+      const name = document.createElement("span");
+      name.className = "name";
+      name.textContent = `[Guild] ${msg.name}:`;
+      li.append(name, document.createTextNode(msg.text));
     } else {
       const name = document.createElement("span");
       name.className = "name";

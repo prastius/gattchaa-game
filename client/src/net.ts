@@ -34,6 +34,18 @@ import { audio } from "./audio";
 import type { HUD } from "./ui/hud";
 import type { WildBoard } from "../../shared/pvp";
 import type { PartyAnswerMessage, PartyAskEvent, PartyInviteMessage, PartyKickMessage, PartyMessage } from "../../shared/party";
+import type {
+  GuildAnswerMessage,
+  GuildAskEvent,
+  GuildFoundMessage,
+  GuildInviteMessage,
+  GuildKickMessage,
+  GuildLeadMessage,
+  GuildMessage,
+  GuildNoticeMessage,
+  GuildRank,
+  GuildRankMessage,
+} from "../../shared/guild";
 
 function serverUrl(): string {
   if (import.meta.env.VITE_SERVER_URL) return import.meta.env.VITE_SERVER_URL;
@@ -66,6 +78,8 @@ export class Net {
   readonly onDuelAsk = new Set<(ev: DuelAskEvent) => void>();
   readonly onParty = new Set<(p: PartyMessage | null) => void>();
   readonly onPartyAsk = new Set<(ev: PartyAskEvent) => void>();
+  readonly onGuild = new Set<(g: GuildMessage | null) => void>();
+  readonly onGuildAsk = new Set<(ev: GuildAskEvent) => void>();
   readonly onDuelStart = new Set<(ev: DuelStartEvent) => void>();
   readonly onDuelEnd = new Set<(ev: DuelEndEvent) => void>();
   readonly onArenaBoard = new Set<(b: ArenaBoard) => void>();
@@ -76,6 +90,8 @@ export class Net {
   bag?: BagMessage;
   /** Your titles and how far along the rest are. */
   titles?: TitlesMessage;
+  /** Your guild (null: not in one; undefined: no word from the server yet). */
+  guild?: GuildMessage | null;
 
   constructor(
     readonly room: Room,
@@ -136,6 +152,13 @@ export class Net {
     room.onMessage("party:ask", (ev: PartyAskEvent) => {
       for (const fn of this.onPartyAsk) fn(ev);
     });
+    room.onMessage("guild", (g: GuildMessage | null) => {
+      this.guild = g;
+      for (const fn of this.onGuild) fn(g);
+    });
+    room.onMessage("guild:ask", (ev: GuildAskEvent) => {
+      for (const fn of this.onGuildAsk) fn(ev);
+    });
 
     room.onDrop((code, reason) => {
       console.warn("connection dropped", code, reason);
@@ -156,10 +179,14 @@ export class Net {
     const text = sanitizeChat(raw);
     if (!text) return false;
     this.room.send("chat", { text } satisfies ChatSend);
-    // Local echo: no waiting for the server round trip. /p is said to your party only.
+    // Local echo: no waiting for the server round trip. /p is said to your party only, /g to your guild
+    // (outside one, the server explains instead).
     const party = /^\/p(?:arty)? +(.+)$/i.exec(text);
-    this.chat.add({ id: 0, from: this.room.sessionId, name: this.myName, text: party ? party[1] : text, ts: Date.now(), ...(party && { party: true as const }) });
-    this.onBubble?.(this.room.sessionId, party ? party[1] : text);
+    const guild = /^\/g(?:uild)? +(.+)$/i.exec(text);
+    if (guild && !this.guild) return true;
+    const said = party?.[1] ?? guild?.[1] ?? text;
+    this.chat.add({ id: 0, from: this.room.sessionId, name: this.myName, text: said, ts: Date.now(), ...(party && { party: true as const }), ...(guild && { guild: true as const }) });
+    this.onBubble?.(this.room.sessionId, said);
     return true;
   }
 
@@ -236,6 +263,45 @@ export class Net {
 
   kickParty(t: string) {
     this.room.send("party:kick", { t } satisfies PartyKickMessage);
+  }
+
+  foundGuild(npc: string, name: string, emblem: number) {
+    this.room.send("guild:found", { npc, name, emblem } satisfies GuildFoundMessage);
+  }
+
+  inviteGuild(t: string) {
+    this.room.send("guild:invite", { t } satisfies GuildInviteMessage);
+  }
+
+  answerGuild(from: string, yes: boolean) {
+    this.room.send("guild:answer", { from, yes } satisfies GuildAnswerMessage);
+  }
+
+  leaveGuild() {
+    this.room.send("guild:leave");
+  }
+
+  /** Removes a member (their account id). */
+  kickGuild(id: number) {
+    this.room.send("guild:kick", { id } satisfies GuildKickMessage);
+  }
+
+  setGuildRank(id: number, rank: GuildRank) {
+    this.room.send("guild:rank", { id, rank } satisfies GuildRankMessage);
+  }
+
+  /** Hands your guild to another member. */
+  passGuild(id: number) {
+    this.room.send("guild:lead", { id } satisfies GuildLeadMessage);
+  }
+
+  setGuildNotice(text: string) {
+    this.room.send("guild:notice", { text } satisfies GuildNoticeMessage);
+  }
+
+  /** Asks for a fresh member list (levels and who's online change all the time). */
+  getGuild() {
+    this.room.send("guild:get");
   }
 
   askDuel(t: string) {

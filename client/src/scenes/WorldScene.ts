@@ -40,6 +40,7 @@ import type { StatusPanel } from "../ui/status";
 import type { BagPanel } from "../ui/bag";
 import type { SkillsUI } from "../ui/skills";
 import type { PartyUI } from "../ui/party";
+import type { GuildUI } from "../ui/guild";
 import type { TitlesUI } from "../ui/titles";
 import type { DuelUI } from "../ui/duel";
 import { PLAYER_RADIUS } from "../../../shared/duels";
@@ -65,6 +66,7 @@ export interface WorldSceneData {
   titles: TitlesUI;
   duel: DuelUI;
   party: PartyUI;
+  guild: GuildUI;
 }
 
 interface Chunk {
@@ -78,7 +80,7 @@ interface Chunk {
 type Synced = PlayerView & { ts: number };
 
 /** What the PVP rules need to know about a player. */
-const sideOf = (s: Synced): PvpSide => ({ x: s.x, y: s.y, lv: s.lv ?? 1, dead: s.dead, duel: s.duel, party: s.party });
+const sideOf = (s: Synced): PvpSide => ({ x: s.x, y: s.y, lv: s.lv ?? 1, dead: s.dead, duel: s.duel, party: s.party, guild: s.guild });
 
 interface Entity {
   sprite: PlayerSprite;
@@ -213,6 +215,7 @@ export class WorldScene extends Phaser.Scene {
   private titles!: TitlesUI;
   private duel!: DuelUI;
   private party!: PartyUI;
+  private guild!: GuildUI;
   /** A skill pressed while the target was out of range: cast once we've walked close enough. */
   private pendingSkill?: { id: SkillId; at: number };
   private skillHintAt = 0;
@@ -391,6 +394,7 @@ export class WorldScene extends Phaser.Scene {
     this.hud.onBag(() => this.bag.toggle());
     this.hud.onSkills(() => this.toggleSkills());
     this.hud.onTitles(() => this.toggleTitles());
+    this.hud.onGuild(() => this.toggleGuild());
     this.titles.onUnseen = (n) => this.hud.setNewTitles(n);
     this.hud.onPvp = (on) => this.zoneBanner(on);
     // A duel begins: aim at the opponent (the fighting itself waits for the countdown).
@@ -403,6 +407,11 @@ export class WorldScene extends Phaser.Scene {
     this.dialog.openSkills = () => {
       this.dialog.close();
       this.skills.open();
+    };
+    this.dialog.openGuild = () => {
+      this.skills.close();
+      this.titles.close();
+      if (!this.guild.isOpen) this.guild.open();
     };
     this.hud.onPotion(() => this.drinkPotion());
     this.bag.appearance = () => {
@@ -451,6 +460,7 @@ export class WorldScene extends Phaser.Scene {
       else if (e.key === "q" || e.key === "Q") this.drinkPotion();
       else if (e.key === "k" || e.key === "K") this.toggleSkills();
       else if (e.key === "t" || e.key === "T") this.toggleTitles();
+      else if (e.key === "g" || e.key === "G") this.toggleGuild();
       // 1-6: your skills, in skill-bar order (emotes are on the emote button).
       else if (/^[1-6]$/.test(e.key) && !e.repeat) {
         const skill = this.skills.mine[Number(e.key) - 1];
@@ -648,6 +658,7 @@ export class WorldScene extends Phaser.Scene {
         this.self.setLook(appearanceKey(me.state.look, me.state.gear)); // wardrobe and gear changes come back via state
         this.self.setAura(me.state.aura ?? 0);
         this.self.setOutlaw(Boolean(me.state.outlaw));
+        this.self.setGuild(me.state.guild ?? "", me.state.emblem ?? 0);
         this.showTitle(this.self, me.state.title);
         this.updateHealth(me.state);
       }
@@ -683,6 +694,7 @@ export class WorldScene extends Phaser.Scene {
         sprite.setAura(s.aura ?? 0);
         sprite.setOutlaw(Boolean(s.outlaw));
         sprite.setParty(Boolean(s.party) && s.party === this.party.id);
+        sprite.setGuild(s.guild ?? "", s.emblem ?? 0);
         this.showTitle(sprite, s.title);
         // Duelists' health shows for everyone watching, and everyone's in the Wildlands.
         sprite.setHp(s.hp ?? 0, s.mhp ?? 0, (s.hp ?? 0) < (s.mhp ?? 0) || Boolean(s.duel) || (this.hud.pvp && inPvpZone(s.x, s.y)));
@@ -1146,7 +1158,13 @@ export class WorldScene extends Phaser.Scene {
     if (!id || !e) return false;
     const s = e.state;
     const attack = this.pvpWhy(id) ? undefined : () => this.setTarget(id);
-    this.duel.openCard(id, { name: s.name, lv: s.lv, cls: s.cls, title: s.title, outlaw: s.outlaw }, attack, this.party.inviteFor(id, s.party));
+    this.duel.openCard(
+      id,
+      { name: s.name, lv: s.lv, cls: s.cls, title: s.title, outlaw: s.outlaw, guild: s.guild, emblem: s.emblem },
+      attack,
+      this.party.inviteFor(id, s.party),
+      this.guild.inviteFor(id, s.guild),
+    );
     return true;
   }
 
@@ -1505,15 +1523,23 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 
-  /** The skills and titles windows share a corner: opening one closes the other. */
+  /** The skills, titles and guild windows share a corner: opening one closes the others. */
   private toggleSkills() {
     this.titles.close();
+    this.guild.close();
     this.skills.toggle();
   }
 
   private toggleTitles() {
     this.skills.close();
+    this.guild.close();
     this.titles.toggle();
+  }
+
+  private toggleGuild() {
+    this.skills.close();
+    this.titles.close();
+    this.guild.toggle();
   }
 
   /** A player's title under their name, in its rarity colour. */

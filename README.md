@@ -94,6 +94,7 @@ shared/       Code used by both client and server
   duels.ts        Duel rules (ranges, timers, PvP damage, the Arena ring) and the arena rating maths (Elo)
   pvp.ts          Open PVP rules (who may fight whom, Outlaws, bounties) and Sable's board
   party.ts        Party rules: size, EXP sharing and its bonus, and the party messages
+  guild.ts        Guild rules: size, founding, ranks, names, emblems, and the guild messages
 server/       Colyseus server
   src/rooms/WorldRoom.ts   Joins, interest management, movement validation, chat, emotes, wardrobe, sitting, shops, trading
   src/rooms/WorldState.ts  Synced state
@@ -102,7 +103,8 @@ server/       Colyseus server
   src/rooms/Inventory.ts   A character's bag and equipment
   src/rooms/Drops.ts       Items on the ground: first pick for the top fighter (and their party), then anyone; they fade after 90 s
   src/rooms/Parties.ts     Parties: invites, leaving and removing, the leader, and keeping members up to date
-  src/db.ts                SQLite: accounts, sessions, characters, open shops
+  src/rooms/Guilds.ts      Guilds: founding, invites, ranks, removing, the notice, who's online, the names over heads
+  src/db.ts                SQLite: accounts, sessions, characters, open shops, mail, rankings, guilds
   src/api.ts               Sign-in with Gattchaa, shop details
   src/gattchaa.ts          Gattchaa Town API client + webhooks
   src/static.ts            Serves the built client: pre-compressed files, cache headers
@@ -123,7 +125,7 @@ client/       Phaser game
   src/world/monsterArt.ts  Monster sprite sheets and their animations; humanoid monsters' parts
   src/world/fx.ts          Damage numbers, slashes, level-up light, arrows and magic bolts, skill effects
   src/scenes/WorldScene.ts   Chunk streaming, water glints, input, camera, interpolation
-  src/ui/                  Creator, chat, HUD + minimap + emote picker, status panel (HP/MP/EXP), bag, skills (bar and window), NPC and shop panels, duels, the party panel
+  src/ui/                  Creator, chat, HUD + minimap + emote picker, status panel (HP/MP/EXP), bag, skills (bar and window), NPC and shop panels, duels, the party panel, the guild window
   public/assets/           Downloaded art + manifest (committed)
 scripts/
   fetch-assets.mjs   Re-downloads the art from pinned commits and regenerates catalog + credits
@@ -377,6 +379,17 @@ Ragnarok-style parties of up to `PARTY_MAX` (6). The rules are in `shared/party.
 - **Loot.** A drop carries its owner's party (`Drop.party`): the whole party may pick it up during the owner's 15 s. Gold still goes to the top damager.
 - **PVP.** `pvpBlock` refuses a party mate ("They're in your party"); duels between them still work.
 - **Chat.** `/p message` (or `/party`) goes only to the party (`ChatMessage.party`), works in production too, and isn't kept in the town's history.
+
+## Guilds
+
+Ragnarok-style guilds of up to `GUILD_MAX` (30), kept in the database. The rules are in `shared/guild.ts`; `server/src/rooms/Guilds.ts` runs them; the client has the guild window (`client/src/ui/guild.ts`, key G) and the Registrar's form (`dialog.ts`).
+
+- **Saved.** Migration v10 adds `guilds` (name unique with `COLLATE NOCASE`, emblem, notice) and `guild_members` (one row per account: guild and rank, 0 member, 1 officer, 2 leader). Members are accounts, so guests can't found or join one. Deleting a guild deletes its members (foreign keys are on).
+- **Founding.** `guild:found` next to Leopold (NPC kind `guild`): signed in, level `GUILD_FOUND_LV` (20), a name `cleanGuildName` accepts (3 to 16 letters or digits, spaces, ' or -, not only digits), a free name, an emblem (`isEmblem`: symbol × 16 + colour, one byte), and `GUILD_FOUND_GOLD` (10,000) taken by `Combat.spend`. Town news.
+- **On heads.** While a member is here, their synced `Player.guild` (the name) and `Player.emblem` are set, for the line over their name (`PlayerSprite.setGuild`) and the player card. `pvpBlock` refuses a guild mate ("They're in your guild").
+- **Messages.** `guild:invite` (leader or officer; the target must be signed in and in no guild) sends `guild:ask`; `guild:answer` joins. `guild:leave` (the leader only when alone, which closes the guild), `guild:kick` (an account id; officers only remove members), `guild:rank` and `guild:lead` (leader only), `guild:notice` (leader or officers), `guild:get` (a fresh list when the window opens). Every change sends each member here `guild` (`GuildMessage`: name, emblem, notice, your rank, and every member with level, job, rank, online and last seen).
+- **Online.** Coming in and leaving tell the members who are here; taking over from another window says nothing. The notice greets members as they come in.
+- **Chat.** `/g message` (or `/guild`) goes only to the guild members who are here (`ChatMessage.guild`), and isn't kept in the town's history.
 
 ## Gattchaa shop data
 

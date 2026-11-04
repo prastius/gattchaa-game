@@ -8,7 +8,7 @@ import { MARKET_WANDER, PARK_WANDER, STORE_WANDER, TILE, WANDER_AREA, type Rect 
 import type { ShopProduct } from "./gattchaa";
 import { Dir } from "./protocol";
 
-export type NpcKind = "guide" | "shop" | "kuji" | "rooms" | "market" | "grading" | "pickup" | "crier" | "keeper" | "outfitter" | "jobs" | "smith" | "arena" | "ferry" | "bounty" | "local";
+export type NpcKind = "guide" | "shop" | "kuji" | "rooms" | "market" | "grading" | "pickup" | "crier" | "keeper" | "outfitter" | "jobs" | "smith" | "arena" | "ferry" | "bounty" | "guild" | "local";
 
 export interface NpcDef {
   id: string;
@@ -491,6 +491,19 @@ export const NPCS: NpcDef[] = [
       "My upgrades never break your gear. Promise!",
       "See that glow? Somebody's gear is +7 or better.",
     ],
+  },
+  {
+    // On the main street just east of the fountain plaza, by the GUILDS signpost.
+    id: "registrar",
+    name: "Leopold",
+    title: "Guild Registrar",
+    kind: "guild",
+    look: look({ body: "male", hair: "messy", hairColor: "gray", beard: "trimmed", skin: "light", top: "cardigan", topColor: "maroon", bottom: "longPants", bottomColor: "black", shoes: "boots", shoesColor: "black" }),
+    ...at(226.5, 183.6),
+    dir: Dir.Down,
+    greeting:
+      "A guild of your own? Reach level 20, bring 10,000 gold, and choose a name and an emblem. Your guild's name and emblem show over every member's head, you get your own chat (type /g), and guild mates never fight each other in the Wildlands. The founder leads: they choose officers, and together they can invite up to 30 members.",
+    chatter: ["Found a guild! Level 20 and 10,000 gold.", "A guild is for good: it's still there tomorrow.", "Guild mates never fight in the Wildlands.", "Type /g to talk to your guild."],
   },
   {
     // At the Arena's west side, facing the ring.

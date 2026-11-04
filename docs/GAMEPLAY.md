@@ -4,7 +4,7 @@ Gattchaa Town is a small online world for card collectors, built around the Gatt
 
 The game has three parts:
 
-1. **Hanging out.** The town is a meeting place. Chat, sit by the fountain, visit the Gattchaa staff, and run your own shop in the Market Square: trade gear, ingots and monster cards for gold, and show off your real cards.
+1. **Hanging out.** The town is a meeting place. Chat, sit by the fountain, found or join a guild, visit the Gattchaa staff, and run your own shop in the Market Square: trade gear, ingots and monster cards for gold, and show off your real cards.
 2. **Adventure.** Outside the walls, monsters wait in fields sorted by level. Level up, choose a job, find gear and monster cards, and upgrade your equipment.
 3. **Player vs player.** Challenge anyone to a duel, climb the ranking in the Arena, or fight anyone (and be fought) in the Wildlands, the open PVP field north of town.
 
@@ -30,6 +30,8 @@ The game has three parts:
 | Challenge someone to a duel | Click them, then **Challenge to a duel** | Tap them, then the same button |
 | Invite someone to your party | Click them, then **Invite to party** | Tap them, then the same button |
 | Talk to your party only | Type **/p** and your message in the chat | The same |
+| Invite someone to your guild (leader or officer) | Click them, then **Invite to guild** | Tap them, then the same button |
+| Talk to your guild only | Type **/g** and your message in the chat | The same |
 | Attack your duel opponent | Click them, or **Space** | Tap them, or the sword button |
 | Attack a player in the Wildlands | Click them, then **Attack** (an Outlaw: just click them) | Tap them, then the same |
 | Use a skill | Keys **1** to **6**, or the skill buttons | The skill buttons (above the chat) |
@@ -37,6 +39,7 @@ The game has three parts:
 | Bag and equipment | **I** | The bag button |
 | Skills window | **K** | The skills button |
 | Titles window | **T** | The medal button |
+| Guild window | **G** | The shield button |
 | Sit down or stand up | **X** | The sit button |
 | Open your shop (in the Market Square) | **V** | The Open shop button |
 | Emotes | The smiley button | The smiley button |
@@ -103,6 +106,7 @@ The town is always safe: monsters never come in, and nobody can attack anyone in
 | Bram | Outfitter | Outside the south gate, east of the road | Sells potions and starter gear, buys loot |
 | Hilda | Blacksmith | Outside the south gate, west of Rowan | Upgrades gear from +0 to +10 |
 | Magnus | Arena Master | By the Arena, east of the Market Square | Explains duels and keeps the arena ranking |
+| Leopold | Guild Registrar | On the main street just east of the fountain plaza, by the GUILDS signpost | Founds guilds |
 
 ## 4. Player shops
 
@@ -812,6 +816,7 @@ North of town, past a dashed red line with little red flags, lie **the Wildlands
 | Skills | Aimed skills hit the player you aim at. Area skills only catch the player you're fighting, never bystanders. Freezes and snares don't work on players |
 | Duelists | Two players in a duel only fight each other; nobody else can join in |
 | Parties | Members of the same party can't attack each other (a duel between them is still fine) |
+| Guilds | Members of the same guild can't attack each other either |
 
 ### Outlaws and bounties
 
@@ -864,7 +869,51 @@ When a monster falls, the EXP your party earned from it (everyone's damage added
 - Gold still goes to whoever did the most damage.
 - In the Wildlands, members of the same party **can't attack each other**.
 
-## 13. Titles
+## 13. Guilds
+
+A party is for one hunt; a **guild** is for good. Ragnarok style, it has a name and an emblem that every member wears over their head, a leader and officers, a notice for everyone, and its own chat. It stays when you leave the game, and it's still there tomorrow.
+
+- **Guilds are for signed-in players.** A guild belongs to its members' accounts, so guests can't found or join one.
+- **Up to 30** members.
+
+### Founding one
+
+Talk to **Leopold the Guild Registrar**, on the main street just east of the fountain plaza (there's a GUILDS signpost). You need **level 20** and **10,000 gold**.
+
+- **Pick a name:** 3 to 16 letters or digits (spaces, ' and - are fine too, but not only digits). Every guild's name is its own: nobody else can take it, whatever the capitals.
+- **Pick an emblem:** one of 12 symbols (★ ✦ ♛ ♞ ♠ ♣ ♥ ♦ ✿ ☾ ❖ ✠) in one of 9 colours. The form shows how it will look.
+- Press **Found the guild**. You lead it, and the whole town hears about it.
+
+### Ranks
+
+| Rank | What they can do |
+| --- | --- |
+| Leader (♛) | Everything: invite, remove anyone, make members officers (or members again), change the notice, and hand the guild to someone else |
+| Officer (✦) | Invite players, remove members (not other officers or the leader), and change the notice |
+| Member | Talk on the guild chat, and leave whenever they like |
+
+### Inviting
+
+**Click (or tap) a player** and press **Invite to guild** (leaders and officers only). They get a pop-up and have 30 seconds to press **Join**. Players in another guild, and guests, can't be invited.
+
+### The guild window (G)
+
+Press **G** (or the shield button) to open it:
+
+- Your guild's emblem and name, and your rank.
+- **The notice:** a short message for every member (when you meet, who to ask, what's next). The leader and officers write it; members see it in the window, and in the chat each time they come into town.
+- **Every member:** a green dot when they're online, their level and job, their rank, and when they were last seen. The leader and officers have buttons by each name: **Officer** / **Member** (the leader), **Leader** (the leader hands over the guild, and becomes an officer), and **×** to remove someone. Buttons that are hard to undo ask "Sure?" first: click again within 3 seconds.
+- **Leave the guild** at the bottom. The leader can't leave while others are in it: make someone else the leader first. The last one out closes the guild, and its name is free again.
+
+### Everything else
+
+- **Over your head:** your guild's emblem and name, in its colour, above your name. Click a player to see their guild on their card.
+- **Guild chat:** type **/g** and a message (for example `/g guild hunt at eight`). Only your guild sees it, in blue.
+- **Online and offline:** when a member comes into town or leaves, the others get a line in the chat.
+- **No fighting each other:** in the Wildlands, members of the same guild can't attack each other (a duel is still fine).
+- **Guilds and parties are separate:** you can hunt in a party with anyone, in your guild or not.
+
+## 14. Titles
 
 Titles are earned by doing things in the game. Open your titles with **T** (or the medal button) to see every title, the ones you've earned, and how far along you are with the rest. Pick one to **show under your name**, in its rarity colour, for everyone to see, or hide it again.
 
@@ -935,7 +984,7 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 
 Pioneer places are counted per level cap: when the cap goes up, the first 10 players to reach the new cap become Pioneers too.
 
-## 14. Monster reference
+## 15. Monster reference
 
 | Monster | Lv | HP | ATK | DEF | EXP | Gold | Notable drops |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -982,7 +1031,7 @@ Pioneer places are counted per level cap: when the cap goes up, the first 10 pla
 
 Every monster also drops its own card (see Monster cards) and often potions.
 
-## 15. A good path for new players
+## 16. A good path for new players
 
 1. **Level 1–4:** Slimes by the road, south of town. Buy a few Red Potions and a Dagger or Short Sword from Bram.
 2. **Level 4–7:** Grass Snakes in the west grass. Wear what you find.
@@ -1003,12 +1052,13 @@ Every monster also drops its own card (see Monster cards) and often potions.
 17. **Level 60–65:** Take the path east off the south road, straight on past Edda's pier, to **Marlow**'s ship on the meadow's east shore, and sail to **Petalfall** (1,200 gold). Moon Hares by the pier only fight back but dodge plain attacks: use your skills. Then the Fox Spirits in the north-west woods (close in fast, they throw fire) and the Crow Blades in the middle.
 18. **Level 65–70:** Phantom Swordsmen in the north-east, Red Ogres in the south (they only fight back, but they hit very hard). At 70, bring a party of four up the road to the **Ogre Warlord**'s camp. **Willow** sails you home for free.
 
-Along the way, open your titles (T) now and then: you'll have earned a few. And from the Orc Woods on, hunt in a party: the bosses are made for four.
+Along the way, open your titles (T) now and then: you'll have earned a few. And from the Orc Woods on, hunt in a party: the bosses are made for four. From level 20, find a guild to join (or found your own with Leopold), so there's always someone to hunt with.
 
 Sell your monster loot to Bram whenever your bag fills up, and sit down (X) to heal faster between fights. Spare gear, ingots and cards are worth more to other players: open a shop in the Market Square, or look in theirs for what you need.
 
-## 16. Coming next
+## 17. Coming next
 
+- **Guild wars:** guilds fighting over a castle, like Ragnarok's War of Emperium.
 - **Raising the level cap** past 70, with new fields above it.
 
 ---

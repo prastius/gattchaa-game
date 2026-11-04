@@ -1,4 +1,17 @@
 import { FERRY, NPCS, npcProducts, type NpcDef } from "../../../shared/npcs";
+import {
+  GUILD_COLORS,
+  GUILD_FOUND_GOLD,
+  GUILD_FOUND_LV,
+  GUILD_MAX,
+  GUILD_NAME_MAX,
+  GUILD_NAME_MIN,
+  GUILD_SYMBOLS,
+  GuildRank,
+  cleanGuildName,
+  emblemOf,
+  packEmblem,
+} from "../../../shared/guild";
 import { MACHINES, placeName } from "../../../shared/town";
 import {
   ROOM_MODES,
@@ -162,6 +175,10 @@ export class TownDialog {
   private renderFresh = false;
   /** Opens the skills window (from the Job Master). */
   openSkills?: () => void;
+  /** Opens the guild window (from the Guild Registrar). */
+  openGuild?: () => void;
+  /** What you're filling in on the Registrar's form. */
+  private guildForm = { name: "", symbol: 0, color: 0 };
   /** Where the conversation is happening; walking away closes it. */
   anchor = { x: 0, y: 0 };
   /** Where your character stands right now (set by the game scene). */
@@ -199,6 +216,10 @@ export class TownDialog {
     net.onWildBoard.add((b) => {
       this.wild = b;
       if (this.openKind === "bounty") this.render(this.openTarget!, false);
+    });
+    // Founding a guild (or joining one) redraws the Registrar's window.
+    net.onGuild.add(() => {
+      if (this.openKind === "guild") this.render(this.openTarget!, false);
     });
   }
 
@@ -345,6 +366,9 @@ export class TownDialog {
       case "bounty":
         this.hunters(npc);
         break;
+      case "guild":
+        this.registrar(npc);
+        break;
       case "keeper":
         this.body.append(this.tabs(npc, [["shops", "Shops"], ["find", "Find an item"]], this.keeperTab, (tab) => (this.keeperTab = tab), this.net.stats?.gold ?? 0));
         if (this.keeperTab === "find") this.marketFind();
@@ -490,6 +514,103 @@ export class TownDialog {
       this.net.ferry(npc.id);
       if (gold >= trip.fare) this.close();
     }, "primary");
+  }
+
+  /** The Guild Registrar: your guild if you have one, or the form to found one (a name, an emblem, the fee). */
+  private registrar(npc: NpcDef) {
+    const g = this.net.guild;
+    if (g) {
+      const { symbol, color } = emblemOf(g.emblem);
+      const line = el("p", "guild-registered");
+      const name = el("b", "", `${symbol} ${g.name}`);
+      name.style.color = color;
+      line.append("You're in ", name, ` (${g.members.length} of ${GUILD_MAX}). `, g.rank >= GuildRank.Officer ? "Click other players to invite them." : "");
+      this.body.append(line);
+      this.button("Open your guild", "Members, the notice and ranks (G)", () => {
+        this.close();
+        this.openGuild?.();
+      }, "primary");
+      return;
+    }
+    if (!this.vending.auth.signedIn) {
+      this.body.append(el("p", "dialog-note", "A guild belongs to its members' accounts, so it's still there tomorrow. Guests can't found or join one."));
+      this.signInButton("Sign in to found or join a guild");
+      return;
+    }
+    const lv = this.net.stats?.lv ?? 1;
+    const gold = this.net.stats?.gold ?? 0;
+    const form = this.guildForm;
+    this.section("Found a guild");
+    const input = el("input", "guild-name-input");
+    input.maxLength = GUILD_NAME_MAX;
+    input.placeholder = "Your guild's name";
+    input.value = form.name;
+    input.spellcheck = false;
+    const preview = el("p", "guild-preview");
+    const symbols = el("div", "guild-picker");
+    const colors = el("div", "guild-picker");
+    const found = el("button", "dialog-link primary");
+    found.type = "button";
+    const hint = el("small", "");
+    found.append(el("span", "", "Found the guild"), hint);
+    const update = () => {
+      const name = cleanGuildName(form.name);
+      const emblem = packEmblem(form.symbol, form.color);
+      const { symbol, color } = emblemOf(emblem);
+      preview.replaceChildren();
+      const shown = el("b", "", `${symbol} ${name || form.name.trim() || "Your Guild"}`);
+      shown.style.color = color;
+      preview.append(shown, el("span", "", " over every member's head"));
+      symbols.querySelectorAll("button").forEach((b, i) => b.classList.toggle("on", i === form.symbol));
+      colors.querySelectorAll("button").forEach((b, i) => b.classList.toggle("on", i === form.color));
+      const why =
+        lv < GUILD_FOUND_LV
+          ? `You need level ${GUILD_FOUND_LV} (you're ${lv})`
+          : gold < GUILD_FOUND_GOLD
+            ? `${goldText(GUILD_FOUND_GOLD)} gold · you have ${goldText(gold)}`
+            : !name
+              ? `${GUILD_NAME_MIN}–${GUILD_NAME_MAX} letters or digits (spaces, ' and - are fine)`
+              : "";
+      found.disabled = Boolean(why);
+      hint.textContent = why || `${goldText(GUILD_FOUND_GOLD)} gold · you have ${goldText(gold)}`;
+    };
+    input.addEventListener("input", () => {
+      form.name = input.value;
+      update();
+    });
+    GUILD_SYMBOLS.forEach((sym, i) => {
+      const b = el("button", "guild-pick", sym);
+      b.type = "button";
+      b.setAttribute("aria-label", `Emblem ${i + 1}`);
+      b.addEventListener("click", () => {
+        audio.blip();
+        form.symbol = i;
+        update();
+      });
+      symbols.append(b);
+    });
+    GUILD_COLORS.forEach((c, i) => {
+      const b = el("button", "guild-pick guild-swatch");
+      b.type = "button";
+      b.style.background = c;
+      b.setAttribute("aria-label", `Colour ${i + 1}`);
+      b.addEventListener("click", () => {
+        audio.blip();
+        form.color = i;
+        update();
+      });
+      colors.append(b);
+    });
+    this.body.append(input, el("p", "dialog-section", "Emblem"), symbols, colors, preview);
+    found.addEventListener("click", () => {
+      audio.blip();
+      this.net.foundGuild(npc.id, form.name, packEmblem(form.symbol, form.color));
+    });
+    this.actions.append(found);
+    update();
+    this.body.append(
+      el("p", "dialog-note", `You'll lead it: you choose officers, and together you can invite up to ${GUILD_MAX} members. Guild chat is /g, and guild mates never fight each other in the Wildlands.`),
+    );
   }
 
   /** A Knight, Mage or Archer: what their second job is like, and (from level 50) the step up. */

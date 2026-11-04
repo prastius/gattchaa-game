@@ -83,6 +83,8 @@ export interface ChatMessage {
   system?: boolean;
   /** Said to the speaker's party only (/p). */
   party?: true;
+  /** Said to the speaker's guild only (/g). */
+  guild?: true;
 }
 
 /** server -> client: the server moved you (rejected move, or you went through a door) */
@@ -264,6 +266,9 @@ export interface PlayerView {
   outlaw?: boolean;
   /** Their party's id ("" or missing: none). */
   party?: string;
+  /** Their guild's name ("" or missing: none) and emblem (see emblemOf in guild.ts). */
+  guild?: string;
+  emblem?: number;
 }
 
 /** Read-only shape of an item lying on the ground. */

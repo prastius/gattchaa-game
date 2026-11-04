@@ -6,6 +6,7 @@ import { FRAME, SHEET_COLS, SHEET_H, SIT_COL, WALK_COLS, composeCharacter, sitDr
 import { ORB, SPARK } from "./world/fx";
 import { AURA_LEGENDARY } from "../../shared/items";
 import { AURA_CARD_MASTER, AURA_GIANTSLAYER, AURA_KINGSLAYER, AURA_PIONEER } from "../../shared/titles";
+import { emblemOf } from "../../shared/guild";
 
 /** The name colour of someone in your party. */
 const PARTY_NAME = "#7ddb6e";
@@ -115,6 +116,9 @@ export class PlayerSprite {
   private sprite: Phaser.GameObjects.Sprite;
   private label: Phaser.GameObjects.Text;
   private titleLabel?: Phaser.GameObjects.Text;
+  /** Their guild's emblem and name, over the name. */
+  private guildLabel?: Phaser.GameObjects.Text;
+  private guildKey = "";
   private bubble?: Phaser.GameObjects.Container;
   private bubbleY: number;
   private textRes: () => number;
@@ -223,7 +227,7 @@ export class PlayerSprite {
     const dy = want - this.drop;
     if (!dy) return;
     this.drop = want;
-    for (const t of [this.label, this.titleLabel, this.bubble]) t?.setY(t.y + dy);
+    for (const t of [this.label, this.titleLabel, this.guildLabel, this.bubble]) t?.setY(t.y + dy);
     this.bubbleY += dy;
   }
 
@@ -362,8 +366,32 @@ export class PlayerSprite {
     // Same spacing as an NPC's title: the name 8 px higher, bubbles 10 px higher.
     const up = text ? -1 : 1;
     this.label.setY(this.label.y + 8 * up);
+    this.guildLabel?.setY(this.guildLabel.y + 8 * up);
     this.bubbleY += 10 * up;
     this.bubble?.setY(this.bubble.y + 10 * up);
+  }
+
+  /** A player's guild over their name: its emblem and name in the emblem's colour ("" for none). Bubbles move up to make room. */
+  setGuild(name: string, emblem: number) {
+    const key = name && `${name}|${emblem}`;
+    if (key === this.guildKey) return;
+    const had = Boolean(this.guildKey);
+    this.guildKey = key;
+    if (name) {
+      const { symbol, color } = emblemOf(emblem);
+      if (!this.guildLabel) {
+        this.guildLabel = this.scene.add
+          .text(0, this.label.y - 12, "", { fontFamily: FONT, fontSize: "9px", fontStyle: "bold", stroke: "#10202b", strokeThickness: 3 })
+          .setOrigin(0.5, 1)
+          .setResolution(this.textRes());
+        this.container.add(this.guildLabel);
+      }
+      this.guildLabel.setText(`${symbol} ${name}`).setColor(color).setVisible(true);
+    } else this.guildLabel?.setVisible(false);
+    if (Boolean(name) === had) return;
+    const up = name ? -1 : 1;
+    this.bubbleY += 11 * up;
+    this.bubble?.setY(this.bubble.y + 11 * up);
   }
 
   /** Outlaws (see shared/pvp.ts) wear their name in red, with a skull. */
@@ -464,7 +492,7 @@ export class PlayerSprite {
     g.fillStyle(0xffffff, 1).fillRoundedRect(-14, -TAIL - 24, 28, 24, 10);
     g.fillTriangle(-4, -TAIL - 1, 4, -TAIL - 1, 0, 0);
     // Above the name (and above a seller's sign), a little to the right like a thought.
-    const y = this.label.y - 16 - this.lift;
+    const y = (this.guildLabel?.visible ? this.guildLabel.y : this.label.y) - 16 - this.lift;
     const box = this.scene.add.container(10, y, [g, icon]).setScale(0.3);
     this.container.add(box);
     this.emoteBox = box;
