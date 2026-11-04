@@ -355,6 +355,7 @@ export const NPCS: NpcDef[] = [
       "Frostfell is for level 40 and up!",
       "The way back is always free.",
       "I saw the Frost Giant once. Once was enough.",
+      "Level 60? Follow the path east to Marlow's boat. She sails to Petalfall.",
     ],
   },
   {
@@ -400,7 +401,39 @@ export const NPCS: NpcDef[] = [
     dir: Dir.Left,
     greeting:
       "Welcome to Ravenmoor (Lv 50–60), where the sun never quite comes up. Wraiths (Lv 51) drift through the woods by the pier: plain attacks pass through them, so use your skills. Gargoyles (Lv 53) swoop down from the high ground either side of the castle. Below the castle gate, Dark Knights (Lv 55) still keep watch, and inside, the Fallen King (Lv 64) waits on his throne. Liches (Lv 57) cast from the east, past the lake, and Flesh Golems (Lv 59) lurch about in the south. When you've seen enough, I'll row you back for free.",
-    chatter: ["Boat back to Dusk Hollow! Free!", "Wraiths dodge plain attacks. Use your skills!", "The Fallen King never leaves his throne…", "Liches cast from afar. Close in fast!"],
+    chatter: [
+      "Boat back to Dusk Hollow! Free!",
+      "Wraiths dodge plain attacks. Use your skills!",
+      "The Fallen King never leaves his throne…",
+      "Liches cast from afar. Close in fast!",
+      "Level 60? Marlow sails to Petalfall from the meadow's east shore.",
+    ],
+  },
+  {
+    // At the end of the pier on the meadow's east shore, where the ferry path ends.
+    id: "ferry-east",
+    name: "Marlow",
+    title: "Ship Captain",
+    kind: "ferry",
+    look: look({ body: "female", hair: "long", hairColor: "dark_brown", skin: "taupe", top: "longsleeve", topColor: "white", bottom: "pants", bottomColor: "navy", shoes: "boots", shoesColor: "brown", hat: "bandana", hatColor: "red" }),
+    ...at(317.5, 283.6),
+    dir: Dir.Right,
+    greeting:
+      "Petalfall? Out across the south-east sea, where it's always spring and the cherry blossom never stops falling. Pretty, and deadly: it's for adventurers of level 60 and up. Moon Hares, Fox Spirits, Crow Blades, Phantom Swordsmen and Red Ogres live there, and the Ogre Warlord holds a war camp on the high ground. I'll sail you over for 1,200 gold. Willow brings you back for free.",
+    chatter: ["Ship to Petalfall! 1,200 gold!", "Petalfall is for level 60 and up!", "Go in a party. The Ogre Warlord is no joke.", "Willow sails you back for free."],
+  },
+  {
+    // At the end of Petalfall's pier, on the island's west shore.
+    id: "ferry-petalfall",
+    name: "Willow",
+    title: "Ferry Captain",
+    kind: "ferry",
+    look: look({ body: "female", hair: "braid", hairColor: "pink", skin: "light", top: "longsleeve", topColor: "pink", bottom: "pants", bottomColor: "white", shoes: "boots", shoesColor: "white", hat: "bandana", hatColor: "white" }),
+    ...at(326.5, 400.6),
+    dir: Dir.Left,
+    greeting:
+      "Welcome to Petalfall (Lv 60–70), where it's always spring. Moon Hares (Lv 61) bound about the meadows by the pier: they only fight back, but they're quick and hard to hit, so use your skills. Fox Spirits (Lv 63) throw foxfire from the woods to the north-west, and Crow Blades (Lv 65) wait in the middle of the island. Phantom Swordsmen (Lv 67) haunt the north-east, and Red Ogres (Lv 69) wander the south: leave them be and they leave you be, but they hit very hard. Follow this road east, up onto the high ground, to the Ogre Warlord's camp (Lv 74). Take a party. When you've had enough, I'll sail you back for free.",
+    chatter: ["Ship back to the meadow! Free!", "Moon Hares dodge plain attacks. Use your skills!", "Fox Spirits throw fire. Close in fast!", "The Ogre Warlord waits at the end of the road…", "Leave the Red Ogres alone, unless you mean it."],
   },
   {
     // Just inside the south gate: Novices walk past him on their way out, and come back at level 10.
@@ -560,6 +593,8 @@ export const FERRY: Record<string, { to: { x: number; y: number }; dir: number; 
   "ferry-frostfell": { to: at(242.5, 333.6), dir: Dir.Up, fare: 0, dest: "the South Meadow" },
   "ferry-dusk": { to: at(388.5, 186.6), dir: Dir.Right, fare: 800, dest: "Ravenmoor", lv: 50 },
   "ferry-ravenmoor": { to: at(338.5, 186.6), dir: Dir.Left, fare: 0, dest: "Dusk Hollow" },
+  "ferry-east": { to: at(329.5, 400.6), dir: Dir.Right, fare: 1200, dest: "Petalfall", lv: 60 },
+  "ferry-petalfall": { to: at(314.5, 283.6), dir: Dir.Left, fare: 0, dest: "the meadow's east shore" },
 };
 
 /** What an NPC's stall offers right now (sold-out items last for featured stalls). */

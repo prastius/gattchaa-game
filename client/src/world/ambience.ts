@@ -203,7 +203,7 @@ export class Critters {
   }
 }
 
-/** Little textures for the weather: a snowflake, and a leaf. */
+/** Little textures for the weather: a snowflake, a leaf and a petal. */
 function makeWeatherTextures(scene: Phaser.Scene) {
   if (!scene.textures.exists("snowflake")) {
     const canvas = document.createElement("canvas");
@@ -227,6 +227,17 @@ function makeWeatherTextures(scene: Phaser.Scene) {
     ctx.fillRect(1, 2, 2, 1);
     scene.textures.addCanvas("leaf", canvas);
   }
+  if (!scene.textures.exists("petal")) {
+    const canvas = document.createElement("canvas");
+    canvas.width = 4;
+    canvas.height = 3;
+    const ctx = canvas.getContext("2d")!;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, 2, 1);
+    ctx.fillRect(0, 1, 4, 1);
+    ctx.fillRect(2, 2, 2, 1);
+    scene.textures.addCanvas("petal", canvas);
+  }
 }
 
 /** How each kind of weather falls. */
@@ -235,6 +246,8 @@ const WEATHER = {
   snow: { tex: "snowflake", speedX: { min: -14, max: 6 }, speedY: { min: 16, max: 38 }, scale: { min: 0.7, max: 1.6 }, frequency: 55, quantity: 2, tint: [0xffffff] },
   // Leaves over Ravenmoor: fewer, blown by the wind, tumbling as they go.
   leaves: { tex: "leaf", speedX: { min: -40, max: -10 }, speedY: { min: 18, max: 42 }, scale: { min: 1, max: 1.8 }, frequency: 140, quantity: 1, tint: [0xe8832a, 0xd8452a, 0xf2c14e, 0x9a5a2a] },
+  // Cherry blossom over Petalfall: a gentle, steady fall of pink petals, drifting on the breeze.
+  petals: { tex: "petal", speedX: { min: -30, max: -4 }, speedY: { min: 12, max: 30 }, scale: { min: 1.2, max: 2 }, frequency: 80, quantity: 1, tint: [0xffc4da, 0xffadc9, 0xfff0f6, 0xf59ab9] },
 } as const;
 
 /** Snow or leaves falling over the view while the camera is on an island that has them. */
@@ -260,7 +273,7 @@ export class Weather {
         speedX: w.speedX,
         speedY: w.speedY,
         scale: w.scale,
-        rotate: kind === "leaves" ? { min: 0, max: 360 } : 0,
+        rotate: kind === "snow" ? 0 : { min: 0, max: 360 },
         tint: [...w.tint],
         // Fades in where it appears and out before it goes, so nothing pops.
         alpha: { onEmit: () => 0, onUpdate: (_p: unknown, _k: string, t: number) => Math.sin(t * Math.PI) * 0.85 },

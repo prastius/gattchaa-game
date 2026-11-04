@@ -8,7 +8,7 @@ import { TILE, TOWN_AREA, INTERIOR_ZONE, inRect, type Rect } from "./town";
 import type { Bonus, ItemId } from "./items";
 
 /** Highest level for now; raised step by step. The EXP curve already continues past it. */
-export const LEVEL_CAP = 60;
+export const LEVEL_CAP = 70;
 
 /**
  * EXP needed to go from `level` to the next one. Gentle through the Novice
@@ -169,7 +169,13 @@ export type MonsterId =
   | "darkKnight"
   | "lich"
   | "fleshGolem"
-  | "fallenKing";
+  | "fallenKing"
+  | "moonHare"
+  | "foxSpirit"
+  | "crowBlade"
+  | "phantom"
+  | "redOgre"
+  | "ogreWarlord";
 
 export interface MonsterDef {
   id: MonsterId;
@@ -457,6 +463,57 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
       ["mithril", 1], ["starCrystal", 1], ["starCrystal", 0.8], ["kingsSeal", 0.06], ["fallenCrown", 0.015], ["fallenKingCard", 0.02],
     ],
   },
+
+  // ---------------------------------------------------------------- Petalfall (Lv 60–70), the spring island in the south-east sea
+  // Quick white hares in the meadows by the pier. They only fight back, but they're hard to hit with plain attacks.
+  moonHare: {
+    id: "moonHare", name: "Moon Hare", level: 61, hp: 4700, atk: 66, def: 34, exp: 17_500, gold: [80, 134], speed: 65, chase: 120, aggro: 0, range: 36, attackMs: 1300, radius: 11, respawnMs: 22_000, flee: 0.15,
+    drops: [
+      ["moonstone", 0.55], ["whitePotion", 0.08], ["blossomBlade", 0.004], ["petalBow", 0.004], ["moonRing", 0.002],
+      ["mithril", 0.07], ["starCrystal", 0.016], ["moonHareCard", 0.001],
+    ],
+  },
+  // Throw foxfire from the woods in the north-west at anyone they see.
+  foxSpirit: {
+    id: "foxSpirit", name: "Fox Spirit", level: 63, hp: 5200, atk: 66, def: 30, exp: 19_800, gold: [82, 138], speed: 45, chase: 90, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 24_000,
+    drops: [
+      ["foxfireEmber", 0.55], ["whitePotion", 0.08], ["foxfireStaff", 0.004], ["blossomHat", 0.005], ["foxfireCharm", 0.003], ["stormStaff", 0.002],
+      ["mithril", 0.07], ["starCrystal", 0.016], ["foxSpiritCard", 0.001],
+    ],
+  },
+  // Masked swordsmen on black wings, in the middle of the island. They come at anyone who comes near.
+  crowBlade: {
+    id: "crowBlade", name: "Crow Blade", level: 65, hp: 5600, atk: 70, def: 40, exp: 21_800, gold: [86, 142], speed: 60, chase: 115, aggro: 50, range: 40, attackMs: 1500, radius: 13, respawnMs: 24_000,
+    drops: [
+      ["smokeBomb", 0.55], ["whitePotion", 0.08], ["crowMask", 0.005], ["crowMantle", 0.004], ["blossomBlade", 0.003], ["boneBow", 0.002],
+      ["mithril", 0.07], ["starCrystal", 0.017], ["crowBladeCard", 0.001],
+    ],
+  },
+  // The bones of swordsmen who fell to the Ogre Warlord, still fighting in the north-east. Hard to cut through.
+  phantom: {
+    id: "phantom", name: "Phantom Swordsman", level: 67, hp: 6000, atk: 84, def: 50, exp: 24_200, gold: [88, 148], speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 13, respawnMs: 24_000,
+    drops: [
+      ["fadedScroll", 0.55], ["whitePotion", 0.08], ["phantomHelm", 0.005], ["jadeShield", 0.003], ["thunderGlaive", 0.002], ["warlordPlate", 0.002],
+      ["mithril", 0.08], ["starCrystal", 0.018], ["phantomCard", 0.001],
+    ],
+  },
+  // Huge, slow and red as fire, wandering the south. Leave them alone and they leave you alone; they hit very hard.
+  redOgre: {
+    id: "redOgre", name: "Red Ogre", level: 69, hp: 7600, atk: 116, def: 46, exp: 29_500, gold: [92, 156], speed: 30, chase: 70, aggro: 0, range: 48, attackMs: 2100, radius: 18, respawnMs: 26_000,
+    drops: [
+      ["ogreBrew", 0.55], ["whitePotion", 0.1], ["blossomRobe", 0.004], ["warlordPlate", 0.003], ["boneBow", 0.003], ["stormStaff", 0.002], ["thunderGlaive", 0.002],
+      ["mithril", 0.08], ["starCrystal", 0.018], ["redOgreCard", 0.001],
+    ],
+  },
+  // Petalfall's boss, in his war camp on the high ground. Throws fire at anyone out of reach.
+  ogreWarlord: {
+    id: "ogreWarlord", name: "Ogre Warlord", level: 74, hp: 170_000, atk: 205, def: 62, exp: 420_000, gold: [8000, 14000], speed: 35, chase: 85, aggro: 150, range: 150, attackMs: 2000, radius: 28, respawnMs: 1_800_000,
+    boss: true, regen: 0.004,
+    drops: [
+      ["heartOfSpring", 1], ["whitePotion", 0.8], ["thunderGlaive", 0.2], ["boneBow", 0.2], ["stormStaff", 0.2], ["warlordPlate", 0.15], ["jadeShield", 0.15],
+      ["mithril", 1], ["starCrystal", 1], ["starCrystal", 0.8], ["warlordFang", 0.06], ["warlordHelm", 0.015], ["ogreWarlordCard", 0.02],
+    ],
+  },
 };
 
 export const isMonsterId = (id: unknown): id is MonsterId => typeof id === "string" && Object.hasOwn(MONSTERS, id);
@@ -594,6 +651,24 @@ export const FIELDS: Field[] = [
       { monster: "lich", rect: { x: 456, y: 198, w: 26, h: 28 }, count: 7 },
       { monster: "fleshGolem", rect: { x: 400, y: 212, w: 20, h: 32 }, count: 8 },
       { monster: "fallenKing", rect: { x: 439, y: 149, w: 8, h: 2 }, count: 1 },
+    ],
+  },
+  {
+    // Out in the south-east sea: the boat at the end of the meadow's east path sails here.
+    id: "petalfall",
+    name: "Petalfall",
+    levels: "Lv 60–70",
+    area: { x: 324, y: 344, w: 162, h: 130 },
+    wild: true,
+    spawns: [
+      // Moon Hares in the meadows by the pier, Fox Spirits in the north-west woods, Crow Blades in the middle.
+      { monster: "moonHare", rect: { x: 340, y: 378, w: 28, h: 40 }, count: 10 },
+      { monster: "foxSpirit", rect: { x: 362, y: 356, w: 34, h: 16 }, count: 8 },
+      { monster: "crowBlade", rect: { x: 378, y: 405, w: 38, h: 26 }, count: 8 },
+      // Phantom Swordsmen in the north-east, Red Ogres wandering the south; the Ogre Warlord in his camp.
+      { monster: "phantom", rect: { x: 410, y: 360, w: 40, h: 12 }, count: 8 },
+      { monster: "redOgre", rect: { x: 370, y: 432, w: 56, h: 22 }, count: 8 },
+      { monster: "ogreWarlord", rect: { x: 447, y: 399, w: 6, h: 5 }, count: 1 },
     ],
   },
 ];

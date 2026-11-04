@@ -18,11 +18,12 @@ const TERRAIN_RGB: Record<number, [number, number, number]> = {
   [Terrain.Grass]: [104, 160, 72],
   [Terrain.Dirt]: [166, 124, 82],
 };
-/** The islands' land: Frostfell's snowfields and icy rock, Ravenmoor's golden grass. */
+/** The islands' land: Frostfell's snowfields and icy rock, Ravenmoor's golden grass, Petalfall's fresh green. */
 const SEASON_RGB: Record<Biome, Record<number, [number, number, number]>> = {
   summer: {},
   winter: { [Terrain.Grass]: [226, 236, 244], [Terrain.Dirt]: [170, 200, 220] },
   autumn: { [Terrain.Grass]: [176, 150, 66], [Terrain.Dirt]: [140, 104, 70] },
+  spring: { [Terrain.Grass]: [118, 184, 84] },
 };
 
 const FLOOR_RGB: Record<number, [number, number, number]> = {

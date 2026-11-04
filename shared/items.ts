@@ -143,6 +143,12 @@ export const ITEMS = def({
   boneDust: { name: "Bone Dust", kind: "loot", rarity: "common", sell: 340, icon: "potion_01d", desc: "What's left of a Lich's last victim. Alchemists pay well for it." },
   golemHeart: { name: "Golem's Heart", kind: "loot", rarity: "common", sell: 360, icon: "potion_03a", desc: "A heart in a jar. It's still beating." },
   royalKey: { name: "Royal Key", kind: "loot", rarity: "rare", sell: 6000, icon: "key_01d", desc: "The golden key to the Fallen King's treasury. Collectors pay a fortune for it." },
+  moonstone: { name: "Moonstone", kind: "loot", rarity: "common", sell: 380, icon: "crystal_01j", desc: "A pale stone that glows like the moon. Moon Hares carry them, nobody knows why." },
+  foxfireEmber: { name: "Foxfire Ember", kind: "loot", rarity: "common", sell: 400, icon: "pearl_01c", desc: "A little flame that burns without wood, and isn't hot. Fox Spirits leave them behind." },
+  smokeBomb: { name: "Smoke Bomb", kind: "loot", rarity: "common", sell: 420, icon: "potion_02d", desc: "A clay ball full of black smoke: a Crow Blade's favourite trick." },
+  fadedScroll: { name: "Faded Scroll", kind: "loot", rarity: "common", sell: 440, icon: "scroll_01f", desc: "A swordsman's training scroll, too faded to read. Collectors pay well for it." },
+  ogreBrew: { name: "Ogre Brew", kind: "loot", rarity: "common", sell: 460, icon: "potion_03c", desc: "A jug of the Red Ogres' fiery drink. Don't." },
+  heartOfSpring: { name: "Heart of Spring", kind: "loot", rarity: "rare", sell: 9000, icon: "gem_01f", desc: "The pink gem that keeps Petalfall in bloom, taken by the Ogre Warlord. Collectors pay a fortune for it." },
   winterHeart: { name: "Heart of Winter", kind: "loot", rarity: "rare", sell: 4500, icon: "crystal_01h", desc: "A lump of ice from the Frost Giant's chest. It never melts, and collectors pay a fortune for it." },
 
   // ------------------------------------------------------------ smithing (one is used up by every upgrade)
@@ -203,6 +209,13 @@ export const ITEMS = def({
   royalBow: { name: "Royal Bow", kind: "equip", slot: "weapon", weapon: "bow", twoHanded: true, rarity: "rare", lv: 56, slots: 2, atk: 76, crit: 4, range: 250, sell: 8500, icon: "bow_01d", art: [{ id: "bowGold" }], desc: "Gold from tip to tip: the Fallen King's own hunting bow." },
   boneStaff: { name: "Bone Staff", kind: "equip", slot: "weapon", weapon: "staff", rarity: "uncommon", lv: 52, slots: 2, atk: 62, mp: 200, range: 230, sell: 4500, art: [{ id: "gnarledLight" }], desc: "Pale and knotted, like an old bone. Liches lean on them." },
   soulStaff: { name: "Soul Staff", kind: "equip", slot: "weapon", weapon: "staff", rarity: "rare", lv: 56, slots: 2, atk: 76, mp: 260, range: 240, sell: 8500, art: [{ id: "crystalPurple" }], desc: "A violet crystal with something moving inside it." },
+  // Petalfall.
+  blossomBlade: { name: "Blossom Blade", kind: "equip", slot: "weapon", weapon: "sword", rarity: "uncommon", lv: 62, slots: 2, atk: 84, crit: 5, sell: 5500, art: [{ id: "swordCeramic" }], desc: "Pale steel with pink silk round the hilt. It never seems to dull." },
+  thunderGlaive: { name: "Thunder Glaive", kind: "equip", slot: "weapon", weapon: "spear", twoHanded: true, rarity: "rare", lv: 66, slots: 2, atk: 124, crit: 4, sell: 10_000, art: [{ id: "dragonspearRed" }], desc: "A red dragon-headed spear that crackles before a storm. Needs both hands. Knights only." },
+  petalBow: { name: "Petal Bow", kind: "equip", slot: "weapon", weapon: "bow", twoHanded: true, rarity: "uncommon", lv: 62, slots: 2, atk: 74, range: 250, sell: 5500, icon: "bow_02cc", art: [{ id: "bowCopper" }], desc: "Rosy wood, light as a petal, with a string of spun silk." },
+  boneBow: { name: "Ogre-Bone Longbow", kind: "equip", slot: "weapon", weapon: "bow", twoHanded: true, rarity: "rare", lv: 66, slots: 2, atk: 90, crit: 4, range: 255, sell: 10_000, icon: "bow_03d", art: [{ id: "greatBowCeramic" }], desc: "A tall white bow carved from a Red Ogre's thigh bone. It takes an ogre's arm to draw it, or a hunter's." },
+  foxfireStaff: { name: "Foxfire Staff", kind: "equip", slot: "weapon", weapon: "staff", rarity: "uncommon", lv: 62, slots: 2, atk: 74, mp: 240, range: 240, sell: 5500, art: [{ id: "crystalOrange" }], desc: "An orange crystal with a foxfire flame dancing inside it." },
+  stormStaff: { name: "Storm Staff", kind: "equip", slot: "weapon", weapon: "staff", rarity: "rare", lv: 66, slots: 2, atk: 90, mp: 300, range: 245, sell: 10_000, art: [{ id: "crystalYellow" }], desc: "A yellow crystal that hums with thunder. Your hair stands on end when you hold it." },
   archmageStaff: { name: "Archmage Staff", kind: "equip", slot: "weapon", weapon: "staff", rarity: "legendary", lv: 38, slots: 2, atk: 64, mp: 200, range: 230, sell: 15_000, icon: "staff_03b", art: [{ id: "diamondGold" }], desc: "Gold, crowned with a stone full of light. A great mage carried it once; now the Minotaur King keeps it." },
 
   // ------------------------------------------------------------ shields
@@ -215,6 +228,7 @@ export const ITEMS = def({
   towerShield: { name: "Tower Shield", kind: "equip", slot: "offhand", rarity: "uncommon", lv: 33, slots: 1, def: 12, hp: 120, sell: 2000, art: [{ id: "scutum" }], desc: "Tall and curved, like a wall you can carry." },
   frostShield: { name: "Frost Shield", kind: "equip", slot: "offhand", rarity: "rare", lv: 45, slots: 1, def: 16, hp: 220, sell: 5000, art: [{ id: "kiteBlue" }], desc: "An ice-blue kite shield, rimed with frost that never thaws." },
   ruinShield: { name: "Ruin Shield", kind: "equip", slot: "offhand", rarity: "rare", lv: 55, slots: 1, def: 18, hp: 270, sell: 7000, art: [{ id: "kiteRed" }], desc: "A red and grey kite shield with the Fallen King's crest, scratched half away." },
+  jadeShield: { name: "Jade Shield", kind: "equip", slot: "offhand", rarity: "rare", lv: 65, slots: 1, def: 20, hp: 320, sell: 8000, art: [{ id: "kiteGreen" }], desc: "A green and grey kite shield, cool to the touch and very hard to dent." },
   engrailedShield: { name: "Engrailed Shield", kind: "equip", slot: "offhand", rarity: "rare", lv: 38, slots: 1, def: 14, hp: 170, sell: 4000, art: [{ id: "engrailed" }], desc: "Gold and red, with a scalloped edge. Vampires keep them as trophies." },
 
   // ------------------------------------------------------------ head
@@ -238,6 +252,10 @@ export const ITEMS = def({
   shadowHood: { name: "Shadow Hood", kind: "equip", slot: "head", rarity: "uncommon", lv: 53, slots: 1, atk: 7, def: 9, hp: 90, sell: 4200, art: [{ id: "hood", colors: { cloth: "black" } }], hides: ["hair"], desc: "Black cloth that drinks the light." },
   nightHat: { name: "Night Hat", kind: "equip", slot: "head", rarity: "uncommon", lv: 53, slots: 1, atk: 5, def: 5, mp: 210, sell: 4200, art: [{ id: "celestialMoon", colors: { cloth: "black" } }], desc: "Black as midnight, with a silver crescent moon." },
   fallenCrown: { name: "Fallen Crown", kind: "equip", slot: "head", rarity: "legendary", lv: 58, slots: 1, atk: 8, def: 12, hp: 260, mp: 120, sell: 25_000, art: [{ id: "crownGray" }], desc: "The Fallen King's tarnished crown. Anyone may wear it, if they dare." },
+  phantomHelm: { name: "Phantom Helm", kind: "equip", slot: "head", rarity: "uncommon", lv: 63, slots: 1, def: 17, hp: 300, sell: 5000, art: [{ id: "horned", colors: { metal: "gold" } }], desc: "A gilded helm with two horns, still worn by the Phantom Swordsmen." },
+  crowMask: { name: "Crow Mask", kind: "equip", slot: "head", rarity: "uncommon", lv: 63, slots: 1, atk: 8, def: 10, hp: 110, crit: 3, sell: 5000, art: [{ id: "maskBlack" }], desc: "A plain black mask. Crow Blades never show their faces." },
+  blossomHat: { name: "Blossom Hat", kind: "equip", slot: "head", rarity: "uncommon", lv: 63, slots: 1, atk: 6, def: 6, mp: 250, sell: 5000, art: [{ id: "wizardHatPink" }], desc: "A tall pink hat. Petals collect in the brim." },
+  warlordHelm: { name: "Warlord's Helm", kind: "equip", slot: "head", rarity: "legendary", lv: 68, slots: 1, atk: 10, def: 14, hp: 300, mp: 140, sell: 30_000, art: [{ id: "maximus", colors: { metal: "gold" } }], desc: "The Ogre Warlord's golden helm, crested like a king's. Anyone may wear it, if they can lift it." },
   meadowCrown: { name: "Meadow Crown", kind: "equip", slot: "head", rarity: "legendary", lv: 10, slots: 1, atk: 4, def: 4, hp: 60, sell: 5000, art: [{ id: "crown" }], desc: "Said to belong to the first king of the meadow. Snapper Flowers hide it very, very rarely." },
 
   // ------------------------------------------------------------ body
@@ -257,6 +275,9 @@ export const ITEMS = def({
   shadowCloak: { name: "Shadow Cloak", kind: "equip", slot: "body", rarity: "uncommon", lv: 54, slots: 1, atk: 10, def: 11, hp: 130, sell: 4200, art: [{ id: "leatherArmor" }, { id: "capeTattered", colors: { cloth: "black" } }], desc: "Dark leather under a ragged black cloak. Wraiths wear them, after a fashion." },
   lichRobe: { name: "Lich Robe", kind: "equip", slot: "body", rarity: "uncommon", lv: 54, slots: 1, atk: 10, def: 6, mp: 230, sell: 4200, art: [{ id: "tabardBlack" }, { id: "cape", colors: { cloth: "purple" } }], desc: "Black silk and a purple cloak, cold as the grave." },
   dreadPlate: { name: "Dread Plate", kind: "equip", slot: "body", rarity: "rare", lv: 57, slots: 1, def: 22, hp: 290, sell: 9000, art: [{ id: "plate", colors: { metal: "iron" } }, { id: "plateArms", colors: { metal: "iron" } }, { id: "cape", colors: { cloth: "maroon" } }], desc: "Black plate and a dark red cape: a Dark Knight's armour, emptied at last." },
+  crowMantle: { name: "Crow Mantle", kind: "equip", slot: "body", rarity: "uncommon", lv: 64, slots: 1, atk: 11, def: 12, hp: 150, crit: 2, sell: 5000, art: [{ id: "leatherArmor" }, { id: "crowWings" }], desc: "Black leather and a pair of crow's wings. They don't fly, but they look the part." },
+  blossomRobe: { name: "Blossom Robe", kind: "equip", slot: "body", rarity: "uncommon", lv: 64, slots: 1, atk: 11, def: 7, mp: 270, sell: 5000, art: [{ id: "tabardPink" }, { id: "cape", colors: { cloth: "rose" } }], desc: "Pink silk under a rose-red cloak, light as spring." },
+  warlordPlate: { name: "Warlord Plate", kind: "equip", slot: "body", rarity: "rare", lv: 67, slots: 1, def: 25, hp: 330, sell: 10_000, art: [{ id: "legion", colors: { metal: "gold" } }, { id: "plateArms", colors: { metal: "gold" } }, { id: "cape", colors: { cloth: "black" } }], desc: "Gold plates on red leather and a black cloak: armour from the Ogre Warlord's own guard." },
   plateArmor: { name: "Plate Armour", kind: "equip", slot: "body", rarity: "rare", lv: 10, slots: 1, def: 6, hp: 40, sell: 600, art: [{ id: "plate" }, { id: "plateArms" }], desc: "Full steel plate. You clank, but you live." },
 
   // ------------------------------------------------------------ legs
@@ -290,6 +311,9 @@ export const ITEMS = def({
   boneCharm: { name: "Bone Charm", kind: "equip", slot: "amulet", rarity: "uncommon", lv: 53, slots: 1, atk: 9, crit: 5, sell: 4000, icon: "necklace_02e", desc: "A small carved bone on a red cord. It rattles before a fight." },
   soulRing: { name: "Ring of Souls", kind: "equip", slot: "ring", rarity: "rare", lv: 55, slots: 1, atk: 4, def: 6, hp: 130, sell: 6000, icon: "ring_02c", desc: "A dark stone that glows faintly whenever something dies nearby." },
   kingsSeal: { name: "King's Seal", kind: "equip", slot: "amulet", rarity: "epic", lv: 58, slots: 1, atk: 16, def: 5, hp: 260, sell: 15_000, icon: "necklace_02d", desc: "The Fallen King's seal ring, hung on a gold chain. It still commands respect." },
+  foxfireCharm: { name: "Foxfire Charm", kind: "equip", slot: "amulet", rarity: "uncommon", lv: 63, slots: 1, atk: 10, mp: 120, crit: 5, sell: 5000, icon: "necklace_02b", desc: "A red stone on a cord, warm with foxfire." },
+  moonRing: { name: "Moonstone Ring", kind: "equip", slot: "ring", rarity: "rare", lv: 65, slots: 1, atk: 5, def: 7, hp: 150, flee: 3, sell: 7000, icon: "ring_03b", desc: "A silver ring set with a moonstone. Light on your feet, light on your hand." },
+  warlordFang: { name: "Warlord's Fang", kind: "equip", slot: "amulet", rarity: "epic", lv: 68, slots: 1, atk: 18, def: 6, hp: 300, sell: 18_000, icon: "necklace_01e", desc: "One of the Ogre Warlord's tusks, on a red cord. Even ogres step aside for it." },
   stingerPendant: { name: "Stinger Pendant", kind: "equip", slot: "amulet", rarity: "uncommon", lv: 7, slots: 1, atk: 3, sell: 220, icon: "necklace_03d", desc: "A hornet's stinger set in gold. Sharp in more ways than one." },
 
   // ------------------------------------------------------------ monster cards
@@ -328,6 +352,12 @@ export const ITEMS = def({
   lichCard: { name: "Lich Card", kind: "card", rarity: "epic", monster: "lich", fits: ["amulet"], prefix: "Arcane", atk: 6, mp: 120, sell: 0, desc: "A skull that smiles back." },
   fleshGolemCard: { name: "Flesh Golem Card", kind: "card", rarity: "epic", monster: "fleshGolem", fits: ["body"], prefix: "Stitched", hp: 250, sell: 0, desc: "Mostly stitches, and very hard to stop." },
   fallenKingCard: { name: "Fallen King Card", kind: "card", rarity: "legendary", monster: "fallenKing", fits: ["weapon"], prefix: "Kingly", atk: 12, crit: 8, sell: 0, desc: "The Fallen King on his throne, on a gold card gone dark." },
+  moonHareCard: { name: "Moon Hare Card", kind: "card", rarity: "epic", monster: "moonHare", fits: ["feet"], prefix: "Leaping", atk: 3, flee: 9, sell: 0, desc: "Quick as a hare in the moonlight." },
+  foxSpiritCard: { name: "Fox Spirit Card", kind: "card", rarity: "epic", monster: "foxSpirit", fits: ["head"], prefix: "Foxfire", atk: 6, mp: 100, sell: 0, desc: "A fox with a flame on its tail, and a sly smile." },
+  crowBladeCard: { name: "Crow Blade Card", kind: "card", rarity: "epic", monster: "crowBlade", fits: ["weapon"], prefix: "Razor", atk: 6, crit: 6, sell: 0, desc: "Black wings, a black mask, and a very sharp sword." },
+  phantomCard: { name: "Phantom Swordsman Card", kind: "card", rarity: "epic", monster: "phantom", fits: ["ring"], prefix: "Phantom", atk: 5, flee: 5, sell: 0, desc: "An old swordsman who never stopped fighting." },
+  redOgreCard: { name: "Red Ogre Card", kind: "card", rarity: "epic", monster: "redOgre", fits: ["body"], prefix: "Ogrish", atk: 5, hp: 280, sell: 0, desc: "Big, red and very angry." },
+  ogreWarlordCard: { name: "Ogre Warlord Card", kind: "card", rarity: "legendary", monster: "ogreWarlord", fits: ["legs"], prefix: "Conquering", atk: 10, def: 6, hp: 300, sell: 0, desc: "The Ogre Warlord in his war camp, on a gold card under falling petals." },
   snapperCard: { name: "Snapper Flower Card", kind: "card", rarity: "epic", monster: "snapper", fits: ["offhand"], prefix: "Thorny", def: 1, reflect: 15, sell: 0, desc: "Bite it and it bites back." },
 });
 

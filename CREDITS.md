@@ -1271,6 +1271,12 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Notes: reduced to 7 colors an adapted to v3 bases by bluecarrot16, climb/jump/sit/emote/run by JaidynReiman
 - <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
 
+### Backwards Horns (head/horns/backwards)
+
+- Authors: Nila122
+- Licenses: OGA-BY 3.0, GPL 3.0, CC-BY-SA 3.0
+- <https://opengameart.org/content/lpc-lizard-headgear>
+
 ### Bandana (hat/cloth/bandana)
 
 - Authors: Matthew Krohn (makrohn), JaidynReiman, Marcel van de Steeg (MadMarcel), JaidynReiman
@@ -1607,6 +1613,13 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://opengameart.org/content/lpc-hair>
 - <https://github.com/ElizaWy/LPC/blob/main/Characters/Hair>
 - <https://opengameart.org/content/lpc-expanded-sit-run-jump-more>
+
+### Feathered Wings (body/wings/feathered)
+
+- Authors: ElizaWy, Stephen Challener (Redshrike), JaidynReiman
+- Licenses: OGA-BY 3.0
+- Notes: Original by ElizaWy, added to most remaining frames by JaidynReiman
+- <https://opengameart.org/content/lpc-wings-new-animations>
 
 ### Flail (weapon/blunt/flail)
 
@@ -2063,6 +2076,13 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
 - <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
 
+### Maximus (hat/helmet/maximus)
+
+- Authors: bluecarrot16
+- Licenses: CC-BY 3.0, CC-BY 4.0, OGA-BY 3.0, GPL 2.0, GPL 3.0
+- <https://opengameart.org/content/lpc-helmets>
+- <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
+
 ### Medium Beard (beards/beard/medium)
 
 - Authors: ElizaWy
@@ -2200,6 +2220,13 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://opengameart.org/content/ponytail-and-plain-hairstyles>
 - <https://opengameart.org/content/lpc-expanded-hair>
 
+### Plain Mask (facial/masks/plain)
+
+- Authors: Nila122
+- Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 2.0, GPL 3.0
+- <https://opengameart.org/content/lpc-masks>
+- <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
+
 ### Plain skirt (legs/skirts/plain)
 
 - Authors: bluecarrot16, Pierre Vigier (pvigier), Johannes Sjölund (wulax), Ahmad3366, JaidynReiman
@@ -2237,6 +2264,14 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - Licenses: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
 - <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
 - <https://opengameart.org/content/lpc-expanded-hair>
+
+### Rabbit (head/heads/rabbit)
+
+- Authors: bluecarrot16, Stephen Challener (Redshrike), Napsio (Vitruvian Studio), JaidynReiman
+- Licenses: OGA-BY 3.0, CC-BY 3.0, CC-BY-SA 3.0
+- Notes: original rabbit by Redshrike, adapted to modular head by bluecarrot16, color reduction by napsio (Vitruvian Studio) and JaidynReiman
+- <https://opengameart.org/content/bunny-rabbit-lpc-style-for-pixelfarm>
+- <http://opengameart.org/content/lpc-folk>
 
 ### Rapier (weapon/sword/rapier)
 
@@ -2718,6 +2753,16 @@ Each layer is available under the licenses listed (any one may be chosen where s
 - <https://opengameart.org/content/lpc-items-and-game-effects>
 - <https://opengameart.org/content/lpc-pointed-hats>
 - <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
+
+### Wolf female (head/heads/wolf/female)
+
+- Authors: bluecarrot16, Sander Frenken (castelonia), Benjamin K. Smith (BenCreating), William.Thompsonj, Stephen Challener (Redshrike)
+- Licenses: CC-BY-SA 3.0, GPL 3.0
+- Notes: original wolf animation by Redshrike, commissioned by William.Thompsonj; wolfman sprite by BenCreating, commissioned by castelonia; tweaks and headless version by bluecarrot16
+- <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
+- <https://opengameart.org/content/lpc-wolf-animation>
+- <https://opengameart.org/content/lpc-wolfman>
+- <https://opengameart.org/content/lpc-character-bases>
 
 ### Wolf male (head/heads/wolf/male)
 

@@ -103,12 +103,17 @@ export const MINOTAUR_LAIR: Rect = { x: 190, y: 52, w: 16, h: 10 };
 export const FROSTFELL_ISLE = { cx: 200, cy: 452, rx: 104, ry: 70 };
 /** Ravenmoor (Lv 50–60), the autumn island across the sea east of Dusk Hollow, under an endless dusk. */
 export const RAVENMOOR_ISLE = { cx: 440, cy: 200, rx: 66, ry: 86 };
+/** Petalfall (Lv 60–70), the spring island in the open sea south-east of the meadow, where the blossom never stops falling. */
+export const PETALFALL_ISLE = { cx: 408, cy: 404, rx: 94, ry: 86 };
 export const SNOW_LINE = 372;
 /** Everything east of this column is Ravenmoor's: autumn colours instead of summer. */
 export const AUTUMN_LINE = 368;
+/** South-east of this corner (tiles) is Petalfall's sea: spring colours and cherry blossom. */
+export const SPRING_CORNER = { x: 320, y: 320 };
 /** Which season the art shows at a tile: the islands have their own. */
-export type Biome = "summer" | "winter" | "autumn";
-export const biomeAt = (tx: number, ty: number): Biome => (tx >= AUTUMN_LINE ? "autumn" : ty >= SNOW_LINE ? "winter" : "summer");
+export type Biome = "summer" | "winter" | "autumn" | "spring";
+export const biomeAt = (tx: number, ty: number): Biome =>
+  tx >= SPRING_CORNER.x && ty >= SPRING_CORNER.y ? "spring" : tx >= AUTUMN_LINE ? "autumn" : ty >= SNOW_LINE ? "winter" : "summer";
 export const isSnowy = (tx: number, ty: number) => biomeAt(tx, ty) === "winter";
 /** Ravenmoor's endless dusk hangs over this area (tiles). */
 export const GLOOM: Rect = { x: 376, y: 112, w: 136, h: 168 };
@@ -116,6 +121,8 @@ export const GLOOM: Rect = { x: 376, y: 112, w: 136, h: 168 };
 export const RUINS: Rect = { x: 424, y: 139, w: 38, h: 27 };
 /** The Frost Giant's ring of standing stones on Frostfell's icy highlands: kept clear of trees and rocks. */
 export const FROST_LAIR: Rect = { x: 170, y: 458, w: 16, h: 10 };
+/** The Ogre Warlord's war camp on Petalfall's high ground, where the road from the pier ends: kept clear of trees and rocks. */
+export const WARLORD_CAMP: Rect = { x: 440, y: 395, w: 18, h: 13 };
 /** The ferry piers: out to sea from the meadow's south-east point, and from Frostfell's north shore. */
 export const PIERS = {
   meadow: { x: 241, y: 331, w: 3, h: 6 },
@@ -123,6 +130,9 @@ export const PIERS = {
   // East from Dusk Hollow where the east road ends, and west from Ravenmoor's shore, facing each other across the strait.
   dusk: { x: 334, y: 185, w: 8, h: 3 },
   ravenmoor: { x: 385, y: 185, w: 9, h: 3 },
+  // East from the meadow's east shore, where the ferry path ends, and west from Petalfall's shore.
+  east: { x: 309, y: 282, w: 9, h: 3 },
+  petalfall: { x: 326, y: 399, w: 9, h: 3 },
 } satisfies Record<string, Rect>;
 
 /** Dirt roads (vertex rectangles) leading out of the three gates, and two paths north along the walls to the Wildlands. */
@@ -138,6 +148,8 @@ export const ROADS: Rect[] = [
   { x: 322, y: 185, w: 13, h: 4 }, // the east road goes on past the Pumpking, to the pier for Ravenmoor
   { x: 393, y: 185, w: 51, h: 3 }, // Ravenmoor: from the pier east across the island…
   { x: 441, y: 160, w: 4, h: 28 }, // …and north, up to the castle gate
+  { x: 242, y: 282, w: 68, h: 4 }, // past the path down to Edda, on east to the pier for Petalfall
+  { x: 334, y: 399, w: 108, h: 4 }, // Petalfall: from the pier east, up onto the high ground and into the Ogre Warlord's camp
 ];
 /** Where the two paths north cross into the Wildlands (tile x of each path's middle, and the border's tile row). */
 export const WILD_CROSSINGS = [123, 261];
@@ -321,6 +333,10 @@ export const FLOORS: { rect: Rect; floor: Floor }[] = [
   { rect: PIERS.frostfell, floor: Floor.Pier },
   { rect: PIERS.dusk, floor: Floor.Pier },
   { rect: PIERS.ravenmoor, floor: Floor.Pier },
+  { rect: PIERS.east, floor: Floor.Pier },
+  { rect: PIERS.petalfall, floor: Floor.Pier },
+  // Flagstones in the middle of the Ogre Warlord's camp.
+  { rect: { x: WARLORD_CAMP.x + 2, y: WARLORD_CAMP.y + 2, w: WARLORD_CAMP.w - 4, h: WARLORD_CAMP.h - 4 }, floor: Floor.Slab },
   // Old flagstones in the Fallen King's courtyard.
   { rect: { x: 430, y: 145, w: 26, h: 15 }, floor: Floor.Slab },
   { rect: MARKET, floor: Floor.Slab },
@@ -601,6 +617,19 @@ const props: Prop[] = [
   { type: "barrels", x: PIERS.frostfell.x + 3, y: PIERS.frostfell.y + PIERS.frostfell.h + 1 },
   { type: "crate", x: PIERS.dusk.x - 1, y: PIERS.dusk.y - 2 },
   { type: "barrel", x: PIERS.ravenmoor.x + PIERS.ravenmoor.w + 1, y: PIERS.ravenmoor.y + PIERS.ravenmoor.h + 1 },
+  { type: "crate", x: PIERS.east.x - 2, y: PIERS.east.y - 2 },
+  { type: "barrels", x: PIERS.east.x - 4, y: PIERS.east.y + PIERS.east.h + 1 },
+  { type: "barrel", x: PIERS.petalfall.x + PIERS.petalfall.w + 1, y: PIERS.petalfall.y - 2 },
+
+  // ---- The Ogre Warlord's war camp: a ring of standing stones, his seat at the far end, fires and his plunder.
+  ...[WARLORD_CAMP.x + 1, WARLORD_CAMP.x + 6, WARLORD_CAMP.x + 11, WARLORD_CAMP.x + WARLORD_CAMP.w - 2].flatMap((x) =>
+    [WARLORD_CAMP.y + 1, WARLORD_CAMP.y + WARLORD_CAMP.h - 2].map((y): Prop => ({ type: "pillar", x, y })),
+  ),
+  { type: "throne", x: WARLORD_CAMP.x + 14, y: WARLORD_CAMP.y + 6 },
+  { type: "campfire", x: WARLORD_CAMP.x + 4, y: WARLORD_CAMP.y + 4 },
+  { type: "campfire", x: WARLORD_CAMP.x + 4, y: WARLORD_CAMP.y + 9 },
+  { type: "crate", x: WARLORD_CAMP.x + 15, y: WARLORD_CAMP.y + 3, variant: 1 },
+  { type: "barrels", x: WARLORD_CAMP.x + 14, y: WARLORD_CAMP.y + 9 },
 
   // ---- The Fallen King's castle: his throne, two rows of pillars down the hall, and rubble.
   { type: "throne", x: 442, y: 148 },

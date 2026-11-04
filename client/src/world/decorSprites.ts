@@ -12,13 +12,16 @@ export const WORLD_TEX = {
   plants: "plants",
   flowers: "flowers",
   rocks: "rocks",
-  // Frostfell's snowy versions and Ravenmoor's autumn ones (same layout as the summer sheets).
+  // Frostfell's snowy versions, Ravenmoor's autumn ones and Petalfall's spring ones (same layout as the summer sheets).
   terrainWinter: "terrain-winter",
   treesWinter: "trees-winter",
   plantsWinter: "plants-winter",
   terrainAutumn: "terrain-autumn",
   treesAutumn: "trees-autumn",
   plantsAutumn: "plants-autumn",
+  terrainSpring: "terrain-spring",
+  treesSpring: "trees-spring",
+  plantsSpring: "plants-spring",
 } as const;
 
 /** The season's sheet standing in for a summer one on the islands. */
@@ -26,7 +29,11 @@ const SEASON: Record<Biome, Record<string, string>> = {
   summer: {},
   winter: { [WORLD_TEX.trees]: WORLD_TEX.treesWinter, [WORLD_TEX.plants]: WORLD_TEX.plantsWinter },
   autumn: { [WORLD_TEX.trees]: WORLD_TEX.treesAutumn, [WORLD_TEX.plants]: WORLD_TEX.plantsAutumn },
+  spring: { [WORLD_TEX.trees]: WORLD_TEX.treesSpring, [WORLD_TEX.plants]: WORLD_TEX.plantsSpring },
 };
+/** In spring these trees' second variant is cherry blossom: Petalfall shows it most of the time. */
+const BLOSSOM = new Set<string>(["oak", "oakRoots", "oakTall", "bushTree"]);
+const BLOSSOM_SHARE = 0.7;
 
 type Rect = readonly [x: number, y: number, w: number, h: number];
 interface DecorArt {
@@ -80,12 +87,12 @@ export interface DecorSprite {
   tall: boolean;
 }
 
-/** Creates the sprite(s) for a decor at tile (tx, ty); `pick` in [0,1) chooses the variant. Snowy on Frostfell, autumn on Ravenmoor. */
+/** Creates the sprite(s) for a decor at tile (tx, ty); `pick` in [0,1) chooses the variant. Snowy on Frostfell, autumn on Ravenmoor, in blossom on Petalfall. */
 export function createDecor(scene: Phaser.Scene, decor: number, px: number, py: number, pick: number, biome: Biome = "summer"): DecorSprite | null {
   const id = DECOR[decor]?.id;
   if (!id || id === "none") return null;
   const art = ART[id];
-  const variant = Math.floor(pick * art.rects.length);
+  const variant = biome === "spring" && BLOSSOM.has(id) && pick < BLOSSOM_SHARE ? 1 : Math.floor(pick * art.rects.length);
   const tex = SEASON[biome][art.tex] ?? art.tex;
   const image = scene.add.image(px, py, tex, `${id}:${variant}`).setOrigin(0.5, 1).setDepth(py);
   let shadow: Phaser.GameObjects.Image | undefined;

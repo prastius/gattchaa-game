@@ -218,6 +218,8 @@ export interface ArtPart {
   category: string;
   id: string;
   colors?: Record<string, string>;
+  /** Multiplied by this colour after recolouring (the ogres' red skin, which no palette has). */
+  tint?: number;
 }
 
 /**
@@ -236,7 +238,9 @@ export async function composeParts(parts: readonly ArtPart[]): Promise<HTMLCanva
     const map = colorMap(m, it, part.colors ?? {});
     for (const layer of it.layers) {
       const file = layer.files.male?.walk;
-      if (file) layers.push({ z: layer.z, src: recolor(file, map, layer.frame) });
+      if (!file) continue;
+      const src = recolor(file, map, layer.frame);
+      layers.push({ z: layer.z, src: part.tint ? src.then((img) => tintSheet(img as HTMLCanvasElement, part.tint!)) : src });
     }
   }
   layers.sort((a, b) => a.z - b.z);
@@ -414,6 +418,12 @@ const CARD_SKY: Record<MonsterId, [string, string]> = {
   lich: ["#e8dcf2", "#4a2a6a"],
   fleshGolem: ["#dfe8d0", "#5a6a3a"],
   fallenKing: ["#efe2c8", "#3a2a4a"],
+  moonHare: ["#f2f4ff", "#a9b4e8"],
+  foxSpirit: ["#ffe6cc", "#e07a3a"],
+  crowBlade: ["#e2e2ec", "#4a4a62"],
+  phantom: ["#ece4f6", "#7a6a9a"],
+  redOgre: ["#ffe0d8", "#c0503e"],
+  ogreWarlord: ["#ffe8ee", "#d86a8a"],
 };
 
 /** A monster sheet recoloured by multiplying with `tint` (the Wraith is a darker Ghost). */

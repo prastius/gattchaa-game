@@ -11,11 +11,14 @@ import {
   FORGE_YARD,
   FROSTFELL_ISLE,
   RAVENMOOR_ISLE,
+  PETALFALL_ISLE,
   FROST_LAIR,
+  WARLORD_CAMP,
   RUINS,
   Floor,
   PIERS,
   isSnowy,
+  biomeAt,
   ORC_CAMP,
   MINOTAUR_LAIR,
   GARDENS,
@@ -170,10 +173,10 @@ export class World {
     const dy = (vy - MAIN_CY) / MAIN_CY;
     const dist = Math.sqrt(dx * dx + dy * dy);
     const e = fbm(vx / 70, vy / 70, this.seed, 5);
-    return Math.max(e * 1.2 - Math.pow(dist, 3.5) * 0.85 + 0.14, this.isleElevation(vx, vy, FROSTFELL_ISLE, 4242), this.isleElevation(vx, vy, RAVENMOOR_ISLE, 7373));
+    return Math.max(e * 1.2 - Math.pow(dist, 3.5) * 0.85 + 0.14, this.isleElevation(vx, vy, FROSTFELL_ISLE, 4242), this.isleElevation(vx, vy, RAVENMOOR_ISLE, 7373), this.isleElevation(vx, vy, PETALFALL_ISLE, 3131));
   }
 
-  /** An island out at sea (Frostfell, Ravenmoor): its own hills, falling away to the shore. */
+  /** An island out at sea (Frostfell, Ravenmoor, Petalfall): its own hills, falling away to the shore. */
   private isleElevation(vx: number, vy: number, isle: { cx: number; cy: number; rx: number; ry: number }, salt: number): number {
     const { cx, cy, rx, ry } = isle;
     const d = Math.hypot((vx - cx) / rx, (vy - cy) / ry);
@@ -357,7 +360,7 @@ export class World {
 
   /** Trees and rocks stay out of town, the Blacksmith's yard, the bosses' camps, the piers and off the roads. */
   private isReserved(tx: number, ty: number): boolean {
-    if (inRect(TOWN_AREA, tx, ty) || inRect(FORGE_YARD, tx, ty) || inRect(ORC_CAMP, tx, ty) || inRect(MINOTAUR_LAIR, tx, ty) || inRect(FROST_LAIR, tx, ty) || inRect(RUINS, tx, ty)) return true;
+    if (inRect(TOWN_AREA, tx, ty) || inRect(FORGE_YARD, tx, ty) || inRect(ORC_CAMP, tx, ty) || inRect(MINOTAUR_LAIR, tx, ty) || inRect(FROST_LAIR, tx, ty) || inRect(RUINS, tx, ty) || inRect(WARLORD_CAMP, tx, ty)) return true;
     if (Object.values(PIERS).some((p) => tx >= p.x - 3 && ty >= p.y - 3 && tx < p.x + p.w + 3 && ty < p.y + p.h + 3)) return true;
     if (tx < INTERIOR_ZONE.x + INTERIOR_ZONE.w + 2 && ty < INTERIOR_ZONE.y + INTERIOR_ZONE.h + 2) return true;
     return ROADS.some((r) => tx >= r.x - 2 && ty >= r.y - 2 && tx < r.x + r.w + 1 && ty < r.y + r.h + 1);
@@ -440,6 +443,8 @@ export class World {
         // Meadow fields are open: only the thickest woods stay, as small groves. Wild fields stay as they are.
         const meadow = FIELDS.some((f) => !f.wild && inRect(f.area, tx, ty));
         const e = this.elevation(tx, ty);
+        // Petalfall grows cherry blossom (the broadleaf trees' spring look) even on its high ground, where pines would be.
+        const spring = biomeAt(tx, ty) === "spring";
 
         // Blocking props keep a gap (checked against tiles already visited) so
         // canopies overlap a little but players can still walk between trunks.
@@ -458,7 +463,7 @@ export class World {
         if (allGrass) {
           if (free && forest > (meadow ? 0.74 : 0.56) && r < (meadow ? 0.4 : 0.6)) {
             d =
-              e > 0.58
+              e > 0.58 && !spring
                 ? r2 < 0.5
                   ? Decor.pine
                   : Decor.pineTall
@@ -472,7 +477,7 @@ export class World {
           }
         } else if (allDirt) {
           if (free && r < 0.035) d = r2 < 0.5 ? Decor.boulder : Decor.rock;
-          else if (free && r < 0.07 && e > 0.6) d = Decor.pine;
+          else if (free && r < 0.07 && e > 0.6) d = spring ? Decor.oakTall : Decor.pine;
           else if (r < 0.12) d = Decor.stone;
         }
 

@@ -275,6 +275,7 @@ export class WorldScene extends Phaser.Scene {
   private critters!: Critters;
   /** Snow over Frostfell, leaves over Ravenmoor. */
   private snow!: Weather;
+  private petals!: Weather;
   private leaves!: Weather;
   /** Inside the Gattchaa store (the interior zone)? */
   private indoors = false;
@@ -300,6 +301,9 @@ export class WorldScene extends Phaser.Scene {
     this.load.image(WORLD_TEX.terrainAutumn, `${ASSETS}terrain-autumn.png`);
     this.load.image(WORLD_TEX.treesAutumn, `${ASSETS}trees-autumn.png`);
     this.load.image(WORLD_TEX.plantsAutumn, `${ASSETS}plants-autumn.png`);
+    this.load.image(WORLD_TEX.terrainSpring, `${ASSETS}terrain-spring.png`);
+    this.load.image(WORLD_TEX.treesSpring, `${ASSETS}trees-spring.png`);
+    this.load.image(WORLD_TEX.plantsSpring, `${ASSETS}plants-spring.png`);
     preloadTown(this);
     preloadMonsters(this);
     this.load.spritesheet(WATER_FX, `${import.meta.env.BASE_URL}assets/town/water-fx.png`, { frameWidth: 32, frameHeight: 32 });
@@ -322,7 +326,7 @@ export class WorldScene extends Phaser.Scene {
         }
       }
     }
-    this.atlas = buildTerrainAtlas(this, { summer: WORLD_TEX.terrain, winter: WORLD_TEX.terrainWinter, autumn: WORLD_TEX.terrainAutumn }, ATLAS_KEY, structs);
+    this.atlas = buildTerrainAtlas(this, { summer: WORLD_TEX.terrain, winter: WORLD_TEX.terrainWinter, autumn: WORLD_TEX.terrainAutumn, spring: WORLD_TEX.terrainSpring }, ATLAS_KEY, structs);
     registerDecorFrames(this);
     if (!this.anims.exists("glint-a")) {
       this.anims.create({ key: "glint-a", frames: this.anims.generateFrameNumbers(WATER_FX, { start: 0, end: 3 }), frameRate: 6, repeat: -1 });
@@ -331,6 +335,7 @@ export class WorldScene extends Phaser.Scene {
     this.critters = new Critters(this, this.world);
     this.snow = new Weather(this, "snow");
     this.leaves = new Weather(this, "leaves");
+    this.petals = new Weather(this, "petals");
     this.gloom();
     createMonsterAnims(this);
     this.fx = new Fx(this, () => this.textRes);
@@ -728,6 +733,7 @@ export class WorldScene extends Phaser.Scene {
     const season = this.indoors ? "summer" : biomeAt(view.centerX / TILE_SIZE, view.centerY / TILE_SIZE);
     this.snow.update(view, season === "winter");
     this.leaves.update(view, season === "autumn");
+    this.petals.update(view, season === "spring");
     audio.calm = this.indoors || this.daylight.night;
     if (this.doorPendingUntil && performance.now() > this.doorPendingUntil) {
       // The server said no (or lag): don't leave the screen black.

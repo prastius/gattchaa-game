@@ -61,6 +61,9 @@ const humanoid = (parts: ArtPart[], more: Partial<MonsterArt> = {}): MonsterArt 
   ...more,
 });
 const skin = (color: string): ArtPart[] => [{ category: "body", id: "body", colors: { body: color } }];
+/** No palette has a red skin: the ogres are pale skin multiplied by these. */
+const OGRE_RED = 0xff7a66;
+const WARLORD_RED = 0xe0584a;
 
 export const MONSTER_ART: Record<MonsterId, MonsterArt> = {
   // The slime's up/down rows have three attack frames, its side rows five.
@@ -335,6 +338,80 @@ export const MONSTER_ART: Record<MonsterId, MonsterArt> = {
       { category: "gear", id: "halberd" },
     ],
     { scale: 1.9, w: 52, h: 98, missile: "bolt", missileFrom: 70 },
+  ),
+  // Petalfall.
+  moonHare: humanoid(
+    [
+      ...skin("fur_white"),
+      { category: "mob", id: "rabbitHead", colors: { body: "fur_white" } },
+      { category: "bottom", id: "pants", colors: { cloth: "lavender" } },
+      { category: "shoes", id: "boots", colors: { cloth: "white" } },
+      { category: "gear", id: "leatherArmor" },
+      { category: "gear", id: "dagger" },
+    ],
+    { scale: 0.95, h: 48 },
+  ),
+  foxSpirit: humanoid(
+    [
+      ...skin("fur_copper"),
+      { category: "mob", id: "foxTail" },
+      { category: "mob", id: "foxHead", colors: { body: "fur_copper" } },
+      { category: "bottom", id: "pants", colors: { cloth: "white" } },
+      { category: "shoes", id: "boots", colors: { cloth: "red" } },
+      { category: "gear", id: "cape", colors: { cloth: "red" } },
+      { category: "gear", id: "tabardWhite" },
+    ],
+    { missile: "fire", missileFrom: 60 },
+  ),
+  crowBlade: humanoid(
+    [
+      ...skin("taupe"),
+      { category: "gear", id: "crowWings" },
+      { category: "head", id: "male", colors: { body: "taupe" } },
+      { category: "bottom", id: "pants", colors: { cloth: "black" } },
+      { category: "shoes", id: "boots", colors: { cloth: "black" } },
+      { category: "gear", id: "leatherArmor" },
+      { category: "gear", id: "hood", colors: { cloth: "black" } },
+      { category: "gear", id: "maskBlack" },
+      { category: "gear", id: "katana" },
+    ],
+    { scale: 1.05, w: 28, h: 52 },
+  ),
+  phantom: humanoid(
+    [
+      { category: "mob", id: "skeletonBody" },
+      { category: "mob", id: "skullHead" },
+      { category: "gear", id: "capeTattered", colors: { cloth: "maroon" } },
+      { category: "gear", id: "legion", colors: { metal: "brass" } },
+      { category: "gear", id: "plateArms", colors: { metal: "brass" } },
+      { category: "gear", id: "horned", colors: { metal: "gold" } },
+      { category: "gear", id: "katana" },
+    ],
+    { scale: 1.05, w: 28, h: 52 },
+  ),
+  redOgre: humanoid(
+    [
+      { category: "body", id: "body", colors: { body: "light" }, tint: OGRE_RED },
+      { category: "mob", id: "trollHead", colors: { body: "light" }, tint: OGRE_RED },
+      { category: "mob", id: "hornsBackwards", colors: { body: "fur_tan" } },
+      { category: "bottom", id: "shorts", colors: { cloth: "yellow" } },
+      { category: "mob", id: "mace" },
+    ],
+    { scale: 1.5, w: 38, h: 72 },
+  ),
+  ogreWarlord: humanoid(
+    [
+      { category: "body", id: "body", colors: { body: "light" }, tint: WARLORD_RED },
+      { category: "mob", id: "trollHead", colors: { body: "light" }, tint: WARLORD_RED },
+      { category: "mob", id: "hornsBackwards", colors: { body: "fur_gold" } },
+      { category: "gear", id: "cape", colors: { cloth: "black" } },
+      { category: "gear", id: "legion", colors: { metal: "gold" } },
+      { category: "gear", id: "plateArms", colors: { metal: "gold" } },
+      { category: "gear", id: "greaves", colors: { metal: "gold" } },
+      { category: "gear", id: "ironBoots", colors: { metal: "iron" } },
+      { category: "mob", id: "waraxe" },
+    ],
+    { scale: 2, w: 54, h: 102, missile: "fire", missileFrom: 70 },
   ),
 };
 

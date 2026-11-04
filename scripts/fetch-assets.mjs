@@ -258,6 +258,19 @@ const GEAR = [
   ["kiteRed", "Kite shield (red)", "weapons/shields/shield_kite.json", { variant: "kite_red_gray" }],
   ["bascinet", "Bascinet", "headwear/helmets/helmets/hat_helmet_bascinet.json"],
   ["crownGray", "Crown (grey)", "headwear/hats/formal/hat_formal_crown.json", { variant: "crown_gray" }],
+  // Petalfall's gear.
+  ["swordCeramic", "Ceramic arming sword", "weapons/sword/weapon_sword_arming.json", { variant: "ceramic" }],
+  ["dragonspearRed", "Dragon spear (red)", "weapons/polearm/weapon_polearm_dragonspear.json", { variant: "red", walk128: true }],
+  ["bowCopper", "Bow (copper)", "weapons/ranged/bow/weapon_ranged_bow_normal.json", { variant: "copper", walk128: true }],
+  ["greatBowCeramic", "Great bow (ceramic)", "weapons/ranged/bow/weapon_ranged_bow_great.json", { variant: "ceramic", walk128: true }],
+  ["crystalOrange", "Crystal staff (orange)", "weapons/magic/weapon_magic_crystal.json", { variant: "orange" }],
+  ["crystalYellow", "Crystal staff (yellow)", "weapons/magic/weapon_magic_crystal.json", { variant: "yellow" }],
+  ["kiteGreen", "Kite shield (green)", "weapons/shields/shield_kite.json", { variant: "kite_green_gray" }],
+  ["maskBlack", "Plain mask (black)", "headwear/accessories/facial_mask_plain.json", { variant: "black" }],
+  ["wizardHatPink", "Wizard hat (pink)", "headwear/hats/magic/hat_magic_wizard.json", { variant: "pink" }],
+  ["maximus", "Maximus helmet", "headwear/helmets/helmets/hat_helmet_maximus.json"],
+  ["crowWings", "Feathered wings (black)", "body/wings/wings_feathered.json", { variant: "black" }],
+  ["tabardPink", "Tabard (pink)", "torso/jacket/torso_jacket_tabard.json", { variant: "pink" }],
 ].map(([id, label, def, opts]) => ["gear", id, label, def, B, opts]);
 
 /**
@@ -292,6 +305,11 @@ const MOB_PARTS = [
   ["wolfTailFluffy", "Fluffy wolf tail", "body/tails/tail_wolf_fluffy.json", { variant: "fur_white" }],
   // Ravenmoor.
   ["frankHead", "Frankenstein head", "head/heads/undead/heads_frankenstein.json"],
+  // Petalfall.
+  ["rabbitHead", "Rabbit head", "head/heads/farm/heads_rabbit.json"],
+  ["foxHead", "Wolf head (female)", "head/heads/beast/heads_wolf_female.json"],
+  ["foxTail", "Fluffy wolf tail (copper)", "body/tails/tail_wolf_fluffy.json", { variant: "fur_copper" }],
+  ["hornsBackwards", "Backwards horns", "head/appendages/head_horns_backwards.json"],
 ].map(([id, label, def, opts]) => ["mob", id, label, def, M, opts]);
 
 const PALETTES = {
@@ -329,6 +347,10 @@ const WORLD_FILES = {
   "terrain-autumn.png": "Terrain/terrain_autumn.png",
   "trees-autumn.png": "Terrain/trees_autumn.png",
   "plants-autumn.png": "Terrain/plants_autumn.png",
+  // Petalfall: spring, with cherry blossom.
+  "terrain-spring.png": "Terrain/terrain_spring.png",
+  "trees-spring.png": "Terrain/trees_spring.png",
+  "plants-spring.png": "Terrain/plants_spring.png",
 };
 
 /** Town buildings, furniture and floors, also from LPC Revised (OGA-BY 3.0). */
