@@ -36,6 +36,9 @@ export interface MonsterArt {
   scale?: number;
   /** A pack sheet recoloured: multiplied by this colour (the Wraith is a darker Ghost). */
   tint?: number;
+  /** …or an item icon, drawn large and bobbing in a glow of this colour (Crownhold's crystal). */
+  icon?: string;
+  glow?: number;
   /** What it shoots, from at least `missileFrom` px away (closer, it bites). */
   missile?: Missile;
   missileFrom?: number;
@@ -413,6 +416,8 @@ export const MONSTER_ART: Record<MonsterId, MonsterArt> = {
     ],
     { scale: 2, w: 54, h: 102, missile: "fire", missileFrom: 70 },
   ),
+  // Crownhold.
+  crystal: { icon: "crystal_01c", glow: 0x8fd8ff, frame: 64, cols: 4, feet: 60, move: [0, 1, 2, 3, 2, 1], attack: same([0]), w: 44, h: 92, scale: 1.6 },
 };
 
 const MOVE_COLS = [0, 1, 2, 1];
@@ -428,7 +433,8 @@ export function preloadMonsters(scene: Phaser.Scene) {
   for (const [kind, art] of ALL) {
     const url = `${import.meta.env.BASE_URL}assets/monsters/${art.file}`;
     // A recoloured sheet loads as a plain image and becomes its texture in createMonsterAnims.
-    if (art.file && art.tint) scene.load.image(`${texKey(kind)}:src`, url);
+    if (art.icon) scene.load.image(`${texKey(kind)}:src`, `${import.meta.env.BASE_URL}assets/items/${art.icon}.png`);
+    else if (art.file && art.tint) scene.load.image(`${texKey(kind)}:src`, url);
     else if (art.file) scene.load.spritesheet(texKey(kind), url, { frameWidth: art.frame, frameHeight: art.frame });
   }
 }
@@ -438,6 +444,38 @@ function tintedTexture(scene: Phaser.Scene, kind: MonsterId, art: MonsterArt) {
   if (scene.textures.exists(texKey(kind))) return;
   const src = scene.textures.get(`${texKey(kind)}:src`).getSourceImage() as HTMLImageElement;
   const tex = scene.textures.addCanvas(texKey(kind), tintSheet(src, art.tint!))!;
+  for (let row = 0; row < 4; row++) {
+    for (let col = 0; col < art.cols; col++) tex.add(row * art.cols + col, 0, col * art.frame, row * art.frame, art.frame, art.frame);
+  }
+}
+
+/** An icon monster's texture: the 16 px icon at 3×, rising and falling a little across the columns, in a soft glow. */
+function iconTexture(scene: Phaser.Scene, kind: MonsterId, art: MonsterArt) {
+  if (scene.textures.exists(texKey(kind))) return;
+  const src = scene.textures.get(`${texKey(kind)}:src`).getSourceImage() as HTMLImageElement;
+  const canvas = document.createElement("canvas");
+  canvas.width = art.cols * art.frame;
+  canvas.height = 4 * art.frame;
+  const ctx = canvas.getContext("2d")!;
+  ctx.imageSmoothingEnabled = false;
+  const glow = `#${(art.glow ?? 0xffffff).toString(16).padStart(6, "0")}`;
+  const size = 48;
+  for (let row = 0; row < 4; row++) {
+    for (let col = 0; col < art.cols; col++) {
+      const x0 = col * art.frame;
+      const y0 = row * art.frame;
+      const lift = [0, 2, 4, 2][col % 4];
+      const cx = x0 + art.frame / 2;
+      const cy = y0 + art.feet - size / 2 - 4 - lift;
+      const g = ctx.createRadialGradient(cx, cy, 2, cx, cy, 30);
+      g.addColorStop(0, `${glow}aa`);
+      g.addColorStop(1, `${glow}00`);
+      ctx.fillStyle = g;
+      ctx.fillRect(x0, y0, art.frame, art.frame);
+      ctx.drawImage(src, 0, 0, 16, 16, cx - size / 2, cy - size / 2, size, size);
+    }
+  }
+  const tex = scene.textures.addCanvas(texKey(kind), canvas)!;
   for (let row = 0; row < 4; row++) {
     for (let col = 0; col < art.cols; col++) tex.add(row * art.cols + col, 0, col * art.frame, row * art.frame, art.frame, art.frame);
   }
@@ -483,7 +521,8 @@ export function createMonsterAnims(scene: Phaser.Scene) {
   for (const [kind, art] of ALL) {
     if (art.parts) void monsterReady(scene, kind);
     else {
-      if (art.tint) tintedTexture(scene, kind, art);
+      if (art.icon) iconTexture(scene, kind, art);
+      else if (art.tint) tintedTexture(scene, kind, art);
       createAnims(scene, kind, art);
     }
   }
@@ -491,6 +530,8 @@ export function createMonsterAnims(scene: Phaser.Scene) {
 
 /** Name colour by how dangerous a monster is for you, as in many MMOs: grey is easy, red is deadly. */
 export function levelColor(mine: number, kind: MonsterId): string {
+  // Level 0: not a fight for EXP (Crownhold's crystal).
+  if (!MONSTERS[kind].level) return "#ffd27a";
   const d = MONSTERS[kind].level - mine;
   if (d >= 5) return "#ff6b6b";
   if (d >= 2) return "#ffb35c";

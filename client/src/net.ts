@@ -46,6 +46,7 @@ import type {
   GuildRank,
   GuildRankMessage,
 } from "../../shared/guild";
+import type { TributeResult } from "../../shared/siege";
 
 function serverUrl(): string {
   if (import.meta.env.VITE_SERVER_URL) return import.meta.env.VITE_SERVER_URL;
@@ -80,6 +81,7 @@ export class Net {
   readonly onPartyAsk = new Set<(ev: PartyAskEvent) => void>();
   readonly onGuild = new Set<(g: GuildMessage | null) => void>();
   readonly onGuildAsk = new Set<(ev: GuildAskEvent) => void>();
+  readonly onTribute = new Set<(r: TributeResult) => void>();
   readonly onDuelStart = new Set<(ev: DuelStartEvent) => void>();
   readonly onDuelEnd = new Set<(ev: DuelEndEvent) => void>();
   readonly onArenaBoard = new Set<(b: ArenaBoard) => void>();
@@ -158,6 +160,9 @@ export class Net {
     });
     room.onMessage("guild:ask", (ev: GuildAskEvent) => {
       for (const fn of this.onGuildAsk) fn(ev);
+    });
+    room.onMessage("castle:tribute", (r: TributeResult) => {
+      for (const fn of this.onTribute) fn(r);
     });
 
     room.onDrop((code, reason) => {
@@ -297,6 +302,11 @@ export class Net {
 
   setGuildNotice(text: string) {
     this.room.send("guild:notice", { text } satisfies GuildNoticeMessage);
+  }
+
+  /** Asks the Castle Herald for today's tribute (for the guild holding Crownhold). */
+  tribute(npc: string) {
+    this.room.send("castle:tribute", { npc });
   }
 
   /** Asks for a fresh member list (levels and who's online change all the time). */

@@ -105,15 +105,26 @@ export const FROSTFELL_ISLE = { cx: 200, cy: 452, rx: 104, ry: 70 };
 export const RAVENMOOR_ISLE = { cx: 440, cy: 200, rx: 66, ry: 86 };
 /** Petalfall (Lv 60–70), the spring island in the open sea south-east of the meadow, where the blossom never stops falling. */
 export const PETALFALL_ISLE = { cx: 408, cy: 404, rx: 94, ry: 86 };
+/** Crownhold, the guild castle's island in the sea north-east of the Wildlands, reached by a long bridge. */
+export const CASTLE_ISLE = { cx: 386, cy: 74, rx: 60, ry: 44 };
+/** Crownhold's walls: inside them, guilds fight over the castle during a siege (see shared/siege.ts). */
+export const CASTLE: Rect = { x: 372, y: 60, w: 44, h: 33 };
+/** The keep inside the walls, round the crystal. Its gate faces east, away from the castle gate. */
+export const KEEP: Rect = { x: 388, y: 68, w: 20, h: 16 };
+/** Outside the castle gate, where the road from the bridge arrives: the herald's camp, where siege fighters wake up. */
+export const CASTLE_CAMP: Rect = { x: 356, y: 74, w: 13, h: 12 };
+export const inCastle = (px: number, py: number) => inRect(CASTLE, px / TILE, py / TILE);
 export const SNOW_LINE = 372;
 /** Everything east of this column is Ravenmoor's: autumn colours instead of summer. */
 export const AUTUMN_LINE = 368;
+/** …south of this row (Crownhold's island, further north, is summer green). */
+export const AUTUMN_TOP = 108;
 /** South-east of this corner (tiles) is Petalfall's sea: spring colours and cherry blossom. */
 export const SPRING_CORNER = { x: 320, y: 320 };
 /** Which season the art shows at a tile: the islands have their own. */
 export type Biome = "summer" | "winter" | "autumn" | "spring";
 export const biomeAt = (tx: number, ty: number): Biome =>
-  tx >= SPRING_CORNER.x && ty >= SPRING_CORNER.y ? "spring" : tx >= AUTUMN_LINE ? "autumn" : ty >= SNOW_LINE ? "winter" : "summer";
+  tx >= SPRING_CORNER.x && ty >= SPRING_CORNER.y ? "spring" : tx >= AUTUMN_LINE && ty >= AUTUMN_TOP ? "autumn" : ty >= SNOW_LINE ? "winter" : "summer";
 export const isSnowy = (tx: number, ty: number) => biomeAt(tx, ty) === "winter";
 /** Ravenmoor's endless dusk hangs over this area (tiles). */
 export const GLOOM: Rect = { x: 376, y: 112, w: 136, h: 168 };
@@ -133,6 +144,8 @@ export const PIERS = {
   // East from the meadow's east shore, where the ferry path ends, and west from Petalfall's shore.
   east: { x: 309, y: 282, w: 9, h: 3 },
   petalfall: { x: 326, y: 399, w: 9, h: 3 },
+  // The long bridge from the Wildlands' east shore across the sea to Crownhold.
+  castle: { x: 290, y: 80, w: 63, h: 3 },
 } satisfies Record<string, Rect>;
 
 /** Dirt roads (vertex rectangles) leading out of the three gates, and two paths north along the walls to the Wildlands. */
@@ -150,6 +163,10 @@ export const ROADS: Rect[] = [
   { x: 441, y: 160, w: 4, h: 28 }, // …and north, up to the castle gate
   { x: 242, y: 282, w: 68, h: 4 }, // past the path down to Edda, on east to the pier for Petalfall
   { x: 334, y: 399, w: 108, h: 4 }, // Petalfall: from the pier east, up onto the high ground and into the Ogre Warlord's camp
+  { x: 259, y: 116, w: 15, h: 4 }, // the Wildlands: from the top of the east path, east…
+  { x: 270, y: 80, w: 4, h: 40 }, // …north past the vampires' high ground…
+  { x: 270, y: 80, w: 21, h: 4 }, // …and east to the long bridge
+  { x: 352, y: 80, w: 21, h: 4 }, // Crownhold: from the bridge to the castle gate
 ];
 /** Where the two paths north cross into the Wildlands (tile x of each path's middle, and the border's tile row). */
 export const WILD_CROSSINGS = [123, 261];
@@ -195,6 +212,9 @@ export const STRUCT_GROUPS = [
   // Ravenmoor's castle: the same grey stone, long since fallen in.
   { id: "ruin", style: "rampart", face: 3, battlements: true },
   { id: "ruinTower", style: "rampart", face: 4, battlements: true },
+  // Crownhold, the guild castle: whole, and well kept.
+  { id: "castle", style: "rampart", face: 3, battlements: true },
+  { id: "castleTower", style: "rampart", face: 4, battlements: true },
 ] as const;
 export type StructGroup = (typeof STRUCT_GROUPS)[number]["id"];
 export type StructStyle = (typeof STRUCT_GROUPS)[number]["style"];
@@ -254,6 +274,24 @@ export const STRUCT_BLOCKS: StructBlock[] = [
   { group: "ruin", rect: { x: 456, y: 157, w: 2, h: 3 } },
   { group: "ruinTower", rect: { x: 427, y: 141, w: 4, h: 4 } },
   { group: "ruinTower", rect: { x: 455, y: 141, w: 4, h: 4 } },
+  // ---- Crownhold: an outer wall with its gate to the west (two towers either side), corner towers,
+  // and the keep inside, its gate on the far (east) side so attackers must go round it.
+  { group: "castle", rect: { x: 372, y: 60, w: 44, h: 2 } },
+  { group: "castle", rect: { x: 372, y: 91, w: 44, h: 2 } },
+  { group: "castle", rect: { x: 372, y: 60, w: 2, h: 16 } },
+  { group: "castle", rect: { x: 372, y: 84, w: 2, h: 9 } },
+  { group: "castle", rect: { x: 414, y: 60, w: 2, h: 33 } },
+  { group: "castleTower", rect: { x: 370, y: 58, w: 5, h: 5 } },
+  { group: "castleTower", rect: { x: 413, y: 58, w: 5, h: 5 } },
+  { group: "castleTower", rect: { x: 370, y: 89, w: 5, h: 5 } },
+  { group: "castleTower", rect: { x: 413, y: 89, w: 5, h: 5 } },
+  { group: "castleTower", rect: { x: 370, y: 72, w: 5, h: 4 } },
+  { group: "castleTower", rect: { x: 370, y: 84, w: 5, h: 4 } },
+  { group: "castle", rect: { x: 388, y: 68, w: 20, h: 2 } },
+  { group: "castle", rect: { x: 388, y: 82, w: 20, h: 2 } },
+  { group: "castle", rect: { x: 388, y: 68, w: 2, h: 16 } },
+  { group: "castle", rect: { x: 406, y: 68, w: 2, h: 4 } },
+  { group: "castle", rect: { x: 406, y: 80, w: 2, h: 4 } },
 ];
 
 /** The palace face (row 165-168) and its door, centred on the town line. */
@@ -335,6 +373,10 @@ export const FLOORS: { rect: Rect; floor: Floor }[] = [
   { rect: PIERS.ravenmoor, floor: Floor.Pier },
   { rect: PIERS.east, floor: Floor.Pier },
   { rect: PIERS.petalfall, floor: Floor.Pier },
+  { rect: PIERS.castle, floor: Floor.Pier },
+  // Crownhold: flagstones all round the bailey, and a red carpet from the keep's gate to the crystal.
+  { rect: { x: CASTLE.x + 2, y: CASTLE.y + 2, w: CASTLE.w - 4, h: CASTLE.h - 4 }, floor: Floor.Slab },
+  { rect: { x: 399, y: 76, w: 8, h: 2 }, floor: Floor.CarpetRed },
   // Flagstones in the middle of the Ogre Warlord's camp.
   { rect: { x: WARLORD_CAMP.x + 2, y: WARLORD_CAMP.y + 2, w: WARLORD_CAMP.w - 4, h: WARLORD_CAMP.h - 4 }, floor: Floor.Slab },
   // Old flagstones in the Fallen King's courtyard.
@@ -620,6 +662,15 @@ const props: Prop[] = [
   { type: "crate", x: PIERS.east.x - 2, y: PIERS.east.y - 2 },
   { type: "barrels", x: PIERS.east.x - 4, y: PIERS.east.y + PIERS.east.h + 1 },
   { type: "barrel", x: PIERS.petalfall.x + PIERS.petalfall.w + 1, y: PIERS.petalfall.y - 2 },
+
+  // ---- Crownhold: the holder's seat behind the crystal, pillars in the keep, and the herald's camp by the gate.
+  { type: "throne", x: 396, y: 73 },
+  ...[391, 404].flatMap((x) => [74, 80].map((y): Prop => ({ type: "pillar", x, y }))),
+  { type: "campfire", x: CASTLE_CAMP.x + 3, y: CASTLE_CAMP.y + 2 },
+  { type: "crate", x: CASTLE_CAMP.x + 1, y: CASTLE_CAMP.y + 1, variant: 1 },
+  { type: "barrels", x: CASTLE_CAMP.x + 6, y: CASTLE_CAMP.y + 1 },
+  { type: "barrel", x: CASTLE_CAMP.x + 1, y: CASTLE_CAMP.y + 10 },
+  { type: "crate", x: PIERS.castle.x - 3, y: PIERS.castle.y - 2 },
 
   // ---- The Ogre Warlord's war camp: a ring of standing stones, his seat at the far end, fires and his plunder.
   ...[WARLORD_CAMP.x + 1, WARLORD_CAMP.x + 6, WARLORD_CAMP.x + 11, WARLORD_CAMP.x + WARLORD_CAMP.w - 2].flatMap((x) =>

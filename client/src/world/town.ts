@@ -14,6 +14,7 @@ import {
   MARKET,
   PIERS,
   SOUTH_WALL_Y,
+  STRUCT_BLOCKS,
   TOWN_AREA,
   TOWN_CX,
   WILD_BORDER_Y,
@@ -24,6 +25,7 @@ import {
   type PropType,
 } from "../../../shared/town";
 import { NPCS, npcProducts } from "../../../shared/npcs";
+import { emblemOf } from "../../../shared/guild";
 import { FIELDS } from "../../../shared/rpg";
 import { ROOM_MODES, type ShopProduct, type ShopRoom, type ShopSnapshot } from "../../../shared/gattchaa";
 import { FLOOR_TEX } from "./terrainTiles";
@@ -250,6 +252,9 @@ export class Town {
   private machineSlots: { id: string; slot: LiveSlot }[] = [];
   private tableLabels = new Map<number, Phaser.GameObjects.Text>();
   private fountain = { x: 0, y: 0 };
+  /** Crownhold's banners, and whose they are ("-": not drawn yet). */
+  private castleFlags: Phaser.GameObjects.Container[] = [];
+  private castleKey = "-";
 
   constructor(
     private scene: Phaser.Scene,
@@ -463,6 +468,8 @@ export class Town {
     for (const c of WILD_CROSSINGS) this.signpost((c + 3.5) * 32, (WILD_BORDER_Y + 1) * 32, "WILDLANDS", "⚔ OPEN PVP", "#ff8a7a");
     // Sable's board, across the west path from her.
     this.signpost(126.8 * 32, 140.6 * 32, "WANTED", "☠ BOUNTIES", "#ffd27a");
+    // Where the road through the Wildlands meets the long bridge to Crownhold.
+    this.signpost(287.6 * 32, 80 * 32 - 2, "CROWNHOLD", "⚔ CASTLE →", "#c9a2ff");
     // Leopold's corner, on the main street east of the fountain plaza.
     this.signpost(228.6 * 32, 183.2 * 32, "GUILDS", "🛡 FOUND ONE", "#8ec9ff");
   }
@@ -497,6 +504,38 @@ export class Town {
     g.fillStyle(0xd9d1c1, 1).fillTriangle(-3, -60, -3, -16, -26, -18);
     g.fillStyle(0xeb8224, 1).fillTriangle(1, -72, 16, -69, 1, -66);
     this.scene.tweens.add({ targets: g, y: y + 2, angle: 1.2, duration: 1700, yoyo: true, repeat: -1, ease: "Sine.InOut" });
+  }
+
+  /** Crownhold's banners on every tower: the holding guild's colour and emblem (plain grey while nobody holds it). */
+  setCastle(guild: string, emblem: number) {
+    const key = guild ? `${guild}|${emblem}` : "";
+    if (key === this.castleKey) return;
+    this.castleKey = key;
+    for (const f of this.castleFlags) f.destroy();
+    const { symbol, color } = emblemOf(emblem);
+    const fill = guild ? Phaser.Display.Color.HexStringToColor(color).color : 0x9aa0a6;
+    this.castleFlags = STRUCT_BLOCKS.filter((b) => b.group === "castleTower").map((b) => {
+      const g = this.scene.add.graphics();
+      g.fillStyle(0x10202b, 0.3).fillRect(3, -42, 24, 16);
+      g.fillStyle(0x3a2616, 1).fillRect(-1, -48, 3, 48);
+      g.fillStyle(0xd9b44a, 1).fillCircle(0.5, -49, 2);
+      g.fillStyle(fill, 1).fillRect(2, -46, 22, 16);
+      g.fillTriangle(24, -46, 30, -46, 24, -38).fillTriangle(24, -30, 30, -30, 24, -38);
+      const parts: Phaser.GameObjects.GameObject[] = [g];
+      if (guild) {
+        parts.push(
+          this.scene.add
+            .text(13, -38, symbol, { fontFamily: FONT, fontSize: "12px", fontStyle: "bold", color: "#ffffff", stroke: "#10202b", strokeThickness: 3 })
+            .setOrigin(0.5)
+            .setResolution(this.textRes),
+        );
+      }
+      const x = (b.rect.x + b.rect.w / 2) * 32;
+      const base = (b.rect.y + 1.2) * 32;
+      const flag = this.scene.add.container(x, base, parts).setDepth((b.rect.y + b.rect.h) * 32 + 48);
+      this.scene.tweens.add({ targets: flag, scaleX: 0.9, duration: 800 + Math.random() * 500, yoyo: true, repeat: -1, ease: "Sine.InOut" });
+      return flag;
+    });
   }
 
   /** A wooden signpost by the path: a title and a coloured line under it. */

@@ -69,7 +69,7 @@ export class MonsterSprite {
     this.barW = this.def.boss ? BOSS_BAR_W : BAR_W;
     this.bar = scene.add.graphics().setVisible(false);
     this.label = scene.add
-      .text(0, -a.h - 6, `${this.def.name}  Lv ${this.def.level}`, {
+      .text(0, -a.h - 6, this.def.level ? `${this.def.name}  Lv ${this.def.level}` : this.def.name, {
         fontFamily: FONT,
         fontSize: "10px",
         fontStyle: "bold",

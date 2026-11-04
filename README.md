@@ -95,6 +95,7 @@ shared/       Code used by both client and server
   pvp.ts          Open PVP rules (who may fight whom, Outlaws, bounties) and Sable's board
   party.ts        Party rules: size, EXP sharing and its bonus, and the party messages
   guild.ts        Guild rules: size, founding, ranks, names, emblems, and the guild messages
+  siege.ts        Guild wars: the siege schedule, the crystal, the tribute, and where the beaten get up
 server/       Colyseus server
   src/rooms/WorldRoom.ts   Joins, interest management, movement validation, chat, emotes, wardrobe, sitting, shops, trading
   src/rooms/WorldState.ts  Synced state
@@ -104,6 +105,7 @@ server/       Colyseus server
   src/rooms/Drops.ts       Items on the ground: first pick for the top fighter (and their party), then anyone; they fade after 90 s
   src/rooms/Parties.ts     Parties: invites, leaving and removing, the leader, and keeping members up to date
   src/rooms/Guilds.ts      Guilds: founding, invites, ranks, removing, the notice, who's online, the names over heads
+  src/rooms/Siege.ts       Guild wars at Crownhold: the schedule, who may go in, the crystal breaking, the end, the tribute
   src/db.ts                SQLite: accounts, sessions, characters, open shops, mail, rankings, guilds
   src/api.ts               Sign-in with Gattchaa, shop details
   src/gattchaa.ts          Gattchaa Town API client + webhooks
@@ -249,7 +251,7 @@ Ragnarok and TibiaME style: click a monster and your character fights it. Everyt
 - **Fainting.** At 0 HP you faint and return to town fully healed. Novices lose no EXP; Knights, Mages and Archers lose 3 % of a level. Beaten by a player in the Wildlands, only an Outlaw loses anything.
 - **Saving.** Signed-in players' progress is saved on every level-up and faint, every 30 s, and when they leave. Guests can fight too, but start over next visit.
 - **Server cost.** Monsters only think while a player is near their spawn area, and fight events go only to players close enough to see them. 20 bots fighting at once used about 5 % of one CPU core.
-- **Testing.** Outside production (`NODE_ENV` not `production`), chat commands help: `/level 25` jumps to a level, `/item saber` (or `/item redPotion 20`, `/item hornetCard`, `/item moonblade +10`) adds items, `/gold 1000` sets your gold, `/job archer` turns you into a class (from level 10; `/job novice` goes back), `/title kingslayer` hands you a title. To test duels you need a second player (another window, or a bot). Shops need a signed-in seller (run the Gattchaa mock to sign in) and a second player to buy. `/help` lists every item id.
+- **Testing.** Outside production (`NODE_ENV` not `production`), chat commands help: `/level 25` jumps to a level, `/item saber` (or `/item redPotion 20`, `/item hornetCard`, `/item moonblade +10`) adds items, `/gold 1000` sets your gold, `/job archer` turns you into a class (from level 10; `/job novice` goes back), `/title kingslayer` hands you a title, `/tp 362 82` takes you to a tile (there: Crownhold's gate), and `/siege on` starts a siege now (`/siege off` stops it, `/siege auto` goes back to the schedule). To test duels you need a second player (another window, or a bot). Shops need a signed-in seller (run the Gattchaa mock to sign in) and a second player to buy. `/help` lists every item id.
 
 ## Jobs and skills
 
@@ -390,6 +392,17 @@ Ragnarok-style guilds of up to `GUILD_MAX` (30), kept in the database. The rules
 - **Messages.** `guild:invite` (leader or officer; the target must be signed in and in no guild) sends `guild:ask`; `guild:answer` joins. `guild:leave` (the leader only when alone, which closes the guild), `guild:kick` (an account id; officers only remove members), `guild:rank` and `guild:lead` (leader only), `guild:notice` (leader or officers), `guild:get` (a fresh list when the window opens). Every change sends each member here `guild` (`GuildMessage`: name, emblem, notice, your rank, and every member with level, job, rank, online and last seen).
 - **Online.** Coming in and leaving tell the members who are here; taking over from another window says nothing. The notice greets members as they come in.
 - **Chat.** `/g message` (or `/guild`) goes only to the guild members who are here (`ChatMessage.guild`), and isn't kept in the town's history.
+
+## Guild wars
+
+Ragnarok's War of Emperium for one castle, **Crownhold**. The rules are in `shared/siege.ts`; `server/src/rooms/Siege.ts` runs the siege; `Combat` does the fighting.
+
+- **The island.** `CASTLE_ISLE` (salt 9494) in the sea north-east of the Wildlands, summer green (`AUTUMN_TOP`: autumn only south of row 108). The long bridge is `PIERS.castle` (63 tiles, Floor.Pier), reached by a road from the top of the east path through the Wildlands. The castle (`CASTLE`) is `castle`/`castleTower` structure blocks: an outer wall with a west gate (vertical gates need room for the towers' faces: the opening is rows 76–83, walkable 80–83) and a keep (`KEEP`) whose gate faces east; flagstones inside, a red carpet to the crystal. The herald's camp (`CASTLE_CAMP`) is outside the gate. The field `crownhold` has no monsters but the crystal.
+- **The crystal.** A monster (`crystal`, level 0: nobody misses; 60,000 HP, DEF 50, never moves or hits back; `boss` for the always-on bar, with its own news instead of the boss news). Its art is an item icon drawn large in a glow (`icon` in `MONSTER_ART`). `Combat.crystalBlock` refuses it outside a siege, to players without a guild, and to the holding guild (`Combat.castleGuild`); `hurt` checks it too, so area skills don't scratch it. The last hit calls the `crystal` hook: `Siege.captured` saves the new holder, tells the town, and moves everyone else inside to the camp. It comes back after its `respawnMs` (10 s); a siege starting mends it (`mendCrystal`).
+- **The schedule.** `siegeAt(now)` gives the siege on now, or the next (Wednesdays and Saturdays, 20:00–21:00 Batam time). `Siege.tick` starts and ends it, sets `Combat.siege`, and syncs the room state's `castle`, `castleEmblem`, `siege`, `siegeEnds` and `siegeNext` (for the siege bar, the banners and the Herald). `/siege on|off|auto` bends it for testing.
+- **Fighting.** `pvpBlock(a, b, siege)`: during a siege, two players inside `CASTLE` may fight if both are in guilds (different ones, not party mates), at any level. `Combat.aggress` makes nobody an Outlaw there, and `beaten` costs nothing (no EXP, no bounty, nothing on Sable's board) and remembers the player, so `revive` puts them at the camp (`campSpot`) instead of in town. `Siege.mayEnter` refuses moves into the castle by players without a guild during a siege (the client stops them too).
+- **The end.** The holder is kept (table `castles`, migration v11: one row per castle, the guild or null, `ON DELETE SET NULL` so a closed guild leaves it without a lord; read again every 10 s). Online members of the holder get the title `castleLord` (goal kind `castle`, handed out like Pioneer, aura 34).
+- **The tribute.** `castle:tribute` at the Herald (NPC kind `castle`): members of the holding guild, once a day (`tributeDay`, table `tributes`), `TRIBUTE` (gold, Mithril, a Star Crystal, White Potions, sometimes more, rarely a card) if 4 bag slots are free (`Combat.giveTribute`).
 
 ## Gattchaa shop data
 

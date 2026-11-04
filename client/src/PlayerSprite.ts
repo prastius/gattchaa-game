@@ -5,7 +5,7 @@ import { splitAppearance } from "../../shared/items";
 import { FRAME, SHEET_COLS, SHEET_H, SIT_COL, WALK_COLS, composeCharacter, sitDrop } from "./character";
 import { ORB, SPARK } from "./world/fx";
 import { AURA_LEGENDARY } from "../../shared/items";
-import { AURA_CARD_MASTER, AURA_GIANTSLAYER, AURA_KINGSLAYER, AURA_PIONEER } from "../../shared/titles";
+import { AURA_CARD_MASTER, AURA_CASTLE_LORD, AURA_GIANTSLAYER, AURA_KINGSLAYER, AURA_PIONEER } from "../../shared/titles";
 import { emblemOf } from "../../shared/guild";
 
 /** The name colour of someone in your party. */
@@ -100,6 +100,7 @@ const AURAS: Record<number, AuraStyle> = {
   [AURA_CARD_MASTER]: { tint: 0xff7ad9, double: true, column: true, motes: 70, colors: [0xff7ad9, 0xc88bff, 0xffffff] },
   [AURA_PIONEER]: { tint: 0xbff6ff, double: true, column: true, ripple: true, motes: 45, colors: [0xff7a7a, 0xffd27a, 0x7ddb6e, 0x5cb2ff, 0xc88bff] },
   [AURA_GIANTSLAYER]: { tint: 0x8fe3ff, double: true, ripple: true, motes: 70, colors: [0x8fe3ff, 0xffffff, 0x5cb2ff] },
+  [AURA_CASTLE_LORD]: { tint: 0xb48cff, double: true, column: true, ripple: true, motes: 60, colors: [0xffd24a, 0xb48cff, 0xffffff] },
 };
 /** Above the night tint (with the lamp glows), so auras light up the dark. */
 const NIGHT_GLOW_DEPTH = 1e6 - 9;

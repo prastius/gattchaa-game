@@ -9,6 +9,7 @@
 // be clicked to attack, the red names and the warnings).
 
 import { fieldAt } from "./rpg";
+import { inCastle } from "./town";
 
 /** Players below this level can't fight other players, or be fought, even in the Wildlands. */
 export const PVP_MIN_LEVEL = 20;
@@ -40,12 +41,17 @@ export interface PvpSide {
   guild?: string;
 }
 
-/** Why `a` can't attack `b` right now ("" if they can). */
-export function pvpBlock(a: PvpSide, b: PvpSide): string {
+/**
+ * Why `a` can't attack `b` right now ("" if they can). `siege`: Crownhold is
+ * under siege, and inside its walls guild members fight any other guild's,
+ * at any level, without becoming Outlaws (see shared/siege.ts).
+ */
+export function pvpBlock(a: PvpSide, b: PvpSide, siege = false): string {
   if (a.dead || b.dead) return "Nobody to fight";
   if (a.duel || b.duel) return a.duel ? "Finish your duel first" : "They're in a duel";
   if (a.party && a.party === b.party) return "They're in your party";
   if (a.guild && a.guild === b.guild) return "They're in your guild";
+  if (siege && inCastle(a.x, a.y) && inCastle(b.x, b.y)) return a.guild && b.guild ? "" : "Only guilds fight in the siege";
   if (!inPvpZone(a.x, a.y)) return "Players can only fight in the Wildlands";
   if (!inPvpZone(b.x, b.y)) return "They're outside the Wildlands";
   if (a.lv < PVP_MIN_LEVEL) return `You can fight players from level ${PVP_MIN_LEVEL}`;

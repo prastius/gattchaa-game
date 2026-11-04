@@ -12,8 +12,11 @@ import {
   FROSTFELL_ISLE,
   RAVENMOOR_ISLE,
   PETALFALL_ISLE,
+  CASTLE_ISLE,
   FROST_LAIR,
   WARLORD_CAMP,
+  CASTLE,
+  CASTLE_CAMP,
   RUINS,
   Floor,
   PIERS,
@@ -173,10 +176,10 @@ export class World {
     const dy = (vy - MAIN_CY) / MAIN_CY;
     const dist = Math.sqrt(dx * dx + dy * dy);
     const e = fbm(vx / 70, vy / 70, this.seed, 5);
-    return Math.max(e * 1.2 - Math.pow(dist, 3.5) * 0.85 + 0.14, this.isleElevation(vx, vy, FROSTFELL_ISLE, 4242), this.isleElevation(vx, vy, RAVENMOOR_ISLE, 7373), this.isleElevation(vx, vy, PETALFALL_ISLE, 3131));
+    return Math.max(e * 1.2 - Math.pow(dist, 3.5) * 0.85 + 0.14, this.isleElevation(vx, vy, FROSTFELL_ISLE, 4242), this.isleElevation(vx, vy, RAVENMOOR_ISLE, 7373), this.isleElevation(vx, vy, PETALFALL_ISLE, 3131), this.isleElevation(vx, vy, CASTLE_ISLE, 9494));
   }
 
-  /** An island out at sea (Frostfell, Ravenmoor, Petalfall): its own hills, falling away to the shore. */
+  /** An island out at sea (Frostfell, Ravenmoor, Petalfall, Crownhold): its own hills, falling away to the shore. */
   private isleElevation(vx: number, vy: number, isle: { cx: number; cy: number; rx: number; ry: number }, salt: number): number {
     const { cx, cy, rx, ry } = isle;
     const d = Math.hypot((vx - cx) / rx, (vy - cy) / ry);
@@ -360,7 +363,7 @@ export class World {
 
   /** Trees and rocks stay out of town, the Blacksmith's yard, the bosses' camps, the piers and off the roads. */
   private isReserved(tx: number, ty: number): boolean {
-    if (inRect(TOWN_AREA, tx, ty) || inRect(FORGE_YARD, tx, ty) || inRect(ORC_CAMP, tx, ty) || inRect(MINOTAUR_LAIR, tx, ty) || inRect(FROST_LAIR, tx, ty) || inRect(RUINS, tx, ty) || inRect(WARLORD_CAMP, tx, ty)) return true;
+    if (inRect(TOWN_AREA, tx, ty) || inRect(FORGE_YARD, tx, ty) || inRect(ORC_CAMP, tx, ty) || inRect(MINOTAUR_LAIR, tx, ty) || inRect(FROST_LAIR, tx, ty) || inRect(RUINS, tx, ty) || inRect(WARLORD_CAMP, tx, ty) || inRect(CASTLE, tx, ty) || inRect(CASTLE_CAMP, tx, ty)) return true;
     if (Object.values(PIERS).some((p) => tx >= p.x - 3 && ty >= p.y - 3 && tx < p.x + p.w + 3 && ty < p.y + p.h + 3)) return true;
     if (tx < INTERIOR_ZONE.x + INTERIOR_ZONE.w + 2 && ty < INTERIOR_ZONE.y + INTERIOR_ZONE.h + 2) return true;
     return ROADS.some((r) => tx >= r.x - 2 && ty >= r.y - 2 && tx < r.x + r.w + 1 && ty < r.y + r.h + 1);

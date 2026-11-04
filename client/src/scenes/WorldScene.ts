@@ -20,7 +20,9 @@ import { CLASSES, JOB_LEVEL, aClass, isClassId, isMonsterId, type ClassId } from
 import { SKILLS, type SkillId } from "../../../shared/skills";
 import { ITEMS, PICKUP_RANGE, RARITY, appearanceKey, cleanUpgrade, isItemId, parseCards } from "../../../shared/items";
 import { NPCS, type NpcDef } from "../../../shared/npcs";
-import { DOORS, GLOOM, INTERIOR_ZONE, PROPS, RUINS, TOWN_AREA, biomeAt, inRect } from "../../../shared/town";
+import { CASTLE, DOORS, GLOOM, INTERIOR_ZONE, PROPS, RUINS, TOWN_AREA, biomeAt, inCastle, inRect } from "../../../shared/town";
+import { CASTLE_NAME } from "../../../shared/siege";
+import { emblemOf } from "../../../shared/guild";
 import { CharacterTextures, PlayerSprite } from "../PlayerSprite";
 import { MonsterSprite } from "../MonsterSprite";
 import { DropSprite } from "../DropSprite";
@@ -321,7 +323,7 @@ export class WorldScene extends Phaser.Scene {
     black.destroy();
     // Every stone-structure tile the town and the palace hall use, so the atlas can compose them up front.
     const structs: string[] = [];
-    for (const area of [TOWN_AREA, INTERIOR_ZONE, RUINS]) {
+    for (const area of [TOWN_AREA, INTERIOR_ZONE, RUINS, CASTLE]) {
       for (let ty = area.y; ty < area.y + area.h; ty++) {
         for (let tx = area.x; tx < area.x + area.w; tx++) {
           const k = structKey(this.world, tx, ty);
@@ -738,6 +740,7 @@ export class WorldScene extends Phaser.Scene {
     this.clock.update(dt, starved);
 
     this.updateIndoors();
+    this.updateCastle();
     this.daylight.update(time, this.indoors);
     PlayerSprite.nightLight = this.daylight.lamps;
     this.critters.update(time, dt, this.cameras.main.worldView, this.daylight.night, this.indoors);
@@ -865,7 +868,10 @@ export class WorldScene extends Phaser.Scene {
     if (len > 0) {
       self.sitting = false; // walking gets you up (the server does the same)
       const step = (PLAYER_SPEED * dt) / 1000;
-      const next = this.world.move(self.x, self.y, (dx / len) * step, (dy / len) * step);
+      let next = this.world.move(self.x, self.y, (dx / len) * step, (dy / len) * step);
+      // During a siege only guild members go into the castle (the server says so too).
+      const myGuild = this.entities.get(this.room.sessionId)?.state.guild;
+      if (this.castleState.siege && !myGuild && inCastle(next.x, next.y) && !inCastle(self.x, self.y)) next = { x: self.x, y: self.y };
       moving = next.x !== self.x || next.y !== self.y;
       self.setPosition(next.x, next.y);
       // Face the dominant input direction even when blocked.
@@ -932,7 +938,7 @@ export class WorldScene extends Phaser.Scene {
   private pvpWhy(id: string): string {
     const me = this.entities.get(this.room.sessionId)?.state;
     const them = id !== this.room.sessionId ? this.entities.get(id)?.state : undefined;
-    return me && them ? pvpBlock(sideOf(me), sideOf(them)) : "Nobody to fight";
+    return me && them ? pvpBlock(sideOf(me), sideOf(them), this.castleState.siege) : "Nobody to fight";
   }
 
   /** Clicking them attacks at once: you may, and it costs nothing more (they're an Outlaw, you already are, or you're already fighting them). */
@@ -940,7 +946,10 @@ export class WorldScene extends Phaser.Scene {
     if (id === this.duel.opponent) return true;
     if (this.pvpWhy(id)) return false;
     const me = this.entities.get(this.room.sessionId)?.state;
-    return id === this.target || Boolean(this.entities.get(id)?.state.outlaw) || Boolean(me?.outlaw);
+    const them = this.entities.get(id)?.state;
+    // In a siege, inside the walls, any other guild's member is fair game: one click.
+    const siege = this.castleState.siege && Boolean(me && them && inCastle(me.x, me.y) && inCastle(them.x, them.y));
+    return siege || id === this.target || Boolean(them?.outlaw) || Boolean(me?.outlaw);
   }
 
   /** Crossing into the Wildlands (or back out): a banner for a few seconds, and a line in the chat. */
@@ -1521,6 +1530,36 @@ export class WorldScene extends Phaser.Scene {
         return;
       }
     }
+  }
+
+  /** Crownhold, as the room's state has it. */
+  private get castleState() {
+    const s = this.room.state as { castle?: string; castleEmblem?: number; siege?: boolean; siegeEnds?: number };
+    return { guild: s.castle ?? "", emblem: s.castleEmblem ?? 0, siege: Boolean(s.siege), ends: s.siegeEnds ?? 0 };
+  }
+
+  /** The holder's banners over the walls, and the siege bar (with the time left) while a siege is on. */
+  private updateCastle() {
+    const c = this.castleState;
+    this.town.setCastle(c.guild, c.emblem);
+    const bar = document.getElementById("siege-bar")!;
+    bar.hidden = !c.siege;
+    if (!c.siege) return;
+    const s = Math.max(0, Math.ceil((c.ends - Date.now()) / 1000));
+    const key = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}|${c.guild}|${c.emblem}`;
+    if (bar.dataset.key === key) return;
+    bar.dataset.key = key;
+    const head = document.createElement("b");
+    head.textContent = `⚔ Siege of ${CASTLE_NAME} · ${key.split("|")[0]} left`;
+    const who = document.createElement("span");
+    if (c.guild) {
+      const { symbol, color } = emblemOf(c.emblem);
+      const g = document.createElement("b");
+      g.textContent = `${symbol} ${c.guild}`;
+      g.style.color = color;
+      who.append("Held by ", g);
+    } else who.append("Nobody holds it yet");
+    bar.replaceChildren(head, who);
   }
 
   /** The skills, titles and guild windows share a corner: opening one closes the others. */

@@ -66,6 +66,9 @@ import { Combat } from "./Combat";
 import { Drops } from "./Drops";
 import { Parties } from "./Parties";
 import { Guilds } from "./Guilds";
+import { Siege } from "./Siege";
+import { CASTLE_CAMP } from "../../../shared/town";
+import { CRYSTAL, campSpot, type TributeResult } from "../../../shared/siege";
 import {
   GUILD_FOUND_GOLD,
   isGuildRank,
@@ -170,6 +173,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
   private drops!: Drops;
   private parties!: Parties;
   private guilds!: Guilds;
+  private siege!: Siege;
   /** Fight events waiting to go out, per session; sent once per tick. */
   private fx = new Map<string, FxEvent[]>();
   private stopAnnouncements?: () => void;
@@ -264,6 +268,9 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     "guild:get": (client: Client) => {
       if (this.itemOk(client)) this.guilds.refresh(client.sessionId);
     },
+    "castle:tribute": (client: Client, msg: { npc?: string }) => {
+      if (this.itemOk(client) && this.npcNear(client, msg?.npc, "castle")) client.send("castle:tribute", this.siege.tribute(client.sessionId) satisfies TributeResult);
+    },
     "arena:board": (client: Client, msg: { npc?: string }) => {
       if (!this.itemOk(client) || !this.npcNear(client, msg?.npc, "arena")) return;
       const account = this.meta.get(client.sessionId)?.account;
@@ -352,6 +359,8 @@ export class WorldRoom extends Room<{ state: WorldState }> {
         if (name && lv % 10 === 0) this.system(`${name} reached level ${lv}!`);
       },
       boss: (def, event, field, by) => {
+        // Crownhold's crystal has its own news (the siege tells it).
+        if (def.id === CRYSTAL) return;
         if (event === "rise") return this.system(`👑 The ${def.name} has risen in the ${field}!`);
         const name = by && this.state.players.get(by)?.name;
         this.system(name ? `🏆 ${name} defeated the ${def.name}!` : `🏆 The ${def.name} has fallen!`);
@@ -385,6 +394,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
         const name = this.state.players.get(id)?.name;
         if (name && (title.tier === "epic" || title.tier === "legendary")) this.system(`🏅 ${name} earned the title "${title.name}"!`);
       },
+      crystal: (by) => this.siege.captured(by),
       reachedCap: (id, cap) => {
         // Pioneers are counted per account, so only signed-in players can be one.
         const account = this.meta.get(id)?.account;
@@ -393,12 +403,22 @@ export class WorldRoom extends Room<{ state: WorldState }> {
         if (rank) this.combat.grantTitle(id, "pioneer");
       },
     });
+    this.siege = new Siege(this.state, this.state.players, this.combat, {
+      news: (text) => this.system(text),
+      notice: (id, text) => this.notice(id, text),
+      move: (id, x, y) => {
+        const client = this.clients.getById(id);
+        if (client) this.teleport(client, x, y, Dir.Right);
+      },
+      accountOf: (id) => this.meta.get(id)?.account?.id,
+    });
     this.clock.setInterval(() => {
       this.brain.tick(NPC_TICK_MS);
       this.combat.tick(NPC_TICK_MS);
       this.drops.tick(Date.now());
       this.parties.tick(Date.now());
       this.guilds.tick(Date.now());
+      this.siege.tick(Date.now());
       this.flushFx();
       this.state.siteOnline = feed.online;
     }, NPC_TICK_MS);
@@ -587,7 +607,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       (world.canTravel(x0, y0, x1, y0) && world.canTravel(x1, y0, x1, y1)) ||
       (world.canTravel(x0, y0, x0, y1) && world.canTravel(x0, y1, x1, y1));
 
-    if (meta.allowance - dist < -BUDGET_DEBT - 2 || !pathOk) {
+    if (meta.allowance - dist < -BUDGET_DEBT - 2 || !pathOk || !this.siege.mayEnter(client.sessionId, x0, y0, x1, y1)) {
       client.send("correct", { x: x0, y: y0 } satisfies CorrectMessage);
       return;
     }
@@ -652,7 +672,8 @@ export class WorldRoom extends Room<{ state: WorldState }> {
   /** Knocked out: back to town on your feet. */
   private handleRevive(client: Client) {
     if (!this.combat.revive(client.sessionId)) return;
-    const spawn = world.findSpawn();
+    // Beaten in a siege: up again at the camp outside Crownhold's gate, not in town.
+    const spawn = this.combat.wokeInSiege(client.sessionId) ? campSpot(CASTLE_CAMP, Math.floor(Math.random() * 32)) : world.findSpawn();
     this.teleport(client, spawn.x, spawn.y, Dir.Down);
   }
 
@@ -1120,6 +1141,19 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     if (process.env.NODE_ENV === "production") return reply("Unknown command.");
     const [name, arg] = text.slice(1).split(" ");
     const n = Number(arg);
+    if (name === "tp") {
+      // "/tp 397 80": to a tile (testing far-off places, like Crownhold).
+      const [tx, ty] = text.split(" ").slice(1, 3).map(Number);
+      const x = tx * 32 + 16;
+      const y = ty * 32 + 16;
+      if (!Number.isFinite(x) || !Number.isFinite(y) || !world.canStand(x, y)) return reply("Test command: /tp <tile x> <tile y>, somewhere you can stand.");
+      this.teleport(client, x, y, Dir.Down);
+      return reply(`Test command: to ${tx}, ${ty}.`);
+    }
+    if (name === "siege" && ["on", "off", "auto"].includes(arg)) {
+      this.siege.force(arg === "auto" ? undefined : arg === "on", Date.now());
+      return reply(`Test command: siege ${arg === "auto" ? "back on the schedule" : arg}.`);
+    }
     if (name === "level" && Number.isFinite(n)) {
       const lv = Math.min(LEVEL_CAP, Math.max(1, Math.floor(n)));
       this.combat.cheatLevel(client.sessionId, lv);
@@ -1146,7 +1180,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       return reply(`Test command: job set to ${CLASSES[arg].name} (jobs need level 10).`);
     }
     reply(
-      `Test commands: /level <1-${LEVEL_CAP}>, /item <id> [count or +upgrade], /gold <amount>, /job <novice|knight|mage|archer|lordKnight|wizard|hunter>, /title <id>. Item ids: ${Object.keys(ITEMS).join(", ")}. Title ids: ${Object.keys(TITLES).join(", ")}`,
+      `Test commands: /level <1-${LEVEL_CAP}>, /item <id> [count or +upgrade], /gold <amount>, /siege <on|off|auto>, /tp <x> <y>, /job <novice|knight|mage|archer|lordKnight|wizard|hunter>, /title <id>. Item ids: ${Object.keys(ITEMS).join(", ")}. Title ids: ${Object.keys(TITLES).join(", ")}`,
     );
   }
 

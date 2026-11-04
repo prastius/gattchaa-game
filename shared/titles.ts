@@ -79,10 +79,12 @@ export type TitleGoal =
   /** Beat `n` players in the Wildlands (or `n` Outlaws). */
   | { kind: "pvp"; n: number; outlaws?: true }
   /** One of the first PIONEERS players to reach the level cap. */
-  | { kind: "pioneer" };
+  | { kind: "pioneer" }
+  /** In the guild holding Crownhold when a siege ends (handed out by the siege, like Pioneer). */
+  | { kind: "castle" };
 
-export type TitleGroup = "Levels" | "Hunting" | "Collecting" | "The forge" | "The Arena" | "The Wildlands" | "Town";
-export const TITLE_GROUPS: TitleGroup[] = ["Levels", "Hunting", "Collecting", "The forge", "The Arena", "The Wildlands", "Town"];
+export type TitleGroup = "Levels" | "Hunting" | "Collecting" | "The forge" | "The Arena" | "The Wildlands" | "Guild wars" | "Town";
+export const TITLE_GROUPS: TitleGroup[] = ["Levels", "Hunting", "Collecting", "The forge", "The Arena", "The Wildlands", "Guild wars", "Town"];
 
 export interface TitleDef {
   id: string;
@@ -107,6 +109,7 @@ export const AURA_KINGSLAYER = 30;
 export const AURA_CARD_MASTER = 31;
 export const AURA_PIONEER = 32;
 export const AURA_GIANTSLAYER = 33;
+export const AURA_CASTLE_LORD = 34;
 
 const def = <T extends Record<string, Omit<TitleDef, "id">>>(titles: T) =>
   Object.fromEntries(Object.entries(titles).map(([id, t]) => [id, { id, ...t }])) as { [K in keyof T]: TitleDef & { id: K } };
@@ -164,6 +167,11 @@ export const TITLES = def({
   // ------------------------------------------------------------ the wildlands (open PVP)
   raider: { name: "Raider", tier: "uncommon", group: "The Wildlands", goal: { kind: "pvp", n: 10 }, how: "Beat 10 players in the Wildlands." },
   bountyHunter: { name: "Bounty Hunter", tier: "rare", group: "The Wildlands", goal: { kind: "pvp", n: 25, outlaws: true }, how: "Beat 25 Outlaws in the Wildlands." },
+  siegebreaker: { name: "Siegebreaker", tier: "rare", group: "Guild wars", goal: { kind: "kills", n: 5, monster: "crystal" }, how: "Help break Crownhold's crystal 5 times." },
+  castleLord: {
+    name: "Castle Lord", tier: "epic", group: "Guild wars", goal: { kind: "castle" }, aura: AURA_CASTLE_LORD,
+    how: "Be in the guild holding Crownhold when a siege ends (and in town at the time).",
+  },
   reaper: { name: "Reaper", tier: "epic", group: "The Wildlands", goal: { kind: "pvp", n: 250 }, how: "Beat 250 players in the Wildlands." },
 
   // ------------------------------------------------------------ town
@@ -207,6 +215,7 @@ export function titleProgress(t: TitleDef, d: Deeds, level: number): [number, nu
       return [Math.min(n, g.n), g.n];
     }
     case "pioneer":
+    case "castle":
       return [0, 1];
   }
 }
@@ -214,7 +223,7 @@ export function titleProgress(t: TitleDef, d: Deeds, level: number): [number, nu
 /** Titles whose goal is met but that aren't in `earned` yet (never Pioneer, which is handed out separately). */
 export function newTitles(d: Deeds, level: number, earned: readonly TitleId[]): TitleId[] {
   return (Object.values(TITLES) as (TitleDef & { id: TitleId })[])
-    .filter((t) => t.goal.kind !== "pioneer" && !earned.includes(t.id))
+    .filter((t) => t.goal.kind !== "pioneer" && t.goal.kind !== "castle" && !earned.includes(t.id))
     .filter((t) => {
       const [done, need] = titleProgress(t, d, level);
       return done >= need;

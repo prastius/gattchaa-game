@@ -6,7 +6,7 @@ The game has three parts:
 
 1. **Hanging out.** The town is a meeting place. Chat, sit by the fountain, found or join a guild, visit the Gattchaa staff, and run your own shop in the Market Square: trade gear, ingots and monster cards for gold, and show off your real cards.
 2. **Adventure.** Outside the walls, monsters wait in fields sorted by level. Level up, choose a job, find gear and monster cards, and upgrade your equipment.
-3. **Player vs player.** Challenge anyone to a duel, climb the ranking in the Arena, or fight anyone (and be fought) in the Wildlands, the open PVP field north of town.
+3. **Player vs player.** Challenge anyone to a duel, climb the ranking in the Arena, fight anyone (and be fought) in the Wildlands, the open PVP field north of town, or fight with your guild for Crownhold, the guild castle, twice a week.
 
 > **One rule about money.** Real cards are bought and paid for only on gattchaaoripa.com. In-game gold buys in-game things (potions, gear, upgrades, other players' loot) and never real cards.
 
@@ -62,7 +62,7 @@ Gattchaa Town is a walled royal town in the middle of an island, with gates to t
 - **The Market Square** (by the south gate) is where players run their own shops.
 - **The lakeside park** runs along the west wall, with a pond, benches and a campfire.
 - **The Collectors' Café** is in the east quarter, with **the Arena** behind it: a ring of sand where players duel, with benches for the crowd.
-- **The gates** lead to the monster fields: south to the South Meadow, east to Dusk Hollow, west to the Orc Woods. From the west and east roads, paths run north along the town walls to the Wildlands. Off the south road, a path runs east to the meadow's south-east point, where a ferry sails to the snowy island of Frostfell, and on east to the meadow's east shore, where a ship sails to the spring island of Petalfall. And the east road runs on past the Pumpking to a boat for the autumn island of Ravenmoor.
+- **The gates** lead to the monster fields: south to the South Meadow, east to Dusk Hollow, west to the Orc Woods. From the west and east roads, paths run north along the town walls to the Wildlands, and beyond them a long bridge crosses the sea to Crownhold, the guild castle. Off the south road, a path runs east to the meadow's south-east point, where a ferry sails to the snowy island of Frostfell, and on east to the meadow's east shore, where a ship sails to the spring island of Petalfall. And the east road runs on past the Pumpking to a boat for the autumn island of Ravenmoor.
 
 The town is always safe: monsters never come in, and nobody can attack anyone inside the walls, except in a duel both players agreed to.
 
@@ -107,6 +107,7 @@ The town is always safe: monsters never come in, and nobody can attack anyone in
 | Hilda | Blacksmith | Outside the south gate, west of Rowan | Upgrades gear from +0 to +10 |
 | Magnus | Arena Master | By the Arena, east of the Market Square | Explains duels and keeps the arena ranking |
 | Leopold | Guild Registrar | On the main street just east of the fountain plaza, by the GUILDS signpost | Founds guilds |
+| Aldric | Castle Herald | At the camp outside Crownhold's gate | Explains the sieges, and pays the castle's guild its daily tribute |
 
 ## 4. Player shops
 
@@ -817,6 +818,7 @@ North of town, past a dashed red line with little red flags, lie **the Wildlands
 | Duelists | Two players in a duel only fight each other; nobody else can join in |
 | Parties | Members of the same party can't attack each other (a duel between them is still fine) |
 | Guilds | Members of the same guild can't attack each other either |
+| Crownhold | During a siege, inside the castle's walls, guild members fight every other guild's, at any level, without becoming Outlaws (see "Guild wars") |
 
 ### Outlaws and bounties
 
@@ -913,7 +915,47 @@ Press **G** (or the shield button) to open it:
 - **No fighting each other:** in the Wildlands, members of the same guild can't attack each other (a duel is still fine).
 - **Guilds and parties are separate:** you can hunt in a party with anyone, in your guild or not.
 
-## 14. Titles
+## 14. Guild wars: Crownhold
+
+Ragnarok's War of Emperium, Gattchaa style. **Crownhold**, the guild castle, stands on its own island in the sea north-east of the Wildlands. Twice a week it's under siege, and the guild holding it when the siege ends keeps it until the next one.
+
+### Getting there
+
+Take the path north from the east road into the **Wildlands** (where other players can attack you), then the road east from the top of the path, north past the Vampires' high ground and east again to the sea. A signpost marks the start of the **long bridge**: about 60 tiles of planks over the sea to Crownhold's island. **Aldric the Castle Herald** waits at the camp outside the castle gate.
+
+### When
+
+Every **Wednesday and Saturday, 8 to 9 pm** Batam time. The whole town hears when a siege begins and ends. While one is on, a bar at the top of the screen shows the time left and who holds the castle. The rest of the week Crownhold is open to everyone, and nobody can fight there.
+
+### The castle
+
+- An **outer wall** with its gate facing west, towards the bridge, and a tower at each corner and either side of the gate.
+- Inside, a **keep** with its own walls. Its gate faces **east**, away from the castle gate, so attackers have to go all the way round it.
+- In the middle of the keep, behind a red carpet and in front of the lord's seat, stands **the crystal**: 60,000 HP, DEF 50. It never moves or fights back, and it heals slowly if it's left alone.
+- The holding guild's colour and emblem fly on every tower (plain grey flags while nobody holds it).
+
+### The rules of a siege
+
+| What | How it works |
+| --- | --- |
+| Who goes in | Only **guild members** may go inside the walls. Anyone else inside when a siege begins is put outside the gate, and can't walk back in until it's over |
+| Fighting | Inside the walls, every guild fights every other: click a member of another guild to attack them. **Any level**, and **nobody becomes an Outlaw**. Party mates and guild mates never fight each other |
+| Falling | Costs **nothing**: no EXP, no gold. Get up, and you're at the camp outside the gate, ready to walk back in |
+| The crystal | Only members of a guild that **doesn't** hold the castle can strike it, and only during a siege |
+| Breaking it | The guild of whoever lands the **last hit** takes the castle at once, and the whole town hears. Everyone inside who isn't in that guild is thrown out to the camp. The crystal is whole again **10 seconds** later: now the new holders must defend it |
+| The end | Whoever holds Crownhold when the hour is up **keeps it** until the next siege. Their members who are in town at that moment become **Castle Lords** |
+
+Three level-70 Lord Knights break the crystal in a little over a minute when nobody stops them, so the holders need to guard the keep's gate.
+
+### Holding the castle
+
+- **The tribute.** Every member of the holding guild can collect a tribute from **Aldric** once a day (from midnight Batam time): **3,000 to 6,000 gold, 2 Mithril Ingots, a Star Crystal and 10 White Potions**, sometimes a second Star Crystal (1 in 4), and very rarely a monster card (3%). Keep **4 bag slots** free for it.
+- **The title.** Castle Lord ✦ (epic), with its own aura: a violet ring with a column of light and gold and violet sparks.
+- **The banners.** Your guild's emblem over every tower, for everyone crossing the bridge to see.
+
+If the holding guild closes, Crownhold has no lord until the next siege.
+
+## 15. Titles
 
 Titles are earned by doing things in the game. Open your titles with **T** (or the medal button) to see every title, the ones you've earned, and how far along you are with the rest. Pick one to **show under your name**, in its rarity colour, for everyone to see, or hide it again.
 
@@ -968,6 +1010,9 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 | Raider | Uncommon | Beat 10 players in the Wildlands |
 | Bounty Hunter | Rare | Beat 25 Outlaws in the Wildlands |
 | Reaper | Epic | Beat 250 players in the Wildlands |
+| **Guild wars** | | |
+| Siegebreaker | Rare | Help break Crownhold's crystal 5 times |
+| Castle Lord ✦ | Epic | Be in the guild holding Crownhold when a siege ends (and in town at the time) |
 | **Town** | | |
 | Shopkeeper | Uncommon | Open your own shop in the Market Square |
 | Merchant | Rare | Earn 100,000 gold selling things in your shop |
@@ -981,10 +1026,11 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 | Giantslayer | An ice-blue ring with ripples and frosty white sparks |
 | Card Master | A pink ring with a column of light and pink and violet sparks |
 | Pioneer | A pale starlight ring with ripples, a column of light and rainbow sparks |
+| Castle Lord | A violet ring with ripples, a column of light and gold and violet sparks |
 
 Pioneer places are counted per level cap: when the cap goes up, the first 10 players to reach the new cap become Pioneers too.
 
-## 15. Monster reference
+## 16. Monster reference
 
 | Monster | Lv | HP | ATK | DEF | EXP | Gold | Notable drops |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -1031,7 +1077,7 @@ Pioneer places are counted per level cap: when the cap goes up, the first 10 pla
 
 Every monster also drops its own card (see Monster cards) and often potions.
 
-## 16. A good path for new players
+## 17. A good path for new players
 
 1. **Level 1–4:** Slimes by the road, south of town. Buy a few Red Potions and a Dagger or Short Sword from Bram.
 2. **Level 4–7:** Grass Snakes in the west grass. Wear what you find.
@@ -1052,13 +1098,13 @@ Every monster also drops its own card (see Monster cards) and often potions.
 17. **Level 60–65:** Take the path east off the south road, straight on past Edda's pier, to **Marlow**'s ship on the meadow's east shore, and sail to **Petalfall** (1,200 gold). Moon Hares by the pier only fight back but dodge plain attacks: use your skills. Then the Fox Spirits in the north-west woods (close in fast, they throw fire) and the Crow Blades in the middle.
 18. **Level 65–70:** Phantom Swordsmen in the north-east, Red Ogres in the south (they only fight back, but they hit very hard). At 70, bring a party of four up the road to the **Ogre Warlord**'s camp. **Willow** sails you home for free.
 
-Along the way, open your titles (T) now and then: you'll have earned a few. And from the Orc Woods on, hunt in a party: the bosses are made for four. From level 20, find a guild to join (or found your own with Leopold), so there's always someone to hunt with.
+Along the way, open your titles (T) now and then: you'll have earned a few. And from the Orc Woods on, hunt in a party: the bosses are made for four. From level 20, find a guild to join (or found your own with Leopold), so there's always someone to hunt with, and on Wednesday and Saturday evenings, march with it over the long bridge to fight for Crownhold.
 
 Sell your monster loot to Bram whenever your bag fills up, and sit down (X) to heal faster between fights. Spare gear, ingots and cards are worth more to other players: open a shop in the Market Square, or look in theirs for what you need.
 
-## 17. Coming next
+## 18. Coming next
 
-- **Guild wars:** guilds fighting over a castle, like Ragnarok's War of Emperium.
+- **More for the guild wars:** more castles, and guardians the holders can hire to defend them.
 - **Raising the level cap** past 70, with new fields above it.
 
 ---

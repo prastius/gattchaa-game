@@ -129,6 +129,13 @@ export const WorldState = schema(
     online: t.uint16(),
     /** People on gattchaaoripa.com right now. */
     siteOnline: t.uint16(),
+    /** Crownhold, the guild castle (see shared/siege.ts and Siege.ts): the guild holding it ("" = nobody) and its emblem… */
+    castle: t.string().default(""),
+    castleEmblem: t.uint8().default(0),
+    /** …a siege on now (until `siegeEnds`), or the next one's start (ms since 1970). */
+    siege: t.boolean().default(false),
+    siegeEnds: t.float64().default(0),
+    siegeNext: t.float64().default(0),
   },
   "WorldState",
 );

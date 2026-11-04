@@ -8,7 +8,7 @@ import { MARKET_WANDER, PARK_WANDER, STORE_WANDER, TILE, WANDER_AREA, type Rect 
 import type { ShopProduct } from "./gattchaa";
 import { Dir } from "./protocol";
 
-export type NpcKind = "guide" | "shop" | "kuji" | "rooms" | "market" | "grading" | "pickup" | "crier" | "keeper" | "outfitter" | "jobs" | "smith" | "arena" | "ferry" | "bounty" | "guild" | "local";
+export type NpcKind = "guide" | "shop" | "kuji" | "rooms" | "market" | "grading" | "pickup" | "crier" | "keeper" | "outfitter" | "jobs" | "smith" | "arena" | "ferry" | "bounty" | "guild" | "castle" | "local";
 
 export interface NpcDef {
   id: string;
@@ -493,6 +493,19 @@ export const NPCS: NpcDef[] = [
     ],
   },
   {
+    // At the camp outside Crownhold's gate, where the road from the long bridge arrives.
+    id: "herald",
+    name: "Aldric",
+    title: "Castle Herald",
+    kind: "castle",
+    look: look({ body: "male", hair: "messy", hairColor: "dark_brown", beard: "trimmed", skin: "light", top: "longsleeve", topColor: "navy", bottom: "longPants", bottomColor: "black", shoes: "boots", shoesColor: "brown", hat: "hood", hatColor: "navy" }),
+    ...at(364.5, 78.6),
+    dir: Dir.Down,
+    greeting:
+      "This is Crownhold, the guild castle. Every Wednesday and Saturday, 8 to 9 pm Batam time, it's under siege: guild members fight their way through the gate, round the keep and break the crystal at its heart, and the castle is their guild's. Whoever holds it when the hour is up keeps it until the next siege. Inside the walls, during a siege, every guild fights every other, and nobody loses anything for falling. The guild holding the castle collects a tribute from me every day.",
+    chatter: ["Sieges every Wednesday and Saturday, 8 pm!", "Break the crystal and the castle is yours!", "Only guild members may enter during a siege.", "The castle's guild collects a tribute every day."],
+  },
+  {
     // On the main street just east of the fountain plaza, by the GUILDS signpost.
     id: "registrar",
     name: "Leopold",
@@ -503,7 +516,13 @@ export const NPCS: NpcDef[] = [
     dir: Dir.Down,
     greeting:
       "A guild of your own? Reach level 20, bring 10,000 gold, and choose a name and an emblem. Your guild's name and emblem show over every member's head, you get your own chat (type /g), and guild mates never fight each other in the Wildlands. The founder leads: they choose officers, and together they can invite up to 30 members.",
-    chatter: ["Found a guild! Level 20 and 10,000 gold.", "A guild is for good: it's still there tomorrow.", "Guild mates never fight in the Wildlands.", "Type /g to talk to your guild."],
+    chatter: [
+      "Found a guild! Level 20 and 10,000 gold.",
+      "A guild is for good: it's still there tomorrow.",
+      "Guild mates never fight in the Wildlands.",
+      "Type /g to talk to your guild.",
+      "Sieges at Crownhold, Wednesdays and Saturdays at 8!",
+    ],
   },
   {
     // At the Arena's west side, facing the ring.

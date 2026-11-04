@@ -424,6 +424,7 @@ const CARD_SKY: Record<MonsterId, [string, string]> = {
   phantom: ["#ece4f6", "#7a6a9a"],
   redOgre: ["#ffe0d8", "#c0503e"],
   ogreWarlord: ["#ffe8ee", "#d86a8a"],
+  crystal: ["#e8f8ff", "#6fb8e8"],
 };
 
 /** A monster sheet recoloured by multiplying with `tint` (the Wraith is a darker Ghost). */
@@ -444,7 +445,13 @@ export function tintSheet(img: HTMLImageElement | HTMLCanvasElement, tint: numbe
 /** A monster card: gold frame, the monster facing you, and a name plate (Ragnarok style). */
 async function drawCard(ctx: CanvasRenderingContext2D, monster: MonsterId) {
   const art = MONSTER_ART[monster];
-  const sheet = art.parts ? await composeParts(art.parts) : art.tint ? tintSheet(await loadImage(`monsters/${art.file}`), art.tint) : await loadImage(`monsters/${art.file}`);
+  const sheet = art.parts
+    ? await composeParts(art.parts)
+    : art.icon
+      ? await loadImage(`items/${art.icon}.png`)
+      : art.tint
+        ? tintSheet(await loadImage(`monsters/${art.file}`), art.tint)
+        : await loadImage(`monsters/${art.file}`);
   // Its standing frame, facing down.
   const frame = document.createElement("canvas");
   frame.width = frame.height = art.frame;

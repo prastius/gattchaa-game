@@ -1,4 +1,5 @@
 import { FERRY, NPCS, npcProducts, type NpcDef } from "../../../shared/npcs";
+import { CASTLE_NAME, SIEGE_WHEN } from "../../../shared/siege";
 import {
   GUILD_COLORS,
   GUILD_FOUND_GOLD,
@@ -177,6 +178,8 @@ export class TownDialog {
   openSkills?: () => void;
   /** Opens the guild window (from the Guild Registrar). */
   openGuild?: () => void;
+  /** What the Castle Herald said about your tribute. */
+  private tributeNote?: { ok: boolean; text: string };
   /** What you're filling in on the Registrar's form. */
   private guildForm = { name: "", symbol: 0, color: 0 };
   /** Where the conversation is happening; walking away closes it. */
@@ -216,6 +219,10 @@ export class TownDialog {
     net.onWildBoard.add((b) => {
       this.wild = b;
       if (this.openKind === "bounty") this.render(this.openTarget!, false);
+    });
+    net.onTribute.add((r) => {
+      this.tributeNote = r;
+      if (this.openKind === "castle") this.render(this.openTarget!, false);
     });
     // Founding a guild (or joining one) redraws the Registrar's window.
     net.onGuild.add(() => {
@@ -369,6 +376,9 @@ export class TownDialog {
       case "guild":
         this.registrar(npc);
         break;
+      case "castle":
+        this.herald(npc);
+        break;
       case "keeper":
         this.body.append(this.tabs(npc, [["shops", "Shops"], ["find", "Find an item"]], this.keeperTab, (tab) => (this.keeperTab = tab), this.net.stats?.gold ?? 0));
         if (this.keeperTab === "find") this.marketFind();
@@ -514,6 +524,39 @@ export class TownDialog {
       this.net.ferry(npc.id);
       if (gold >= trip.fare) this.close();
     }, "primary");
+  }
+
+  /** The Castle Herald: who holds Crownhold, when the next siege is, the rules, and the tribute. */
+  private herald(npc: NpcDef) {
+    if (this.renderFresh) this.tributeNote = undefined;
+    const st = this.net.room.state as { castle?: string; castleEmblem?: number; siege?: boolean; siegeEnds?: number; siegeNext?: number };
+    const holder = el("p", "guild-registered");
+    if (st.castle) {
+      const { symbol, color } = emblemOf(st.castleEmblem ?? 0);
+      const name = el("b", "", `${symbol} ${st.castle}`);
+      name.style.color = color;
+      holder.append(name, ` holds ${CASTLE_NAME}.`);
+    } else holder.append(`Nobody holds ${CASTLE_NAME} yet.`);
+    this.body.append(holder);
+    const left = (ms: number) => {
+      const m = Math.max(0, Math.round(ms / 60_000));
+      return m >= 1440 ? `${Math.floor(m / 1440)} d ${Math.floor((m % 1440) / 60)} h` : m >= 60 ? `${Math.floor(m / 60)} h ${m % 60} min` : `${m} min`;
+    };
+    if (st.siege) this.body.append(el("p", "dialog-note siege-now", `⚔ A siege is on now: ${left((st.siegeEnds ?? 0) - Date.now())} left.`));
+    else if (st.siegeNext) this.body.append(el("p", "dialog-note", `The next siege starts in ${left(st.siegeNext - Date.now())} (${SIEGE_WHEN}).`));
+    this.section("How a siege works");
+    const rules = el("ul", "arena-rules");
+    for (const line of [
+      "During a siege only guild members may go inside the walls, and every guild fights every other there, at any level. Party and guild mates never fight each other.",
+      "Fight your way through the west gate and round the keep to its gate on the east side. The crystal stands in the middle of the keep.",
+      "Break the crystal and the castle is your guild's: everyone else inside is thrown out, and the crystal is whole again moments later. Now hold it!",
+      `Whoever holds ${CASTLE_NAME} when the hour is up keeps it until the next siege. Its members who are in town then become Castle Lords.`,
+      "Falling in a siege costs nothing: you get up here at the camp, and walk back in.",
+    ]) rules.append(el("li", "", line));
+    this.body.append(rules);
+    if (this.tributeNote) this.body.append(el("p", this.tributeNote.ok ? "arena-me" : "dialog-note", this.tributeNote.text));
+    if (!this.vending.auth.signedIn) return this.signInButton("Sign in to join a guild and fight for the castle");
+    this.button("Collect today's tribute", `For ${st.castle ? `${st.castle}'s members` : "the castle's guild"}, once a day: gold, ingots and potions`, () => this.net.tribute(npc.id), "primary");
   }
 
   /** The Guild Registrar: your guild if you have one, or the form to found one (a name, an emblem, the fee). */

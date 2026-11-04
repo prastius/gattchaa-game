@@ -210,6 +210,17 @@ const MIGRATIONS = [
      joined_at INTEGER NOT NULL
    );
    CREATE INDEX guild_members_guild ON guild_members (guild_id);`,
+  // v11: guild wars. Who holds each castle (null: nobody, e.g. after its guild closed), and the
+  // day each account last collected its castle's tribute.
+  `CREATE TABLE castles (
+     id TEXT PRIMARY KEY,
+     guild_id INTEGER REFERENCES guilds(id) ON DELETE SET NULL,
+     since INTEGER NOT NULL
+   );
+   CREATE TABLE tributes (
+     account_id INTEGER PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,
+     day INTEGER NOT NULL
+   );`,
 ];
 
 const ACCOUNT_COLS = "id, gattchaa_id AS gattchaaId, display_name AS displayName, name, look";
@@ -510,6 +521,28 @@ export class Db {
 
   setGuildNotice(guildId: number, notice: string) {
     this.db.prepare("UPDATE guilds SET notice = ? WHERE id = ?").run(notice, guildId);
+  }
+
+  /** The guild holding a castle, if any. */
+  castleHolder(castle: string): GuildRow | undefined {
+    return this.db
+      .prepare("SELECT g.id, g.name, g.emblem, g.notice FROM castles c JOIN guilds g ON g.id = c.guild_id WHERE c.id = ?")
+      .get(castle) as GuildRow | undefined;
+  }
+
+  setCastleHolder(castle: string, guildId: number) {
+    this.db
+      .prepare("INSERT INTO castles (id, guild_id, since) VALUES (?, ?, ?) ON CONFLICT(id) DO UPDATE SET guild_id = excluded.guild_id, since = excluded.since")
+      .run(castle, guildId, Date.now());
+  }
+
+  /** The day (see tributeDay in shared/siege.ts) an account last collected its castle's tribute. */
+  tributeDay(accountId: number): number | undefined {
+    return (this.db.prepare("SELECT day FROM tributes WHERE account_id = ?").get(accountId) as { day: number } | undefined)?.day;
+  }
+
+  setTributeDay(accountId: number, day: number) {
+    this.db.prepare("INSERT INTO tributes (account_id, day) VALUES (?, ?) ON CONFLICT(account_id) DO UPDATE SET day = excluded.day").run(accountId, day);
   }
 
   /** The guild is gone (its members with it). */

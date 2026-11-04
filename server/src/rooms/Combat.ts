@@ -68,6 +68,8 @@ import {
 } from "../../../shared/duels";
 import { OUTLAW_MS, PVP_COMBAT_MS, PVP_RECOUNT_MS, bountyOf, pvpBlock, type PvpSide, type WantedRow } from "../../../shared/pvp";
 import { PARTY_LEVEL_GAP, PARTY_SHARE_PX, partyShare } from "../../../shared/party";
+import { CRYSTAL } from "../../../shared/siege";
+import { inCastle } from "../../../shared/town";
 import type { Progress } from "../db";
 import { Monster, type Player } from "./WorldState";
 import { Inventory, type GearAt } from "./Inventory";
@@ -131,6 +133,8 @@ export interface CombatHooks {
   reachedCap(id: string, cap: number): void;
   /** `id` beat another player in the Wildlands, and it counts (`outlaw`: they were one, and paid `bounty`). */
   pvpWin(id: string, outlaw: boolean, bounty: number): void;
+  /** `by` broke Crownhold's crystal (see shared/siege.ts): the castle is their guild's. */
+  crystal(by: string): void;
   /** Someone challenged `to` to a duel. */
   duelAsk(to: string, ev: DuelAskEvent): void;
   /** A duel began (told to each duelist). */
@@ -248,6 +252,11 @@ export class Combat {
   private askedAt = new Map<string, number>();
   /** Outlaws who left the game, by name, and until when: coming back doesn't clear their name. */
   private outlaws = new Map<string, number>();
+  /** Crownhold is under siege (set by the room's Siege), and the guild holding it ("" = nobody). */
+  siege = false;
+  castleGuild = "";
+  /** Beaten in the siege and not up again yet: they get up at the castle's camp. */
+  private siegeDowns = new Set<string>();
   /** "winner>loser" names, and when that last counted towards titles. */
   private beatenAt = new Map<string, number>();
   private nextId = 0;
@@ -335,6 +344,7 @@ export class Combat {
     const by = f.pvpBy && now - f.pvpBy.at < PVP_COMBAT_MS && !f.player.dead ? this.fighters.get(f.pvpBy.id) : undefined;
     if (by && by !== f && !by.player.dead) this.beaten(f, by);
     if (f.outlawUntil > now) this.outlaws.set(f.player.name, f.outlawUntil);
+    this.siegeDowns.delete(id);
     this.asks.delete(id);
     this.askedAt.delete(id);
     for (const [from, ask] of this.asks) if (ask.to === id) this.asks.delete(from);
@@ -361,11 +371,14 @@ export class Combat {
   setTarget(id: string, mobId: string) {
     const f = this.fighters.get(id);
     if (!f || f.player.dead) return;
+    const mob = this.mobs.get(mobId);
+    const why = mob && this.crystalBlock(f, mob);
     if (!mobId) f.target = undefined;
-    else if (this.mobs.has(mobId) || this.opponentId(f) === mobId || this.foe(f, mobId)) f.target = mobId;
+    else if (why) this.fail(f, why);
+    else if (mob || this.opponentId(f) === mobId || this.foe(f, mobId)) f.target = mobId;
     else {
       const g = this.fighters.get(mobId);
-      if (g && g !== f) this.fail(f, pvpBlock(this.side(f), this.side(g)));
+      if (g && g !== f) this.fail(f, pvpBlock(this.side(f), this.side(g), this.siege));
     }
   }
 
@@ -493,6 +506,12 @@ export class Combat {
       return;
     }
     if (now < f.nextAttackAt || inSafeZone(f.pos.x, f.pos.y)) return;
+    const blocked = this.crystalBlock(f, mob);
+    if (blocked) {
+      // The siege ended, or their guild took the castle, while they were swinging.
+      f.target = undefined;
+      return this.fail(f, blocked);
+    }
     const s = f.stats;
     if (dist(f.pos, mob) > reach(s.range, mob.def) + REACH_SLACK) return;
 
@@ -531,13 +550,56 @@ export class Combat {
 
   /** `f` deals damage to a monster (a hit, a skill, or thorns from a card); it may go down. */
   private hurt(mob: Mob, f: Fighter, damage: number, flags: { crit?: 1; thorn?: 1; skill?: SkillId }) {
+    if (this.crystalBlock(f, mob)) return;
     const dealt = Math.min(damage, mob.hp);
     mob.damage.set(f.id, (mob.damage.get(f.id) ?? 0) + dealt);
     if (!flags.thorn) this.drain(f, dealt);
     mob.hp = Math.max(0, mob.hp - damage);
     mob.state.hp = mob.hp;
     this.hooks.emit(mob.x, mob.y, { k: "hit", a: f.id, t: mob.id, d: damage, ...flags });
-    if (mob.hp <= 0) this.defeat(mob);
+    if (mob.hp > 0) return;
+    if (mob.def.id === CRYSTAL) this.hooks.crystal(f.id);
+    this.defeat(mob);
+  }
+
+  /** Why `f` may not strike this monster ("" or undefined: they may). Only Crownhold's crystal says no. */
+  private crystalBlock(f: Fighter, mob: Mob): string {
+    if (mob.def.id !== CRYSTAL) return "";
+    if (!this.siege) return "The crystal can only be struck during a siege";
+    if (!f.player.guild) return "Only guild members can strike the crystal";
+    if (f.player.guild === this.castleGuild) return "Your guild holds the castle: defend the crystal!";
+    return "";
+  }
+
+  /** The siege starts: the crystal is whole again. */
+  mendCrystal() {
+    for (const mob of this.mobs.values()) {
+      if (mob.def.id !== CRYSTAL) continue;
+      mob.hp = mob.def.hp;
+      mob.state.hp = mob.hp;
+      mob.damage.clear();
+      mob.target = undefined;
+    }
+  }
+
+  /** Woke up after being beaten in the siege (once): they get up at the camp outside the castle gate, not in town. */
+  wokeInSiege(id: string): boolean {
+    return this.siegeDowns.delete(id);
+  }
+
+  /** The castle's daily tribute for a member of its guild. False (having said why) if their bag is too full. */
+  giveTribute(id: string, gold: number, items: [ItemId, number][], slots: number): boolean {
+    const f = this.fighters.get(id);
+    if (!f) return false;
+    if (f.inv.bag.filter((s) => !s).length < slots) {
+      this.hooks.notice(id, `Make room in your bag first: the tribute needs ${slots} free slots.`);
+      return false;
+    }
+    for (const [item, n] of items) f.inv.add(item, n);
+    f.gold += gold;
+    this.changed(f);
+    this.traded(f);
+    return true;
   }
 
   private defeat(mob: Mob) {
@@ -990,7 +1052,7 @@ export class Combat {
     const d = this.duels.get(f.id);
     if (d) return id === this.opponentId(f) && Date.now() >= d.startsAt ? this.fighters.get(id) : undefined;
     const g = this.fighters.get(id);
-    return g && g !== f && !pvpBlock(this.side(f), this.side(g)) ? g : undefined;
+    return g && g !== f && !pvpBlock(this.side(f), this.side(g), this.siege) ? g : undefined;
   }
 
   /** What the PVP rules need to know about someone. */
@@ -1102,6 +1164,10 @@ export class Combat {
   /** `f` attacks `g` in the Wildlands: unless `g` is an Outlaw, that makes `f` one (or keeps them one a while longer). */
   private aggress(f: Fighter, g: Fighter, now: number) {
     if (this.duels.has(f.id)) return;
+    if (this.siegeFight(f, g)) {
+      g.pvpBy = { id: f.id, at: now };
+      return;
+    }
     const fresh = g.pvpBy?.id !== f.id || now - g.pvpBy.at > PVP_COMBAT_MS;
     g.pvpBy = { id: f.id, at: now };
     if (!g.player.outlaw) {
@@ -1120,6 +1186,13 @@ export class Combat {
 
   /** `f` beat `g` in the Wildlands. An Outlaw pays: EXP like any knock-out, and a bounty from their gold to `f`. */
   private beaten(g: Fighter, f: Fighter) {
+    if (this.siegeFight(f, g)) {
+      this.knockOut(g, false);
+      this.siegeDowns.add(g.id);
+      this.hooks.notice(f.id, `You beat ${g.player.name}!`);
+      this.hooks.notice(g.id, `${f.player.name} beat you. In a siege you lose nothing: you'll get up at the camp outside the gate.`);
+      return;
+    }
     const now = Date.now();
     const outlaw = g.player.outlaw;
     const bounty = outlaw ? bountyOf(g.gold) : 0;
@@ -1146,6 +1219,11 @@ export class Combat {
     this.hooks.notice(f.id, outlaw ? `You beat the Outlaw ${g.player.name}${bounty ? ` and claimed a bounty of ${goldText(bounty)} gold` : ""}!` : `You beat ${g.player.name}!`);
     this.hooks.notice(g.id, outlaw ? `${f.player.name} beat you. As an Outlaw, you lost EXP${gold}.` : `${f.player.name} beat you. You lost nothing, as you weren't an Outlaw.`);
     this.save(f);
+  }
+
+  /** Both inside Crownhold's walls during a siege: the siege's rules, not the Wildlands'. */
+  private siegeFight(f: Fighter, g: Fighter): boolean {
+    return this.siege && inCastle(f.pos.x, f.pos.y) && inCastle(g.pos.x, g.pos.y);
   }
 
   /** Over: both healed (unless a monster knocked one out), deeds counted, and the room settles the rest. */

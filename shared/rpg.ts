@@ -175,7 +175,8 @@ export type MonsterId =
   | "crowBlade"
   | "phantom"
   | "redOgre"
-  | "ogreWarlord";
+  | "ogreWarlord"
+  | "crystal";
 
 export interface MonsterDef {
   id: MonsterId;
@@ -514,6 +515,16 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
       ["mithril", 1], ["starCrystal", 1], ["starCrystal", 0.8], ["warlordFang", 0.06], ["warlordHelm", 0.015], ["ogreWarlordCard", 0.02],
     ],
   },
+
+  // ---------------------------------------------------------------- Crownhold, the guild castle
+  // The crystal at the heart of the keep (see shared/siege.ts): it never moves or fights back, and
+  // only guild members can strike it, only during a siege. Breaking it takes the castle; it's whole
+  // again moments later. Level 0: nobody misses it.
+  crystal: {
+    id: "crystal", name: "Crownhold Crystal", level: 0, hp: 60_000, atk: 0, def: 50, exp: 0, gold: [0, 0], speed: 0, chase: 0, aggro: 0, range: 0, attackMs: 60_000, radius: 20, respawnMs: 10_000,
+    boss: true, regen: 0.002,
+    drops: [],
+  },
 };
 
 export const isMonsterId = (id: unknown): id is MonsterId => typeof id === "string" && Object.hasOwn(MONSTERS, id);
@@ -670,6 +681,14 @@ export const FIELDS: Field[] = [
       { monster: "redOgre", rect: { x: 370, y: 432, w: 56, h: 22 }, count: 8 },
       { monster: "ogreWarlord", rect: { x: 447, y: 399, w: 6, h: 5 }, count: 1 },
     ],
+  },
+  {
+    // The guild castle's island, over the long bridge from the Wildlands. No monsters: only the crystal.
+    id: "crownhold",
+    name: "Crownhold",
+    levels: "Guild castle",
+    area: { x: 340, y: 40, w: 92, h: 62 },
+    spawns: [{ monster: "crystal", rect: { x: 397, y: 76, w: 1, h: 1 }, count: 1 }],
   },
 ];
 
