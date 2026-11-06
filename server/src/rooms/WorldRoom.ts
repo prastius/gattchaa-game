@@ -268,6 +268,14 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     "guild:get": (client: Client) => {
       if (this.itemOk(client)) this.guilds.refresh(client.sessionId);
     },
+    "castle:guards": (client: Client, msg: { npc?: string }) => {
+      if (this.itemOk(client) && this.npcNear(client, msg?.npc, "castle")) client.send("castle:guards", this.siege.guards(client.sessionId));
+    },
+    "castle:hire": (client: Client, msg: { npc?: string; post?: number }) => {
+      if (!this.itemOk(client) || !this.npcNear(client, msg?.npc, "castle") || !Number.isInteger(msg?.post)) return;
+      this.siege.hire(client.sessionId, msg.post!);
+      client.send("castle:guards", this.siege.guards(client.sessionId));
+    },
     "castle:tribute": (client: Client, msg: { npc?: string }) => {
       if (this.itemOk(client) && this.npcNear(client, msg?.npc, "castle")) client.send("castle:tribute", this.siege.tribute(client.sessionId) satisfies TributeResult);
     },
@@ -395,6 +403,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
         if (name && (title.tier === "epic" || title.tier === "legendary")) this.system(`🏅 ${name} earned the title "${title.name}"!`);
       },
       crystal: (by) => this.siege.captured(by),
+      guardianDown: (post) => this.siege.guardianDown(post),
       reachedCap: (id, cap) => {
         // Pioneers are counted per account, so only signed-in players can be one.
         const account = this.meta.get(id)?.account;

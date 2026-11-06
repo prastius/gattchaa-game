@@ -3213,3 +3213,34 @@ button.dialog-link:disabled {
     top: 262px;
   }
 }
+
+/* The Herald's list of guardian posts. */
+.guardian-list {
+  display: grid;
+  gap: 4px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.guardian-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: var(--panel-raised);
+  font-size: 13px;
+}
+
+.guardian-duty {
+  color: #7ddb6e;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.guardian-list .guild-act:disabled {
+  opacity: 0.45;
+  cursor: default;
+}

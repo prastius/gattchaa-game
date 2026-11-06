@@ -87,7 +87,8 @@ export const Monster = schema(
     dir: t.uint8().default(2),
     moving: t.boolean().default(false),
     ts: t.uint32(),
-    hp: t.uint16(),
+    // (Bosses have up to 170,000.)
+    hp: t.uint32(),
   },
   "Monster",
 );

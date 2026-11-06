@@ -3,12 +3,13 @@
 // their way through its gate and round its keep to the crystal at its heart;
 // the guild whose member breaks it takes the castle (and everyone else inside
 // is thrown out), and the guild that holds it when the hour is up keeps it
-// until the next siege: its emblem flies over the walls, and its members
-// collect a tribute every day.
+// until the next siege: its emblem flies over the walls, its members collect
+// a tribute every day, and its leader and officers can hire guardians.
 //
 // Rules shared by the server (which runs the siege) and the client (the siege
 // bar, who may be attacked, the Herald's window).
 
+import { Dir } from "./protocol";
 import type { Rect } from "./town";
 
 export const CASTLE_NAME = "Crownhold";
@@ -66,15 +67,37 @@ export const campSpot = (camp: Rect, n: number): { x: number; y: number } => ({
   y: (camp.y + 4 + (Math.floor(n / 8) % 4)) * 32 + 16,
 });
 
-/** The castle's state, as everyone sees it. */
-export interface CastleInfo {
-  /** The guild holding it ("" = nobody yet) and its emblem. */
-  guild: string;
-  emblem: number;
-  /** A siege is on (until `siegeEnds`); otherwise the next starts at `siegeNext`. */
-  siege: boolean;
-  siegeEnds: number;
-  siegeNext: number;
+/** Guardians: knights and archers the castle's guild hires to hold it, at fixed posts (tiles). */
+export type GuardianKind = "castleKnight" | "castleArcher";
+export interface GuardianPost {
+  kind: GuardianKind;
+  x: number;
+  y: number;
+  /** The way they face at their post. */
+  dir: number;
+  /** Where it is, for the Herald's list. */
+  where: string;
+}
+export const GUARDIAN_POSTS: readonly GuardianPost[] = [
+  { kind: "castleKnight", x: 376, y: 78, dir: Dir.Left, where: "Castle gate" },
+  { kind: "castleKnight", x: 376, y: 85, dir: Dir.Left, where: "Castle gate" },
+  { kind: "castleArcher", x: 382, y: 81, dir: Dir.Left, where: "Castle gate" },
+  { kind: "castleKnight", x: 409, y: 74, dir: Dir.Left, where: "Keep gate" },
+  { kind: "castleKnight", x: 409, y: 80, dir: Dir.Left, where: "Keep gate" },
+  { kind: "castleArcher", x: 412, y: 77, dir: Dir.Left, where: "Keep gate" },
+  { kind: "castleKnight", x: 401, y: 74, dir: Dir.Down, where: "Crystal" },
+  { kind: "castleArcher", x: 393, y: 78, dir: Dir.Right, where: "Crystal" },
+];
+/** What one costs to hire (from whoever hires it: a guild has no purse of its own). */
+export const GUARDIAN_COST: Record<GuardianKind, number> = { castleKnight: 5_000, castleArcher: 4_000 };
+export const isGuardian = (kind: string): kind is GuardianKind => kind === "castleKnight" || kind === "castleArcher";
+
+/** server -> client: the castle's guardians, as the Herald lists them for you. */
+export interface CastleGuards {
+  /** Posts with a guardian on them. */
+  posts: number[];
+  /** Why you can't hire one right now ("" = you can). */
+  why: string;
 }
 
 /** server -> client: the Herald's answer to collecting the tribute. */

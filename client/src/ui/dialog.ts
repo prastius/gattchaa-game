@@ -1,5 +1,5 @@
 import { FERRY, NPCS, npcProducts, type NpcDef } from "../../../shared/npcs";
-import { CASTLE_NAME, SIEGE_WHEN } from "../../../shared/siege";
+import { CASTLE_NAME, GUARDIAN_COST, GUARDIAN_POSTS, SIEGE_WHEN, type CastleGuards } from "../../../shared/siege";
 import {
   GUILD_COLORS,
   GUILD_FOUND_GOLD,
@@ -60,7 +60,7 @@ import {
   type ItemStack,
   type Slot,
 } from "../../../shared/items";
-import { CLASSES, JOBS, JOB_LEVEL, JOB_WEAPON, SECOND_JOBS, SECOND_JOB_LEVEL, aClass, isClassId, statsFor, type ClassId } from "../../../shared/rpg";
+import { CLASSES, JOBS, JOB_LEVEL, JOB_WEAPON, MONSTERS, SECOND_JOBS, SECOND_JOB_LEVEL, aClass, isClassId, statsFor, type ClassId } from "../../../shared/rpg";
 import { skillsOf } from "../../../shared/skills";
 import { PVP_DAMAGE, RATING_START, type ArenaBoard } from "../../../shared/duels";
 import type { WildBoard } from "../../../shared/pvp";
@@ -178,8 +178,9 @@ export class TownDialog {
   openSkills?: () => void;
   /** Opens the guild window (from the Guild Registrar). */
   openGuild?: () => void;
-  /** What the Castle Herald said about your tribute. */
+  /** What the Castle Herald said about your tribute, and the castle's guardians. */
   private tributeNote?: { ok: boolean; text: string };
+  private guards?: CastleGuards;
   /** What you're filling in on the Registrar's form. */
   private guildForm = { name: "", symbol: 0, color: 0 };
   /** Where the conversation is happening; walking away closes it. */
@@ -222,6 +223,10 @@ export class TownDialog {
     });
     net.onTribute.add((r) => {
       this.tributeNote = r;
+      if (this.openKind === "castle") this.render(this.openTarget!, false);
+    });
+    net.onCastleGuards.add((g) => {
+      this.guards = g;
       if (this.openKind === "castle") this.render(this.openTarget!, false);
     });
     // Founding a guild (or joining one) redraws the Registrar's window.
@@ -528,7 +533,10 @@ export class TownDialog {
 
   /** The Castle Herald: who holds Crownhold, when the next siege is, the rules, and the tribute. */
   private herald(npc: NpcDef) {
-    if (this.renderFresh) this.tributeNote = undefined;
+    if (this.renderFresh) {
+      this.tributeNote = undefined;
+      this.net.castleGuards(npc.id);
+    }
     const st = this.net.room.state as { castle?: string; castleEmblem?: number; siege?: boolean; siegeEnds?: number; siegeNext?: number };
     const holder = el("p", "guild-registered");
     if (st.castle) {
@@ -544,6 +552,7 @@ export class TownDialog {
     };
     if (st.siege) this.body.append(el("p", "dialog-note siege-now", `⚔ A siege is on now: ${left((st.siegeEnds ?? 0) - Date.now())} left.`));
     else if (st.siegeNext) this.body.append(el("p", "dialog-note", `The next siege starts in ${left(st.siegeNext - Date.now())} (${SIEGE_WHEN}).`));
+    if (st.castle) this.guardians(npc, st.castle);
     this.section("How a siege works");
     const rules = el("ul", "arena-rules");
     for (const line of [
@@ -551,12 +560,45 @@ export class TownDialog {
       "Fight your way through the west gate and round the keep to its gate on the east side. The crystal stands in the middle of the keep.",
       "Break the crystal and the castle is your guild's: everyone else inside is thrown out, and the crystal is whole again moments later. Now hold it!",
       `Whoever holds ${CASTLE_NAME} when the hour is up keeps it until the next siege. Its members who are in town then become Castle Lords.`,
+      "Guardians attack any other guild's members inside the walls. They give no EXP and no loot: they're just in your way.",
       "Falling in a siege costs nothing: you get up here at the camp, and walk back in.",
     ]) rules.append(el("li", "", line));
     this.body.append(rules);
     if (this.tributeNote) this.body.append(el("p", this.tributeNote.ok ? "arena-me" : "dialog-note", this.tributeNote.text));
     if (!this.vending.auth.signedIn) return this.signInButton("Sign in to join a guild and fight for the castle");
     this.button("Collect today's tribute", `For ${st.castle ? `${st.castle}'s members` : "the castle's guild"}, once a day: gold, ingots and potions`, () => this.net.tribute(npc.id), "primary");
+  }
+
+  /** The castle's guardians: how many, and for its own guild every post, with Hire buttons for the leader and officers. */
+  private guardians(npc: NpcDef, castle: string) {
+    const g = this.guards;
+    if (!g) return;
+    this.section(`Guardians: ${g.posts.length} of ${GUARDIAN_POSTS.length} posts`);
+    if (this.net.guild?.name !== castle) return;
+    if (g.why) this.body.append(el("p", "dialog-note", g.why));
+    const gold = this.net.stats?.gold ?? 0;
+    const list = el("ul", "guardian-list");
+    GUARDIAN_POSTS.forEach((p, i) => {
+      const row = el("li");
+      row.append(el("span", "guardian-name", `${p.where} · ${MONSTERS[p.kind].name}`));
+      if (g.posts.includes(i)) row.append(el("span", "guardian-duty", "On duty"));
+      else {
+        const cost = GUARDIAN_COST[p.kind];
+        const hire = el("button", "guild-act", `Hire · ${goldText(cost)}`);
+        hire.type = "button";
+        hire.disabled = Boolean(g.why) || gold < cost;
+        hire.addEventListener("click", () => {
+          audio.blip();
+          this.net.hireGuardian(npc.id, i);
+        });
+        row.append(hire);
+      }
+      list.append(row);
+    });
+    this.body.append(
+      list,
+      el("p", "dialog-note", "Paid from your own gold. A guardian that falls is gone until you hire another; the rest stay for the next siege. If the castle changes hands, they all leave."),
+    );
   }
 
   /** The Guild Registrar: your guild if you have one, or the form to found one (a name, an emblem, the fee). */

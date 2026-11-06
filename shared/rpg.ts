@@ -176,7 +176,9 @@ export type MonsterId =
   | "phantom"
   | "redOgre"
   | "ogreWarlord"
-  | "crystal";
+  | "crystal"
+  | "castleKnight"
+  | "castleArcher";
 
 export interface MonsterDef {
   id: MonsterId;
@@ -523,6 +525,18 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   crystal: {
     id: "crystal", name: "Crownhold Crystal", level: 0, hp: 60_000, atk: 0, def: 50, exp: 0, gold: [0, 0], speed: 0, chase: 0, aggro: 0, range: 0, attackMs: 60_000, radius: 20, respawnMs: 10_000,
     boss: true, regen: 0.002,
+    drops: [],
+  },
+  // Guardians the castle's guild hires (GUARDIAN_POSTS in shared/siege.ts). They stand at their posts all week,
+  // and during a siege attack any other guild's members inside the walls. No EXP and no loot: this is war.
+  castleKnight: {
+    id: "castleKnight", name: "Castle Knight", level: 68, hp: 20_000, atk: 215, def: 80, exp: 0, gold: [0, 0], speed: 50, chase: 110, aggro: 150, range: 44, attackMs: 1400, radius: 14, respawnMs: 0,
+    regen: 0.01,
+    drops: [],
+  },
+  castleArcher: {
+    id: "castleArcher", name: "Castle Archer", level: 68, hp: 12_000, atk: 165, def: 50, exp: 0, gold: [0, 0], speed: 35, chase: 70, aggro: 210, range: 190, attackMs: 1800, radius: 12, respawnMs: 0,
+    regen: 0.01,
     drops: [],
   },
 };

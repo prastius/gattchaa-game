@@ -46,7 +46,7 @@ import type {
   GuildRank,
   GuildRankMessage,
 } from "../../shared/guild";
-import type { TributeResult } from "../../shared/siege";
+import type { CastleGuards, TributeResult } from "../../shared/siege";
 
 function serverUrl(): string {
   if (import.meta.env.VITE_SERVER_URL) return import.meta.env.VITE_SERVER_URL;
@@ -82,6 +82,7 @@ export class Net {
   readonly onGuild = new Set<(g: GuildMessage | null) => void>();
   readonly onGuildAsk = new Set<(ev: GuildAskEvent) => void>();
   readonly onTribute = new Set<(r: TributeResult) => void>();
+  readonly onCastleGuards = new Set<(g: CastleGuards) => void>();
   readonly onDuelStart = new Set<(ev: DuelStartEvent) => void>();
   readonly onDuelEnd = new Set<(ev: DuelEndEvent) => void>();
   readonly onArenaBoard = new Set<(b: ArenaBoard) => void>();
@@ -163,6 +164,9 @@ export class Net {
     });
     room.onMessage("castle:tribute", (r: TributeResult) => {
       for (const fn of this.onTribute) fn(r);
+    });
+    room.onMessage("castle:guards", (g: CastleGuards) => {
+      for (const fn of this.onCastleGuards) fn(g);
     });
 
     room.onDrop((code, reason) => {
@@ -307,6 +311,16 @@ export class Net {
   /** Asks the Castle Herald for today's tribute (for the guild holding Crownhold). */
   tribute(npc: string) {
     this.room.send("castle:tribute", { npc });
+  }
+
+  /** Asks the Castle Herald which posts have guardians. */
+  castleGuards(npc: string) {
+    this.room.send("castle:guards", { npc });
+  }
+
+  /** Hires a guardian for a post, out of your own gold. */
+  hireGuardian(npc: string, post: number) {
+    this.room.send("castle:hire", { npc, post });
   }
 
   /** Asks for a fresh member list (levels and who's online change all the time). */

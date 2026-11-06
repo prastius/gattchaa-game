@@ -502,8 +502,8 @@ export const NPCS: NpcDef[] = [
     ...at(364.5, 78.6),
     dir: Dir.Down,
     greeting:
-      "This is Crownhold, the guild castle. Every Wednesday and Saturday, 8 to 9 pm Batam time, it's under siege: guild members fight their way through the gate, round the keep and break the crystal at its heart, and the castle is their guild's. Whoever holds it when the hour is up keeps it until the next siege. Inside the walls, during a siege, every guild fights every other, and nobody loses anything for falling. The guild holding the castle collects a tribute from me every day.",
-    chatter: ["Sieges every Wednesday and Saturday, 8 pm!", "Break the crystal and the castle is yours!", "Only guild members may enter during a siege.", "The castle's guild collects a tribute every day."],
+      "This is Crownhold, the guild castle. Every Wednesday and Saturday, 8 to 9 pm Batam time, it's under siege: guild members fight their way through the gate, round the keep and break the crystal at its heart, and the castle is their guild's. Whoever holds it when the hour is up keeps it until the next siege. Inside the walls, during a siege, every guild fights every other, and nobody loses anything for falling. The guild holding the castle collects a tribute from me every day, and its leader and officers can hire guardians.",
+    chatter: ["Sieges every Wednesday and Saturday, 8 pm!", "Break the crystal and the castle is yours!", "Only guild members may enter during a siege.", "The castle's guild collects a tribute every day.", "Hire guardians before the siege. Not during it!"],
   },
   {
     // On the main street just east of the fountain plaza, by the GUILDS signpost.

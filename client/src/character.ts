@@ -425,6 +425,8 @@ const CARD_SKY: Record<MonsterId, [string, string]> = {
   redOgre: ["#ffe0d8", "#c0503e"],
   ogreWarlord: ["#ffe8ee", "#d86a8a"],
   crystal: ["#e8f8ff", "#6fb8e8"],
+  castleKnight: ["#e4e8f2", "#4a5a82"],
+  castleArcher: ["#e4e8f2", "#3a5a62"],
 };
 
 /** A monster sheet recoloured by multiplying with `tint` (the Wraith is a darker Ghost). */

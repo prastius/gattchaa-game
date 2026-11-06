@@ -21,7 +21,7 @@ import { SKILLS, type SkillId } from "../../../shared/skills";
 import { ITEMS, PICKUP_RANGE, RARITY, appearanceKey, cleanUpgrade, isItemId, parseCards } from "../../../shared/items";
 import { NPCS, type NpcDef } from "../../../shared/npcs";
 import { CASTLE, DOORS, GLOOM, INTERIOR_ZONE, PROPS, RUINS, TOWN_AREA, biomeAt, inCastle, inRect } from "../../../shared/town";
-import { CASTLE_NAME } from "../../../shared/siege";
+import { CASTLE_NAME, CRYSTAL, isGuardian } from "../../../shared/siege";
 import { emblemOf } from "../../../shared/guild";
 import { CharacterTextures, PlayerSprite } from "../PlayerSprite";
 import { MonsterSprite } from "../MonsterSprite";
@@ -1078,7 +1078,7 @@ export class WorldScene extends Phaser.Scene {
     let bestD = TARGET_RANGE;
     for (const [id, m] of this.monsters) {
       const d = Math.hypot(m.sprite.x - self.x, m.sprite.y - self.y);
-      if (d < bestD) {
+      if (d < bestD && !this.offLimits(m.state.kind)) {
         bestD = d;
         best = id;
       }
@@ -1530,6 +1530,14 @@ export class WorldScene extends Phaser.Scene {
         return;
       }
     }
+  }
+
+  /** Crownhold's crystal and guardians, when you may not strike them: Space passes them by. */
+  private offLimits(kind: string): boolean {
+    if (kind !== CRYSTAL && !isGuardian(kind)) return false;
+    const c = this.castleState;
+    const mine = this.entities.get(this.room.sessionId)?.state.guild;
+    return !c.siege || !mine || mine === c.guild;
   }
 
   /** Crownhold, as the room's state has it. */

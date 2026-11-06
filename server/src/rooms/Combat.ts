@@ -68,7 +68,7 @@ import {
 } from "../../../shared/duels";
 import { OUTLAW_MS, PVP_COMBAT_MS, PVP_RECOUNT_MS, bountyOf, pvpBlock, type PvpSide, type WantedRow } from "../../../shared/pvp";
 import { PARTY_LEVEL_GAP, PARTY_SHARE_PX, partyShare } from "../../../shared/party";
-import { CRYSTAL } from "../../../shared/siege";
+import { CRYSTAL, GUARDIAN_POSTS } from "../../../shared/siege";
 import { inCastle } from "../../../shared/town";
 import type { Progress } from "../db";
 import { Monster, type Player } from "./WorldState";
@@ -135,6 +135,8 @@ export interface CombatHooks {
   pvpWin(id: string, outlaw: boolean, bounty: number): void;
   /** `by` broke Crownhold's crystal (see shared/siege.ts): the castle is their guild's. */
   crystal(by: string): void;
+  /** The guardian at this post fell: it's gone until someone hires another. */
+  guardianDown(post: number): void;
   /** Someone challenged `to` to a duel. */
   duelAsk(to: string, ev: DuelAskEvent): void;
   /** A duel began (told to each duelist). */
@@ -221,6 +223,8 @@ interface Mob {
   damage: Map<string, number>;
   /** Frozen (Frost Nova) until then: no moving, no biting. */
   frozenUntil: number;
+  /** A castle guardian: its post in GUARDIAN_POSTS (and no group: it never comes back by itself). */
+  post?: number;
 }
 
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
@@ -372,7 +376,7 @@ export class Combat {
     const f = this.fighters.get(id);
     if (!f || f.player.dead) return;
     const mob = this.mobs.get(mobId);
-    const why = mob && this.crystalBlock(f, mob);
+    const why = mob && this.castleBlock(f, mob);
     if (!mobId) f.target = undefined;
     else if (why) this.fail(f, why);
     else if (mob || this.opponentId(f) === mobId || this.foe(f, mobId)) f.target = mobId;
@@ -448,7 +452,8 @@ export class Combat {
     }
 
     const awake = GROUPS.map((g) => this.anyoneNear(g.rect, WAKE_PX));
-    for (const mob of this.mobs.values()) if (awake[mob.group]) this.think(mob, dtMs, now);
+    // Guardians only stir in a siege.
+    for (const mob of this.mobs.values()) if (mob.post === undefined ? awake[mob.group] : this.siege) this.think(mob, dtMs, now);
     for (const f of this.fighters.values()) {
       this.fight(f, now);
       this.regen(f, now);
@@ -506,7 +511,7 @@ export class Combat {
       return;
     }
     if (now < f.nextAttackAt || inSafeZone(f.pos.x, f.pos.y)) return;
-    const blocked = this.crystalBlock(f, mob);
+    const blocked = this.castleBlock(f, mob);
     if (blocked) {
       // The siege ended, or their guild took the castle, while they were swinging.
       f.target = undefined;
@@ -550,7 +555,7 @@ export class Combat {
 
   /** `f` deals damage to a monster (a hit, a skill, or thorns from a card); it may go down. */
   private hurt(mob: Mob, f: Fighter, damage: number, flags: { crit?: 1; thorn?: 1; skill?: SkillId }) {
-    if (this.crystalBlock(f, mob)) return;
+    if (this.castleBlock(f, mob)) return;
     const dealt = Math.min(damage, mob.hp);
     mob.damage.set(f.id, (mob.damage.get(f.id) ?? 0) + dealt);
     if (!flags.thorn) this.drain(f, dealt);
@@ -562,23 +567,62 @@ export class Combat {
     this.defeat(mob);
   }
 
-  /** Why `f` may not strike this monster ("" or undefined: they may). Only Crownhold's crystal says no. */
-  private crystalBlock(f: Fighter, mob: Mob): string {
-    if (mob.def.id !== CRYSTAL) return "";
-    if (!this.siege) return "The crystal can only be struck during a siege";
-    if (!f.player.guild) return "Only guild members can strike the crystal";
-    if (f.player.guild === this.castleGuild) return "Your guild holds the castle: defend the crystal!";
+  /** Why `f` may not strike this monster ("": they may). Only Crownhold's crystal and guardians say no. */
+  private castleBlock(f: Fighter, mob: Mob): string {
+    const crystal = mob.def.id === CRYSTAL;
+    if (!crystal && mob.post === undefined) return "";
+    const what = crystal ? "the crystal" : "guardians";
+    if (!this.siege) return `${crystal ? "The crystal" : "Guardians"} can only be struck during a siege`;
+    if (!f.player.guild) return `Only guild members can strike ${what}`;
+    if (f.player.guild === this.castleGuild) return crystal ? "Your guild holds the castle: defend the crystal!" : "That's your guild's guardian";
     return "";
   }
 
-  /** The siege starts: the crystal is whole again. */
-  mendCrystal() {
+  /** A guardian's quarry: a member of another guild, inside the walls, during a siege. */
+  private guardianFoe(f: Fighter): boolean {
+    return this.siege && inCastle(f.pos.x, f.pos.y) && Boolean(f.player.guild) && f.player.guild !== this.castleGuild;
+  }
+
+  /** A siege starts or ends: the crystal is whole, and every guardian is healed and back at its post. */
+  mendCastle() {
     for (const mob of this.mobs.values()) {
-      if (mob.def.id !== CRYSTAL) continue;
+      if (mob.def.id !== CRYSTAL && mob.post === undefined) continue;
       mob.hp = mob.def.hp;
       mob.state.hp = mob.hp;
       mob.damage.clear();
       mob.target = undefined;
+      mob.frozenUntil = 0;
+      if (mob.post === undefined) continue;
+      const at = this.postAt(mob.post);
+      mob.returning = false;
+      mob.x = at.x;
+      mob.y = at.y;
+      Object.assign(mob.state, { x: Math.round(at.x), y: Math.round(at.y), dir: GUARDIAN_POSTS[mob.post].dir, moving: false, ts: this.now() });
+    }
+  }
+
+  /** The middle of a guardian's post, in pixels. */
+  private postAt(post: number) {
+    const p = GUARDIAN_POSTS[post];
+    return { x: (p.x + 0.5) * TILE_SIZE, y: (p.y + 0.5) * TILE_SIZE };
+  }
+
+  /** A hired guardian takes up its post. */
+  spawnGuardian(post: number) {
+    const p = GUARDIAN_POSTS[post];
+    const at = this.postAt(post);
+    const id = this.addMob(MONSTERS[p.kind], -1, { x: p.x, y: p.y, w: 1, h: 1 }, at, post);
+    this.mobs.get(id)!.state.dir = p.dir;
+  }
+
+  /** Every guardian leaves (the castle changed hands). */
+  clearGuardians() {
+    for (const mob of [...this.mobs.values()]) {
+      if (mob.post === undefined) continue;
+      this.hooks.despawn(mob.state);
+      this.monsters.delete(mob.id);
+      this.mobs.delete(mob.id);
+      for (const f of this.fighters.values()) if (f.target === mob.id) f.target = undefined;
     }
   }
 
@@ -614,7 +658,8 @@ export class Combat {
     this.hooks.despawn(mob.state);
     this.monsters.delete(mob.id);
     this.mobs.delete(mob.id);
-    this.respawns.push({ group: mob.group, at: Date.now() + mob.def.respawnMs });
+    if (mob.post !== undefined) this.hooks.guardianDown(mob.post);
+    else this.respawns.push({ group: mob.group, at: Date.now() + mob.def.respawnMs });
     for (const f of this.fighters.values()) if (f.target === mob.id) f.target = undefined;
   }
 
@@ -1483,6 +1528,8 @@ export class Combat {
       const aim = targetId || f.target || "";
       foe = this.foe(f, aim);
       mob = foe ? undefined : this.mobs.get(aim);
+      const blocked = mob && this.castleBlock(f, mob);
+      if (blocked) return this.fail(f, blocked);
       const to = foe ? { ...foe.pos, radius: PLAYER_RADIUS } : mob && { x: mob.x, y: mob.y, radius: mob.def.radius };
       if (!to) return this.fail(f, "No target");
       if (dist(f.pos, to) > (s.range ?? f.stats.range) + to.radius + REACH_SLACK) return this.fail(f, "Too far away");
@@ -1515,7 +1562,7 @@ export class Combat {
       const opp = this.foe(f, this.opponentId(f) ?? f.target);
       if (opp && dist(at, opp.pos) <= (s.radius ?? 0) + PLAYER_RADIUS) this.foeSkillHit(f, opp, s, lv, Boolean(duel));
       for (const m of [...this.mobs.values()]) {
-        if (dist(at, m) > (s.radius ?? 0) + m.def.radius) continue;
+        if (dist(at, m) > (s.radius ?? 0) + m.def.radius || this.castleBlock(f, m)) continue;
         this.skillHit(f, m, s, lv, now);
         if (s.freezeMs && this.mobs.has(m.id)) this.freeze(m, s.freezeMs(lv), now);
       }
@@ -1580,13 +1627,19 @@ export class Combat {
       this.respawns.push({ group, at: Date.now() + 5000 });
       return;
     }
+    this.addMob(def, group, g.rect, at);
+    if (announce && def.boss) this.hooks.boss(def, "rise", GROUP_FIELDS[group].name);
+  }
+
+  /** A monster appears at `at`, at home in `r` (tiles). Returns its id. */
+  private addMob(def: MonsterDef, group: number, r: { x: number; y: number; w: number; h: number }, at: { x: number; y: number }, post?: number): string {
     const id = `${MONSTER_ID_PREFIX}${++this.nextId}`;
     const state = new Monster({ kind: def.id, x: Math.round(at.x), y: Math.round(at.y), dir: Dir.Down, moving: false, ts: this.now(), hp: def.hp });
-    const r = g.rect;
     this.mobs.set(id, {
       id,
       def,
       group,
+      post,
       home: { x0: r.x * TILE_SIZE, y0: r.y * TILE_SIZE, x1: (r.x + r.w) * TILE_SIZE, y1: (r.y + r.h) * TILE_SIZE },
       state,
       x: at.x,
@@ -1602,7 +1655,7 @@ export class Combat {
       frozenUntil: 0,
     });
     this.monsters.set(id, state);
-    if (announce && def.boss) this.hooks.boss(def, "rise", GROUP_FIELDS[group].name);
+    return id;
   }
 
   private findSpot(group: number): { x: number; y: number } | undefined {
@@ -1659,11 +1712,16 @@ export class Combat {
         return;
       }
     }
-    if (def.speed > 0) this.wander(mob, dtMs, now);
+    // Guardians stand at their posts; everything else that can walk wanders.
+    if (mob.post !== undefined) {
+      this.halt(mob);
+      mob.state.dir = GUARDIAN_POSTS[mob.post].dir;
+    } else if (def.speed > 0) this.wander(mob, dtMs, now);
   }
 
   private canChase(mob: Mob, f: Fighter): boolean {
     if (f.player.dead || inSafeZone(f.pos.x, f.pos.y) || !this.atHome(mob, LEASH_PX)) return false;
+    if (mob.post !== undefined && !this.guardianFoe(f)) return false;
     const giveUpAt = mob.def.speed > 0 ? LOSE_PX : Math.max(mob.def.aggro, mob.def.range) * 1.5;
     return dist(mob, f.pos) <= giveUpAt;
   }
@@ -1679,7 +1737,7 @@ export class Combat {
     let best: Fighter | undefined;
     let bestD = mob.def.aggro;
     for (const f of this.fighters.values()) {
-      if (f.player.dead || inSafeZone(f.pos.x, f.pos.y)) continue;
+      if (f.player.dead || inSafeZone(f.pos.x, f.pos.y) || (mob.post !== undefined && !this.guardianFoe(f))) continue;
       const d = dist(mob, f.pos);
       if (d <= bestD) {
         bestD = d;
@@ -1711,7 +1769,13 @@ export class Combat {
     f.player.hp = Math.max(0, f.player.hp - damage);
     f.dirty = true;
     this.hooks.emit(f.pos.x, f.pos.y, { k: "hit", a: mob.id, t: f.id, d: damage, ...(crit && { crit: 1 as const }) });
-    if (f.player.hp <= 0) return this.knockOut(f);
+    if (f.player.hp <= 0) {
+      if (mob.post === undefined) return this.knockOut(f);
+      // Falling in a siege costs nothing, whoever does it.
+      this.knockOut(f, false);
+      this.siegeDowns.add(f.id);
+      return this.hooks.notice(f.id, `A ${mob.def.name} beat you. In a siege you lose nothing: you'll get up at the camp outside the gate.`);
+    }
     // Snapper Flower Cards bite back (always at least 1, so they matter against weak monsters too).
     if (f.stats.reflect > 0) this.hurt(mob, f, Math.max(1, Math.round(damage * f.stats.reflect)), { thorn: 1 });
   }

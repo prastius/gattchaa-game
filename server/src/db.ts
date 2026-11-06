@@ -221,6 +221,8 @@ const MIGRATIONS = [
      account_id INTEGER PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,
      day INTEGER NOT NULL
    );`,
+  // v12: castle guardians: the posts with a guardian on them, as JSON.
+  `ALTER TABLE castles ADD COLUMN guardians TEXT;`,
 ];
 
 const ACCOUNT_COLS = "id, gattchaa_id AS gattchaaId, display_name AS displayName, name, look";
@@ -534,6 +536,17 @@ export class Db {
     this.db
       .prepare("INSERT INTO castles (id, guild_id, since) VALUES (?, ?, ?) ON CONFLICT(id) DO UPDATE SET guild_id = excluded.guild_id, since = excluded.since")
       .run(castle, guildId, Date.now());
+  }
+
+  /** The posts (see GUARDIAN_POSTS in shared/siege.ts) with a guardian on them. */
+  castleGuardians(castle: string): number[] {
+    const row = this.db.prepare("SELECT guardians FROM castles WHERE id = ?").get(castle) as { guardians: string | null } | undefined;
+    const posts = parse(row?.guardians);
+    return Array.isArray(posts) ? posts.filter((n) => Number.isInteger(n)) : [];
+  }
+
+  setCastleGuardians(castle: string, posts: number[]) {
+    this.db.prepare("UPDATE castles SET guardians = ? WHERE id = ?").run(JSON.stringify(posts), castle);
   }
 
   /** The day (see tributeDay in shared/siege.ts) an account last collected its castle's tribute. */

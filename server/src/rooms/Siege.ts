@@ -2,16 +2,18 @@ import type { MapSchema } from "@colyseus/schema";
 import type { Player } from "./WorldState";
 import type { Combat } from "./Combat";
 import { db, type GuildRow } from "../db";
-import { emblemOf } from "../../../shared/guild";
+import { GuildRank, emblemOf } from "../../../shared/guild";
 import { ITEMS, isItemId, type ItemId } from "../../../shared/items";
-import { CASTLE_NAME, SIEGE_MS, TRIBUTE, campSpot, siegeAt, tributeDay, type TributeResult } from "../../../shared/siege";
+import { MONSTERS } from "../../../shared/rpg";
+import { CASTLE_NAME, GUARDIAN_COST, GUARDIAN_POSTS, SIEGE_MS, TRIBUTE, campSpot, siegeAt, tributeDay, type CastleGuards, type TributeResult } from "../../../shared/siege";
 import { CASTLE_CAMP, inCastle } from "../../../shared/town";
 
 // Guild wars: Crownhold under siege twice a week (see shared/siege.ts). This
 // keeps the schedule (and the test commands that bend it), who holds the
 // castle (saved), who may step inside during a siege, what happens when the
-// crystal breaks, the end of the siege, and the daily tribute. Combat runs
-// the fighting itself; its `siege` and `castleGuild` are set from here.
+// crystal breaks, the end of the siege, the daily tribute and the guardians.
+// Combat runs the fighting itself; its `siege` and `castleGuild` are set from
+// here.
 
 const CASTLE_ID = "crownhold";
 /** Who holds the castle is read again this often (a guild that closes leaves it without a lord). */
@@ -44,6 +46,8 @@ export class Siege {
   private forced?: boolean;
   private forcedEnds = 0;
   private holder?: GuildRow;
+  /** The posts with a guardian on them (saved). */
+  private posts = new Set<number>();
   private readAt = 0;
   /** When each player was last told they can't go in (no spamming them while they push at the gate). */
   private toldAt = new Map<string, number>();
@@ -54,12 +58,24 @@ export class Siege {
     private combat: Combat,
     private hooks: SiegeHooks,
   ) {
-    this.read();
+    this.read(true);
+    if (!this.holder) return;
+    for (const post of db.castleGuardians(CASTLE_ID)) {
+      if (!GUARDIAN_POSTS[post] || this.posts.has(post)) continue;
+      this.posts.add(post);
+      this.combat.spawnGuardian(post);
+    }
   }
 
-  /** The guild holding the castle, from the database. */
-  private read() {
+  /** The guild holding the castle, from the database. A new holder (or none) means the old guards leave. */
+  private read(first = false) {
+    const before = this.holder?.id;
     this.holder = db.castleHolder(CASTLE_ID);
+    if (!first && this.holder?.id !== before) {
+      this.posts.clear();
+      this.combat.clearGuardians();
+      db.setCastleGuardians(CASTLE_ID, []);
+    }
     this.combat.castleGuild = this.holder?.name ?? "";
     this.state.castle = this.holder?.name ?? "";
     this.state.castleEmblem = this.holder?.emblem ?? 0;
@@ -126,7 +142,7 @@ export class Siege {
   private start() {
     this.on = true;
     this.combat.siege = true;
-    this.combat.mendCrystal();
+    this.combat.mendCastle();
     this.read();
     this.hooks.news(`⚔ The siege of ${CASTLE_NAME} has begun! Guilds, to the castle: break the crystal and it's yours. ${this.holder ? `${flag(this.holder)} holds it.` : "Nobody holds it yet."}`);
     // Only guilds fight in a siege: anyone else inside steps out.
@@ -142,6 +158,7 @@ export class Siege {
   private end() {
     this.on = false;
     this.combat.siege = false;
+    this.combat.mendCastle();
     this.read();
     const h = this.holder;
     this.hooks.news(h ? `🏰 The siege is over: ${flag(h)} holds ${CASTLE_NAME}!` : `🏰 The siege is over, and ${CASTLE_NAME} still has no lord.`);
@@ -149,6 +166,47 @@ export class Siege {
     this.players.forEach((p, id) => {
       if (p.guild === h.name) this.combat.grantTitle(id, "castleLord");
     });
+  }
+
+  /** Why `id` can't hire a guardian right now ("": they can). */
+  private hireBlock(id: string): string {
+    const h = this.holder;
+    if (!h) return `Nobody holds ${CASTLE_NAME} yet.`;
+    const account = this.hooks.accountOf(id);
+    const row = account === undefined ? undefined : db.guildOf(account);
+    if (!row || row.id !== h.id) return `Only ${flag(h)}'s leader and officers can hire guardians here.`;
+    if (row.rank < GuildRank.Officer) return "Only your guild's leader and officers can hire guardians.";
+    if (this.on) return "Guardians can't be hired during a siege.";
+    return "";
+  }
+
+  /** The Herald's list of guardians, for `id`. */
+  guards(id: string): CastleGuards {
+    return { posts: [...this.posts].sort((a, b) => a - b), why: this.hireBlock(id) };
+  }
+
+  /** The leader or an officer of the castle's guild hires a guardian for a post, out of their own gold. */
+  hire(id: string, post: number) {
+    const p = GUARDIAN_POSTS[post];
+    if (!p) return;
+    const why = this.hireBlock(id);
+    if (why) return this.hooks.notice(id, why);
+    if (this.posts.has(post)) return this.hooks.notice(id, "That post already has a guardian.");
+    const name = MONSTERS[p.kind].name;
+    if (!this.combat.spend(id, GUARDIAN_COST[p.kind], `A ${name}`)) return;
+    this.posts.add(post);
+    db.setCastleGuardians(CASTLE_ID, [...this.posts]);
+    this.combat.spawnGuardian(post);
+    const by = this.players.get(id)?.name ?? "Someone";
+    this.players.forEach((m, member) => {
+      if (m.guild === this.holder?.name) this.hooks.notice(member, `🛡 ${by} hired a ${name} for the ${p.where.toLowerCase()}.`);
+    });
+  }
+
+  /** A guardian fell: its post stays empty until someone hires another. */
+  guardianDown(post: number) {
+    this.posts.delete(post);
+    db.setCastleGuardians(CASTLE_ID, [...this.posts]);
   }
 
   /** The Herald pays a member of the castle's guild their tribute, once a day. */

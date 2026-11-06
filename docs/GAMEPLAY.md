@@ -107,7 +107,7 @@ The town is always safe: monsters never come in, and nobody can attack anyone in
 | Hilda | Blacksmith | Outside the south gate, west of Rowan | Upgrades gear from +0 to +10 |
 | Magnus | Arena Master | By the Arena, east of the Market Square | Explains duels and keeps the arena ranking |
 | Leopold | Guild Registrar | On the main street just east of the fountain plaza, by the GUILDS signpost | Founds guilds |
-| Aldric | Castle Herald | At the camp outside Crownhold's gate | Explains the sieges, and pays the castle's guild its daily tribute |
+| Aldric | Castle Herald | At the camp outside Crownhold's gate | Explains the sieges, pays the castle's guild its daily tribute, and hires out guardians |
 
 ## 4. Player shops
 
@@ -940,16 +940,44 @@ Every **Wednesday and Saturday, 8 to 9 pm** Batam time. The whole town hears whe
 | --- | --- |
 | Who goes in | Only **guild members** may go inside the walls. Anyone else inside when a siege begins is put outside the gate, and can't walk back in until it's over |
 | Fighting | Inside the walls, every guild fights every other: click a member of another guild to attack them. **Any level**, and **nobody becomes an Outlaw**. Party mates and guild mates never fight each other |
-| Falling | Costs **nothing**: no EXP, no gold. Get up, and you're at the camp outside the gate, ready to walk back in |
+| Guardians | The holding guild's hired guards attack any other guild's members inside the walls (see "Guardians") |
+| Falling | Costs **nothing**, whether a player or a guardian beat you: no EXP, no gold. Get up, and you're at the camp outside the gate, ready to walk back in |
 | The crystal | Only members of a guild that **doesn't** hold the castle can strike it, and only during a siege |
 | Breaking it | The guild of whoever lands the **last hit** takes the castle at once, and the whole town hears. Everyone inside who isn't in that guild is thrown out to the camp. The crystal is whole again **10 seconds** later: now the new holders must defend it |
 | The end | Whoever holds Crownhold when the hour is up **keeps it** until the next siege. Their members who are in town at that moment become **Castle Lords** |
 
-Three level-70 Lord Knights break the crystal in a little over a minute when nobody stops them, so the holders need to guard the keep's gate.
+Three level-70 Lord Knights break the crystal in a little over a minute when nobody stops them, so the holders need to guard the keep's gate, or hire someone to do it.
+
+### Guardians
+
+The **leader and officers** of the guild holding Crownhold can hire guardians from **Aldric**, out of their own gold (the guild has no purse of its own). There are **eight posts**, each for one guardian: he lists them, with **Hire** buttons by the empty ones.
+
+| Guardian | Cost | HP | ATK | DEF | Fights |
+| --- | --- | --- | --- | --- | --- |
+| Castle Knight | 5,000 gold | 20,000 | 215 | 80 | Up close |
+| Castle Archer | 4,000 gold | 12,000 | 165 | 50 | Shoots arrows from far away |
+
+| Post | Guardians |
+| --- | --- |
+| Castle gate | 2 Knights and an Archer |
+| Keep gate | 2 Knights and an Archer |
+| Crystal | A Knight and an Archer |
+
+All eight cost 37,000 gold.
+
+- **Hire them before the siege:** nobody can hire during one.
+- **Between sieges** they stand at their posts in plain view. They ignore everyone, and nobody can strike them.
+- **During a siege** they attack any other guild's members inside the walls, and chase them a little way from their posts. They never touch their own guild, or anyone outside the walls. Their own guild can't strike them, and area skills pass them by.
+- **They give no EXP and no loot.** They're just in the way.
+- **A guardian that falls is gone** until someone hires another. Those still standing when the siege ends are healed and stay hired for the next one, even if the server restarts.
+- **If the castle changes hands, all of them leave.** The new holders hire their own, once the siege is over.
+
+Guardians won't hold the castle alone, but they buy time. Four level-70 Lord Knights who needed about 80 seconds to reach and break an undefended crystal took about three and a half minutes against all eight, and had to cut down every one. Add a few defenders, and that's a very different fight.
 
 ### Holding the castle
 
 - **The tribute.** Every member of the holding guild can collect a tribute from **Aldric** once a day (from midnight Batam time): **3,000 to 6,000 gold, 2 Mithril Ingots, a Star Crystal and 10 White Potions**, sometimes a second Star Crystal (1 in 4), and very rarely a monster card (3%). Keep **4 bag slots** free for it.
+- **Guardians.** The leader and officers can hire them from Aldric (see "Guardians").
 - **The title.** Castle Lord ✦ (epic), with its own aura: a violet ring with a column of light and gold and violet sparks.
 - **The banners.** Your guild's emblem over every tower, for everyone crossing the bridge to see.
 
@@ -1104,7 +1132,7 @@ Sell your monster loot to Bram whenever your bag fills up, and sit down (X) to h
 
 ## 18. Coming next
 
-- **More for the guild wars:** more castles, and guardians the holders can hire to defend them.
+- **More castles** for the guild wars.
 - **Raising the level cap** past 70, with new fields above it.
 
 ---

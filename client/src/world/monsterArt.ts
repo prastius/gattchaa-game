@@ -418,6 +418,34 @@ export const MONSTER_ART: Record<MonsterId, MonsterArt> = {
   ),
   // Crownhold.
   crystal: { icon: "crystal_01c", glow: 0x8fd8ff, frame: 64, cols: 4, feet: 60, move: [0, 1, 2, 3, 2, 1], attack: same([0]), w: 44, h: 92, scale: 1.6 },
+  castleKnight: humanoid(
+    [
+      ...skin("light"),
+      { category: "head", id: "male", colors: { body: "light" } },
+      { category: "gear", id: "cape", colors: { cloth: "navy" } },
+      { category: "gear", id: "plate", colors: { metal: "steel" } },
+      { category: "gear", id: "plateArms", colors: { metal: "steel" } },
+      { category: "gear", id: "greaves", colors: { metal: "steel" } },
+      { category: "gear", id: "ironBoots", colors: { metal: "steel" } },
+      { category: "gear", id: "armet", colors: { metal: "steel" } },
+      { category: "gear", id: "kite" },
+      { category: "gear", id: "longsword" },
+    ],
+    { scale: 1.1, w: 30, h: 54 },
+  ),
+  castleArcher: humanoid(
+    [
+      ...skin("olive"),
+      { category: "head", id: "male", colors: { body: "olive" } },
+      { category: "bottom", id: "pants", colors: { cloth: "navy" } },
+      { category: "shoes", id: "boots", colors: { cloth: "brown" } },
+      { category: "gear", id: "capeTattered", colors: { cloth: "navy" } },
+      { category: "gear", id: "leatherArmor" },
+      { category: "gear", id: "hood", colors: { cloth: "navy" } },
+      { category: "gear", id: "bowSilver" },
+    ],
+    { scale: 1.05, w: 28, h: 52, missile: "arrow", missileFrom: 60 },
+  ),
 };
 
 const MOVE_COLS = [0, 1, 2, 1];
