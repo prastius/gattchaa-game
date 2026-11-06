@@ -4,6 +4,7 @@ import { db } from "../db";
 import {
   GUILD_FOUND_GOLD,
   GUILD_FOUND_LV,
+  GUILD_GIFT_MIN,
   GUILD_INVITE_MS,
   GUILD_MAX,
   GuildRank,
@@ -16,12 +17,12 @@ import {
   type GuildMessage,
 } from "../../../shared/guild";
 
-// Guilds: founding one, invites, ranks, leaving and removing, the notice, and
-// who's online. The database holds every guild and its members (accounts);
-// this keeps track of the members who are here right now, puts the guild's
-// name and emblem on their synced Player (for the names over heads, and so
-// guild mates never fight in the Wildlands), and sends each of them the
-// guild window's contents whenever something changes.
+// Guilds: founding one, invites, ranks, leaving and removing, the notice, gifts
+// to the purse, and who's online. The database holds every guild and its
+// members (accounts); this keeps track of the members who are here right now,
+// puts the guild's name and emblem on their synced Player (for the names over
+// heads, and so guild mates never fight in the Wildlands), and sends each of
+// them the guild window's contents whenever something changes.
 
 export interface GuildHooks {
   send(id: string, type: string, msg: unknown): void;
@@ -32,8 +33,10 @@ export interface GuildHooks {
   sessionOf(accountId: number): string | undefined;
   /** The account a session belongs to (guests have none). */
   accountOf(id: string): number | undefined;
-  /** Takes the founding fee; false (having said why) if they can't pay. */
-  pay(id: string, gold: number): boolean;
+  /** Takes gold for `what`; false (having said why) if they can't pay. */
+  pay(id: string, gold: number, what: string): boolean;
+  /** Someone gave gold to their guild's purse. */
+  gave(id: string, gold: number): void;
 }
 
 export class Guilds {
@@ -101,7 +104,7 @@ export class Guilds {
     if (!name) return this.hooks.notice(id, "That can't be a guild name: 3 to 16 letters, digits, spaces, ' or -, not only digits.");
     if (!isEmblem(emblem)) return;
     if (db.guildNameTaken(name)) return this.hooks.notice(id, `There's already a guild called ${name}.`);
-    if (!this.hooks.pay(id, GUILD_FOUND_GOLD)) return;
+    if (!this.hooks.pay(id, GUILD_FOUND_GOLD, "Founding a guild")) return;
     const g = db.createGuild(name, emblem, account);
     if (g === undefined) return this.hooks.notice(id, `There's already a guild called ${name}.`);
     this.here.set(id, g);
@@ -234,6 +237,21 @@ export class Guilds {
     this.sendAll(g);
   }
 
+  /** A member gives gold to the purse. It's the guild's now: gold never comes back out, except to pay for what the guild needs. */
+  give(id: string, gold: unknown) {
+    const g = this.here.get(id);
+    const account = this.hooks.accountOf(id);
+    const p = this.players.get(id);
+    if (g === undefined || account === undefined || !p) return this.hooks.notice(id, "You're not in a guild.");
+    if (!Number.isSafeInteger(gold) || (gold as number) < GUILD_GIFT_MIN) return this.hooks.notice(id, `The smallest gift is ${GUILD_GIFT_MIN} gold.`);
+    const amount = gold as number;
+    if (!this.hooks.pay(id, amount, "That gift")) return;
+    db.giveToPurse(g, account, p.name, amount);
+    this.hooks.gave(id, amount);
+    for (const m of this.online(g)) this.hooks.notice(m, `🛡 ${p.name} gave ${amount.toLocaleString("en-US")} gold to the guild's purse.`);
+    this.sendAll(g);
+  }
+
   /** The guild window was opened: fresh contents (levels change all the time). */
   refresh(id: string) {
     const g = this.here.get(id);
@@ -274,14 +292,26 @@ export class Guilds {
     const members = db.guildMembers(g).map((m) => {
       const s = this.hooks.sessionOf(m.accountId);
       const p = s && this.here.get(s) === g ? this.players.get(s) : undefined;
-      return { id: m.accountId, name: p?.name ?? m.name, cls: p?.cls ?? m.cls, lv: p?.lv ?? m.lv, rank: m.rank, online: Boolean(p), seen: p ? 0 : m.seen };
+      return { id: m.accountId, name: p?.name ?? m.name, cls: p?.cls ?? m.cls, lv: p?.lv ?? m.lv, rank: m.rank, online: Boolean(p), seen: p ? 0 : m.seen, given: m.given };
     });
     const me = members.find((m) => m.id === account);
-    return { id: row.id, name: row.name, emblem: row.emblem, notice: row.notice, me: account, rank: me?.rank ?? GuildRank.Member, members: sortMembers(members) };
+    return {
+      id: row.id,
+      name: row.name,
+      emblem: row.emblem,
+      notice: row.notice,
+      me: account,
+      rank: me?.rank ?? GuildRank.Member,
+      purse: row.purse,
+      log: db.purseLog(g),
+      sieges: row.sieges,
+      crystals: row.crystals,
+      members: sortMembers(members),
+    };
   }
 
   /** Every member who's here gets the window's contents. */
-  private sendAll(g: number) {
+  sendAll(g: number) {
     for (const m of this.online(g)) this.hooks.send(m, "guild", this.message(g, m));
   }
 }

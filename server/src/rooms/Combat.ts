@@ -1011,7 +1011,7 @@ export class Combat {
     return true;
   }
 
-  /** Pays for something the room sells (founding a guild). False, having said why, if they can't. */
+  /** Pays for something the room takes gold for (founding a guild, a gift to its purse). False, having said why, if they can't. */
   spend(id: string, gold: number, what: string): boolean {
     const f = this.fighters.get(id);
     if (!f) return false;
@@ -1346,6 +1346,14 @@ export class Combat {
     f.player.aura = this.auraOf(f);
     f.dirty = f.titlesDirty = true;
     this.save(f);
+  }
+
+  /** Gave gold to their guild's purse. */
+  gaveToGuild(id: string, gold: number) {
+    const f = this.fighters.get(id);
+    if (!f) return;
+    f.book.deeds.given += gold;
+    this.deed(f);
   }
 
   /** Opened a shop in the Market Square. */

@@ -3,6 +3,7 @@ import {
   cleanDeeds,
   isTitleId,
   newTitles,
+  noDeeds,
   titleProgress,
   type Deeds,
   type TitleDef,
@@ -17,6 +18,9 @@ const parse = (json: string | null | undefined): unknown => {
     return null;
   }
 };
+
+/** A character who hasn't done anything yet (deeds always keep noDeeds' order of fields). */
+const NO_DEEDS = JSON.stringify(noDeeds());
 
 /**
  * A character's deeds and titles. Only bookkeeping: Combat says what
@@ -42,10 +46,9 @@ export class TitleBook {
 
   /** For the database (null when there's nothing yet). */
   save(): { deeds: string | null; titles: string | null } {
-    const d = this.deeds;
-    const empty = !Object.keys(d.kills).length && !d.cards.length && !d.legendary && !d.bestUp && !d.upFails && !d.shop && !d.duels;
+    const deeds = JSON.stringify(this.deeds);
     return {
-      deeds: empty ? null : JSON.stringify(d),
+      deeds: deeds === NO_DEEDS ? null : deeds,
       titles: this.earned.length ? JSON.stringify({ earned: this.earned, shown: this.shown }) : null,
     };
   }

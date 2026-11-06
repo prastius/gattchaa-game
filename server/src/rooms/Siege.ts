@@ -26,6 +26,8 @@ export interface SiegeHooks {
   /** Moves a player somewhere else (the room fades them across). */
   move(id: string, x: number, y: number): void;
   accountOf(id: string): number | undefined;
+  /** The purse changed: the members here get the news. */
+  purseChanged(guild: number): void;
 }
 
 /** What the clients see of the castle (fields on the room's synced state). */
@@ -123,6 +125,7 @@ export class Siege {
     const row = account === undefined ? undefined : db.guildOf(account);
     if (!p || !row) return;
     db.setCastleHolder(CASTLE_ID, row.id);
+    db.addCrystal(row.id);
     this.read();
     this.hooks.news(`⚔ ${p.name} broke the crystal: ${flag(row)} takes ${CASTLE_NAME}!`);
     this.clear(row.name, `${CASTLE_NAME} fell to ${flag(row)}! You're thrown out of the castle.`);
@@ -161,8 +164,9 @@ export class Siege {
     this.combat.mendCastle();
     this.read();
     const h = this.holder;
-    this.hooks.news(h ? `🏰 The siege is over: ${flag(h)} holds ${CASTLE_NAME}!` : `🏰 The siege is over, and ${CASTLE_NAME} still has no lord.`);
-    if (!h) return;
+    if (!h) return this.hooks.news(`🏰 The siege is over, and ${CASTLE_NAME} still has no lord.`);
+    const won = db.addSiegeWin(h.id);
+    this.hooks.news(`🏰 The siege is over: ${flag(h)} holds ${CASTLE_NAME}! Sieges won: ${won}.`);
     this.players.forEach((p, id) => {
       if (p.guild === h.name) this.combat.grantTitle(id, "castleLord");
     });
@@ -180,27 +184,39 @@ export class Siege {
     return "";
   }
 
-  /** The Herald's list of guardians, for `id`. */
-  guards(id: string): CastleGuards {
-    return { posts: [...this.posts].sort((a, b) => a - b), why: this.hireBlock(id) };
+  /** What's in the castle guild's purse, for its own members' eyes only. */
+  private purse(id: string): number {
+    const account = this.hooks.accountOf(id);
+    const row = account === undefined ? undefined : db.guildOf(account);
+    return row && row.id === this.holder?.id ? row.purse : 0;
   }
 
-  /** The leader or an officer of the castle's guild hires a guardian for a post, out of their own gold. */
+  /** The Herald's list of guardians, for `id`. */
+  guards(id: string): CastleGuards {
+    return { posts: [...this.posts].sort((a, b) => a - b), why: this.hireBlock(id), purse: this.purse(id) };
+  }
+
+  /** The leader or an officer of the castle's guild hires a guardian for a post, out of the guild's purse. */
   hire(id: string, post: number) {
     const p = GUARDIAN_POSTS[post];
+    const h = this.holder;
     if (!p) return;
     const why = this.hireBlock(id);
-    if (why) return this.hooks.notice(id, why);
+    if (why || !h) return this.hooks.notice(id, why);
     if (this.posts.has(post)) return this.hooks.notice(id, "That post already has a guardian.");
     const name = MONSTERS[p.kind].name;
-    if (!this.combat.spend(id, GUARDIAN_COST[p.kind], `A ${name}`)) return;
+    const cost = GUARDIAN_COST[p.kind];
+    const by = this.players.get(id)?.name ?? "Someone";
+    if (!db.spendPurse(h.id, by, `hired a ${name}`, cost)) {
+      return this.hooks.notice(id, `A ${name} costs ${gold(cost)} gold, and your guild's purse holds ${gold(this.purse(id))}. Any member can give gold from the guild window (G).`);
+    }
     this.posts.add(post);
     db.setCastleGuardians(CASTLE_ID, [...this.posts]);
     this.combat.spawnGuardian(post);
-    const by = this.players.get(id)?.name ?? "Someone";
     this.players.forEach((m, member) => {
-      if (m.guild === this.holder?.name) this.hooks.notice(member, `🛡 ${by} hired a ${name} for the ${p.where.toLowerCase()}.`);
+      if (m.guild === h.name) this.hooks.notice(member, `🛡 ${by} hired a ${name} for the ${p.where.toLowerCase()}.`);
     });
+    this.hooks.purseChanged(h.id);
   }
 
   /** A guardian fell: its post stays empty until someone hires another. */
@@ -225,7 +241,9 @@ export class Siege {
     if (Math.random() < TRIBUTE.card) items.push([cards[Math.floor(Math.random() * cards.length)], 1]);
     if (!this.combat.giveTribute(id, coins, items, TRIBUTE.slots)) return { ok: false, text: `Make room in your bag first: the tribute needs ${TRIBUTE.slots} free slots.` };
     db.setTributeDay(account!, day);
+    db.addToPurse(h.id, TRIBUTE.purse);
+    this.hooks.purseChanged(h.id);
     const what = items.map(([it, n]) => (n > 1 ? `${ITEMS[it].name} ×${n}` : ITEMS[it].name)).join(", ");
-    return { ok: true, text: `Today's tribute: ${gold(coins)} gold, ${what}.` };
+    return { ok: true, text: `Today's tribute: ${gold(coins)} gold, ${what}. And ${gold(TRIBUTE.purse)} gold for your guild's purse.` };
   }
 }

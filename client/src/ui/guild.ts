@@ -1,11 +1,25 @@
 import { CLASSES, isClassId } from "../../../shared/rpg";
-import { GUILD_FOUND_GOLD, GUILD_FOUND_LV, GUILD_MAX, GUILD_NOTICE_MAX, GuildRank, RANK_NAMES, emblemOf, type GuildAskEvent, type GuildMember, type GuildMessage } from "../../../shared/guild";
+import { CASTLE_NAME } from "../../../shared/siege";
+import {
+  GUILD_FOUND_GOLD,
+  GUILD_FOUND_LV,
+  GUILD_GIFT_MIN,
+  GUILD_MAX,
+  GUILD_NOTICE_MAX,
+  GuildRank,
+  RANK_NAMES,
+  emblemOf,
+  type GuildAskEvent,
+  type GuildMember,
+  type GuildMessage,
+} from "../../../shared/guild";
 import type { Net } from "../net";
 import { audio } from "../audio";
 
-// The guild window (G): your guild's emblem and name, its notice, and every
-// member (who's online, their level and job, their rank), with what your rank
-// lets you do: invite from a player's card, remove, appoint officers, hand the
+// The guild window (G): your guild's emblem and name, its record in the guild
+// wars, its notice, its purse and history, and every member (who's online,
+// their level and job, their rank, what they gave), with what your rank lets
+// you do: invite from a player's card, remove, appoint officers, hand the
 // guild over, change the notice, leave. Also the invite you get from a guild.
 
 const $ = (id: string) => document.getElementById(id)!;
@@ -17,10 +31,12 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, className = "", text?
   return e;
 }
 
-/** "online", "5 min ago", "3 h ago", "2 days ago". */
-function seenText(m: GuildMember): string {
-  if (m.online) return "online";
-  const min = Math.max(0, Math.floor((Date.now() - m.seen) / 60_000));
+const gold = (n: number) => n.toLocaleString("en-US");
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
+
+/** "5 min ago", "3 h ago", "2 days ago". */
+function agoText(ms: number): string {
+  const min = Math.max(0, Math.floor((Date.now() - ms) / 60_000));
   if (min < 2) return "just now";
   if (min < 60) return `${min} min ago`;
   const h = Math.floor(min / 60);
@@ -28,6 +44,8 @@ function seenText(m: GuildMember): string {
   const d = Math.floor(h / 24);
   return `${d} day${d === 1 ? "" : "s"} ago`;
 }
+
+const seenText = (m: GuildMember) => (m.online ? "online" : agoText(m.seen));
 
 export class GuildUI {
   private root = $("guild");
@@ -39,6 +57,9 @@ export class GuildUI {
   private timer?: number;
   /** Editing the notice right now (so a refresh doesn't throw away what you're typing). */
   private editing = false;
+  /** What you've typed as a gift to the purse, and the box you type it in. */
+  private gift = "";
+  private giftBox?: HTMLInputElement;
   /** A button waiting for its second click ("Sure?"), and when that runs out. */
   private confirm?: { key: string; until: number };
 
@@ -50,7 +71,7 @@ export class GuildUI {
     net.onGuild.add((g) => {
       this.guild = g;
       if (!g) this.editing = false;
-      if (this.isOpen && !this.editing) this.render();
+      if (this.isOpen && !this.editing && document.activeElement !== this.giftBox) this.render();
     });
     net.onGuildAsk.add((ev) => this.showAsk(ev));
   }
@@ -81,6 +102,7 @@ export class GuildUI {
     this.root.hidden = true;
     this.editing = false;
     this.confirm = undefined;
+    this.gift = "";
   }
 
   /**
@@ -125,10 +147,14 @@ export class GuildUI {
     const name = el("b", "", g.name);
     name.style.color = color;
     title.append(name, el("small", "", g.rank === GuildRank.Leader ? "You lead the guild" : g.rank === GuildRank.Officer ? "You're an officer" : "You're a member"));
+    const holds = (this.net.room.state as { castle?: string }).castle === g.name;
+    const wars = [holds && `🏰 Holds ${CASTLE_NAME}`, g.sieges > 0 && `${plural(g.sieges, "siege")} won`, g.crystals > 0 && `${plural(g.crystals, "crystal")} broken`].filter(Boolean);
+    if (wars.length) title.append(el("small", "", wars.join(" · ")));
     banner.append(mark, title);
     this.list.append(banner);
 
     this.list.append(this.noticeBox(g));
+    this.list.append(this.purseBox(g));
 
     this.list.append(el("p", "titles-group", "Members"));
     for (const m of g.members) this.list.append(this.memberRow(g, m));
@@ -139,6 +165,7 @@ export class GuildUI {
       foot.append(el("p", "skills-hint", "You lead the guild. To leave, make another member the leader first."));
     } else {
       foot.append(this.confirmButton(alone ? "close" : "leave", alone ? "Close the guild" : "Leave the guild", "guild-leave", () => this.net.leaveGuild()));
+      if (alone && g.purse > 0) foot.append(el("p", "skills-hint", `Closing the guild loses the ${gold(g.purse)} gold in its purse.`));
     }
     foot.append(el("p", "skills-hint", "Type /g and a message to talk to everyone in your guild who's online."));
     this.list.append(foot);
@@ -187,13 +214,56 @@ export class GuildUI {
     return box;
   }
 
+  /** The purse: what's in it, the box to give gold, and where the gold went. */
+  private purseBox(g: GuildMessage): HTMLElement {
+    const box = el("div", "guild-purse");
+    const head = el("div", "guild-purse-head");
+    head.append(el("span", "", "Guild purse"), el("b", "", `${gold(g.purse)} gold`));
+    const input = el("input", "guild-give-input");
+    input.inputMode = "numeric";
+    input.autocomplete = "off";
+    input.placeholder = `Gold to give (${GUILD_GIFT_MIN}+)`;
+    input.value = this.gift;
+    this.giftBox = input;
+    const give = this.confirmButton("give", "Give", "title-hide", () => {
+      this.net.giveGuild(Number(this.gift));
+      this.gift = "";
+      this.render();
+    }, "A gift to the purse is the guild's for good: nobody can take it back out");
+    const check = () => {
+      const n = Number(this.gift);
+      give.disabled = n < GUILD_GIFT_MIN || n > (this.net.stats?.gold ?? 0);
+    };
+    input.addEventListener("input", () => {
+      input.value = input.value.replace(/\D/g, "").slice(0, 12);
+      this.gift = input.value;
+      check();
+    });
+    check();
+    const row = el("div", "guild-give");
+    row.append(input, give);
+    box.append(head, row, el("p", "skills-hint", "The purse pays for castle guardians, and nobody can take gold back out of it."));
+    if (g.log.length) {
+      const log = el("ul", "guild-log");
+      for (const l of g.log) {
+        const line = el("li");
+        const what = el("span", "", `${l.who} ${l.what}`);
+        what.title = agoText(l.at);
+        line.append(what, el("b", l.gold > 0 ? "in" : "", `${l.gold > 0 ? "+" : "−"}${gold(Math.abs(l.gold))}`));
+        log.append(line);
+      }
+      box.append(log);
+    }
+    return box;
+  }
+
   private memberRow(g: GuildMessage, m: GuildMember): HTMLElement {
     const row = el("div", `guild-member${m.online ? " online" : ""}${m.id === g.me ? " me" : ""}`);
     const who = el("div", "guild-who");
     const line = el("div", "guild-name");
     line.append(el("i", "guild-dot"), el("span", "", `${m.rank === GuildRank.Leader ? "♛ " : m.rank === GuildRank.Officer ? "✦ " : ""}${m.name}`));
     const cls = isClassId(m.cls) ? CLASSES[m.cls].name : "";
-    who.append(line, el("small", "", `Lv ${m.lv}${cls ? ` ${cls}` : ""} · ${RANK_NAMES[m.rank]} · ${seenText(m)}`));
+    who.append(line, el("small", "", `Lv ${m.lv}${cls ? ` ${cls}` : ""} · ${RANK_NAMES[m.rank]} · ${seenText(m)}${m.given ? ` · gave ${gold(m.given)}` : ""}`));
     row.append(who);
     if (m.id === g.me) return row;
     const acts = el("div", "guild-acts");

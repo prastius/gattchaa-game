@@ -12,6 +12,8 @@ import {
   cleanGuildName,
   emblemOf,
   packEmblem,
+  type GuildBoard,
+  type GuildBoardRow,
 } from "../../../shared/guild";
 import { MACHINES, placeName } from "../../../shared/town";
 import {
@@ -183,6 +185,9 @@ export class TownDialog {
   private guards?: CastleGuards;
   /** What you're filling in on the Registrar's form. */
   private guildForm = { name: "", symbol: 0, color: 0 };
+  /** The Registrar's ranking, as of the last time you asked, and where it's drawn. */
+  private guildRanking?: GuildBoard;
+  private rankingBox?: HTMLElement;
   /** Where the conversation is happening; walking away closes it. */
   anchor = { x: 0, y: 0 };
   /** Where your character stands right now (set by the game scene). */
@@ -220,6 +225,11 @@ export class TownDialog {
     net.onWildBoard.add((b) => {
       this.wild = b;
       if (this.openKind === "bounty") this.render(this.openTarget!, false);
+    });
+    // Only the ranking is drawn again: you may be typing a new guild's name on the form above it.
+    net.onGuildBoard.add((b) => {
+      this.guildRanking = b;
+      this.drawRanking();
     });
     net.onTribute.add((r) => {
       this.tributeNote = r;
@@ -576,7 +586,7 @@ export class TownDialog {
     this.section(`Guardians: ${g.posts.length} of ${GUARDIAN_POSTS.length} posts`);
     if (this.net.guild?.name !== castle) return;
     if (g.why) this.body.append(el("p", "dialog-note", g.why));
-    const gold = this.net.stats?.gold ?? 0;
+    this.body.append(el("p", "arena-me", `Your guild's purse: ${goldText(g.purse)} gold`));
     const list = el("ul", "guardian-list");
     GUARDIAN_POSTS.forEach((p, i) => {
       const row = el("li");
@@ -586,7 +596,7 @@ export class TownDialog {
         const cost = GUARDIAN_COST[p.kind];
         const hire = el("button", "guild-act", `Hire · ${goldText(cost)}`);
         hire.type = "button";
-        hire.disabled = Boolean(g.why) || gold < cost;
+        hire.disabled = Boolean(g.why) || g.purse < cost;
         hire.addEventListener("click", () => {
           audio.blip();
           this.net.hireGuardian(npc.id, i);
@@ -597,12 +607,49 @@ export class TownDialog {
     });
     this.body.append(
       list,
-      el("p", "dialog-note", "Paid from your own gold. A guardian that falls is gone until you hire another; the rest stay for the next siege. If the castle changes hands, they all leave."),
+      el("p", "dialog-note", "Paid from your guild's purse: any member can give gold to it from the guild window (G). A guardian that falls is gone until you hire another; the rest stay for the next siege. If the castle changes hands, they all leave."),
     );
   }
 
-  /** The Guild Registrar: your guild if you have one, or the form to found one (a name, an emblem, the fee). */
+  /** The Guild Registrar: your guild or the form to found one, and the ranking of every guild. */
   private registrar(npc: NpcDef) {
+    if (this.renderFresh) this.net.guildBoard(npc.id);
+    this.registrarDesk(npc);
+    this.section("The top guilds");
+    this.rankingBox = el("div", "guild-ranking");
+    this.body.append(this.rankingBox);
+    this.drawRanking();
+  }
+
+  private drawRanking() {
+    const box = this.rankingBox;
+    const b = this.guildRanking;
+    if (!box || this.openKind !== "guild") return;
+    box.replaceChildren();
+    if (!b) return void box.append(el("p", "dialog-empty", "Reading the records…"));
+    if (!b.top.length) return void box.append(el("p", "dialog-empty", "There are no guilds yet. Yours could be the first!"));
+    const list = el("ol", "arena-board guild-board");
+    const head = el("li", "guild-board-head");
+    head.append(el("span"), el("span", "", "Guild"), el("span", "guild-board-n", "Sieges"), el("span", "guild-board-n", "Crystals"), el("span", "guild-board-n", "Members"));
+    list.append(head);
+    const row = (r: GuildBoardRow, place: number) => {
+      const { symbol, color } = emblemOf(r.emblem);
+      const li = el("li", b.me?.rank === place ? "me" : "");
+      const name = el("span", "arena-name", `${symbol} ${r.name}${r.castles ? " 🏰" : ""}`);
+      name.style.color = color;
+      li.append(el("span", "arena-rank", String(place)), name, el("span", "guild-board-n", String(r.sieges)), el("span", "guild-board-n", String(r.crystals)), el("span", "guild-board-n", String(r.members)));
+      return li;
+    };
+    b.top.forEach((r, i) => list.append(row(r, i + 1)));
+    if (b.me && b.me.rank > b.top.length) list.append(row(b.me, b.me.rank));
+    box.append(
+      list,
+      el("p", "dialog-note", "Holding a castle (🏰) comes first, then sieges won, then crystals broken. A siege is won by holding the castle when it ends. Ties go to the guild whose members have the most levels between them, then to the older guild."),
+    );
+  }
+
+  /** Your guild if you have one, or the form to found one (a name, an emblem, the fee). */
+  private registrarDesk(npc: NpcDef) {
     const g = this.net.guild;
     if (g) {
       const { symbol, color } = emblemOf(g.emblem);
@@ -611,7 +658,7 @@ export class TownDialog {
       name.style.color = color;
       line.append("You're in ", name, ` (${g.members.length} of ${GUILD_MAX}). `, g.rank >= GuildRank.Officer ? "Click other players to invite them." : "");
       this.body.append(line);
-      this.button("Open your guild", "Members, the notice and ranks (G)", () => {
+      this.button("Open your guild", "Members, the notice, the purse and ranks (G)", () => {
         this.close();
         this.openGuild?.();
       }, "primary");

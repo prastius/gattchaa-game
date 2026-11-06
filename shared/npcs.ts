@@ -515,7 +515,7 @@ export const NPCS: NpcDef[] = [
     ...at(226.5, 183.6),
     dir: Dir.Down,
     greeting:
-      "A guild of your own? Reach level 20, bring 10,000 gold, and choose a name and an emblem. Your guild's name and emblem show over every member's head, you get your own chat (type /g), and guild mates never fight each other in the Wildlands. The founder leads: they choose officers, and together they can invite up to 30 members.",
+      "A guild of your own? Reach level 20, bring 10,000 gold, and choose a name and an emblem. Your guild's name and emblem show over every member's head, you get your own chat (type /g), and guild mates never fight each other in the Wildlands. The founder leads: they choose officers, and together they can invite up to 30 members. Every guild has a purse for its gold, and I keep the ranking of the top guilds.",
     chatter: [
       "Found a guild! Level 20 and 10,000 gold.",
       "A guild is for good: it's still there tomorrow.",

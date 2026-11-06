@@ -7,7 +7,7 @@ import { RATING_START, ratingChange, type ArenaRow } from "../../shared/duels";
 import { cleanStack, itemName, type ItemStack } from "../../shared/items";
 import { cleanWares, stackText, type ShopWare } from "../../shared/vending";
 import type { WildBoard, WildRow } from "../../shared/pvp";
-import type { GuildRank } from "../../shared/guild";
+import { GUILD_LOG_MAX, type GuildBoard, type GuildBoardRow, type GuildLogLine, type GuildRank } from "../../shared/guild";
 
 // Saved game data, in one SQLite file: no database server to run, and a backup
 // is a copy of the file. Holds Gattchaa-linked accounts, their sign-in
@@ -67,6 +67,9 @@ export interface GuildRow {
   name: string;
   emblem: number;
   notice: string;
+  purse: number;
+  sieges: number;
+  crystals: number;
 }
 export interface GuildMemberRow {
   accountId: number;
@@ -76,6 +79,7 @@ export interface GuildMemberRow {
   rank: GuildRank;
   /** When they were last in town or last saved (ms). */
   seen: number;
+  given: number;
 }
 
 /** A character's progress: class, level and what they carry. */
@@ -223,11 +227,27 @@ const MIGRATIONS = [
    );`,
   // v12: castle guardians: the posts with a guardian on them, as JSON.
   `ALTER TABLE castles ADD COLUMN guardians TEXT;`,
+  // v13: a guild's purse and what each member gave to it, the last lines of its history, and the
+  // guild's record in the guild wars.
+  `ALTER TABLE guilds ADD COLUMN purse INTEGER NOT NULL DEFAULT 0;
+   ALTER TABLE guilds ADD COLUMN sieges INTEGER NOT NULL DEFAULT 0;
+   ALTER TABLE guilds ADD COLUMN crystals INTEGER NOT NULL DEFAULT 0;
+   ALTER TABLE guild_members ADD COLUMN given INTEGER NOT NULL DEFAULT 0;
+   CREATE TABLE guild_log (
+     id INTEGER PRIMARY KEY,
+     guild_id INTEGER NOT NULL REFERENCES guilds(id) ON DELETE CASCADE,
+     at INTEGER NOT NULL,
+     who TEXT NOT NULL,
+     what TEXT NOT NULL,
+     gold INTEGER NOT NULL
+   );
+   CREATE INDEX guild_log_guild ON guild_log (guild_id, id DESC);`,
 ];
 
 const ACCOUNT_COLS = "id, gattchaa_id AS gattchaaId, display_name AS displayName, name, look";
 const PROGRESS_COLS = "class AS cls, level AS lv, exp, hp, mp, gold, bag, gear, skills, deeds, titles";
 const SHOP_COLS = "account_id AS accountId, id, x, y, title, opened_at AS openedAt, expires_at AS expiresAt, wares";
+const GUILD_COLS = "g.id, g.name, g.emblem, g.notice, g.purse, g.sieges, g.crystals";
 
 /** Sessions are stored hashed: a leaked database file doesn't sign anyone in. */
 const hashToken = (token: string) => crypto.createHash("sha256").update(token).digest("hex");
@@ -251,7 +271,7 @@ export class Db {
   constructor(file: string) {
     if (file !== ":memory:") fs.mkdirSync(path.dirname(file), { recursive: true });
     this.db = new DatabaseSync(file);
-    this.db.exec("PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 2000;");
+    this.db.exec("PRAGMA busy_timeout = 2000; PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL; PRAGMA foreign_keys = ON;");
     this.migrate();
     this.db.prepare("DELETE FROM sessions WHERE expires_at < ?").run(Date.now());
   }
@@ -461,12 +481,12 @@ export class Db {
   /** The guild an account is in, and its rank there. */
   guildOf(accountId: number): (GuildRow & { rank: GuildRank }) | undefined {
     return this.db
-      .prepare("SELECT g.id, g.name, g.emblem, g.notice, m.rank FROM guild_members m JOIN guilds g ON g.id = m.guild_id WHERE m.account_id = ?")
+      .prepare(`SELECT ${GUILD_COLS}, m.rank FROM guild_members m JOIN guilds g ON g.id = m.guild_id WHERE m.account_id = ?`)
       .get(accountId) as (GuildRow & { rank: GuildRank }) | undefined;
   }
 
   guild(id: number): GuildRow | undefined {
-    return this.db.prepare("SELECT id, name, emblem, notice FROM guilds WHERE id = ?").get(id) as GuildRow | undefined;
+    return this.db.prepare(`SELECT ${GUILD_COLS} FROM guilds g WHERE g.id = ?`).get(id) as GuildRow | undefined;
   }
 
   /** Is this name taken (whatever its case)? */
@@ -489,7 +509,7 @@ export class Db {
   guildMembers(guildId: number): GuildMemberRow[] {
     return this.db
       .prepare(
-        `SELECT m.account_id AS accountId, a.name, COALESCE(c.class, 'novice') AS cls, COALESCE(c.level, 1) AS lv, m.rank,
+        `SELECT m.account_id AS accountId, a.name, COALESCE(c.class, 'novice') AS cls, COALESCE(c.level, 1) AS lv, m.rank, m.given,
                 MAX(a.seen_at, COALESCE(c.updated_at, 0)) AS seen
            FROM guild_members m JOIN accounts a ON a.id = m.account_id LEFT JOIN characters c ON c.account_id = m.account_id
           WHERE m.guild_id = ?`,
@@ -525,10 +545,73 @@ export class Db {
     this.db.prepare("UPDATE guilds SET notice = ? WHERE id = ?").run(notice, guildId);
   }
 
+  /** A member gives gold to their guild's purse. */
+  giveToPurse(guildId: number, accountId: number, who: string, gold: number) {
+    this.transaction(() => {
+      this.db.prepare("UPDATE guilds SET purse = purse + ? WHERE id = ?").run(gold, guildId);
+      this.db.prepare("UPDATE guild_members SET given = given + ? WHERE account_id = ?").run(gold, accountId);
+      this.logPurse(guildId, who, "gave gold", gold);
+    });
+  }
+
+  /** Gold from nobody in particular (a castle's tribute): not worth a line in the history. */
+  addToPurse(guildId: number, gold: number) {
+    this.db.prepare("UPDATE guilds SET purse = purse + ? WHERE id = ?").run(gold, guildId);
+  }
+
+  /** Pays out of the purse. False, with nothing paid, when it doesn't hold that much. */
+  spendPurse(guildId: number, who: string, what: string, gold: number): boolean {
+    return this.transaction(() => {
+      if (!this.db.prepare("UPDATE guilds SET purse = purse - ? WHERE id = ? AND purse >= ?").run(gold, guildId, gold).changes) return false;
+      this.logPurse(guildId, who, what, -gold);
+      return true;
+    });
+  }
+
+  private logPurse(guildId: number, who: string, what: string, gold: number) {
+    this.db.prepare("INSERT INTO guild_log (guild_id, at, who, what, gold) VALUES (?, ?, ?, ?, ?)").run(guildId, Date.now(), who, what, gold);
+    this.db
+      .prepare("DELETE FROM guild_log WHERE guild_id = ? AND id NOT IN (SELECT id FROM guild_log WHERE guild_id = ? ORDER BY id DESC LIMIT ?)")
+      .run(guildId, guildId, GUILD_LOG_MAX);
+  }
+
+  /** The purse's history, newest first. */
+  purseLog(guildId: number): GuildLogLine[] {
+    return this.db.prepare("SELECT at, who, what, gold FROM guild_log WHERE guild_id = ? ORDER BY id DESC").all(guildId) as unknown as GuildLogLine[];
+  }
+
+  /** A guild held its castle as a siege ended. Returns how many it has won now. */
+  addSiegeWin(guildId: number): number {
+    this.db.prepare("UPDATE guilds SET sieges = sieges + 1 WHERE id = ?").run(guildId);
+    return this.guild(guildId)?.sieges ?? 0;
+  }
+
+  addCrystal(guildId: number) {
+    this.db.prepare("UPDATE guilds SET crystals = crystals + 1 WHERE id = ?").run(guildId);
+  }
+
+  /** The best `n` guilds, and (for a member of one) their own guild's line and place. There are few guilds, and few people read this. */
+  guildBoard(n: number, accountId?: number): GuildBoard {
+    const rows = this.db
+      .prepare(
+        `SELECT g.id, g.name, g.emblem, g.sieges, g.crystals,
+                (SELECT COUNT(*) FROM castles c WHERE c.guild_id = g.id) AS castles,
+                (SELECT COUNT(*) FROM guild_members m WHERE m.guild_id = g.id) AS members,
+                (SELECT COALESCE(SUM(c.level), 0) FROM guild_members m JOIN characters c ON c.account_id = m.account_id WHERE m.guild_id = g.id) AS levels
+           FROM guilds g
+          ORDER BY castles DESC, g.sieges DESC, g.crystals DESC, levels DESC, g.created_at ASC`,
+      )
+      .all() as unknown as (GuildBoardRow & { id: number; levels: number })[];
+    const line = ({ name, emblem, castles, sieges, crystals, members }: GuildBoardRow): GuildBoardRow => ({ name, emblem, castles, sieges, crystals, members });
+    const mine = accountId === undefined ? undefined : this.guildOf(accountId)?.id;
+    const place = rows.findIndex((r) => r.id === mine);
+    return { top: rows.slice(0, n).map(line), guilds: rows.length, ...(place >= 0 && { me: { ...line(rows[place]), rank: place + 1 } }) };
+  }
+
   /** The guild holding a castle, if any. */
   castleHolder(castle: string): GuildRow | undefined {
     return this.db
-      .prepare("SELECT g.id, g.name, g.emblem, g.notice FROM castles c JOIN guilds g ON g.id = c.guild_id WHERE c.id = ?")
+      .prepare(`SELECT ${GUILD_COLS} FROM castles c JOIN guilds g ON g.id = c.guild_id WHERE c.id = ?`)
       .get(castle) as GuildRow | undefined;
   }
 

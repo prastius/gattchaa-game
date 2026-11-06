@@ -59,6 +59,8 @@ export const TRIBUTE = {
   card: 0.03,
   /** Free bag slots needed to take it. */
   slots: 4,
+  /** Gold the castle also pays into its guild's purse each time a member collects. */
+  purse: 2_000,
 };
 
 /** Where players wake up after being beaten in the siege, and where everyone else is put when the castle changes hands. */
@@ -88,7 +90,7 @@ export const GUARDIAN_POSTS: readonly GuardianPost[] = [
   { kind: "castleKnight", x: 401, y: 74, dir: Dir.Down, where: "Crystal" },
   { kind: "castleArcher", x: 393, y: 78, dir: Dir.Right, where: "Crystal" },
 ];
-/** What one costs to hire (from whoever hires it: a guild has no purse of its own). */
+/** What one costs to hire, out of the guild's purse. */
 export const GUARDIAN_COST: Record<GuardianKind, number> = { castleKnight: 5_000, castleArcher: 4_000 };
 export const isGuardian = (kind: string): kind is GuardianKind => kind === "castleKnight" || kind === "castleArcher";
 
@@ -98,6 +100,8 @@ export interface CastleGuards {
   posts: number[];
   /** Why you can't hire one right now ("" = you can). */
   why: string;
+  /** Gold in the guild's purse (0 unless it's your guild that holds the castle). */
+  purse: number;
 }
 
 /** server -> client: the Herald's answer to collecting the tribute. */

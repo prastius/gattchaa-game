@@ -37,7 +37,9 @@ import type { PartyAnswerMessage, PartyAskEvent, PartyInviteMessage, PartyKickMe
 import type {
   GuildAnswerMessage,
   GuildAskEvent,
+  GuildBoard,
   GuildFoundMessage,
+  GuildGiveMessage,
   GuildInviteMessage,
   GuildKickMessage,
   GuildLeadMessage,
@@ -81,6 +83,7 @@ export class Net {
   readonly onPartyAsk = new Set<(ev: PartyAskEvent) => void>();
   readonly onGuild = new Set<(g: GuildMessage | null) => void>();
   readonly onGuildAsk = new Set<(ev: GuildAskEvent) => void>();
+  readonly onGuildBoard = new Set<(b: GuildBoard) => void>();
   readonly onTribute = new Set<(r: TributeResult) => void>();
   readonly onCastleGuards = new Set<(g: CastleGuards) => void>();
   readonly onDuelStart = new Set<(ev: DuelStartEvent) => void>();
@@ -161,6 +164,9 @@ export class Net {
     });
     room.onMessage("guild:ask", (ev: GuildAskEvent) => {
       for (const fn of this.onGuildAsk) fn(ev);
+    });
+    room.onMessage("guild:board", (b: GuildBoard) => {
+      for (const fn of this.onGuildBoard) fn(b);
     });
     room.onMessage("castle:tribute", (r: TributeResult) => {
       for (const fn of this.onTribute) fn(r);
@@ -306,6 +312,16 @@ export class Net {
 
   setGuildNotice(text: string) {
     this.room.send("guild:notice", { text } satisfies GuildNoticeMessage);
+  }
+
+  /** Gives gold to your guild's purse. */
+  giveGuild(gold: number) {
+    this.room.send("guild:give", { gold } satisfies GuildGiveMessage);
+  }
+
+  /** Asks the Guild Registrar for the ranking. */
+  guildBoard(npc: string) {
+    this.room.send("guild:board", { npc });
   }
 
   /** Asks the Castle Herald for today's tribute (for the guild holding Crownhold). */

@@ -73,7 +73,9 @@ import {
   GUILD_FOUND_GOLD,
   isGuildRank,
   type GuildAnswerMessage,
+  type GuildBoard,
   type GuildFoundMessage,
+  type GuildGiveMessage,
   type GuildInviteMessage,
   type GuildKickMessage,
   type GuildLeadMessage,
@@ -265,6 +267,13 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     "guild:notice": (client: Client, msg: GuildNoticeMessage) => {
       if (this.itemOk(client) && typeof msg?.text === "string") this.guilds.setNotice(client.sessionId, msg.text);
     },
+    "guild:give": (client: Client, msg: GuildGiveMessage) => {
+      if (this.itemOk(client)) this.guilds.give(client.sessionId, msg?.gold);
+    },
+    "guild:board": (client: Client, msg: { npc?: string }) => {
+      if (!this.itemOk(client) || !this.npcNear(client, msg?.npc, "guild")) return;
+      client.send("guild:board", db.guildBoard(10, this.meta.get(client.sessionId)?.account?.id) satisfies GuildBoard);
+    },
     "guild:get": (client: Client) => {
       if (this.itemOk(client)) this.guilds.refresh(client.sessionId);
     },
@@ -344,7 +353,8 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       news: (text) => this.system(text),
       sessionOf: (accountId) => this.sessionOf.get(accountId),
       accountOf: (id) => this.meta.get(id)?.account?.id,
-      pay: (id, gold) => this.combat.spend(id, gold, "Founding a guild"),
+      pay: (id, gold, what) => this.combat.spend(id, gold, what),
+      gave: (id, gold) => this.combat.gaveToGuild(id, gold),
     });
     this.drops = new Drops(this.state.drops, world, (drop) => {
       for (const client of this.clients) if (client.view?.has(drop)) client.view.remove(drop);
@@ -420,6 +430,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
         if (client) this.teleport(client, x, y, Dir.Right);
       },
       accountOf: (id) => this.meta.get(id)?.account?.id,
+      purseChanged: (guild) => this.guilds.sendAll(guild),
     });
     this.clock.setInterval(() => {
       this.brain.tick(NPC_TICK_MS);

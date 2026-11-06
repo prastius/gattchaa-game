@@ -106,7 +106,7 @@ The town is always safe: monsters never come in, and nobody can attack anyone in
 | Bram | Outfitter | Outside the south gate, east of the road | Sells potions and starter gear, buys loot |
 | Hilda | Blacksmith | Outside the south gate, west of Rowan | Upgrades gear from +0 to +10 |
 | Magnus | Arena Master | By the Arena, east of the Market Square | Explains duels and keeps the arena ranking |
-| Leopold | Guild Registrar | On the main street just east of the fountain plaza, by the GUILDS signpost | Founds guilds |
+| Leopold | Guild Registrar | On the main street just east of the fountain plaza, by the GUILDS signpost | Founds guilds, and keeps the ranking of the top guilds |
 | Aldric | Castle Herald | At the camp outside Crownhold's gate | Explains the sieges, pays the castle's guild its daily tribute, and hires out guardians |
 
 ## 4. Player shops
@@ -873,7 +873,7 @@ When a monster falls, the EXP your party earned from it (everyone's damage added
 
 ## 13. Guilds
 
-A party is for one hunt; a **guild** is for good. Ragnarok style, it has a name and an emblem that every member wears over their head, a leader and officers, a notice for everyone, and its own chat. It stays when you leave the game, and it's still there tomorrow.
+A party is for one hunt; a **guild** is for good. Ragnarok style, it has a name and an emblem that every member wears over their head, a leader and officers, a notice for everyone, a purse, and its own chat. It stays when you leave the game, and it's still there tomorrow.
 
 - **Guilds are for signed-in players.** A guild belongs to its members' accounts, so guests can't found or join one.
 - **Up to 30** members.
@@ -892,7 +892,7 @@ Talk to **Leopold the Guild Registrar**, on the main street just east of the fou
 | --- | --- |
 | Leader (♛) | Everything: invite, remove anyone, make members officers (or members again), change the notice, and hand the guild to someone else |
 | Officer (✦) | Invite players, remove members (not other officers or the leader), and change the notice |
-| Member | Talk on the guild chat, and leave whenever they like |
+| Member | Talk on the guild chat, give gold to the purse, and leave whenever they like |
 
 ### Inviting
 
@@ -902,10 +902,34 @@ Talk to **Leopold the Guild Registrar**, on the main street just east of the fou
 
 Press **G** (or the shield button) to open it:
 
-- Your guild's emblem and name, and your rank.
+- Your guild's emblem and name, your rank, and its record in the guild wars: whether it holds Crownhold, sieges won and crystals broken.
 - **The notice:** a short message for every member (when you meet, who to ask, what's next). The leader and officers write it; members see it in the window, and in the chat each time they come into town.
-- **Every member:** a green dot when they're online, their level and job, their rank, and when they were last seen. The leader and officers have buttons by each name: **Officer** / **Member** (the leader), **Leader** (the leader hands over the guild, and becomes an officer), and **×** to remove someone. Buttons that are hard to undo ask "Sure?" first: click again within 3 seconds.
+- **The purse:** the guild's gold, a box to give some, and the last 10 gifts and hires (see "The guild's purse").
+- **Every member:** a green dot when they're online, their level and job, their rank, when they were last seen, and how much gold they've given. The leader and officers have buttons by each name: **Officer** / **Member** (the leader), **Leader** (the leader hands over the guild, and becomes an officer), and **×** to remove someone. Buttons that are hard to undo ask "Sure?" first: click again within 3 seconds.
 - **Leave the guild** at the bottom. The leader can't leave while others are in it: make someone else the leader first. The last one out closes the guild, and its name is free again.
+
+### The guild's purse
+
+Every guild has a purse: shared gold that belongs to the guild, not to anyone in it.
+
+- **Any member can give gold**, from anywhere: open the guild window (G), type an amount (**100 gold or more**) and press **Give**, then **Sure?**. Everyone online hears who gave what.
+- **It pays for castle guardians.** That's the only thing it buys so far (see "Guardians"). The leader and officers do the hiring, at Aldric.
+- **Gold never comes back out.** Nobody can take it out of the purse, not even the leader, so nobody can run off with it. A gift stays in the purse if you leave the guild.
+- **Closing the guild loses what's in the purse.** The window warns you first.
+- **Holding Crownhold fills it.** Each time a member collects the daily tribute, the castle pays **2,000 gold** more into the purse.
+- **The history** shows the last 10 gifts and hires, so everyone can see where the gold went (the castle's payments aren't listed). Hover over a line to see when it happened.
+
+### The top guilds
+
+**Leopold** keeps the ranking of every guild; anyone can read the top ten at his desk, guests too. If your guild isn't in the top ten, its own place is shown underneath.
+
+| Ranked by | |
+| --- | --- |
+| 1. Castles held | The guild holding Crownhold (🏰) comes first |
+| 2. Sieges won | One each time a guild holds the castle as a siege ends |
+| 3. Crystals broken | One each time a member lands the last hit on the crystal |
+| 4. Levels | All its members' levels added up |
+| 5. Age | The older guild |
 
 ### Everything else
 
@@ -950,7 +974,7 @@ Three level-70 Lord Knights break the crystal in a little over a minute when nob
 
 ### Guardians
 
-The **leader and officers** of the guild holding Crownhold can hire guardians from **Aldric**, out of their own gold (the guild has no purse of its own). There are **eight posts**, each for one guardian: he lists them, with **Hire** buttons by the empty ones.
+The **leader and officers** of the guild holding Crownhold can hire guardians from **Aldric**, paid from the **guild's purse** (see "The guild's purse"). There are **eight posts**, each for one guardian: he shows what's in the purse and lists them, with **Hire** buttons by the empty ones.
 
 | Guardian | Cost | HP | ATK | DEF | Fights |
 | --- | --- | --- | --- | --- | --- |
@@ -970,14 +994,14 @@ All eight cost 37,000 gold.
 - **During a siege** they attack any other guild's members inside the walls, and chase them a little way from their posts. They never touch their own guild, or anyone outside the walls. Their own guild can't strike them, and area skills pass them by.
 - **They give no EXP and no loot.** They're just in the way.
 - **A guardian that falls is gone** until someone hires another. Those still standing when the siege ends are healed and stay hired for the next one, even if the server restarts.
-- **If the castle changes hands, all of them leave.** The new holders hire their own, once the siege is over.
+- **If the castle changes hands, all of them leave,** and the gold paid for them doesn't come back. The new holders hire their own, once the siege is over.
 
 Guardians won't hold the castle alone, but they buy time. Four level-70 Lord Knights who needed about 80 seconds to reach and break an undefended crystal took about three and a half minutes against all eight, and had to cut down every one. Add a few defenders, and that's a very different fight.
 
 ### Holding the castle
 
-- **The tribute.** Every member of the holding guild can collect a tribute from **Aldric** once a day (from midnight Batam time): **3,000 to 6,000 gold, 2 Mithril Ingots, a Star Crystal and 10 White Potions**, sometimes a second Star Crystal (1 in 4), and very rarely a monster card (3%). Keep **4 bag slots** free for it.
-- **Guardians.** The leader and officers can hire them from Aldric (see "Guardians").
+- **The tribute.** Every member of the holding guild can collect a tribute from **Aldric** once a day (from midnight Batam time): **3,000 to 6,000 gold, 2 Mithril Ingots, a Star Crystal and 10 White Potions**, sometimes a second Star Crystal (1 in 4), and very rarely a monster card (3%). Keep **4 bag slots** free for it. Each collection also pays **2,000 gold** into your guild's purse.
+- **Guardians.** The leader and officers can hire them from Aldric with the purse (see "Guardians"). Seven members collecting every day pay for a full garrison between one siege and the next.
 - **The title.** Castle Lord ✦ (epic), with its own aura: a violet ring with a column of light and gold and violet sparks.
 - **The banners.** Your guild's emblem over every tower, for everyone crossing the bridge to see.
 
@@ -1041,6 +1065,8 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 | **Guild wars** | | |
 | Siegebreaker | Rare | Help break Crownhold's crystal 5 times |
 | Castle Lord ✦ | Epic | Be in the guild holding Crownhold when a siege ends (and in town at the time) |
+| Patron | Rare | Give 100,000 gold to your guild's purse |
+| Benefactor | Epic | Give 1,000,000 gold to your guild's purse |
 | **Town** | | |
 | Shopkeeper | Uncommon | Open your own shop in the Market Square |
 | Merchant | Rare | Earn 100,000 gold selling things in your shop |

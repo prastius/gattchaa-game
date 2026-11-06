@@ -31,10 +31,12 @@ export interface Deeds {
   /** Players beaten in the Wildlands, and how many of them were Outlaws. */
   pvpWins: number;
   bounties: number;
+  /** Gold given to their guild's purse. */
+  given: number;
 }
 
 export const noDeeds = (): Deeds => ({
-  kills: {}, cards: [], legendary: 0, bestUp: 0, upFails: 0, shop: false, sold: 0, duels: 0, duelWins: 0, arenaWins: 0, pvpWins: 0, bounties: 0,
+  kills: {}, cards: [], legendary: 0, bestUp: 0, upFails: 0, shop: false, sold: 0, duels: 0, duelWins: 0, arenaWins: 0, pvpWins: 0, bounties: 0, given: 0,
 });
 
 const count = (raw: unknown) => (Number.isFinite(Number(raw)) ? Math.max(0, Math.floor(Number(raw))) : 0);
@@ -58,6 +60,7 @@ export function cleanDeeds(raw: unknown): Deeds {
   d.arenaWins = count(r.arenaWins);
   d.pvpWins = count(r.pvpWins);
   d.bounties = count(r.bounties);
+  d.given = count(r.given);
   return d;
 }
 
@@ -78,6 +81,8 @@ export type TitleGoal =
   | { kind: "duels"; n: number; won?: "any" | "ranked" }
   /** Beat `n` players in the Wildlands (or `n` Outlaws). */
   | { kind: "pvp"; n: number; outlaws?: true }
+  /** Give `n` gold to your guild's purse. */
+  | { kind: "given"; n: number }
   /** One of the first PIONEERS players to reach the level cap. */
   | { kind: "pioneer" }
   /** In the guild holding Crownhold when a siege ends (handed out by the siege, like Pioneer). */
@@ -172,6 +177,8 @@ export const TITLES = def({
     name: "Castle Lord", tier: "epic", group: "Guild wars", goal: { kind: "castle" }, aura: AURA_CASTLE_LORD,
     how: "Be in the guild holding Crownhold when a siege ends (and in town at the time).",
   },
+  patron: { name: "Patron", tier: "rare", group: "Guild wars", goal: { kind: "given", n: 100_000 }, how: "Give 100,000 gold to your guild's purse." },
+  benefactor: { name: "Benefactor", tier: "epic", group: "Guild wars", goal: { kind: "given", n: 1_000_000 }, how: "Give 1,000,000 gold to your guild's purse." },
   reaper: { name: "Reaper", tier: "epic", group: "The Wildlands", goal: { kind: "pvp", n: 250 }, how: "Beat 250 players in the Wildlands." },
 
   // ------------------------------------------------------------ town
@@ -214,6 +221,8 @@ export function titleProgress(t: TitleDef, d: Deeds, level: number): [number, nu
       const n = g.outlaws ? d.bounties : d.pvpWins;
       return [Math.min(n, g.n), g.n];
     }
+    case "given":
+      return [Math.min(d.given, g.n), g.n];
     case "pioneer":
     case "castle":
       return [0, 1];
