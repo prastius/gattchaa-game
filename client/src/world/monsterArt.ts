@@ -39,6 +39,8 @@ export interface MonsterArt {
   /** …or an item icon, drawn large and bobbing in a glow of this colour (Crownhold's crystal). */
   icon?: string;
   glow?: number;
+  /** See-through (the Shades on the Isle of Trials). */
+  alpha?: number;
   /** What it shoots, from at least `missileFrom` px away (closer, it bites). */
   missile?: Missile;
   missileFrom?: number;
@@ -67,6 +69,13 @@ const skin = (color: string): ArtPart[] => [{ category: "body", id: "body", colo
 /** No palette has a red skin: the ogres are pale skin multiplied by these. */
 const OGRE_RED = 0xff7a66;
 const WARLORD_RED = 0xe0584a;
+/** The Shades: a second job's look, every part dimmed to dusky violet, and a little see-through. */
+const SHADE_TINT = 0x8a7ad0;
+const shade = (parts: ArtPart[], more: Partial<MonsterArt> = {}): MonsterArt =>
+  humanoid(
+    parts.map((p) => ({ ...p, tint: SHADE_TINT })),
+    { scale: 1.1, w: 30, h: 54, alpha: 0.85, ...more },
+  );
 
 export const MONSTER_ART: Record<MonsterId, MonsterArt> = {
   // The slime's up/down rows have three attack frames, its side rows five.
@@ -445,6 +454,46 @@ export const MONSTER_ART: Record<MonsterId, MonsterArt> = {
       { category: "gear", id: "bowSilver" },
     ],
     { scale: 1.05, w: 28, h: 52, missile: "arrow", missileFrom: 60 },
+  ),
+  // The Isle of Trials.
+  shadeLordKnight: shade([
+    ...skin("light"),
+    { category: "head", id: "male", colors: { body: "light" } },
+    { category: "gear", id: "cape", colors: { cloth: "black" } },
+    { category: "gear", id: "plate", colors: { metal: "steel" } },
+    { category: "gear", id: "plateArms", colors: { metal: "steel" } },
+    { category: "gear", id: "greaves", colors: { metal: "steel" } },
+    { category: "gear", id: "ironBoots", colors: { metal: "steel" } },
+    { category: "gear", id: "horned", colors: { metal: "steel" } },
+    { category: "gear", id: "kite" },
+    { category: "gear", id: "longsword" },
+  ]),
+  shadeWizard: shade(
+    [
+      ...skin("light"),
+      { category: "head", id: "male", colors: { body: "light" } },
+      { category: "beard", id: "beard", colors: { hair: "white" } },
+      { category: "bottom", id: "pants", colors: { cloth: "black" } },
+      { category: "shoes", id: "boots", colors: { cloth: "black" } },
+      { category: "gear", id: "cape", colors: { cloth: "black" } },
+      { category: "gear", id: "tabardWhite", colors: { cloth: "white" } },
+      { category: "gear", id: "celestialMoon", colors: { cloth: "white" } },
+      { category: "gear", id: "crystalRed" },
+    ],
+    { missile: "fire", missileFrom: 60 },
+  ),
+  shadeHunter: shade(
+    [
+      ...skin("light"),
+      { category: "head", id: "male", colors: { body: "light" } },
+      { category: "bottom", id: "pants", colors: { cloth: "black" } },
+      { category: "shoes", id: "boots", colors: { cloth: "black" } },
+      { category: "gear", id: "capeTattered", colors: { cloth: "black" } },
+      { category: "gear", id: "leatherArmor" },
+      { category: "gear", id: "hood", colors: { cloth: "black" } },
+      { category: "gear", id: "greatBowDark" },
+    ],
+    { missile: "arrow", missileFrom: 60 },
   ),
 };
 

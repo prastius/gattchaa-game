@@ -132,6 +132,10 @@ export interface StatsMessage {
   saved: boolean;
   /** An Outlaw (see shared/pvp.ts): for how much longer (ms). */
   outlaw?: number;
+  /** How far along the Trial of Mastery (see shared/trial.ts), when it's started… */
+  trial?: number;
+  /** …and while their Shade is up: how long they have left to beat it (ms). */
+  trialLeft?: number;
 }
 
 /** client -> server: use a bag slot (wear it, or drink it). */

@@ -178,7 +178,10 @@ export type MonsterId =
   | "ogreWarlord"
   | "crystal"
   | "castleKnight"
-  | "castleArcher";
+  | "castleArcher"
+  | "shadeLordKnight"
+  | "shadeWizard"
+  | "shadeHunter";
 
 export interface MonsterDef {
   id: MonsterId;
@@ -537,6 +540,25 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   castleArcher: {
     id: "castleArcher", name: "Castle Archer", level: 68, hp: 12_000, atk: 165, def: 50, exp: 0, gold: [0, 0], speed: 35, chase: 70, aggro: 210, range: 190, attackMs: 1800, radius: 12, respawnMs: 0,
     regen: 0.01,
+    drops: [],
+  },
+
+  // ---------------------------------------------------------------- the Isle of Trials (see shared/trial.ts)
+  // Shades: what a Knight, Mage or Archer could become. Each is raised for one player, fights only them,
+  // and leaves nothing behind: beating it is the way to a second job. They never heal while the trial is on.
+  shadeLordKnight: {
+    id: "shadeLordKnight", name: "Shade of a Lord Knight", level: 52, hp: 22_000, atk: 110, def: 40, exp: 0, gold: [0, 0], speed: 55, chase: 110, aggro: 600, range: 44, attackMs: 1500, radius: 14, respawnMs: 0,
+    regen: 0,
+    drops: [],
+  },
+  shadeWizard: {
+    id: "shadeWizard", name: "Shade of a Wizard", level: 52, hp: 32_000, atk: 115, def: 26, exp: 0, gold: [0, 0], speed: 45, chase: 90, aggro: 600, range: 170, attackMs: 2000, radius: 12, respawnMs: 0,
+    regen: 0,
+    drops: [],
+  },
+  shadeHunter: {
+    id: "shadeHunter", name: "Shade of a Hunter", level: 52, hp: 22_000, atk: 92, def: 32, exp: 0, gold: [0, 0], speed: 55, chase: 105, aggro: 600, range: 190, attackMs: 1700, radius: 12, respawnMs: 0,
+    regen: 0,
     drops: [],
   },
 };

@@ -99,6 +99,8 @@ export interface Progress {
   /** What they've done (kills, cards found, upgrades…) and their titles, as JSON (null = nothing yet). */
   deeds: string | null;
   titles: string | null;
+  /** How far along the Trial of Mastery (see shared/trial.ts). */
+  trial: number;
 }
 
 /** Each entry upgrades the schema by one version (PRAGMA user_version). Append only. */
@@ -242,10 +244,12 @@ const MIGRATIONS = [
      gold INTEGER NOT NULL
    );
    CREATE INDEX guild_log_guild ON guild_log (guild_id, id DESC);`,
+  // v14: how far along the Trial of Mastery (the way to a second job) each character is.
+  `ALTER TABLE characters ADD COLUMN trial INTEGER NOT NULL DEFAULT 0;`,
 ];
 
 const ACCOUNT_COLS = "id, gattchaa_id AS gattchaaId, display_name AS displayName, name, look";
-const PROGRESS_COLS = "class AS cls, level AS lv, exp, hp, mp, gold, bag, gear, skills, deeds, titles";
+const PROGRESS_COLS = "class AS cls, level AS lv, exp, hp, mp, gold, bag, gear, skills, deeds, titles, trial";
 const SHOP_COLS = "account_id AS accountId, id, x, y, title, opened_at AS openedAt, expires_at AS expiresAt, wares";
 const GUILD_COLS = "g.id, g.name, g.emblem, g.notice, g.purse, g.sieges, g.crystals";
 
@@ -348,12 +352,12 @@ export class Db {
   saveProgress(accountId: number, p: Progress) {
     this.db
       .prepare(
-        `INSERT INTO characters (account_id, class, level, exp, hp, mp, gold, bag, gear, skills, deeds, titles, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `INSERT INTO characters (account_id, class, level, exp, hp, mp, gold, bag, gear, skills, deeds, titles, trial, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT(account_id) DO UPDATE SET class = excluded.class, level = excluded.level, exp = excluded.exp,
            hp = excluded.hp, mp = excluded.mp, gold = excluded.gold, bag = excluded.bag, gear = excluded.gear,
-           skills = excluded.skills, deeds = excluded.deeds, titles = excluded.titles, updated_at = excluded.updated_at`,
+           skills = excluded.skills, deeds = excluded.deeds, titles = excluded.titles, trial = excluded.trial, updated_at = excluded.updated_at`,
       )
-      .run(accountId, p.cls, p.lv, p.exp, p.hp, p.mp, p.gold, p.bag, p.gear, p.skills, p.deeds, p.titles, Date.now());
+      .run(accountId, p.cls, p.lv, p.exp, p.hp, p.mp, p.gold, p.bag, p.gear, p.skills, p.deeds, p.titles, p.trial, Date.now());
   }
 
   // ------------------------------------------------------------ the arena

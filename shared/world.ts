@@ -15,6 +15,8 @@ import {
   CASTLE_ISLE,
   FROST_LAIR,
   WARLORD_CAMP,
+  TRIAL_ISLE,
+  TRIAL_GROUND,
   CASTLE,
   CASTLE_CAMP,
   RUINS,
@@ -176,7 +178,15 @@ export class World {
     const dy = (vy - MAIN_CY) / MAIN_CY;
     const dist = Math.sqrt(dx * dx + dy * dy);
     const e = fbm(vx / 70, vy / 70, this.seed, 5);
-    return Math.max(e * 1.2 - Math.pow(dist, 3.5) * 0.85 + 0.14, this.isleElevation(vx, vy, FROSTFELL_ISLE, 4242), this.isleElevation(vx, vy, RAVENMOOR_ISLE, 7373), this.isleElevation(vx, vy, PETALFALL_ISLE, 3131), this.isleElevation(vx, vy, CASTLE_ISLE, 9494));
+    return Math.max(e * 1.2 - Math.pow(dist, 3.5) * 0.85 + 0.14, this.isleElevation(vx, vy, FROSTFELL_ISLE, 4242), this.isleElevation(vx, vy, RAVENMOOR_ISLE, 7373), this.isleElevation(vx, vy, PETALFALL_ISLE, 3131), this.isleElevation(vx, vy, CASTLE_ISLE, 9494), this.trialElevation(vx, vy));
+  }
+
+  /** The Isle of Trials: small, low and round, so the circle in its middle is always dry grass. */
+  private trialElevation(vx: number, vy: number): number {
+    const { cx, cy, rx, ry } = TRIAL_ISLE;
+    const d = Math.hypot((vx - cx) / rx, (vy - cy) / ry);
+    if (d > 1.2) return -1;
+    return 0.62 - d * d * 0.51 + (fbm(vx / 6, vy / 6, this.seed + 2468, 2) - 0.5) * 0.06;
   }
 
   /** An island out at sea (Frostfell, Ravenmoor, Petalfall, Crownhold): its own hills, falling away to the shore. */
@@ -361,9 +371,10 @@ export class World {
     return { top: this.structTop[i], face: this.structFace[i], row: this.faceRow[i] };
   }
 
-  /** Trees and rocks stay out of town, the Blacksmith's yard, the bosses' camps, the piers and off the roads. */
+  /** Trees and rocks stay out of town, the Blacksmith's yard, the bosses' camps, the Isle of Trials' circle, the piers and off the roads. */
   private isReserved(tx: number, ty: number): boolean {
     if (inRect(TOWN_AREA, tx, ty) || inRect(FORGE_YARD, tx, ty) || inRect(ORC_CAMP, tx, ty) || inRect(MINOTAUR_LAIR, tx, ty) || inRect(FROST_LAIR, tx, ty) || inRect(RUINS, tx, ty) || inRect(WARLORD_CAMP, tx, ty) || inRect(CASTLE, tx, ty) || inRect(CASTLE_CAMP, tx, ty)) return true;
+    if (tx >= TRIAL_GROUND.x - 2 && ty >= TRIAL_GROUND.y - 3 && tx < TRIAL_GROUND.x + TRIAL_GROUND.w + 2 && ty < TRIAL_GROUND.y + TRIAL_GROUND.h + 2) return true;
     if (Object.values(PIERS).some((p) => tx >= p.x - 3 && ty >= p.y - 3 && tx < p.x + p.w + 3 && ty < p.y + p.h + 3)) return true;
     if (tx < INTERIOR_ZONE.x + INTERIOR_ZONE.w + 2 && ty < INTERIOR_ZONE.y + INTERIOR_ZONE.h + 2) return true;
     return ROADS.some((r) => tx >= r.x - 2 && ty >= r.y - 2 && tx < r.x + r.w + 1 && ty < r.y + r.h + 1);

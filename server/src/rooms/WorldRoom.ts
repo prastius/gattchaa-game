@@ -67,8 +67,10 @@ import { Drops } from "./Drops";
 import { Parties } from "./Parties";
 import { Guilds } from "./Guilds";
 import { Siege } from "./Siege";
+import { Trials } from "./Trials";
 import { CASTLE_CAMP } from "../../../shared/town";
 import { CRYSTAL, campSpot, type TributeResult } from "../../../shared/siege";
+import { isTrial, type TrialKeeperMessage, type TrialMessage } from "../../../shared/trial";
 import {
   GUILD_FOUND_GOLD,
   isGuildRank,
@@ -176,6 +178,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
   private parties!: Parties;
   private guilds!: Guilds;
   private siege!: Siege;
+  private trials!: Trials;
   /** Fight events waiting to go out, per session; sent once per tick. */
   private fx = new Map<string, FxEvent[]>();
   private stopAnnouncements?: () => void;
@@ -319,6 +322,12 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     job: (client: Client, msg: JobMessage) => {
       if (this.itemOk(client) && this.npcNear(client, msg?.npc, "jobs") && isClassId(msg.cls)) this.combat.changeJob(client.sessionId, msg.cls);
     },
+    trial: (client: Client, msg: TrialMessage) => {
+      if (this.itemOk(client) && !this.meta.get(client.sessionId)?.shop && this.npcNear(client, msg?.npc, "jobs")) this.trials.orin(client.sessionId, msg.step);
+    },
+    "trial:keeper": (client: Client, msg: TrialKeeperMessage) => {
+      if (this.itemOk(client) && this.npcNear(client, msg?.npc, "trial")) this.trials.keeper(client.sessionId, msg.step);
+    },
     "skill:learn": (client: Client, msg: SkillLearnMessage) => {
       if (this.itemOk(client) && isSkillId(msg?.id)) this.combat.learnSkill(client.sessionId, msg.id);
     },
@@ -392,6 +401,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
           this.system(`🏹 ${name} is now the Wildlands' top hunter this week, with ${r.weekWins} players beaten!`);
         }
       },
+      trialOver: (id, how) => this.trials.over(id, how),
       jobChange: (id, cls) => {
         const name = this.state.players.get(id)?.name;
         if (name) this.system(`🎉 ${name} became ${aClass(cls)}!`);
@@ -422,6 +432,13 @@ export class WorldRoom extends Room<{ state: WorldState }> {
         if (rank) this.combat.grantTitle(id, "pioneer");
       },
     });
+    this.trials = new Trials(this.state.players, this.combat, {
+      move: (id, x, y) => {
+        const client = this.clients.getById(id);
+        if (client) this.teleport(client, x, y, Dir.Down);
+      },
+      notice: (id, text) => this.notice(id, text),
+    });
     this.siege = new Siege(this.state, this.state.players, this.combat, {
       news: (text) => this.system(text),
       notice: (id, text) => this.notice(id, text),
@@ -439,6 +456,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       this.parties.tick(Date.now());
       this.guilds.tick(Date.now());
       this.siege.tick(Date.now());
+      this.trials.tick(Date.now());
       this.flushFx();
       this.state.siteOnline = feed.online;
     }, NPC_TICK_MS);
@@ -553,6 +571,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
   onLeave(client: Client) {
     // First, while the session still owns its account (progress is saved under it).
     this.combat.leave(client.sessionId);
+    this.trials.leave(client.sessionId);
     this.parties.leave(client.sessionId, "gone");
     this.guilds.exit(client.sessionId);
     const player = this.state.players.get(client.sessionId);
@@ -1195,12 +1214,16 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       this.combat.grantTitle(client.sessionId, arg);
       return reply(`Test command: you have the title "${TITLES[arg].name}". Show it from your titles (T).`);
     }
+    if (name === "trial" && isTrial(n)) {
+      this.combat.cheatTrial(client.sessionId, n);
+      return reply(`Test command: trial step set to ${n} (0 none, 1 asked, 2 proof given, 3 passed).`);
+    }
     if (name === "job" && isClassId(arg)) {
       this.combat.cheatJob(client.sessionId, arg);
       return reply(`Test command: job set to ${CLASSES[arg].name} (jobs need level 10).`);
     }
     reply(
-      `Test commands: /level <1-${LEVEL_CAP}>, /item <id> [count or +upgrade], /gold <amount>, /siege <on|off|auto>, /tp <x> <y>, /job <novice|knight|mage|archer|lordKnight|wizard|hunter>, /title <id>. Item ids: ${Object.keys(ITEMS).join(", ")}. Title ids: ${Object.keys(TITLES).join(", ")}`,
+      `Test commands: /level <1-${LEVEL_CAP}>, /item <id> [count or +upgrade], /gold <amount>, /siege <on|off|auto>, /tp <x> <y>, /job <novice|knight|mage|archer|lordKnight|wizard|hunter>, /trial <0-3>, /title <id>. Item ids: ${Object.keys(ITEMS).join(", ")}. Title ids: ${Object.keys(TITLES).join(", ")}`,
     );
   }
 

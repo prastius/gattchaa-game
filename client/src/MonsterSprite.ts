@@ -65,7 +65,7 @@ export class MonsterSprite {
     this.ring = scene.add.graphics().setVisible(false);
     this.ring.lineStyle(2, 0xff5a4f, 1).strokeEllipse(0, 0, rx * 2, rx).lineStyle(1, 0xffd0c0, 0.7).strokeEllipse(0, 0, rx * 2 + 6, rx + 3);
 
-    this.sprite = scene.add.sprite(0, 0, "__DEFAULT").setOrigin(0.5, a.feet / a.frame).setScale(a.scale ?? 1).setVisible(false);
+    this.sprite = scene.add.sprite(0, 0, "__DEFAULT").setOrigin(0.5, a.feet / a.frame).setScale(a.scale ?? 1).setAlpha(a.alpha ?? 1).setVisible(false);
     this.barW = this.def.boss ? BOSS_BAR_W : BAR_W;
     this.bar = scene.add.graphics().setVisible(false);
     this.label = scene.add

@@ -1546,11 +1546,28 @@ export class WorldScene extends Phaser.Scene {
     return { guild: s.castle ?? "", emblem: s.castleEmblem ?? 0, siege: Boolean(s.siege), ends: s.siegeEnds ?? 0 };
   }
 
-  /** The holder's banners over the walls, and the siege bar (with the time left) while a siege is on. */
+  /**
+   * The holder's banners over the walls, and the bar at the top of the screen: the time left
+   * to beat your Shade on the Isle of Trials, or else the time left in a siege.
+   */
   private updateCastle() {
     const c = this.castleState;
     this.town.setCastle(c.guild, c.emblem);
     const bar = document.getElementById("siege-bar")!;
+    const trial = this.net.trialEndsAt - Date.now();
+    if (trial > 0) {
+      bar.hidden = false;
+      const s = Math.ceil(trial / 1000);
+      const key = `trial|${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+      if (bar.dataset.key === key) return;
+      bar.dataset.key = key;
+      const head = document.createElement("b");
+      head.textContent = `⚔ Trial of Mastery · ${key.split("|")[1]} left`;
+      const what = document.createElement("span");
+      what.textContent = "Beat your Shade before the time runs out";
+      bar.replaceChildren(head, what);
+      return;
+    }
     bar.hidden = !c.siege;
     if (!c.siege) return;
     const s = Math.max(0, Math.ceil((c.ends - Date.now()) / 1000));

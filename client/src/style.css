@@ -3332,3 +3332,62 @@ button.dialog-link:disabled {
   opacity: 0.45;
   cursor: default;
 }
+
+/* Orin's Trial of Mastery: three steps, ticked off as you go. */
+.trial-steps {
+  display: grid;
+  gap: 4px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trial-steps li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--panel-raised);
+  color: var(--ink-dim);
+  font-size: 12px;
+}
+
+.trial-steps li > b {
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.trial-steps li.now {
+  box-shadow: inset 3px 0 0 #d9c2ff;
+}
+
+.trial-steps li.done > b {
+  color: #7ddb6e;
+}
+
+.trial-proof b {
+  color: #ffb4a8;
+}
+
+.trial-proof b.enough {
+  color: #7ddb6e;
+}
+
+/* The Trial Keeper's card for your Shade. */
+.trial-shade {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 6px 0 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--panel-raised);
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+
+.trial-shade b {
+  color: #d9c2ff;
+  font-size: 14px;
+}

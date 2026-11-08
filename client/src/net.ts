@@ -1,4 +1,5 @@
 import { Client, type Room } from "@colyseus/sdk";
+import type { TrialKeeperMessage, TrialMessage } from "../../shared/trial";
 import {
   ROOM_NAME,
   sanitizeChat,
@@ -92,6 +93,8 @@ export class Net {
   readonly onWildBoard = new Set<(b: WildBoard) => void>();
   /** Your latest character sheet. */
   stats?: StatsMessage;
+  /** While your Shade is up on the Isle of Trials: when the time runs out (local clock; 0 = no Shade). */
+  trialEndsAt = 0;
   /** Your bag and equipment, as of the server's last word. */
   bag?: BagMessage;
   /** Your titles and how far along the rest are. */
@@ -126,6 +129,7 @@ export class Net {
     });
     room.onMessage("me", (s: StatsMessage) => {
       this.stats = s;
+      this.trialEndsAt = s.trialLeft ? Date.now() + s.trialLeft : 0;
       for (const fn of this.onStats) fn(s);
     });
     room.onMessage("fx", (events: FxEvent[]) => this.onFx?.(events));
@@ -242,6 +246,16 @@ export class Net {
   /** Asks the Job Master for a job. */
   chooseJob(npc: string, cls: string) {
     this.room.send("job", { npc, cls } satisfies JobMessage);
+  }
+
+  /** At Orin's: ask about the Trial of Mastery, hand over the proof, or go to the Isle of Trials. */
+  trial(npc: string, step: TrialMessage["step"]) {
+    this.room.send("trial", { npc, step } satisfies TrialMessage);
+  }
+
+  /** At the Trial Keeper's: raise your Shade, give up, or go home. */
+  trialKeeper(npc: string, step: TrialKeeperMessage["step"]) {
+    this.room.send("trial:keeper", { npc, step } satisfies TrialKeeperMessage);
   }
 
   learnSkill(id: SkillId) {

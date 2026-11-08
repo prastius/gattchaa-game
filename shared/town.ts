@@ -134,6 +134,20 @@ export const RUINS: Rect = { x: 424, y: 139, w: 38, h: 27 };
 export const FROST_LAIR: Rect = { x: 170, y: 458, w: 16, h: 10 };
 /** The Ogre Warlord's war camp on Petalfall's high ground, where the road from the pier ends: kept clear of trees and rocks. */
 export const WARLORD_CAMP: Rect = { x: 440, y: 395, w: 18, h: 13 };
+/**
+ * The Isle of Trials: a speck of grass far out in the western sea, with no pier, so nobody can sail
+ * there. Orin sends those ready for their second job (see shared/trial.ts), and they come home the same way.
+ */
+export const TRIAL_ISLE = { cx: 30, cy: 119, rx: 18, ry: 14 };
+/** The flagstone circle in its middle where the Shades are fought: kept clear of trees and rocks. */
+export const TRIAL_GROUND: Rect = { x: 24, y: 115, w: 12, h: 9 };
+/** Where Orin's travellers arrive, at the south edge of the circle (pixels). */
+export const TRIAL_ARRIVAL = { x: 30 * 32, y: 123 * 32 + 8 };
+/** Where a Shade rises: at the south end of the circle, a few steps from the Keeper (pixels). */
+export const TRIAL_SHADE_AT = { x: 30 * 32, y: 121 * 32 + 16 };
+export const onTrialIsle = (px: number, py: number) =>
+  Math.hypot((px / TILE - TRIAL_ISLE.cx) / TRIAL_ISLE.rx, (py / TILE - TRIAL_ISLE.cy) / TRIAL_ISLE.ry) < 1;
+
 /** The ferry piers: out to sea from the meadow's south-east point, and from Frostfell's north shore. */
 export const PIERS = {
   meadow: { x: 241, y: 331, w: 3, h: 6 },
@@ -377,6 +391,8 @@ export const FLOORS: { rect: Rect; floor: Floor }[] = [
   // Crownhold: flagstones all round the bailey, and a red carpet from the keep's gate to the crystal.
   { rect: { x: CASTLE.x + 2, y: CASTLE.y + 2, w: CASTLE.w - 4, h: CASTLE.h - 4 }, floor: Floor.Slab },
   { rect: { x: 399, y: 76, w: 8, h: 2 }, floor: Floor.CarpetRed },
+  // The Isle of Trials' circle.
+  { rect: TRIAL_GROUND, floor: Floor.Slab },
   // Flagstones in the middle of the Ogre Warlord's camp.
   { rect: { x: WARLORD_CAMP.x + 2, y: WARLORD_CAMP.y + 2, w: WARLORD_CAMP.w - 4, h: WARLORD_CAMP.h - 4 }, floor: Floor.Slab },
   // Old flagstones in the Fallen King's courtyard.
@@ -652,6 +668,13 @@ const props: Prop[] = [
   ),
   { type: "crate", x: FROST_LAIR.x + 3, y: FROST_LAIR.y + 3, variant: 1 },
   { type: "barrels", x: FROST_LAIR.x + 11, y: FROST_LAIR.y + 6 },
+
+  // ---- The Isle of Trials: a standing stone at each corner of the circle, and lamps either side of the Keeper.
+  ...[TRIAL_GROUND.x, TRIAL_GROUND.x + TRIAL_GROUND.w - 1].flatMap((x) =>
+    [TRIAL_GROUND.y, TRIAL_GROUND.y + TRIAL_GROUND.h - 1].map((y): Prop => ({ type: "pillar", x, y })),
+  ),
+  { type: "lamp", x: 27, y: 113 },
+  { type: "lamp", x: 33, y: 113 },
 
   // ---- The ferry: crates and barrels waiting at the foot of each pier.
   { type: "crate", x: PIERS.meadow.x + 4, y: PIERS.meadow.y - 2 },

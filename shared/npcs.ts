@@ -8,7 +8,7 @@ import { MARKET_WANDER, PARK_WANDER, STORE_WANDER, TILE, WANDER_AREA, type Rect 
 import type { ShopProduct } from "./gattchaa";
 import { Dir } from "./protocol";
 
-export type NpcKind = "guide" | "shop" | "kuji" | "rooms" | "market" | "grading" | "pickup" | "crier" | "keeper" | "outfitter" | "jobs" | "smith" | "arena" | "ferry" | "bounty" | "guild" | "castle" | "local";
+export type NpcKind = "guide" | "shop" | "kuji" | "rooms" | "market" | "grading" | "pickup" | "crier" | "keeper" | "outfitter" | "jobs" | "smith" | "arena" | "ferry" | "bounty" | "guild" | "castle" | "trial" | "local";
 
 export interface NpcDef {
   id: string;
@@ -445,13 +445,14 @@ export const NPCS: NpcDef[] = [
     ...at(198.5, 241.6),
     dir: Dir.Left,
     greeting:
-      "Every hero starts as a Novice. Reach level 10 out in the meadow and come back to me: I'll make you a Knight, a Mage or an Archer. Choose well, for a job is for life. Reach level 50 and come back once more: Knights become Lord Knights, Mages become Wizards, and Archers become Hunters.",
+      "Every hero starts as a Novice. Reach level 10 out in the meadow and come back to me: I'll make you a Knight, a Mage or an Archer. Choose well, for a job is for life. The second job has to be earned: from level 45, come and ask me about the Trial of Mastery. Pass it, and Knights become Lord Knights, Mages become Wizards, and Archers become Hunters.",
     chatter: [
       "Knight, Mage or Archer… which will you be?",
       "Level 10, and not a day before!",
       "A job is for life. Choose well.",
       "Your skills grow with every level.",
-      "Level 50? Come and see me about your second job!",
+      "Level 45? Ask me about the Trial of Mastery!",
+      "The Shades on the Isle of Trials fight only you.",
     ],
   },
   {
@@ -491,6 +492,19 @@ export const NPCS: NpcDef[] = [
       "My upgrades never break your gear. Promise!",
       "See that glow? Somebody's gear is +7 or better.",
     ],
+  },
+  {
+    // On the Isle of Trials, at the north end of the circle: Orin sends people here for the Trial of Mastery.
+    id: "trial-keeper",
+    name: "Vesna",
+    title: "Trial Keeper",
+    kind: "trial",
+    look: look({ body: "female", hair: "long", hairColor: "white", skin: "light", top: "longsleeve", topColor: "white", bottom: "skirt", bottomColor: "navy", shoes: "boots", shoesColor: "brown", hat: "hood", hatColor: "white" }),
+    ...at(30.5, 114.4),
+    dir: Dir.Down,
+    greeting:
+      "Welcome to the Isle of Trials. When you're ready, I'll raise a Shade of what you could become, here in the circle. It fights only you, and nobody else can help or get in the way. Beat it within three minutes and Orin will give you your second job. Fall, or run out of time, and you can try again: nothing is lost.",
+    chatter: ["Take your time. The Shade will wait.", "Potions are allowed. Shades don't drink them.", "It fights only you. Nobody can help, or get in the way.", "Three minutes, once it rises."],
   },
   {
     // At the camp outside Crownhold's gate, where the road from the long bridge arrives.

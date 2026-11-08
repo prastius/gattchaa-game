@@ -102,7 +102,8 @@ The town is always safe: monsters never come in, and nobody can attack anyone in
 | Corvin | Ferryman | At the end of Ravenmoor's pier | Explains Ravenmoor, and rows you back for free |
 | Marlow | Ship Captain | At the end of the pier on the meadow's east shore | Sails you to Petalfall for 1,200 gold |
 | Willow | Ferry Captain | At the end of Petalfall's pier | Explains Petalfall, and sails you back for free |
-| Orin | Job Master | Just inside the south gate | Makes you a Knight, Mage or Archer at level 10, and gives you your second job at level 50 |
+| Orin | Job Master | Just inside the south gate | Makes you a Knight, Mage or Archer at level 10, sets the Trial of Mastery from level 45, and gives you your second job once you pass it |
+| Vesna | Trial Keeper | On the Isle of Trials (Orin sends you there) | Raises the Shade you fight in the Trial of Mastery, and sends you home |
 | Bram | Outfitter | Outside the south gate, east of the road | Sells potions and starter gear, buys loot |
 | Hilda | Blacksmith | Outside the south gate, west of Rowan | Upgrades gear from +0 to +10 |
 | Magnus | Arena Master | By the Arena, east of the Market Square | Explains duels and keeps the arena ranking |
@@ -360,7 +361,7 @@ These numbers are without any gear. Your stats grow automatically every level; t
 
 ### Second jobs
 
-At **level 50**, go back to **Orin** and take your **second job**. Each job has one, and it's for life too:
+A second job has to be earned: pass the **Trial of Mastery** (below) and **Orin** gives it to you, from **level 50**. Each job has one, and it's for life too:
 
 | First job | Second job | What changes | Lv 60 HP / MP / ATK / DEF |
 | --- | --- | --- | --- |
@@ -372,6 +373,35 @@ At **level 50**, go back to **Orin** and take your **second job**. Each job has 
 - **Three new skills** join your first three, on keys **4, 5 and 6**.
 - Your stats grow a little faster from then on, so the change itself is a step up (you're fully healed too).
 - There's no gift weapon this time, and the whole town hears about it.
+
+### The Trial of Mastery
+
+Ragnarok style, the way to your second job is a quest in three steps. Orin's window shows them, ticked off as you go.
+
+1. **Proof from Frostfell.** From **level 45**, talk to **Orin** and press **Set me the trial**. He asks for loot from Frostfell's monsters, different for each job. They drop it often, or you can buy it in other players' shops. When you have it all, press **Hand over the proof**: he takes all of it at once.
+
+   | Job | Proof |
+   | --- | --- |
+   | Knight | 20 Wight's Chain (Frost Wights) and 20 Drake Scale (Frost Drakes) |
+   | Mage | 20 Frozen Tear (Frost Shamans) and 20 Drake Scale (Frost Drakes) |
+   | Archer | 20 Ram Horn (Ramhorns) and 20 Yeti Fur (Yetis) |
+
+2. **The Shade.** From **level 50**, Orin sends you to the **Isle of Trials**, a small island far out in the western sea (no boat goes there). **Vesna the Trial Keeper** waits at the top of the stone circle. When you're ready, press **Raise the Shade**: a Shade of the job you want rises in the circle, and you have **3 minutes** to beat it. The time left shows at the top of the screen.
+
+   | Your job | Your Shade | Level | HP | How it fights |
+   | --- | --- | --- | --- | --- |
+   | Knight | Shade of a Lord Knight | 52 | 22,000 | Up close, and hits hard |
+   | Mage | Shade of a Wizard | 52 | 32,000 | Throws fire from afar |
+   | Archer | Shade of a Hunter | 52 | 22,000 | Shoots from far away, and fast |
+
+   - **It fights only you.** Nobody else can hit it, and it never goes for anyone else, so other players on the island can't help or get in the way. Each has their own Shade.
+   - **Potions are allowed,** and so are your skills. It never heals.
+   - **Falling costs nothing here:** no EXP lost. You wake up in town as usual. Running out of time, or pressing **Give up**, doesn't cost anything either. The proof stays handed over: ask Orin to send you back and try again.
+   - **Vesna** can send you home at any time (**Take me back to town**).
+
+3. **Your second job.** Beat the Shade and you're taken back to Orin a few seconds later. Talk to him and press **Become…**.
+
+In Frostfell gear with all three first-job skills learned, a level-50 player beats their Shade in a minute or two, with some potions (Knights drink the most; Mages can mostly heal themselves).
 
 ### Skill points
 
@@ -1146,7 +1176,7 @@ Every monster also drops its own card (see Monster cards) and often potions.
 11. **Level 35–40:** Werewolves in the north-west woods, Trolls on the highlands, Vampires on the high ground to the north-east. From 40, bring a party for the **Minotaur King**, and watch your back.
 12. **Level 40–45:** Take the path east off the south road to **Edda**'s pier and sail to **Frostfell** (500 gold). Yetis jump you in the woods west of the pier; Ramhorns to the east only fight back. Then the Frost Shamans on the west shore: close in fast, they throw ice.
 13. **Level 45–50:** Frost Wights on the icy highlands and Frost Drakes in the east. At 50, bring a party of four for the **Frost Giant** at the end of the path. **Bjorn** sails you home for free.
-14. **Level 50:** Back to **Orin** for your second job: **Lord Knight**, **Wizard** or **Hunter**. Spend your new points on the skills on keys 4–6.
+14. **Level 45–50:** Ask **Orin** about the **Trial of Mastery** at 45, and keep the Frostfell loot he asks for instead of selling it. At 50 he sends you to the **Isle of Trials**: beat your Shade (bring potions), then come back for your second job: **Lord Knight**, **Wizard** or **Hunter**. Spend your new points on the skills on keys 4–6.
 15. **Level 50–55:** Down the east road past the Pumpking to **Finn**'s boat, and over to **Ravenmoor** (800 gold). Wraiths in the woods by the pier dodge plain attacks: use your skills. Then the Gargoyles either side of the castle.
 16. **Level 55–60:** Dark Knights below the castle gate, Liches in the east, Flesh Golems in the south. At 60, bring a party of four into the castle for the **Fallen King**. **Corvin** rows you home for free.
 17. **Level 60–65:** Take the path east off the south road, straight on past Edda's pier, to **Marlow**'s ship on the meadow's east shore, and sail to **Petalfall** (1,200 gold). Moon Hares by the pier only fight back but dodge plain attacks: use your skills. Then the Fox Spirits in the north-west woods (close in fast, they throw fire) and the Crow Blades in the middle.

@@ -25,6 +25,7 @@ import {
   statsFor,
   type ClassId,
   type MonsterDef,
+  type MonsterId,
   type Stats,
 } from "../../../shared/rpg";
 import {
@@ -69,7 +70,8 @@ import {
 import { OUTLAW_MS, PVP_COMBAT_MS, PVP_RECOUNT_MS, bountyOf, pvpBlock, type PvpSide, type WantedRow } from "../../../shared/pvp";
 import { PARTY_LEVEL_GAP, PARTY_SHARE_PX, partyShare } from "../../../shared/party";
 import { CRYSTAL, GUARDIAN_POSTS } from "../../../shared/siege";
-import { inCastle } from "../../../shared/town";
+import { TRIAL_GROUND, TRIAL_SHADE_AT, inCastle } from "../../../shared/town";
+import { TRIAL_MS, TRIAL_PROOF, TRIAL_ASK_LEVEL, Trial, isTrial } from "../../../shared/trial";
 import type { Progress } from "../db";
 import { Monster, type Player } from "./WorldState";
 import { Inventory, type GearAt } from "./Inventory";
@@ -119,6 +121,8 @@ export interface CombatHooks {
   levelUp(id: string, lv: number): void;
   /** Someone became a Knight, Mage or Archer. */
   jobChange(id: string, cls: ClassId): void;
+  /** `owner`'s Shade is gone (see shared/trial.ts): they beat it, it beat them, or the time ran out. */
+  trialOver(owner: string, how: "won" | "fell" | "time"): void;
   /** A field boss rose again (`field` is where), or fell (`by` did the most damage). */
   boss(def: MonsterDef, event: "rise" | "down", field: string, by?: string): void;
   /** Someone picked up something legendary, or a monster card: worth telling the town. */
@@ -193,6 +197,8 @@ interface Fighter {
   bagDirty: boolean;
   /** Deeds and titles. */
   book: TitleBook;
+  /** How far along the Trial of Mastery. */
+  trial: Trial;
   titlesDirty: boolean;
   /** An Outlaw until then (0: not one). */
   outlawUntil: number;
@@ -225,6 +231,9 @@ interface Mob {
   frozenUntil: number;
   /** A castle guardian: its post in GUARDIAN_POSTS (and no group: it never comes back by itself). */
   post?: number;
+  /** A Shade on the Isle of Trials: the one player it fights (and only they can strike it), and when the time runs out. */
+  owner?: string;
+  until?: number;
 }
 
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
@@ -319,6 +328,8 @@ export class Combat {
       bagDirty: true,
       book,
       titlesDirty: true,
+      // Already in their second job (a test command, or a rule change): nothing left to do.
+      trial: isTrial(progress?.trial) && !CLASSES[cls].from ? progress.trial : Trial.None,
       outlawUntil: 0,
     };
     const outlaw = this.outlaws.get(player.name) ?? 0;
@@ -352,6 +363,7 @@ export class Combat {
     this.asks.delete(id);
     this.askedAt.delete(id);
     for (const [from, ask] of this.asks) if (ask.to === id) this.asks.delete(from);
+    this.removeShade(id);
     this.save(f);
     this.fighters.delete(id);
     this.drops.release(id);
@@ -376,7 +388,7 @@ export class Combat {
     const f = this.fighters.get(id);
     if (!f || f.player.dead) return;
     const mob = this.mobs.get(mobId);
-    const why = mob && this.castleBlock(f, mob);
+    const why = mob && this.strikeBlock(f, mob);
     if (!mobId) f.target = undefined;
     else if (why) this.fail(f, why);
     else if (mob || this.opponentId(f) === mobId || this.foe(f, mobId)) f.target = mobId;
@@ -422,15 +434,23 @@ export class Combat {
     f.cls = "novice";
     f.player.cls = "novice";
     f.skills = {};
+    f.trial = Trial.None;
     f.buffs.clear();
     this.restat(f);
     f.dirty = true;
     const first = CLASSES[cls].from;
     if (first) {
       this.changeJob(id, first);
+      f.trial = Trial.Passed;
       if (f.player.lv < SECOND_JOB_LEVEL) return this.hooks.notice(id, `Test command: you're ${aClass(first)}. ${CLASSES[cls].name} needs level ${SECOND_JOB_LEVEL}.`);
     }
     if (cls !== "novice") this.changeJob(id, cls);
+  }
+
+  /** Testing only: jump to a step of the Trial of Mastery. */
+  cheatTrial(id: string, trial: Trial) {
+    const f = this.fighters.get(id);
+    if (f) this.setTrial(f, trial);
   }
 
   cheatGold(id: string, gold: number) {
@@ -452,8 +472,11 @@ export class Combat {
     }
 
     const awake = GROUPS.map((g) => this.anyoneNear(g.rect, WAKE_PX));
-    // Guardians only stir in a siege.
-    for (const mob of this.mobs.values()) if (mob.post === undefined ? awake[mob.group] : this.siege) this.think(mob, dtMs, now);
+    // Guardians only stir in a siege; a Shade is always after its owner, until its time runs out.
+    for (const mob of [...this.mobs.values()]) {
+      if (mob.owner !== undefined && now >= (mob.until ?? 0)) this.endShade(mob, "time");
+      else if (mob.owner !== undefined || (mob.post === undefined ? awake[mob.group] : this.siege)) this.think(mob, dtMs, now);
+    }
     for (const f of this.fighters.values()) {
       this.fight(f, now);
       this.regen(f, now);
@@ -511,7 +534,7 @@ export class Combat {
       return;
     }
     if (now < f.nextAttackAt || inSafeZone(f.pos.x, f.pos.y)) return;
-    const blocked = this.castleBlock(f, mob);
+    const blocked = this.strikeBlock(f, mob);
     if (blocked) {
       // The siege ended, or their guild took the castle, while they were swinging.
       f.target = undefined;
@@ -555,7 +578,7 @@ export class Combat {
 
   /** `f` deals damage to a monster (a hit, a skill, or thorns from a card); it may go down. */
   private hurt(mob: Mob, f: Fighter, damage: number, flags: { crit?: 1; thorn?: 1; skill?: SkillId }) {
-    if (this.castleBlock(f, mob)) return;
+    if (this.strikeBlock(f, mob)) return;
     const dealt = Math.min(damage, mob.hp);
     mob.damage.set(f.id, (mob.damage.get(f.id) ?? 0) + dealt);
     if (!flags.thorn) this.drain(f, dealt);
@@ -567,8 +590,9 @@ export class Combat {
     this.defeat(mob);
   }
 
-  /** Why `f` may not strike this monster ("": they may). Only Crownhold's crystal and guardians say no. */
-  private castleBlock(f: Fighter, mob: Mob): string {
+  /** Why `f` may not strike this monster ("": they may). Only Shades, Crownhold's crystal and its guardians say no. */
+  private strikeBlock(f: Fighter, mob: Mob): string {
+    if (mob.owner !== undefined) return mob.owner === f.id ? "" : "That Shade is someone else's trial";
     const crystal = mob.def.id === CRYSTAL;
     if (!crystal && mob.post === undefined) return "";
     const what = crystal ? "the crystal" : "guardians";
@@ -647,6 +671,8 @@ export class Combat {
   }
 
   private defeat(mob: Mob) {
+    // A Shade leaves nothing behind but a second job.
+    if (mob.owner !== undefined) return this.endShade(mob, "won");
     this.hooks.emit(mob.x, mob.y, { k: "down", t: mob.id });
     const top = this.reward(mob);
     if (mob.def.boss) this.hooks.boss(mob.def, "down", GROUP_FIELDS[mob.group].name, top);
@@ -784,6 +810,8 @@ export class Combat {
     f.dirty = f.sheetDirty = true;
     for (const mob of this.mobs.values()) if (mob.target === f.id) this.giveUp(mob);
     this.hooks.emit(f.pos.x, f.pos.y, { k: "down", t: f.id });
+    const shade = this.shadeOf(f.id);
+    if (shade) this.endShade(shade, "fell");
     this.save(f);
   }
 
@@ -805,6 +833,8 @@ export class Combat {
       buffs: [...f.buffs].map(([id, b]) => ({ id, ms: Math.max(0, b.until - now) })),
       saved: f.saved,
       ...(f.player.outlaw && { outlaw: Math.max(0, f.outlawUntil - now) }),
+      ...(f.trial !== Trial.None && { trial: f.trial }),
+      ...(this.shadeOf(f.id) && { trialLeft: Math.max(0, (this.shadeOf(f.id)!.until ?? 0) - now) }),
     };
   }
 
@@ -846,6 +876,7 @@ export class Combat {
       ...f.inv.save(),
       skills: Object.keys(f.skills).length ? JSON.stringify(f.skills) : null,
       ...f.book.save(),
+      trial: f.trial,
     });
   }
 
@@ -1438,6 +1469,102 @@ export class Combat {
     return true;
   }
 
+  // ---------------------------------------------------------------- the Trial of Mastery (see shared/trial.ts)
+
+  /** How far along the trial they are. */
+  trial(id: string): Trial {
+    return this.fighters.get(id)?.trial ?? Trial.None;
+  }
+
+  private setTrial(f: Fighter, trial: Trial) {
+    f.trial = trial;
+    f.dirty = f.sheetDirty = true;
+    this.save(f);
+  }
+
+  /** Orin tells a Knight, Mage or Archer of level 45 or more what to bring. False (having said why) if he can't yet. */
+  askTrial(id: string): boolean {
+    const f = this.fighters.get(id);
+    if (!f || f.player.dead || f.trial !== Trial.None) return false;
+    if (!TRIAL_PROOF[f.cls]) return false;
+    if (f.player.lv < TRIAL_ASK_LEVEL) {
+      this.hooks.notice(id, `Come back at level ${TRIAL_ASK_LEVEL}.`);
+      return false;
+    }
+    this.setTrial(f, Trial.Asked);
+    return true;
+  }
+
+  /** Hands Orin the proof from Frostfell, all of it at once. False (having said why) if something's missing. */
+  proveTrial(id: string): boolean {
+    const f = this.fighters.get(id);
+    const proof = f && TRIAL_PROOF[f.cls];
+    if (!f || !proof || f.player.dead || f.trial !== Trial.Asked) return false;
+    const missing = proof.filter(([item, n]) => f.inv.count(item) < n);
+    if (missing.length) {
+      this.hooks.notice(id, `You still need ${missing.map(([item, n]) => `${n - f.inv.count(item)} more ${ITEMS[item].name}`).join(" and ")}.`);
+      return false;
+    }
+    for (const [item, n] of proof) {
+      let left = n;
+      for (let slot = 0; slot < f.inv.bag.length && left > 0; slot++) {
+        if (f.inv.bag[slot]?.id === item) left -= f.inv.take(slot, left)?.n ?? 0;
+      }
+    }
+    this.changed(f);
+    this.setTrial(f, Trial.Proven);
+    return true;
+  }
+
+  /** Their Shade, while it's up. */
+  private shadeOf(owner: string): Mob | undefined {
+    for (const mob of this.mobs.values()) if (mob.owner === owner) return mob;
+    return undefined;
+  }
+
+  hasShade(owner: string): boolean {
+    return Boolean(this.shadeOf(owner));
+  }
+
+  /** Raises `kind` in the trial circle, for `owner` only; the clock starts now. False if they already have one. */
+  raiseShade(owner: string, kind: MonsterId): boolean {
+    const f = this.fighters.get(owner);
+    if (!f || f.player.dead || this.shadeOf(owner)) return false;
+    const id = this.addMob(MONSTERS[kind], -1, TRIAL_GROUND, TRIAL_SHADE_AT);
+    const mob = this.mobs.get(id)!;
+    mob.owner = owner;
+    mob.until = Date.now() + TRIAL_MS;
+    mob.target = owner;
+    mob.nextAttackAt = Date.now() + 1500;
+    f.sheetDirty = true;
+    return true;
+  }
+
+  /** Their Shade goes, without a word (they gave up, or left the game). */
+  removeShade(owner: string) {
+    const mob = this.shadeOf(owner);
+    if (mob) this.dropShade(mob);
+  }
+
+  private dropShade(mob: Mob) {
+    this.hooks.despawn(mob.state);
+    this.monsters.delete(mob.id);
+    this.mobs.delete(mob.id);
+    for (const f of this.fighters.values()) if (f.target === mob.id) f.target = undefined;
+    const owner = mob.owner && this.fighters.get(mob.owner);
+    if (owner) owner.sheetDirty = true;
+  }
+
+  /** The trial is over: beaten (they passed), fallen, or out of time. */
+  private endShade(mob: Mob, how: "won" | "fell" | "time") {
+    this.hooks.emit(mob.x, mob.y, { k: "down", t: mob.id });
+    this.dropShade(mob);
+    const f = mob.owner && this.fighters.get(mob.owner);
+    if (!f) return;
+    if (how === "won") this.setTrial(f, Trial.Passed);
+    this.hooks.trialOver(f.id, how);
+  }
+
   // ---------------------------------------------------------------- jobs and skills
 
   /**
@@ -1489,6 +1616,8 @@ export class Combat {
    */
   private secondJob(f: Fighter, cls: ClassId) {
     if (f.player.lv < SECOND_JOB_LEVEL) return this.hooks.notice(f.id, `Come back at level ${SECOND_JOB_LEVEL}.`);
+    if (f.trial !== Trial.Passed) return this.hooks.notice(f.id, "Pass the Trial of Mastery first: ask Orin about it.");
+    f.trial = Trial.None;
     f.cls = cls;
     f.player.cls = cls;
     this.restat(f);
@@ -1536,7 +1665,7 @@ export class Combat {
       const aim = targetId || f.target || "";
       foe = this.foe(f, aim);
       mob = foe ? undefined : this.mobs.get(aim);
-      const blocked = mob && this.castleBlock(f, mob);
+      const blocked = mob && this.strikeBlock(f, mob);
       if (blocked) return this.fail(f, blocked);
       const to = foe ? { ...foe.pos, radius: PLAYER_RADIUS } : mob && { x: mob.x, y: mob.y, radius: mob.def.radius };
       if (!to) return this.fail(f, "No target");
@@ -1570,7 +1699,7 @@ export class Combat {
       const opp = this.foe(f, this.opponentId(f) ?? f.target);
       if (opp && dist(at, opp.pos) <= (s.radius ?? 0) + PLAYER_RADIUS) this.foeSkillHit(f, opp, s, lv, Boolean(duel));
       for (const m of [...this.mobs.values()]) {
-        if (dist(at, m) > (s.radius ?? 0) + m.def.radius || this.castleBlock(f, m)) continue;
+        if (dist(at, m) > (s.radius ?? 0) + m.def.radius || this.strikeBlock(f, m)) continue;
         this.skillHit(f, m, s, lv, now);
         if (s.freezeMs && this.mobs.has(m.id)) this.freeze(m, s.freezeMs(lv), now);
       }
@@ -1704,7 +1833,7 @@ export class Combat {
     }
 
     // Left alone: heal up, then wander (or walk home first).
-    if (mob.hp < def.hp && now - mob.lastHitAt > COMBAT_MS && now >= mob.regenAt) {
+    if (mob.owner === undefined && mob.hp < def.hp && now - mob.lastHitAt > COMBAT_MS && now >= mob.regenAt) {
       mob.regenAt = now + 1000;
       mob.hp = Math.min(def.hp, mob.hp + Math.max(1, Math.round(def.hp * (def.regen ?? MOB_REGEN))));
       mob.state.hp = mob.hp;
@@ -1730,6 +1859,7 @@ export class Combat {
   private canChase(mob: Mob, f: Fighter): boolean {
     if (f.player.dead || inSafeZone(f.pos.x, f.pos.y) || !this.atHome(mob, LEASH_PX)) return false;
     if (mob.post !== undefined && !this.guardianFoe(f)) return false;
+    if (mob.owner !== undefined) return mob.owner === f.id;
     const giveUpAt = mob.def.speed > 0 ? LOSE_PX : Math.max(mob.def.aggro, mob.def.range) * 1.5;
     return dist(mob, f.pos) <= giveUpAt;
   }
@@ -1745,7 +1875,7 @@ export class Combat {
     let best: Fighter | undefined;
     let bestD = mob.def.aggro;
     for (const f of this.fighters.values()) {
-      if (f.player.dead || inSafeZone(f.pos.x, f.pos.y) || (mob.post !== undefined && !this.guardianFoe(f))) continue;
+      if (f.player.dead || inSafeZone(f.pos.x, f.pos.y) || (mob.post !== undefined && !this.guardianFoe(f)) || (mob.owner !== undefined && mob.owner !== f.id)) continue;
       const d = dist(mob, f.pos);
       if (d <= bestD) {
         bestD = d;
@@ -1778,6 +1908,8 @@ export class Combat {
     f.dirty = true;
     this.hooks.emit(f.pos.x, f.pos.y, { k: "hit", a: mob.id, t: f.id, d: damage, ...(crit && { crit: 1 as const }) });
     if (f.player.hp <= 0) {
+      // Falling to your Shade costs nothing: try again.
+      if (mob.owner !== undefined) return this.knockOut(f, false);
       if (mob.post === undefined) return this.knockOut(f);
       // Falling in a siege costs nothing, whoever does it.
       this.knockOut(f, false);
