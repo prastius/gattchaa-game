@@ -75,6 +75,14 @@ const FLAME = 0xff9a4a;
 const OBSIDIAN = 0x5a4a50;
 const MAGMA = 0xff7a36;
 const COLOSSUS = 0xd8583a;
+/** Sunscar's and Starfall's creatures, the same way. */
+const SAND = 0xf0c880;
+const DJINN = 0xf0c040;
+const VOID = 0x7a6ae0;
+const SEER = 0xa88af0;
+const STARLIGHT = 0x9ab0ff;
+const CRYSTAL_BLUE = 0x8ae0ff;
+const TYRANT = 0x9a7ae8;
 const tinted = (parts: ArtPart[], tint: number): ArtPart[] => parts.map((p) => ({ ...p, tint }));
 /** The Shades: a second job's look, every part dimmed to dusky violet, and a little see-through. */
 const SHADE_TINT = 0x8a7ad0;
@@ -536,6 +544,136 @@ export const MONSTER_ART: Record<MonsterId, MonsterArt> = {
       { category: "mob", id: "waraxe" },
     ],
     { scale: 2.1, w: 56, h: 108, missile: "fire", missileFrom: 70 },
+  ),
+  // Sunscar.
+  duneStalker: humanoid(
+    [
+      ...tinted(
+        [
+          { category: "body", id: "body", colors: { body: "light" } },
+          { category: "mob", id: "lizardTail", colors: { body: "light" } },
+          { category: "mob", id: "lizardHead", colors: { body: "light" } },
+        ],
+        SAND,
+      ),
+      { category: "bottom", id: "shorts", colors: { cloth: "brown" } },
+      { category: "gear", id: "dagger" },
+    ],
+    { scale: 1.0, w: 28, h: 50 },
+  ),
+  dustDjinn: { file: "ghost.png", tint: DJINN, frame: 64, cols: 6, feet: 56, attack: same([4, 5]), w: 36, h: 50, scale: 1.2, missile: "fire", missileFrom: 60 },
+  tombWarden: humanoid(
+    [
+      { category: "mob", id: "skeletonBody" },
+      { category: "mob", id: "skullHead" },
+      { category: "gear", id: "capeTattered", colors: { cloth: "yellow" } },
+      { category: "gear", id: "legion", colors: { metal: "gold" } },
+      { category: "gear", id: "plateArms", colors: { metal: "gold" } },
+      { category: "gear", id: "barbarian", colors: { metal: "gold" } },
+      { category: "mob", id: "spear" },
+    ],
+    { scale: 1.1, w: 30, h: 54 },
+  ),
+  desertRaider: humanoid(
+    [
+      ...skin("bronze"),
+      { category: "head", id: "male", colors: { body: "bronze" } },
+      { category: "bottom", id: "pants", colors: { cloth: "brown" } },
+      { category: "shoes", id: "boots", colors: { cloth: "brown" } },
+      { category: "gear", id: "leatherArmor" },
+      { category: "gear", id: "capeTattered", colors: { cloth: "tan" } },
+      { category: "gear", id: "hood", colors: { cloth: "tan" } },
+      { category: "gear", id: "scimitar" },
+    ],
+    { scale: 1.05, w: 28, h: 52 },
+  ),
+  sandGolem: humanoid(
+    tinted(
+      [
+        { category: "mob", id: "zombieBody" },
+        { category: "mob", id: "frankHead", colors: { body: "zombie_green" } },
+        { category: "mob", id: "mace" },
+      ],
+      SAND,
+    ),
+    { scale: 1.5, w: 40, h: 72 },
+  ),
+  duneKing: humanoid(
+    [
+      { category: "mob", id: "skeletonBody" },
+      { category: "mob", id: "skullHead" },
+      { category: "gear", id: "cape", colors: { cloth: "yellow" } },
+      { category: "gear", id: "plate", colors: { metal: "gold" } },
+      { category: "gear", id: "plateArms", colors: { metal: "gold" } },
+      { category: "gear", id: "greaves", colors: { metal: "gold" } },
+      { category: "gear", id: "crown" },
+      { category: "gear", id: "scimitar" },
+    ],
+    { scale: 2, w: 54, h: 102, missile: "fire", missileFrom: 70 },
+  ),
+  // Starfall.
+  voidBat: { file: "bat.png", tint: VOID, frame: 64, cols: 7, feet: 52, move: [1, 2, 3, 2], attack: same([4, 5, 6]), w: 30, h: 36, scale: 1.15 },
+  astralSeer: humanoid(
+    tinted(
+      [
+        { category: "mob", id: "skeletonBody" },
+        { category: "mob", id: "skullHead" },
+        { category: "gear", id: "cape", colors: { cloth: "white" } },
+        { category: "gear", id: "tabardWhite", colors: { cloth: "white" } },
+        { category: "gear", id: "hood", colors: { cloth: "white" } },
+        { category: "gear", id: "crystalPurple" },
+      ],
+      SEER,
+    ),
+    { missile: "bolt", missileFrom: 60 },
+  ),
+  starKnight: humanoid(
+    tinted(
+      [
+        ...skin("light"),
+        { category: "head", id: "male", colors: { body: "light" } },
+        { category: "gear", id: "cape", colors: { cloth: "white" } },
+        { category: "gear", id: "plate", colors: { metal: "silver" } },
+        { category: "gear", id: "plateArms", colors: { metal: "silver" } },
+        { category: "gear", id: "greaves", colors: { metal: "silver" } },
+        { category: "gear", id: "ironBoots", colors: { metal: "silver" } },
+        { category: "gear", id: "armet", colors: { metal: "silver" } },
+        { category: "gear", id: "kiteBlue" },
+        { category: "gear", id: "glowsword" },
+      ],
+      STARLIGHT,
+    ),
+    { scale: 1.1, w: 30, h: 54 },
+  ),
+  nightWisp: { file: "ghost.png", tint: 0x7ab8ff, frame: 64, cols: 6, feet: 56, attack: same([4, 5]), w: 36, h: 50, scale: 1.1, alpha: 0.85 },
+  crystalGolem: humanoid(
+    tinted(
+      [
+        { category: "mob", id: "zombieBody" },
+        { category: "mob", id: "frankHead", colors: { body: "zombie_green" } },
+        { category: "mob", id: "mace" },
+      ],
+      CRYSTAL_BLUE,
+    ),
+    { scale: 1.55, w: 42, h: 74 },
+  ),
+  starTyrant: humanoid(
+    [
+      ...tinted(
+        [
+          { category: "body", id: "body", colors: { body: "light" } },
+          { category: "mob", id: "trollHead", colors: { body: "light" } },
+          { category: "mob", id: "hornsCurled", colors: { body: "fur_white" } },
+        ],
+        TYRANT,
+      ),
+      { category: "gear", id: "cape", colors: { cloth: "navy" } },
+      { category: "gear", id: "plate", colors: { metal: "silver" } },
+      { category: "gear", id: "greaves", colors: { metal: "silver" } },
+      { category: "gear", id: "ironBoots", colors: { metal: "silver" } },
+      { category: "mob", id: "waraxe" },
+    ],
+    { scale: 2.2, w: 58, h: 112, missile: "bolt", missileFrom: 70 },
   ),
   // The Isle of Trials.
   shadeLordKnight: shade([

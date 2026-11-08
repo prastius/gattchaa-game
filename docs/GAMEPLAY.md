@@ -62,7 +62,7 @@ Gattchaa Town is a walled royal town in the middle of an island, with gates to t
 - **The Market Square** (by the south gate) is where players run their own shops.
 - **The lakeside park** runs along the west wall, with a pond, benches and a campfire.
 - **The Collectors' Café** is in the east quarter, with **the Arena** behind it: a ring of sand where players duel, with benches for the crowd.
-- **The gates** lead to the monster fields: south to the South Meadow, east to Dusk Hollow, west to the Orc Woods. From the west and east roads, paths run north along the town walls to the Wildlands, and beyond them a long bridge crosses the sea to Crownhold, the guild castle. Off the south road, a path runs east to the meadow's south-east point, where a ferry sails to the snowy island of Frostfell, and on east to the meadow's east shore, where a ship sails to the spring island of Petalfall (and another, from the same pier, to Ashpeak, a volcano far out in the eastern sea). And the east road runs on past the Pumpking to a boat for the autumn island of Ravenmoor.
+- **The gates** lead to the monster fields: south to the South Meadow, east to Dusk Hollow, west to the Orc Woods. From the west and east roads, paths run north along the town walls to the Wildlands, and beyond them a long bridge crosses the sea to Crownhold, the guild castle. Off the south road, a path runs east to the meadow's south-east point, where a ferry sails to the snowy island of Frostfell, and on east to the meadow's east shore, where a ship sails to the spring island of Petalfall (and three more from the same pier, to the islands far out in the eastern sea: Ashpeak, Sunscar and Starfall). And the east road runs on past the Pumpking to a boat for the autumn island of Ravenmoor.
 
 The town is always safe: monsters never come in, and nobody can attack anyone inside the walls, except in a duel both players agreed to.
 
@@ -104,6 +104,10 @@ The town is always safe: monsters never come in, and nobody can attack anyone in
 | Willow | Ferry Captain | At the end of Petalfall's pier | Explains Petalfall, and sails you back for free |
 | Dorian | Ship Captain | On the same pier as Marlow, on the meadow's east shore | Sails you to Ashpeak for 1,500 gold |
 | Cassia | Ferry Captain | At the end of Ashpeak's pier | Explains Ashpeak, and sails you back for free |
+| Soren | Ship Captain | On the same pier as Marlow | Sails you to Sunscar for 1,800 gold |
+| Nadia | Ferry Captain | At the end of Sunscar's pier | Explains Sunscar, and sails you back for free |
+| Lyra | Ship Captain | At the start of the same pier | Sails you to Starfall for 2,200 gold |
+| Celeste | Ferry Captain | At the end of Starfall's pier | Explains Starfall, and sails you back for free |
 | Orin | Job Master | Just inside the south gate | Makes you a Knight, Mage or Archer at level 10, sets the Trial of Mastery from level 45, and gives you your second job once you pass it |
 | Vesna | Trial Keeper | On the Isle of Trials (Orin sends you there) | Raises the Shade you fight in the Trial of Mastery, and sends you home |
 | Bram | Outfitter | Outside the south gate, east of the road | Sells potions and starter gear, buys loot |
@@ -166,7 +170,9 @@ Shops also show as orange dots on the minimap.
 | Frostfell | 40–50 | The ferry from the meadow's south-east point (500 gold; the way back is free) | Edda, Bjorn |
 | Ravenmoor | 50–60 | The boat at the end of the east road, past the Pumpking (800 gold; the way back is free) | Finn, Corvin |
 | Petalfall | 60–70 | The ship from the meadow's east shore (1,200 gold; the way back is free) | Marlow, Willow |
-| Ashpeak | 70–80 | The other ship from the same pier (1,500 gold; the way back is free) | Dorian, Cassia |
+| Ashpeak | 70–80 | Another ship from the same pier (1,500 gold; the way back is free) | Dorian, Cassia |
+| Sunscar | 80–90 | Another ship from the same pier (1,800 gold; the way back is free) | Soren, Nadia |
+| Starfall | 90–100 | Another ship from the same pier (2,200 gold; the way back is free) | Lyra, Celeste |
 
 **The ferry.** Frostfell is an island across the sea, south of the South Meadow. Follow the south road out of the gate and take the path east (there's a signpost), past the Hornets, down to the pier on the meadow's south-east point. **Edda the Ferry Captain** waits at the end of it: talk to her and press **Sail to Frostfell** (500 gold). You step off at the end of Frostfell's pier, by **Bjorn the Ferryman**, who sails you back for free whenever you like. Fainting on Frostfell wakes you up in town as usual.
 
@@ -175,6 +181,8 @@ Shops also show as orange dots on the minimap.
 **The ship to Petalfall.** Petalfall is an island far out in the sea south-east of the meadow, where it's always spring. Take the same path east off the south road as for Frostfell, but go straight on past the path down to Edda (there's a signpost), all the way to the pier on the meadow's east shore. **Marlow the Ship Captain** sails you over for 1,200 gold (level 60 and up); **Willow the Ferry Captain** sails you back for free.
 
 **The ship to Ashpeak.** Ashpeak is a volcanic island far out in the eastern sea, past Ravenmoor and Petalfall: bare black rock, charred pines, ash in the air and embers rising from the ground. Its ship leaves from the same pier as Marlow's, on the meadow's east shore: **Dorian the Ship Captain** sails you over for 1,500 gold (level 70 and up), and **Cassia the Ferry Captain** sails you back for free.
+
+**The ships to Sunscar and Starfall.** Two more islands lie in the far eastern sea, either side of Ashpeak, and their ships leave from the same pier on the meadow's east shore. **Sunscar**, to the north, is an island of sand, dry scrub and old stone under a fierce sun: **Soren the Ship Captain** sails you there for 1,800 gold (level 80 and up), and **Nadia** sails you back. **Starfall**, to the south, is an island where the night never ends, with violet grass under the stars and a lake in the middle: **Lyra the Ship Captain**, at the start of the pier, sails you there for 2,200 gold (level 90 and up), and **Celeste** sails you back.
 
 **South Meadow**
 
@@ -262,6 +270,28 @@ Shops also show as orange dots on the minimap.
 | Magma Golem | 79 | 8,600 | The south of the island | Huge and slow, only fights back, hits harder than anything else here |
 | **Cinder Colossus** (boss) | 84 | 230,000 | His crater in the middle of the island, where the road from the pier ends | See "Field bosses" below |
 
+**Sunscar** (a desert island of sand and dry scrub under a hot wind; the Dune King's sunken temple in its middle)
+
+| Monster | Lv | HP | Where | Behaviour |
+| --- | --- | --- | --- | --- |
+| Dune Stalker | 81 | 6,700 | The dunes south-west of the pier | Only fights back. Quick, and plain attacks often miss it (skills always hit) |
+| Dust Djinn | 83 | 6,500 | The north-west | Hurls searing bolts from far away, attacks on sight |
+| Tomb Warden | 85 | 7,400 | North of the temple | Skeletons in gold armour. Tough, attack anyone who comes close |
+| Desert Raider | 87 | 7,600 | Camped in the east | Quick, attacks anyone who comes close |
+| Sand Golem | 89 | 9,600 | The south of the island | Huge and slow, only fights back, hits very hard |
+| **Dune King** (boss) | 94 | 330,000 | His temple in the middle of the island, where the road from the pier ends | See "Field bosses" below |
+
+**Starfall** (an island of endless night, violet grass and drifting starlight; the Star Tyrant's altar south of its lake)
+
+| Monster | Lv | HP | Where | Behaviour |
+| --- | --- | --- | --- | --- |
+| Void Bat | 91 | 7,400 | The south-west | Quick, attacks anyone who comes close. There are a lot of them |
+| Astral Seer | 93 | 7,200 | The north-west | Casts starlight from far away, attacks on sight |
+| Star Knight | 95 | 8,200 | The north, past the lake | Tough, attacks anyone who comes close |
+| Night Wisp | 97 | 8,400 | Along the east shore | Plain attacks often miss it (skills always hit). Attacks anyone who comes close |
+| Crystal Golem | 99 | 10,600 | The south-east | Huge and slow, only fights back, hits harder than anything else in the world |
+| **Star Tyrant** (boss) | 104 | 450,000 | His altar south of the lake, where the road from the pier ends | See "Field bosses" below |
+
 Goblins, orcs, the undead and the beastmen of the Wildlands, Frostfell, Ravenmoor and Petalfall walk like people, carry real weapons (war axes, maces, flails, tridents, spears, katanas, bows) and lunge at you when they strike.
 
 ### How fighting works
@@ -278,7 +308,7 @@ Goblins, orcs, the undead and the beastmen of the Wildlands, Frostfell, Ravenmoo
 - **Gold** goes to whoever did the most damage.
 - **Easy monsters give less.** A monster more than 5 levels below you gives 15% less EXP for each extra level, down to 10%.
 - **Level-ups** heal you fully. Every 10th level is announced in chat.
-- The level cap is **80** for now and will be raised step by step.
+- The level cap is **100**.
 
 ### EXP needed per level
 
@@ -309,14 +339,20 @@ The Novice levels go fast. From the job change at level 10, each level needs a l
 | 70 | 1,012,566 |
 | 75 | 1,289,762 |
 | 79 | 1,549,910 |
+| 80 | 1,620,704 |
+| 85 | 2,011,853 |
+| 90 | 2,470,005 |
+| 95 | 3,002,284 |
+| 99 | 3,486,474 |
 
-Fighting monsters of your own level, a level takes about 4 minutes at level 12, about 8 minutes at level 18, about 12 to 15 minutes in the Orc Woods (levels 20–30), about 11 to 15 minutes in the Wildlands (levels 30–40), about 10 to 16 minutes on Frostfell (levels 40–50), about 14 to 17 minutes on Ravenmoor (levels 50–60), about 15 to 20 minutes on Petalfall (levels 60–70), and about 12 to 24 minutes on Ashpeak (levels 70–80). Using your skills makes it quicker.
+Fighting monsters of your own level, a level takes about 4 minutes at level 12, about 8 minutes at level 18, about 12 to 15 minutes in the Orc Woods (levels 20–30), about 11 to 15 minutes in the Wildlands (levels 30–40), about 10 to 16 minutes on Frostfell (levels 40–50), about 14 to 17 minutes on Ravenmoor (levels 50–60), about 15 to 20 minutes on Petalfall (levels 60–70), about 12 to 24 minutes on Ashpeak (levels 70–80), and about 13 to 23 minutes on Sunscar and Starfall (levels 80–100). Using your skills makes it quicker.
 
 ### Healing and fainting
 
 - Out of combat you slowly get HP and MP back: a full heal takes about a minute.
 - **Sit down** (X) to heal 3× faster. Resting **inside the town walls** doubles that again.
 - **Potions** heal straight away, even in the middle of a fight: one every 0.8 seconds. Q drinks the smallest potion that heals you fully.
+- From **level 70** you can drink **Golden Potions** (600 HP, from Bram). Below that they're too strong for you, and Q skips them.
 - **Fainting.** At 0 HP you faint and wake up back in town, fully healed. Novices lose nothing. Knights, Mages and Archers lose 3% of a level's EXP.
 - **Beaten by another player** in the Wildlands, you lose nothing, unless you're an Outlaw (see "Open PVP: the Wildlands").
 
@@ -371,6 +407,20 @@ Fighting monsters of your own level, a level takes about 4 minutes at level 12, 
 - When he falls, the whole town hears who brought him down. He comes back **30 minutes** later.
 - He's meant for a party of four at level 80: four level-80 players beat him in about five minutes, with one of them taking the hits and drinking a lot of potions.
 - **He always drops** the Heart of Flame (sells for 12,000 gold), a Mithril Ingot and a Star Crystal (often two), and usually a White Potion. He often drops good gear (Magma Lance, Obsidian Longbow, Magma Staff, Obsidian Plate, Obsidian Shield). Rarely he drops the **Colossus Heart** (6%), and very rarely the legendary **Cinder Colossus Card** (2%) or **Colossus Mantle** (1.5%), armour anyone can wear.
+
+**The Dune King** sits on his throne in the sunken temple in the middle of Sunscar, at the end of the road from the pier: two rows of pillars, fires at the door.
+
+- He has 330,000 HP, swings a curved sword, throws fire at anyone out of his reach, and heals slowly if left alone. He's a crowned skeleton in gold armour.
+- When he falls, the whole town hears who brought him down. He comes back **30 minutes** later.
+- He's meant for a party of four at level 90: four level-90 players beat him in about six or seven minutes, with one of them taking the hits and drinking a lot of potions.
+- **He always drops** the Sun Disk (sells for 15,000 gold), a Mithril Ingot and a Star Crystal (often two), and usually a White Potion. He often drops good gear (Sun Spear, Sunbeam Longbow, Sun Staff, Warden Plate, Sun Shield). Rarely he drops the **Sun Medallion** (6%), and very rarely the legendary **Dune King Card** (2%) or **Sun Aegis** (1.5%), a shield anyone with a free hand can carry.
+
+**The Star Tyrant** stands at his altar south of Starfall's lake, at the end of the road from the pier: a wide ring of standing stones and lamps under the stars.
+
+- He has 450,000 HP, swings a huge war axe, casts starlight at anyone out of his reach, and heals slowly if left alone. He's the biggest boss of all: a violet giant in silver armour.
+- When he falls, the whole town hears who brought him down. He comes back **30 minutes** later.
+- He's meant for a party of four at level 100: four level-100 players beat him in about six or seven minutes, with one of them taking the hits and drinking a lot of potions.
+- **He always drops** the Fallen Star (sells for 20,000 gold), a Mithril Ingot and a Star Crystal (often two), and usually a White Potion. He often drops good gear (Void Lance, Starlight Longbow, Astral Staff, Star Plate, Star Shield). Rarely he drops the **Tyrant's Star** (6%), and very rarely the legendary **Star Tyrant Card** (2%) or **Ring of the Fallen Star** (1.5%), a ring anyone can wear.
 
 ## 6. Jobs and skills
 
@@ -431,7 +481,7 @@ In Frostfell gear with all three first-job skills learned, a level-50 player bea
 
 ### Skill points
 
-- You get **1 skill point** at the job change, and **1 more every level** after that: 41 at level 50, 51 at level 60, 61 at level 70, 71 at level 80. Until the late 60s that's not enough to max all six skills, so choose; by level 69 you can max them all.
+- You get **1 skill point** at the job change, and **1 more every level** after that: 41 at level 50, 51 at level 60, 61 at level 70, 71 at level 80, 91 at level 100. Until the late 60s that's not enough to max all six skills, so choose; by level 69 you can max them all.
 - Spend them in the skills window (**K**). Each skill goes up to **level 10** and gets stronger every level.
 - Use skills with keys **1–6** or the skill buttons. Each skill costs MP and has a cooldown, shown as a shadow on its button. There's also a short pause (0.7 s) between any two skills.
 - Aimed skills use your target. Without one, they pick the nearest monster and walk you into range.
@@ -515,7 +565,7 @@ Frozen (and snared) monsters turn icy blue and can't move or attack. While a buf
 - Monsters drop loot on the ground around them. Rarer loot glows.
 - For the first **15 seconds**, only the player who did the most damage (and their party) can pick it up (it looks faded to everyone else). After that, anyone can.
 - Loot disappears after **90 seconds**. Click it to walk over and pick it up.
-- Every monster drops its own loot to sell (Slime Jelly, Snake Scale, Wild Honey, Bloom Crystal, Sticky Silk, Bat Fang, Rock Shard, Gazer Lens, Ectoplasm, Goblin Charm, Orc Tusk, Orcish Arrowhead, Old Bone, Rotten Bandage, Boar Hide, Lizard Scale, Wolf Pelt, Troll Tooth, Blood Ruby, Yeti Fur, Ram Horn, Frozen Tear, Wight's Chain, Drake Scale, Wraith Essence, Gargoyle Shard, Rusted Key, Bone Dust, Golem's Heart, Moonstone, Foxfire Ember, Smoke Bomb, Faded Scroll, Ogre Brew, Imp Horn, Salamander Scale, Obsidian Shard, Cinder Veil, Magma Core), plus potions, now and then gear, ingots for the Blacksmith, and very rarely its card.
+- Every monster drops its own loot to sell (Slime Jelly, Snake Scale, Wild Honey, Bloom Crystal, Sticky Silk, Bat Fang, Rock Shard, Gazer Lens, Ectoplasm, Goblin Charm, Orc Tusk, Orcish Arrowhead, Old Bone, Rotten Bandage, Boar Hide, Lizard Scale, Wolf Pelt, Troll Tooth, Blood Ruby, Yeti Fur, Ram Horn, Frozen Tear, Wight's Chain, Drake Scale, Wraith Essence, Gargoyle Shard, Rusted Key, Bone Dust, Golem's Heart, Moonstone, Foxfire Ember, Smoke Bomb, Faded Scroll, Ogre Brew, Imp Horn, Salamander Scale, Obsidian Shard, Cinder Veil, Magma Core, Dune Fang, Djinn Dust, Tomb Relic, Raider's Coin, Living Sand, Void Wing, Seer's Eye, Star Shard, Wisp Light, Crystal Heart), plus potions, now and then gear, ingots for the Blacksmith, and very rarely its card.
 
 ### Bram the Outfitter
 
@@ -526,6 +576,7 @@ Bram stands outside the south gate. He sells:
 | Red Potion (heals 40 HP) | 12 |
 | Orange Potion (heals 100 HP) | 40 |
 | White Potion (heals 250 HP) | 120 |
+| Golden Potion (heals 600 HP, level 70 and up) | 300 |
 | Dagger | 50 |
 | Short Sword | 160 |
 | Squire's Longsword (Knights) | 900 |
@@ -565,6 +616,8 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Gilded Blade | 52 | ATK +70, Critical +4% | Novice, Knight | 2 | Gargoyle |
 | Blossom Blade | 62 | ATK +84, Critical +5% | Novice, Knight | 2 | Moon Hare, Crow Blade |
 | Cinder Blade | 72 | ATK +96, Critical +5% | Novice, Knight | 2 | Ember Imp, Magma Golem |
+| Sun Blade | 82 | ATK +108, Critical +5% | Novice, Knight | 2 | Dune Stalker, Sand Golem |
+| Star Blade | 92 | ATK +120, Critical +6% | Novice, Knight | 2 | Void Bat, Crystal Golem |
 | Halberd (spear, both hands) | 25 | ATK +50 | Knight | 2 | Orc Warrior, Orc Warlord |
 | Dragon Spear (legendary, spear, both hands) | 30 | ATK +66, Critical +8% | Knight | 2 | Orc Warlord |
 | Long Spear (spear, both hands) | 32 | ATK +62 | Knight | 2 | Boarman, Lizardman |
@@ -574,6 +627,8 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Dark Lance (spear, both hands) | 56 | ATK +104, Critical +4% | Knight | 2 | Dark Knight, Flesh Golem, Fallen King |
 | Thunder Glaive (spear, both hands) | 66 | ATK +124, Critical +4% | Knight | 2 | Phantom Swordsman, Red Ogre, Ogre Warlord |
 | Magma Lance (spear, both hands) | 76 | ATK +140, Critical +4% | Knight | 2 | Obsidian Knight, Magma Golem, Cinder Colossus |
+| Sun Spear (spear, both hands) | 86 | ATK +158, Critical +4% | Knight | 2 | Tomb Warden, Sand Golem, Dune King |
+| Void Lance (spear, both hands) | 96 | ATK +176, Critical +4% | Knight | 2 | Star Knight, Crystal Golem, Star Tyrant |
 | Hunting Bow | 10 | ATK +9, reach 170 | Archer | 1 | Orin (job gift), Bram |
 | Recurve Bow | 12 | ATK +14, reach 190 | Archer | 2 | Snapper Flower |
 | Great Bow | 16 | ATK +23, reach 210 | Archer | 2 | Gazer, Pumpking |
@@ -589,6 +644,10 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Ogre-Bone Longbow | 66 | ATK +90, Critical +4%, reach 255 | Archer | 2 | Crow Blade, Red Ogre, Ogre Warlord |
 | Ember Bow | 72 | ATK +84, reach 255 | Archer | 2 | Ember Imp |
 | Obsidian Longbow | 76 | ATK +102, Critical +4%, reach 260 | Archer | 2 | Cinder Wraith, Magma Golem, Cinder Colossus |
+| Sand Bow | 82 | ATK +94, reach 260 | Archer | 2 | Dune Stalker |
+| Sunbeam Longbow | 86 | ATK +114, Critical +4%, reach 265 | Archer | 2 | Desert Raider, Sand Golem, Dune King |
+| Moon Bow | 92 | ATK +104, reach 265 | Archer | 2 | Void Bat |
+| Starlight Longbow | 96 | ATK +126, Critical +4%, reach 270 | Archer | 2 | Night Wisp, Crystal Golem, Star Tyrant |
 | Apprentice Staff | 10 | ATK +9, MP +15, reach 150 | Mage | 1 | Orin (job gift), Bram |
 | Gnarled Staff | 12 | ATK +14, MP +25, reach 160 | Mage | 2 | Snapper Flower |
 | Crystal Staff | 15 | ATK +19, MP +40, reach 170 | Mage | 2 | Snapper Flower |
@@ -605,6 +664,10 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Storm Staff | 66 | ATK +90, MP +300, reach 245 | Mage | 2 | Fox Spirit, Red Ogre, Ogre Warlord |
 | Cinder Staff | 72 | ATK +84, MP +280, reach 245 | Mage | 2 | Salamander |
 | Magma Staff | 76 | ATK +102, MP +340, reach 250 | Mage | 2 | Salamander, Magma Golem, Cinder Colossus |
+| Djinn Staff | 82 | ATK +94, MP +320, reach 250 | Mage | 2 | Dust Djinn |
+| Sun Staff | 86 | ATK +114, MP +380, reach 255 | Mage | 2 | Dust Djinn, Sand Golem, Dune King |
+| Seer's Staff | 92 | ATK +104, MP +360, reach 255 | Mage | 2 | Astral Seer |
+| Astral Staff | 96 | ATK +126, MP +420, reach 260 | Mage | 2 | Astral Seer, Crystal Golem, Star Tyrant |
 
 **Spears** are new for Knights (in Ragnarok, Knights carry spears). They hit harder than swords but need both hands, so no shield.
 
@@ -624,6 +687,9 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Ruin Shield | 55 | DEF +18, HP +270 | Gargoyle, Dark Knight, Fallen King |
 | Jade Shield | 65 | DEF +20, HP +320 | Phantom Swordsman, Ogre Warlord |
 | Obsidian Shield | 75 | DEF +22, HP +360 | Obsidian Knight, Cinder Colossus |
+| Sun Shield | 85 | DEF +24, HP +400 | Tomb Warden, Dune King |
+| Sun Aegis (legendary, anyone with a free hand) | 88 | DEF +28, HP +440, 10% of every monster hit bounces back | Dune King |
+| Star Shield | 95 | DEF +26, HP +440 | Star Knight, Star Tyrant |
 
 **Head**
 
@@ -656,6 +722,12 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Obsidian Helm | 73 | DEF +19, HP +340 | Obsidian Knight |
 | Ashen Hood | 73 | ATK +9, DEF +11, HP +130, Critical +3% | Cinder Wraith |
 | Ember Hood | 73 | ATK +7, DEF +7, MP +290 | Salamander |
+| Warden's Helm | 83 | DEF +21, HP +380 | Tomb Warden |
+| Desert Hood | 83 | ATK +10, DEF +12, HP +150, Critical +3% | Desert Raider |
+| Djinn Hat | 83 | ATK +8, DEF +8, MP +330 | Dust Djinn |
+| Star Helm | 93 | DEF +23, HP +420 | Star Knight |
+| Night Hood | 93 | ATK +11, DEF +13, HP +170, Critical +3% | Night Wisp |
+| Seer's Hat | 93 | ATK +9, DEF +9, MP +370 | Astral Seer |
 | Meadow Crown (legendary) | 10 | ATK +4, DEF +4, HP +60 | Snapper Flower (1 in 2,000) |
 
 **Armour, legs and feet**
@@ -686,6 +758,12 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Cinder Robe | Armour | 74 | ATK +12, DEF +8, MP +310 | Cinder Wraith |
 | Obsidian Plate | Armour | 77 | DEF +28, HP +370 | Obsidian Knight, Magma Golem, Cinder Colossus |
 | Colossus Mantle (legendary, anyone) | Armour | 78 | ATK +12, DEF +22, HP +360, MP +160 | Cinder Colossus |
+| Desert Garb | Armour | 84 | ATK +13, DEF +14, HP +190, Critical +2% | Desert Raider |
+| Sun Robe | Armour | 84 | ATK +13, DEF +9, MP +350 | Desert Raider |
+| Warden Plate | Armour | 87 | DEF +31, HP +410 | Tomb Warden, Sand Golem, Dune King |
+| Night Leathers | Armour | 94 | ATK +14, DEF +15, HP +210, Critical +2% | Night Wisp |
+| Astral Robe | Armour | 94 | ATK +14, DEF +10, MP +390 | Night Wisp |
+| Star Plate | Armour | 97 | DEF +34, HP +450 | Star Knight, Crystal Golem, Star Tyrant |
 | Leather Pants | Legs | 1 | DEF +1 (no card slot) | Bram, Slime |
 | Iron Greaves | Legs | 6 | DEF +2, HP +10 | Hornet, Rock Worm |
 | Steel Greaves | Legs | 22 | DEF +4, HP +30 | Orc Warrior |
@@ -724,6 +802,13 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Salamander Charm | Amulet | 73 | ATK +11, MP +140, Critical +5% | Salamander |
 | Ember Ring | Ring | 75 | ATK +6, DEF +8, HP +170, Evade +3% | Ember Imp |
 | Colossus Heart (epic) | Amulet | 78 | ATK +20, DEF +7, HP +340 | Cinder Colossus |
+| Scarab Charm | Amulet | 83 | ATK +12, MP +160, Critical +5% | Dust Djinn |
+| Sand Ring | Ring | 85 | ATK +7, DEF +9, HP +190, Evade +3% | Dune Stalker |
+| Sun Medallion (epic) | Amulet | 88 | ATK +22, DEF +8, HP +380 | Dune King |
+| Night Charm | Amulet | 93 | ATK +13, MP +180, Critical +5% | Astral Seer |
+| Star Ring | Ring | 95 | ATK +8, DEF +10, HP +210, Evade +3% | Void Bat |
+| Tyrant's Star (epic) | Amulet | 98 | ATK +24, DEF +9, HP +420 | Star Tyrant |
+| Ring of the Fallen Star (legendary, anyone) | Ring | 98 | ATK +12, DEF +10, HP +300, Critical +4% | Star Tyrant |
 
 ## 8. Monster cards
 
@@ -777,6 +862,18 @@ Ragnarok style: every monster very rarely drops **its own card**. A card goes in
 | Cinder Wraith Card | Cinder Wraith | Ring | Smouldering | ATK +4, Evade +6% | 1 in 1,000 |
 | Magma Golem Card | Magma Golem | Armour | Molten | ATK +6, HP +320 | 1 in 1,000 |
 | Cinder Colossus Card (legendary) | Cinder Colossus | Weapon | Colossal | ATK +12, Critical +6%, HP +200 | 1 in 50 kills |
+| Dune Stalker Card | Dune Stalker | Feet | Shifting | ATK +6, Evade +7% | 1 in 1,000 |
+| Dust Djinn Card | Dust Djinn | Head | Mirage | ATK +8, MP +130 | 1 in 1,000 |
+| Tomb Warden Card | Tomb Warden | Shield | Entombed | DEF +4, HP +300 | 1 in 1,000 |
+| Desert Raider Card | Desert Raider | Weapon | Plundering | ATK +8, Critical +7% | 1 in 1,000 |
+| Sand Golem Card | Sand Golem | Armour | Sandstone | ATK +7, HP +360 | 1 in 1,000 |
+| Dune King Card (legendary) | Dune King | Legs | Sovereign | ATK +13, DEF +7, HP +340 | 1 in 50 kills |
+| Void Bat Card | Void Bat | Ring | Voidwing | ATK +5, 4% of the damage you deal heals you | 1 in 1,000 |
+| Astral Seer Card | Astral Seer | Amulet | Astral | ATK +8, MP +140, Critical +4% | 1 in 1,000 |
+| Star Knight Card | Star Knight | Shield | Starsteel | DEF +4, 20% of every monster hit bounces back | 1 in 1,000 |
+| Night Wisp Card | Night Wisp | Feet | Wisp | ATK +6, Evade +8% | 1 in 1,000 |
+| Crystal Golem Card | Crystal Golem | Armour | Crystal | DEF +4, HP +400 | 1 in 1,000 |
+| Star Tyrant Card (legendary) | Star Tyrant | Weapon | Starfallen | ATK +14, Critical +7%, HP +240 | 1 in 50 kills |
 
 - **Card slots.** Most gear has one slot and the better weapons have two. In the bag, small dots in the corner of an item show its slots: hollow when free, gold when filled. The Leather Cap, Leather Pants, Copper Ring and Clover Charm have no slots.
 - **Putting a card in.** In the bag, pick the card and press **Put in gear** (or double-click it). The gear it fits lights up, worn or in the bag. Pick one and confirm.
@@ -1108,7 +1205,9 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 | Mythic | Legendary | Reach level 60 |
 | Immortal | Legendary | Reach level 70 |
 | Eternal | Legendary | Reach level 80 |
-| Pioneer ✦ | Legendary | Be one of the first 10 players to reach the level cap (now 80). Signed-in players only |
+| Ascendant | Legendary | Reach level 90 |
+| Paragon | Legendary | Reach level 100 |
+| Pioneer ✦ | Legendary | Be one of the first 10 players to reach the level cap (now 100). Signed-in players only |
 | **Hunting** | | |
 | Slime Squasher | Common | Help defeat 100 Slimes |
 | Monster Hunter | Uncommon | Help defeat 1,000 monsters |
@@ -1127,10 +1226,14 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 | Warlord's Bane | Epic | Help defeat the Ogre Warlord 10 times |
 | Golem Crusher | Rare | Help defeat 300 Magma Golems |
 | Colossus Slayer | Epic | Help defeat the Cinder Colossus 10 times |
+| Sandbreaker | Rare | Help defeat 300 Sand Golems |
+| Dune Conqueror | Epic | Help defeat the Dune King 10 times |
+| Crystalbreaker | Rare | Help defeat 300 Crystal Golems |
+| Starslayer | Epic | Help defeat the Star Tyrant 10 times |
 | **Collecting** | | |
 | Card Finder | Rare | Find a monster card |
 | Card Collector | Epic | Find 5 different monster cards |
-| Card Master ✦ | Legendary | Find every kind of monster card (46 so far) |
+| Card Master ✦ | Legendary | Find every kind of monster card (58 so far) |
 | Lucky | Epic | Find a legendary item |
 | **The forge** | | |
 | Shiny | Rare | Upgrade any gear to +7 |
@@ -1216,6 +1319,18 @@ Pioneer places are counted per level cap: when the cap goes up, the first 10 pla
 | Cinder Wraith | 77 | 6,800 | 74 | 50 | 39,000 | 100–170 | Ashen Hood, Ashen Leathers, Cinder Robe, Obsidian Longbow, Mithril Ingot, Star Crystal |
 | Magma Golem | 79 | 8,600 | 124 | 52 | 44,000 | 104–176 | Obsidian Plate, Cinder Blade, Magma Lance, Magma Staff, Obsidian Longbow, Mithril Ingot, Star Crystal |
 | Cinder Colossus | 84 | 230,000 | 220 | 68 | 600,000 | 12,000–20,000 | See "Field bosses" |
+| Dune Stalker | 81 | 6,700 | 80 | 46 | 47,000 | 106–180 | Sun Blade, Sand Bow, Sand Ring, White Potion, Mithril Ingot, Star Crystal |
+| Dust Djinn | 83 | 6,500 | 58 | 40 | 51,000 | 108–184 | Djinn Staff, Djinn Hat, Scarab Charm, Sun Staff, Mithril Ingot, Star Crystal |
+| Tomb Warden | 85 | 7,400 | 74 | 56 | 56,000 | 110–188 | Warden's Helm, Sun Shield, Sun Spear, Warden Plate, Mithril Ingot, Star Crystal |
+| Desert Raider | 87 | 7,600 | 80 | 54 | 61,000 | 112–192 | Desert Hood, Desert Garb, Sun Robe, Sunbeam Longbow, Mithril Ingot, Star Crystal |
+| Sand Golem | 89 | 9,600 | 136 | 58 | 66,000 | 116–198 | Warden Plate, Sun Blade, Sun Spear, Sun Staff, Sunbeam Longbow, Mithril Ingot, Star Crystal |
+| Dune King | 94 | 330,000 | 245 | 76 | 1,200,000 | 16,000–26,000 | See "Field bosses" |
+| Void Bat | 91 | 7,400 | 76 | 52 | 71,000 | 118–202 | Star Blade, Moon Bow, Star Ring, White Potion, Mithril Ingot, Star Crystal |
+| Astral Seer | 93 | 7,200 | 76 | 46 | 77,000 | 120–206 | Seer's Staff, Seer's Hat, Night Charm, Astral Staff, Mithril Ingot, Star Crystal |
+| Star Knight | 95 | 8,200 | 86 | 64 | 83,000 | 122–210 | Star Helm, Star Shield, Void Lance, Star Plate, Mithril Ingot, Star Crystal |
+| Night Wisp | 97 | 8,400 | 78 | 58 | 90,000 | 124–214 | Night Hood, Night Leathers, Astral Robe, Starlight Longbow, Mithril Ingot, Star Crystal |
+| Crystal Golem | 99 | 10,600 | 150 | 64 | 97,000 | 128–220 | Star Plate, Star Blade, Void Lance, Astral Staff, Starlight Longbow, Mithril Ingot, Star Crystal |
+| Star Tyrant | 104 | 450,000 | 270 | 84 | 1,800,000 | 22,000–34,000 | See "Field bosses" |
 
 Every monster also drops its own card (see Monster cards) and often potions.
 
@@ -1241,6 +1356,8 @@ Every monster also drops its own card (see Monster cards) and often potions.
 18. **Level 65–70:** Phantom Swordsmen in the north-east, Red Ogres in the south (they only fight back, but they hit very hard). At 70, bring a party of four up the road to the **Ogre Warlord**'s camp. **Willow** sails you home for free.
 19. **Level 70–75:** Back to the meadow's east shore, where **Dorian** sails from Marlow's pier to **Ashpeak** (1,500 gold). Ember Imps swarm the rock north of the pier; Salamanders spit fire from the south-west slopes (close in fast). Then the Obsidian Knights along the north.
 20. **Level 75–80:** Cinder Wraiths in the east dodge plain attacks: use your skills. Magma Golems in the south only fight back, but they hit hardest of all. At 80, bring a party of four up the road to the **Cinder Colossus**'s crater. **Cassia** sails you home for free.
+21. **Level 80–90:** Switch to Bram's **Golden Potions** (from level 70). **Soren** sails from the same pier to **Sunscar** (1,800 gold). Dune Stalkers in the dunes dodge plain attacks; Dust Djinn throw hot wind from the north-west; then the Tomb Wardens and the Desert Raiders' camp in the east. At 90, bring a party for the **Dune King** in his temple.
+22. **Level 90–100:** **Lyra** sails to **Starfall** (2,200 gold), where it's always night. Void Bats swarm the south-west, Astral Seers cast from the north-west, Star Knights guard the north, Night Wisps drift along the east shore, and Crystal Golems in the south-east hit hardest of all. At 100, the **Star Tyrant** waits at his altar south of the lake: take your strongest party.
 
 Along the way, open your titles (T) now and then: you'll have earned a few. And from the Orc Woods on, hunt in a party: the bosses are made for four. From level 20, find a guild to join (or found your own with Leopold), so there's always someone to hunt with, and on Wednesday and Saturday evenings, march with it over the long bridge to fight for Crownhold.
 
@@ -1249,7 +1366,7 @@ Sell your monster loot to Bram whenever your bag fills up, and sit down (X) to h
 ## 18. Coming next
 
 - **More castles** for the guild wars.
-- **Raising the level cap** past 80, with new fields above it.
+- **Somewhere to spend your skill points** past level 69 (all six skills are maxed at 60 points, and you keep earning them up to 100).
 
 ---
 

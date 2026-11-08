@@ -909,6 +909,7 @@ export class Combat {
   private drink(f: Fighter, slot: number, it: ItemDef) {
     const now = Date.now();
     if (!it.heal || now < f.potionAt) return;
+    if (f.player.lv < (it.lv ?? 1)) return this.hooks.notice(f.id, `You need to be level ${it.lv} to drink ${withArticle(it.name)}.`);
     if (this.duels.has(f.id)) return this.hooks.notice(f.id, "No potions in a duel!");
     if (f.player.hp >= f.stats.maxHp) return this.hooks.notice(f.id, "You're already at full health.");
     f.potionAt = now + POTION_MS;

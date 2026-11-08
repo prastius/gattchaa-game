@@ -8,7 +8,7 @@ import { TILE, TOWN_AREA, INTERIOR_ZONE, inRect, type Rect } from "./town";
 import type { Bonus, ItemId } from "./items";
 
 /** Highest level for now; raised step by step. The EXP curve already continues past it. */
-export const LEVEL_CAP = 80;
+export const LEVEL_CAP = 100;
 
 /**
  * EXP needed to go from `level` to the next one. Gentle through the Novice
@@ -182,6 +182,18 @@ export type MonsterId =
   | "cinderWraith"
   | "magmaGolem"
   | "cinderColossus"
+  | "duneStalker"
+  | "dustDjinn"
+  | "tombWarden"
+  | "desertRaider"
+  | "sandGolem"
+  | "duneKing"
+  | "voidBat"
+  | "astralSeer"
+  | "starKnight"
+  | "nightWisp"
+  | "crystalGolem"
+  | "starTyrant"
   | "crystal"
   | "castleKnight"
   | "castleArcher"
@@ -578,6 +590,108 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
     ],
   },
 
+  // ---------------------------------------------------------------- Sunscar (Lv 80–90), the desert island north of Ashpeak
+  // Sand-coloured lizards in the dunes south-west of the pier. They only fight back, but they're hard to hit with plain attacks.
+  duneStalker: {
+    id: "duneStalker", name: "Dune Stalker", level: 81, hp: 6700, atk: 80, def: 46, exp: 47_000, gold: [106, 180], speed: 65, chase: 120, aggro: 0, range: 36, attackMs: 1300, radius: 12, respawnMs: 22_000, flee: 0.15,
+    drops: [
+      ["duneFang", 0.55], ["whitePotion", 0.08], ["sunBlade", 0.004], ["sandBow", 0.004], ["sandRing", 0.002],
+      ["mithril", 0.09], ["starCrystal", 0.02], ["duneStalkerCard", 0.001],
+    ],
+  },
+  // Spirits of hot wind in the north-west. They hurl searing bolts from afar at anyone they see.
+  dustDjinn: {
+    id: "dustDjinn", name: "Dust Djinn", level: 83, hp: 6500, atk: 58, def: 40, exp: 51_000, gold: [108, 184], speed: 50, chase: 95, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 24_000,
+    drops: [
+      ["djinnDust", 0.55], ["whitePotion", 0.08], ["djinnStaff", 0.004], ["djinnHat", 0.005], ["scarabCharm", 0.003], ["sunStaff", 0.002],
+      ["mithril", 0.09], ["starCrystal", 0.02], ["dustDjinnCard", 0.001],
+    ],
+  },
+  // The bones of the Dune King's guard, still standing watch north of his temple. They charge anyone who comes near.
+  tombWarden: {
+    id: "tombWarden", name: "Tomb Warden", level: 85, hp: 7400, atk: 74, def: 56, exp: 56_000, gold: [110, 188], speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 13, respawnMs: 24_000,
+    drops: [
+      ["tombRelic", 0.55], ["whitePotion", 0.08], ["wardenHelm", 0.005], ["sunShield", 0.003], ["sunSpear", 0.002], ["wardenPlate", 0.002],
+      ["mithril", 0.1], ["starCrystal", 0.021], ["tombWardenCard", 0.001],
+    ],
+  },
+  // Raiders in sand-coloured hoods, camped in the east. Quick, and they attack anyone who comes near.
+  desertRaider: {
+    id: "desertRaider", name: "Desert Raider", level: 87, hp: 7600, atk: 80, def: 54, exp: 61_000, gold: [112, 192], speed: 60, chase: 115, aggro: 50, range: 40, attackMs: 1500, radius: 13, respawnMs: 24_000,
+    drops: [
+      ["raiderCoin", 0.55], ["whitePotion", 0.08], ["desertHood", 0.005], ["desertGarb", 0.004], ["sunRobe", 0.004], ["sunBow", 0.002],
+      ["mithril", 0.1], ["starCrystal", 0.021], ["desertRaiderCard", 0.001],
+    ],
+  },
+  // Great slow heaps of living sand in the south. Leave them alone and they leave you alone; they hit harder than anything else here.
+  sandGolem: {
+    id: "sandGolem", name: "Sand Golem", level: 89, hp: 9600, atk: 136, def: 58, exp: 66_000, gold: [116, 198], speed: 30, chase: 70, aggro: 0, range: 48, attackMs: 2100, radius: 18, respawnMs: 26_000,
+    drops: [
+      ["golemSand", 0.55], ["whitePotion", 0.1], ["wardenPlate", 0.003], ["sunBlade", 0.003], ["sunSpear", 0.002], ["sunStaff", 0.002], ["sunBow", 0.002],
+      ["mithril", 0.1], ["starCrystal", 0.021], ["sandGolemCard", 0.001],
+    ],
+  },
+  // Sunscar's boss, on his throne in the sunken temple. Throws fire at anyone out of reach.
+  duneKing: {
+    id: "duneKing", name: "Dune King", level: 94, hp: 330_000, atk: 245, def: 76, exp: 1_200_000, gold: [16_000, 26_000], speed: 35, chase: 85, aggro: 150, range: 150, attackMs: 2000, radius: 28, respawnMs: 1_800_000,
+    boss: true, regen: 0.004,
+    drops: [
+      ["sunDisk", 1], ["whitePotion", 0.8], ["sunSpear", 0.2], ["sunBow", 0.2], ["sunStaff", 0.2], ["wardenPlate", 0.15], ["sunShield", 0.15],
+      ["mithril", 1], ["starCrystal", 1], ["starCrystal", 0.8], ["sunMedallion", 0.06], ["sunAegis", 0.015], ["duneKingCard", 0.02],
+    ],
+  },
+
+  // ---------------------------------------------------------------- Starfall (Lv 90–100), the island of endless night south of Ashpeak
+  // Bats with wings like the night sky, all over the south-west of the island. They swarm anyone who comes near.
+  voidBat: {
+    id: "voidBat", name: "Void Bat", level: 91, hp: 7400, atk: 76, def: 52, exp: 71_000, gold: [118, 202], speed: 70, chase: 125, aggro: 40, range: 36, attackMs: 1300, radius: 11, respawnMs: 22_000,
+    drops: [
+      ["voidWing", 0.55], ["whitePotion", 0.08], ["starBlade", 0.004], ["moonBow", 0.004], ["starRing", 0.002],
+      ["mithril", 0.1], ["starCrystal", 0.022], ["voidBatCard", 0.001],
+    ],
+  },
+  // Hooded stargazers in the north-west. They cast starlight from afar at anyone they see.
+  astralSeer: {
+    id: "astralSeer", name: "Astral Seer", level: 93, hp: 7200, atk: 76, def: 46, exp: 77_000, gold: [120, 206], speed: 45, chase: 90, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 24_000,
+    drops: [
+      ["seerEye", 0.55], ["whitePotion", 0.08], ["seerStaff", 0.004], ["seerHat", 0.005], ["nightCharm", 0.003], ["astralStaff", 0.002],
+      ["mithril", 0.1], ["starCrystal", 0.022], ["astralSeerCard", 0.001],
+    ],
+  },
+  // Knights in armour that shines like starlight, guarding the north of the island. They charge anyone who comes near.
+  starKnight: {
+    id: "starKnight", name: "Star Knight", level: 95, hp: 8200, atk: 86, def: 64, exp: 83_000, gold: [122, 210], speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 13, respawnMs: 24_000,
+    drops: [
+      ["starShard", 0.55], ["whitePotion", 0.08], ["starHelm", 0.005], ["starShield", 0.003], ["voidLance", 0.002], ["starPlate", 0.002],
+      ["mithril", 0.11], ["starCrystal", 0.023], ["starKnightCard", 0.001],
+    ],
+  },
+  // Cold blue lights drifting along the east shore. Hard to hit with plain attacks.
+  nightWisp: {
+    id: "nightWisp", name: "Night Wisp", level: 97, hp: 8400, atk: 78, def: 58, exp: 90_000, gold: [124, 214], speed: 55, chase: 105, aggro: 50, range: 36, attackMs: 1500, radius: 12, respawnMs: 24_000, flee: 0.15,
+    drops: [
+      ["wispLight", 0.55], ["whitePotion", 0.08], ["nightHood", 0.005], ["nightLeathers", 0.004], ["astralRobe", 0.004], ["starBow", 0.002],
+      ["mithril", 0.11], ["starCrystal", 0.023], ["nightWispCard", 0.001],
+    ],
+  },
+  // Walking crystal in the south, glowing pale blue. Leave them alone and they leave you alone; they hit harder than anything else here.
+  crystalGolem: {
+    id: "crystalGolem", name: "Crystal Golem", level: 99, hp: 10_600, atk: 150, def: 64, exp: 97_000, gold: [128, 220], speed: 30, chase: 70, aggro: 0, range: 48, attackMs: 2100, radius: 18, respawnMs: 26_000,
+    drops: [
+      ["crystalHeart", 0.55], ["whitePotion", 0.1], ["starPlate", 0.003], ["starBlade", 0.003], ["voidLance", 0.002], ["astralStaff", 0.002], ["starBow", 0.002],
+      ["mithril", 0.11], ["starCrystal", 0.023], ["crystalGolemCard", 0.001],
+    ],
+  },
+  // Starfall's boss, at the altar south of the lake. Casts starlight at anyone out of reach.
+  starTyrant: {
+    id: "starTyrant", name: "Star Tyrant", level: 104, hp: 450_000, atk: 270, def: 84, exp: 1_800_000, gold: [22_000, 34_000], speed: 35, chase: 85, aggro: 150, range: 150, attackMs: 2000, radius: 30, respawnMs: 1_800_000,
+    boss: true, regen: 0.004,
+    drops: [
+      ["fallenStar", 1], ["whitePotion", 0.8], ["voidLance", 0.2], ["starBow", 0.2], ["astralStaff", 0.2], ["starPlate", 0.15], ["starShield", 0.15],
+      ["mithril", 1], ["starCrystal", 1], ["starCrystal", 0.8], ["tyrantsStar", 0.06], ["fallenStarRing", 0.015], ["starTyrantCard", 0.02],
+    ],
+  },
+
   // ---------------------------------------------------------------- Crownhold, the guild castle
   // The crystal at the heart of the keep (see shared/siege.ts): it never moves or fights back, and
   // only guild members can strike it, only during a siege. Breaking it takes the castle; it's whole
@@ -791,6 +905,42 @@ export const FIELDS: Field[] = [
       { monster: "cinderWraith", rect: { x: 596, y: 222, w: 18, h: 44 }, count: 8 },
       { monster: "magmaGolem", rect: { x: 552, y: 270, w: 48, h: 18 }, count: 8 },
       { monster: "cinderColossus", rect: { x: 573, y: 247, w: 6, h: 5 }, count: 1 },
+    ],
+  },
+  {
+    // North of Ashpeak: a ship from the meadow's east shore sails here.
+    id: "sunscar",
+    name: "Sunscar",
+    levels: "Lv 80–90",
+    area: { x: 526, y: 28, w: 90, h: 92 },
+    wild: true,
+    spawns: [
+      // Dune Stalkers in the dunes south-west of the pier, Dust Djinn in the north-west, Tomb Wardens north of the temple.
+      { monster: "duneStalker", rect: { x: 536, y: 82, w: 22, h: 24 }, count: 10 },
+      { monster: "dustDjinn", rect: { x: 538, y: 40, w: 24, h: 20 }, count: 7 },
+      { monster: "tombWarden", rect: { x: 566, y: 38, w: 30, h: 16 }, count: 8 },
+      // Desert Raiders camped in the east, Sand Golems in the south; the Dune King in his temple.
+      { monster: "desertRaider", rect: { x: 592, y: 56, w: 16, h: 40 }, count: 9 },
+      { monster: "sandGolem", rect: { x: 560, y: 90, w: 38, h: 18 }, count: 8 },
+      { monster: "duneKing", rect: { x: 573, y: 71, w: 6, h: 5 }, count: 1 },
+    ],
+  },
+  {
+    // South of Ashpeak: a ship from the meadow's east shore sails here.
+    id: "starfall",
+    name: "Starfall",
+    levels: "Lv 90–100",
+    area: { x: 544, y: 390, w: 74, h: 92 },
+    wild: true,
+    spawns: [
+      // Void Bats in the south-west, Astral Seers in the north-west, Star Knights in the north, north of the lake.
+      { monster: "voidBat", rect: { x: 550, y: 454, w: 28, h: 18 }, count: 8 },
+      { monster: "astralSeer", rect: { x: 552, y: 410, w: 22, h: 16 }, count: 7 },
+      { monster: "starKnight", rect: { x: 576, y: 404, w: 20, h: 18 }, count: 7 },
+      // Night Wisps along the east shore, Crystal Golems in the south; the Star Tyrant at his altar.
+      { monster: "nightWisp", rect: { x: 594, y: 430, w: 16, h: 30 }, count: 6 },
+      { monster: "crystalGolem", rect: { x: 580, y: 456, w: 26, h: 14 }, count: 8 },
+      { monster: "starTyrant", rect: { x: 569, y: 445, w: 6, h: 5 }, count: 1 },
     ],
   },
   {

@@ -129,6 +129,8 @@ export const TITLES = def({
   mythic: { name: "Mythic", tier: "legendary", group: "Levels", goal: { kind: "level", n: 60 }, how: "Reach level 60." },
   immortal: { name: "Immortal", tier: "legendary", group: "Levels", goal: { kind: "level", n: 70 }, how: "Reach level 70." },
   eternal: { name: "Eternal", tier: "legendary", group: "Levels", goal: { kind: "level", n: 80 }, how: "Reach level 80." },
+  ascendant: { name: "Ascendant", tier: "legendary", group: "Levels", goal: { kind: "level", n: 90 }, how: "Reach level 90." },
+  paragon: { name: "Paragon", tier: "legendary", group: "Levels", goal: { kind: "level", n: 100 }, how: "Reach level 100." },
   pioneer: {
     name: "Pioneer", tier: "legendary", group: "Levels", goal: { kind: "pioneer" }, aura: AURA_PIONEER,
     how: `Be one of the first ${PIONEERS} players to reach the level cap (now ${LEVEL_CAP}). Signed-in players only.`,
@@ -150,6 +152,10 @@ export const TITLES = def({
   warlordsBane: { name: "Warlord's Bane", tier: "epic", group: "Hunting", goal: { kind: "kills", n: 10, monster: "ogreWarlord" }, how: "Help defeat the Ogre Warlord 10 times." },
   golemCrusher: { name: "Golem Crusher", tier: "rare", group: "Hunting", goal: { kind: "kills", n: 300, monster: "magmaGolem" }, how: "Help defeat 300 Magma Golems." },
   colossusSlayer: { name: "Colossus Slayer", tier: "epic", group: "Hunting", goal: { kind: "kills", n: 10, monster: "cinderColossus" }, how: "Help defeat the Cinder Colossus 10 times." },
+  sandbreaker: { name: "Sandbreaker", tier: "rare", group: "Hunting", goal: { kind: "kills", n: 300, monster: "sandGolem" }, how: "Help defeat 300 Sand Golems." },
+  duneConqueror: { name: "Dune Conqueror", tier: "epic", group: "Hunting", goal: { kind: "kills", n: 10, monster: "duneKing" }, how: "Help defeat the Dune King 10 times." },
+  crystalbreaker: { name: "Crystalbreaker", tier: "rare", group: "Hunting", goal: { kind: "kills", n: 300, monster: "crystalGolem" }, how: "Help defeat 300 Crystal Golems." },
+  starslayer: { name: "Starslayer", tier: "epic", group: "Hunting", goal: { kind: "kills", n: 10, monster: "starTyrant" }, how: "Help defeat the Star Tyrant 10 times." },
   usurper: { name: "Usurper", tier: "epic", group: "Hunting", goal: { kind: "kills", n: 10, monster: "fallenKing" }, how: "Help defeat the Fallen King 10 times." },
   giantslayer: { name: "Giantslayer", tier: "epic", group: "Hunting", goal: { kind: "kills", n: 10, monster: "frostGiant" }, aura: AURA_GIANTSLAYER, how: "Help defeat the Frost Giant 10 times." },
 

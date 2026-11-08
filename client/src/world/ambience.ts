@@ -258,6 +258,10 @@ const WEATHER = {
   petals: { tex: "petal", speedX: { min: -30, max: -4 }, speedY: { min: 12, max: 30 }, scale: { min: 1.2, max: 2 }, frequency: 80, quantity: 1, tint: [0xffc4da, 0xffadc9, 0xfff0f6, 0xf59ab9] },
   // Embers over Ashpeak: sparks rising from the hot rock, and grey ash drifting among them.
   embers: { tex: "ember", speedX: { min: -12, max: 12 }, speedY: { min: -34, max: -10 }, scale: { min: 0.8, max: 1.6 }, frequency: 70, quantity: 1, tint: [0xff8a3a, 0xffc04a, 0xff5a2a, 0x9a8a84] },
+  // Sand over Sunscar: grains blown sideways on a hot wind.
+  sand: { tex: "ember", speedX: { min: 50, max: 110 }, speedY: { min: -6, max: 10 }, scale: { min: 0.8, max: 1.4 }, frequency: 60, quantity: 1, tint: [0xe8c88a, 0xd8b070, 0xf0dca8] },
+  // Starlight over Starfall: little sparks of light drifting slowly up into the night.
+  stars: { tex: "ember", speedX: { min: -6, max: 6 }, speedY: { min: -10, max: -2 }, scale: { min: 0.8, max: 1.6 }, frequency: 90, quantity: 1, tint: [0xffffff, 0xb8d8ff, 0xd8b8ff, 0xfff0a0] },
 } as const;
 
 /** Snow or leaves falling over the view while the camera is on an island that has them. */

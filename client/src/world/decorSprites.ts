@@ -22,10 +22,17 @@ export const WORLD_TEX = {
   terrainSpring: "terrain-spring",
   treesSpring: "trees-spring",
   plantsSpring: "plants-spring",
-  // Ashpeak's: made from the winter sheets when the game starts (makeAshSheets), snow turned to ash.
+  // The far eastern islands': made when the game starts (makeIslandSheets). Ashpeak's ash from the
+  // winter sheets, Sunscar's sand and Starfall's night from the summer ones.
   terrainAsh: "terrain-ash",
   treesAsh: "trees-ash",
   plantsAsh: "plants-ash",
+  terrainDesert: "terrain-desert",
+  treesDesert: "trees-desert",
+  plantsDesert: "plants-desert",
+  terrainStarlit: "terrain-starlit",
+  treesStarlit: "trees-starlit",
+  plantsStarlit: "plants-starlit",
 } as const;
 
 /** The season's sheet standing in for a summer one on the islands. */
@@ -35,51 +42,74 @@ const SEASON: Record<Biome, Record<string, string>> = {
   autumn: { [WORLD_TEX.trees]: WORLD_TEX.treesAutumn, [WORLD_TEX.plants]: WORLD_TEX.plantsAutumn },
   spring: { [WORLD_TEX.trees]: WORLD_TEX.treesSpring, [WORLD_TEX.plants]: WORLD_TEX.plantsSpring },
   ash: { [WORLD_TEX.trees]: WORLD_TEX.treesAsh, [WORLD_TEX.plants]: WORLD_TEX.plantsAsh },
+  desert: { [WORLD_TEX.trees]: WORLD_TEX.treesDesert, [WORLD_TEX.plants]: WORLD_TEX.plantsDesert },
+  starlit: { [WORLD_TEX.trees]: WORLD_TEX.treesStarlit, [WORLD_TEX.plants]: WORLD_TEX.plantsStarlit },
 };
 
-/**
- * Ashpeak's sheets, from Frostfell's: everything bright (snow, frost, ice) becomes grey ash,
- * and the darker colours (bark, needles, berries, rock) are burnt to charcoal browns. On the
- * terrain sheet the sea stays sea. Same layout as the winter sheets, so the same cells and frames work.
- */
-export function makeAshSheets(scene: Phaser.Scene) {
-  const pairs: [string, string, boolean][] = [
-    [WORLD_TEX.terrainWinter, WORLD_TEX.terrainAsh, true],
-    [WORLD_TEX.treesWinter, WORLD_TEX.treesAsh, false],
-    [WORLD_TEX.plantsWinter, WORLD_TEX.plantsAsh, false],
-  ];
-  for (const [from, to, hasWater] of pairs) {
-    if (scene.textures.exists(to)) continue;
-    const src = scene.textures.get(from).getSourceImage() as HTMLImageElement;
-    const canvas = document.createElement("canvas");
-    canvas.width = src.width;
-    canvas.height = src.height;
-    const ctx = canvas.getContext("2d")!;
-    ctx.drawImage(src, 0, 0);
-    const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const d = img.data;
-    for (let i = 0; i < d.length; i += 4) {
-      if (d[i + 3] === 0) continue;
-      const r = d[i];
-      const g = d[i + 1];
-      const b = d[i + 2];
-      const lum = 0.3 * r + 0.59 * g + 0.11 * b;
-      if (lum >= 140) {
-        // Snow and ice: ash grey, the brightest a little lighter.
-        const t = Math.min(1, (lum - 140) / 115);
-        d[i] = 78 + t * 60;
-        d[i + 1] = 72 + t * 56;
-        d[i + 2] = 70 + t * 54;
-      } else if (!hasWater || b <= r + 40) {
-        // Bark, needles, berries and rock: charcoal, with a little warmth left in it.
-        d[i] = lum * 0.92 + 10;
-        d[i + 1] = lum * 0.78 + 4;
-        d[i + 2] = lum * 0.7;
-      }
-    }
-    ctx.putImageData(img, 0, 0);
-    scene.textures.addCanvas(to, canvas);
+/** How one pixel of a sheet changes for an island's look; undefined keeps it as it is. */
+type Recolor = (r: number, g: number, b: number, lum: number) => [number, number, number] | undefined;
+
+/** Copies a loaded sheet into a new texture, pixel by pixel through `fn` (same layout, so the same cells and frames work). */
+function recolorSheet(scene: Phaser.Scene, from: string, to: string, fn: Recolor) {
+  if (scene.textures.exists(to)) return;
+  const src = scene.textures.get(from).getSourceImage() as HTMLImageElement;
+  const canvas = document.createElement("canvas");
+  canvas.width = src.width;
+  canvas.height = src.height;
+  const ctx = canvas.getContext("2d")!;
+  ctx.drawImage(src, 0, 0);
+  const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const d = img.data;
+  for (let i = 0; i < d.length; i += 4) {
+    if (d[i + 3] === 0) continue;
+    const out = fn(d[i], d[i + 1], d[i + 2], 0.3 * d[i] + 0.59 * d[i + 1] + 0.11 * d[i + 2]);
+    if (out) [d[i], d[i + 1], d[i + 2]] = out;
   }
+  ctx.putImageData(img, 0, 0);
+  scene.textures.addCanvas(to, canvas);
+}
+
+/** Sea (blue above green and red) and surf (nearly white) stay as they are on every island. */
+const isSea = (r: number, g: number, b: number, lum: number) => (b > r + 40 && b >= g) || (lum > 205 && Math.max(r, g, b) - Math.min(r, g, b) < 30);
+/** Grass and leaves: green above red and blue. */
+const isGreen = (r: number, g: number, b: number) => g > r && g >= b;
+
+/**
+ * The far eastern islands' sheets, made when the game starts since there are none to download.
+ * Ashpeak's from Frostfell's: snow and ice to grey ash, bark, needles, berries and rock to charcoal.
+ * Sunscar's from the summer ones: grass to sand, leaves dried to olive. Starfall's from the summer
+ * ones too: grass and leaves to the violets and blues of a night sky. The sea stays sea.
+ */
+export function makeIslandSheets(scene: Phaser.Scene) {
+  const ash: (water: boolean) => Recolor = (water) => (r, _g, b, lum) => {
+    if (lum >= 140) {
+      const t = Math.min(1, (lum - 140) / 115);
+      return [78 + t * 60, 72 + t * 56, 70 + t * 54];
+    }
+    if (water && b > r + 40) return undefined;
+    return [lum * 0.92 + 10, lum * 0.78 + 4, lum * 0.7];
+  };
+  recolorSheet(scene, WORLD_TEX.terrainWinter, WORLD_TEX.terrainAsh, ash(true));
+  recolorSheet(scene, WORLD_TEX.treesWinter, WORLD_TEX.treesAsh, ash(false));
+  recolorSheet(scene, WORLD_TEX.plantsWinter, WORLD_TEX.plantsAsh, ash(false));
+
+  recolorSheet(scene, WORLD_TEX.terrain, WORLD_TEX.terrainDesert, (r, g, b, lum) => {
+    if (isSea(r, g, b, lum)) return undefined;
+    if (isGreen(r, g, b)) return [lum * 0.85 + 80, lum * 0.72 + 64, lum * 0.42 + 30];
+    return [r * 1.02 + 14, g + 10, b * 0.9];
+  });
+  const dry: Recolor = (r, g, b, lum) => (isGreen(r, g, b) ? [lum * 0.8 + 40, lum * 0.72 + 34, lum * 0.3 + 10] : undefined);
+  recolorSheet(scene, WORLD_TEX.trees, WORLD_TEX.treesDesert, dry);
+  recolorSheet(scene, WORLD_TEX.plants, WORLD_TEX.plantsDesert, dry);
+
+  recolorSheet(scene, WORLD_TEX.terrain, WORLD_TEX.terrainStarlit, (r, g, b, lum) => {
+    if (isSea(r, g, b, lum)) return undefined;
+    if (isGreen(r, g, b)) return [lum * 0.5 + 30, lum * 0.35 + 22, lum * 0.8 + 50];
+    return [r * 0.55 + 20, g * 0.5 + 16, b * 0.8 + 40];
+  });
+  const night: Recolor = (r, g, b, lum) => (isGreen(r, g, b) ? [lum * 0.45 + 30, lum * 0.4 + 30, lum * 0.85 + 50] : [r * 0.6, g * 0.55, b * 0.75 + 20]);
+  recolorSheet(scene, WORLD_TEX.trees, WORLD_TEX.treesStarlit, night);
+  recolorSheet(scene, WORLD_TEX.plants, WORLD_TEX.plantsStarlit, night);
 }
 /** In spring these trees' second variant is cherry blossom: Petalfall shows it most of the time. */
 const BLOSSOM = new Set<string>(["oak", "oakRoots", "oakTall", "bushTree"]);
@@ -137,7 +167,7 @@ export interface DecorSprite {
   tall: boolean;
 }
 
-/** Creates the sprite(s) for a decor at tile (tx, ty); `pick` in [0,1) chooses the variant. Snowy on Frostfell, autumn on Ravenmoor, in blossom on Petalfall, ashen on Ashpeak. */
+/** Creates the sprite(s) for a decor at tile (tx, ty); `pick` in [0,1) chooses the variant. Snowy on Frostfell, autumn on Ravenmoor, in blossom on Petalfall, ashen on Ashpeak, dry on Sunscar, starlit on Starfall. */
 export function createDecor(scene: Phaser.Scene, decor: number, px: number, py: number, pick: number, biome: Biome = "summer"): DecorSprite | null {
   const id = DECOR[decor]?.id;
   if (!id || id === "none") return null;

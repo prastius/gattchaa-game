@@ -155,6 +155,18 @@ export const ITEMS = def({
   cinderVeil: { name: "Cinder Veil", kind: "loot", rarity: "common", sell: 540, icon: "scroll_01e", desc: "A scrap of smoke that somehow holds together. Cinder Wraiths leave them behind." },
   magmaCore: { name: "Magma Core", kind: "loot", rarity: "common", sell: 560, icon: "pearl_01a", desc: "The glowing heart of a Magma Golem, cooled to a stone. Heavy, and worth it." },
   heartOfFlame: { name: "Heart of Flame", kind: "loot", rarity: "rare", sell: 12_000, icon: "gem_01g", desc: "The fire that burns at the heart of Ashpeak, carried by the Cinder Colossus. Collectors pay a fortune for it." },
+  duneFang: { name: "Dune Fang", kind: "loot", rarity: "common", sell: 600, icon: "gem_01e", desc: "A long, sand-coloured tooth from a Dune Stalker." },
+  djinnDust: { name: "Djinn Dust", kind: "loot", rarity: "common", sell: 620, icon: "pearl_01d", desc: "A pinch of golden dust, still warm, all that's left of a Dust Djinn." },
+  tombRelic: { name: "Tomb Relic", kind: "loot", rarity: "common", sell: 640, icon: "key_01c", desc: "A gold trinket from the Dune King's tomb. The Tomb Wardens never let go of them." },
+  raiderCoin: { name: "Raider's Coin", kind: "loot", rarity: "common", sell: 660, icon: "coin_04d", desc: "An old gold coin from a Desert Raider's purse. Nobody knows where they mint them." },
+  golemSand: { name: "Living Sand", kind: "loot", rarity: "common", sell: 680, icon: "pearl_01e", desc: "A jar of sand from a Sand Golem. It still shifts about by itself." },
+  sunDisk: { name: "Sun Disk", kind: "loot", rarity: "rare", sell: 15_000, icon: "coin_05c", desc: "The Dune King's golden sun, as bright as the real one. Collectors pay a fortune for it." },
+  voidWing: { name: "Void Wing", kind: "loot", rarity: "common", sell: 720, icon: "scroll_01c", desc: "A bat's wing, as dark as the sky between the stars." },
+  seerEye: { name: "Seer's Eye", kind: "loot", rarity: "common", sell: 740, icon: "pearl_01b", desc: "A glass eye an Astral Seer looked at the stars through. It still sees them." },
+  starShard: { name: "Star Shard", kind: "loot", rarity: "common", sell: 760, icon: "crystal_01d", desc: "A splinter of a Star Knight's armour. It glows, faintly." },
+  wispLight: { name: "Wisp Light", kind: "loot", rarity: "common", sell: 780, icon: "crystal_01b", desc: "A little cold blue light in a bottle. It hums." },
+  crystalHeart: { name: "Crystal Heart", kind: "loot", rarity: "common", sell: 800, icon: "gem_01b", desc: "The pale blue heart of a Crystal Golem. Heavy, and very valuable." },
+  fallenStar: { name: "Fallen Star", kind: "loot", rarity: "rare", sell: 20_000, icon: "crystal_01e", desc: "A real star, small enough to hold, taken from the Star Tyrant. Collectors pay a fortune for it." },
   winterHeart: { name: "Heart of Winter", kind: "loot", rarity: "rare", sell: 4500, icon: "crystal_01h", desc: "A lump of ice from the Frost Giant's chest. It never melts, and collectors pay a fortune for it." },
 
   // ------------------------------------------------------------ smithing (one is used up by every upgrade)
@@ -166,6 +178,7 @@ export const ITEMS = def({
   redPotion: { name: "Red Potion", kind: "use", rarity: "common", heal: 40, price: 12, icon: "potion_02a", desc: "Restores 40 HP." },
   orangePotion: { name: "Orange Potion", kind: "use", rarity: "common", heal: 100, price: 40, icon: "potion_02f", desc: "Restores 100 HP." },
   whitePotion: { name: "White Potion", kind: "use", rarity: "common", heal: 250, price: 120, icon: "potion_02h", desc: "Restores 250 HP." },
+  goldenPotion: { name: "Golden Potion", kind: "use", rarity: "uncommon", lv: 70, heal: 600, price: 300, icon: "potion_03f", desc: "Heals 600 HP. Thick, golden and very strong: only the hardiest adventurers (level 70 and up) can stomach it." },
 
   // ------------------------------------------------------------ weapons
   dagger: { name: "Dagger", kind: "equip", slot: "weapon", weapon: "dagger", rarity: "common", lv: 1, slots: 1, atk: 3, price: 50, icon: "sword_01b", art: [{ id: "dagger" }], desc: "Short, light and better than your fists." },
@@ -229,6 +242,20 @@ export const ITEMS = def({
   obsidianBow: { name: "Obsidian Longbow", kind: "equip", slot: "weapon", weapon: "bow", twoHanded: true, rarity: "rare", lv: 76, slots: 2, atk: 102, crit: 4, range: 260, sell: 13_000, icon: "bow_03e", art: [{ id: "greatBowDark" }], desc: "A tall black bow, polished like glass. Nothing shoots further." },
   cinderStaff: { name: "Cinder Staff", kind: "equip", slot: "weapon", weapon: "staff", rarity: "uncommon", lv: 72, slots: 2, atk: 84, mp: 280, range: 245, sell: 7000, art: [{ id: "crystalRed" }], desc: "A red crystal that smoulders when you hold it." },
   magmaStaff: { name: "Magma Staff", kind: "equip", slot: "weapon", weapon: "staff", rarity: "rare", lv: 76, slots: 2, atk: 102, mp: 340, range: 250, sell: 13_000, art: [{ id: "diamondGold" }], desc: "Gold, crowned with a stone that glows like lava. Hot to the touch." },
+  // Sunscar.
+  sunBlade: { name: "Sun Blade", kind: "equip", slot: "weapon", weapon: "sword", rarity: "uncommon", lv: 82, slots: 2, atk: 108, crit: 5, sell: 8500, art: [{ id: "swordGold" }], desc: "A golden sword that catches the sun. It never seems to get hot." },
+  sunSpear: { name: "Sun Spear", kind: "equip", slot: "weapon", weapon: "spear", twoHanded: true, rarity: "rare", lv: 86, slots: 2, atk: 158, crit: 4, sell: 16_000, art: [{ id: "longspearSilver" }], desc: "The long spear of the Dune King's guard. Needs both hands. Knights only." },
+  sandBow: { name: "Sand Bow", kind: "equip", slot: "weapon", weapon: "bow", twoHanded: true, rarity: "uncommon", lv: 82, slots: 2, atk: 94, range: 260, sell: 8500, icon: "bow_02b", art: [{ id: "bowGold" }], desc: "Light and golden, made for long shots across the dunes." },
+  sunBow: { name: "Sunbeam Longbow", kind: "equip", slot: "weapon", weapon: "bow", twoHanded: true, rarity: "rare", lv: 86, slots: 2, atk: 114, crit: 4, range: 265, sell: 16_000, icon: "bow_03c", art: [{ id: "greatBowCeramic" }], desc: "A tall pale bow. Its arrows fly as straight as a sunbeam." },
+  djinnStaff: { name: "Djinn Staff", kind: "equip", slot: "weapon", weapon: "staff", rarity: "uncommon", lv: 82, slots: 2, atk: 94, mp: 320, range: 250, sell: 8500, art: [{ id: "crystalYellow" }], desc: "A yellow crystal with a little whirlwind of sand trapped inside." },
+  sunStaff: { name: "Sun Staff", kind: "equip", slot: "weapon", weapon: "staff", rarity: "rare", lv: 86, slots: 2, atk: 114, mp: 380, range: 255, sell: 16_000, art: [{ id: "diamondGold" }], desc: "Gold, crowned with a stone that shines like the noon sun." },
+  // Starfall.
+  starBlade: { name: "Star Blade", kind: "equip", slot: "weapon", weapon: "sword", rarity: "uncommon", lv: 92, slots: 2, atk: 120, crit: 6, sell: 10_000, art: [{ id: "glowsword" }], desc: "A blade of pale blue light. It glows brighter in the dark." },
+  voidLance: { name: "Void Lance", kind: "equip", slot: "weapon", weapon: "spear", twoHanded: true, rarity: "rare", lv: 96, slots: 2, atk: 176, crit: 4, sell: 19_000, art: [{ id: "trident" }], desc: "A three-pronged spear as dark as the night sky. Needs both hands. Knights only." },
+  moonBow: { name: "Moon Bow", kind: "equip", slot: "weapon", weapon: "bow", twoHanded: true, rarity: "uncommon", lv: 92, slots: 2, atk: 104, range: 265, sell: 10_000, icon: "bow_01b", art: [{ id: "bowSilver" }], desc: "Silver wood, bent like the new moon." },
+  starBow: { name: "Starlight Longbow", kind: "equip", slot: "weapon", weapon: "bow", twoHanded: true, rarity: "rare", lv: 96, slots: 2, atk: 126, crit: 4, range: 270, sell: 19_000, icon: "bow_03b", art: [{ id: "greatBowSilver" }], desc: "A tall silver bow. Its arrows leave a trail of starlight." },
+  seerStaff: { name: "Seer's Staff", kind: "equip", slot: "weapon", weapon: "staff", rarity: "uncommon", lv: 92, slots: 2, atk: 104, mp: 360, range: 255, sell: 10_000, art: [{ id: "crystalPurple" }], desc: "A purple crystal full of tiny stars." },
+  astralStaff: { name: "Astral Staff", kind: "equip", slot: "weapon", weapon: "staff", rarity: "rare", lv: 96, slots: 2, atk: 126, mp: 420, range: 260, sell: 19_000, art: [{ id: "diamond" }], desc: "A silver staff crowned with a clear stone that holds the night sky." },
   archmageStaff: { name: "Archmage Staff", kind: "equip", slot: "weapon", weapon: "staff", rarity: "legendary", lv: 38, slots: 2, atk: 64, mp: 200, range: 230, sell: 15_000, icon: "staff_03b", art: [{ id: "diamondGold" }], desc: "Gold, crowned with a stone full of light. A great mage carried it once; now the Minotaur King keeps it." },
 
   // ------------------------------------------------------------ shields
@@ -243,6 +270,9 @@ export const ITEMS = def({
   ruinShield: { name: "Ruin Shield", kind: "equip", slot: "offhand", rarity: "rare", lv: 55, slots: 1, def: 18, hp: 270, sell: 7000, art: [{ id: "kiteRed" }], desc: "A red and grey kite shield with the Fallen King's crest, scratched half away." },
   jadeShield: { name: "Jade Shield", kind: "equip", slot: "offhand", rarity: "rare", lv: 65, slots: 1, def: 20, hp: 320, sell: 8000, art: [{ id: "kiteGreen" }], desc: "A green and grey kite shield, cool to the touch and very hard to dent." },
   obsidianShield: { name: "Obsidian Shield", kind: "equip", slot: "offhand", rarity: "rare", lv: 75, slots: 1, def: 22, hp: 360, sell: 10_000, art: [{ id: "kiteRed" }], desc: "A kite shield faced with black glass and edged in red. Swords skid off it." },
+  sunShield: { name: "Sun Shield", kind: "equip", slot: "offhand", rarity: "rare", lv: 85, slots: 1, def: 24, hp: 400, sell: 12_000, art: [{ id: "crusader" }], desc: "A heavy shield with a golden sun on its face, from the Dune King's guard." },
+  sunAegis: { name: "Sun Aegis", kind: "equip", slot: "offhand", rarity: "legendary", lv: 88, slots: 1, def: 28, hp: 440, reflect: 10, sell: 40_000, art: [{ id: "engrailed" }], desc: "The Dune King's own shield, burning gold. Whatever hits it is burned in turn. Anyone with a free hand may carry it." },
+  starShield: { name: "Star Shield", kind: "equip", slot: "offhand", rarity: "rare", lv: 95, slots: 1, def: 26, hp: 440, sell: 14_000, art: [{ id: "kiteBlue" }], desc: "A blue kite shield scattered with silver stars." },
   engrailedShield: { name: "Engrailed Shield", kind: "equip", slot: "offhand", rarity: "rare", lv: 38, slots: 1, def: 14, hp: 170, sell: 4000, art: [{ id: "engrailed" }], desc: "Gold and red, with a scalloped edge. Vampires keep them as trophies." },
 
   // ------------------------------------------------------------ head
@@ -273,6 +303,12 @@ export const ITEMS = def({
   obsidianHelm: { name: "Obsidian Helm", kind: "equip", slot: "head", rarity: "uncommon", lv: 73, slots: 1, def: 19, hp: 340, sell: 6500, art: [{ id: "greathelm", colors: { metal: "iron" } }], desc: "A black great helm, as heavy as it looks, taken from an Obsidian Knight." },
   emberHood: { name: "Ember Hood", kind: "equip", slot: "head", rarity: "uncommon", lv: 73, slots: 1, atk: 7, def: 7, mp: 290, sell: 6500, hides: ["hair"], art: [{ id: "hood", colors: { cloth: "red" } }], desc: "A deep red hood. The smoke never seems to bother whoever wears it." },
   ashenHood: { name: "Ashen Hood", kind: "equip", slot: "head", rarity: "uncommon", lv: 73, slots: 1, atk: 9, def: 11, hp: 130, crit: 3, sell: 6500, hides: ["hair"], art: [{ id: "hood", colors: { cloth: "charcoal" } }], desc: "A hood the colour of ash. On Ashpeak, nobody sees you coming." },
+  wardenHelm: { name: "Warden's Helm", kind: "equip", slot: "head", rarity: "uncommon", lv: 83, slots: 1, def: 21, hp: 380, sell: 8000, art: [{ id: "barbarian", colors: { metal: "gold" } }], desc: "A golden helm from the Dune King's guard, dented by a thousand years." },
+  desertHood: { name: "Desert Hood", kind: "equip", slot: "head", rarity: "uncommon", lv: 83, slots: 1, atk: 10, def: 12, hp: 150, crit: 3, sell: 8000, hides: ["hair"], art: [{ id: "hood", colors: { cloth: "tan" } }], desc: "A sand-coloured hood that keeps out the sun, and hides you in the dunes." },
+  djinnHat: { name: "Djinn Hat", kind: "equip", slot: "head", rarity: "uncommon", lv: 83, slots: 1, atk: 8, def: 8, mp: 330, sell: 8000, art: [{ id: "celestial" }], desc: "A tall hat stitched with golden stars. A little wind always blows round it." },
+  starHelm: { name: "Star Helm", kind: "equip", slot: "head", rarity: "uncommon", lv: 93, slots: 1, def: 23, hp: 420, sell: 9500, art: [{ id: "armet", colors: { metal: "silver" } }], desc: "A silver helm that shines like starlight, from a Star Knight." },
+  nightHood: { name: "Night Hood", kind: "equip", slot: "head", rarity: "uncommon", lv: 93, slots: 1, atk: 11, def: 13, hp: 170, crit: 3, sell: 9500, hides: ["hair"], art: [{ id: "hood", colors: { cloth: "navy" } }], desc: "A hood the colour of the night sky. In the dark, you're nobody at all." },
+  seerHat: { name: "Seer's Hat", kind: "equip", slot: "head", rarity: "uncommon", lv: 93, slots: 1, atk: 9, def: 9, mp: 370, sell: 9500, art: [{ id: "celestialMoon" }], desc: "An Astral Seer's hat, with a silver moon on the brim." },
   meadowCrown: { name: "Meadow Crown", kind: "equip", slot: "head", rarity: "legendary", lv: 10, slots: 1, atk: 4, def: 4, hp: 60, sell: 5000, art: [{ id: "crown" }], desc: "Said to belong to the first king of the meadow. Snapper Flowers hide it very, very rarely." },
 
   // ------------------------------------------------------------ body
@@ -299,6 +335,12 @@ export const ITEMS = def({
   cinderRobe: { name: "Cinder Robe", kind: "equip", slot: "body", rarity: "uncommon", lv: 74, slots: 1, atk: 12, def: 8, mp: 310, sell: 6500, art: [{ id: "tabardBlack" }, { id: "cape", colors: { cloth: "red" } }], desc: "Black cloth under a cloak the colour of flame." },
   ashenLeathers: { name: "Ashen Leathers", kind: "equip", slot: "body", rarity: "uncommon", lv: 74, slots: 1, atk: 12, def: 13, hp: 170, crit: 2, sell: 6500, art: [{ id: "leatherArmor" }, { id: "capeTattered", colors: { cloth: "charcoal" } }], desc: "Leather and a ragged grey cloak, both smelling of smoke." },
   colossusMantle: { name: "Colossus Mantle", kind: "equip", slot: "body", rarity: "legendary", lv: 78, slots: 1, atk: 12, def: 22, hp: 360, mp: 160, sell: 36_000, art: [{ id: "plate", colors: { metal: "gold" } }, { id: "plateArms", colors: { metal: "gold" } }, { id: "cape", colors: { cloth: "red" } }], desc: "Gold plates still warm from the Cinder Colossus's fire, and a cloak of flame red. Anyone may wear it." },
+  wardenPlate: { name: "Warden Plate", kind: "equip", slot: "body", rarity: "rare", lv: 87, slots: 1, def: 31, hp: 410, sell: 16_000, art: [{ id: "legion", colors: { metal: "gold" } }, { id: "plateArms", colors: { metal: "gold" } }, { id: "cape", colors: { cloth: "yellow" } }], desc: "Gold plates and a sun-yellow cloak: the Dune King's guard, still polished." },
+  desertGarb: { name: "Desert Garb", kind: "equip", slot: "body", rarity: "uncommon", lv: 84, slots: 1, atk: 13, def: 14, hp: 190, crit: 2, sell: 8000, art: [{ id: "leatherArmor" }, { id: "capeTattered", colors: { cloth: "tan" } }], desc: "Leather and a sand-coloured cloak, cool by day and warm by night." },
+  sunRobe: { name: "Sun Robe", kind: "equip", slot: "body", rarity: "uncommon", lv: 84, slots: 1, atk: 13, def: 9, mp: 350, sell: 8000, art: [{ id: "tabardWhite" }, { id: "cape", colors: { cloth: "orange" } }], desc: "White linen under a cloak the colour of the setting sun." },
+  starPlate: { name: "Star Plate", kind: "equip", slot: "body", rarity: "rare", lv: 97, slots: 1, def: 34, hp: 450, sell: 19_000, art: [{ id: "plate", colors: { metal: "silver" } }, { id: "plateArms", colors: { metal: "silver" } }, { id: "cape", colors: { cloth: "navy" } }], desc: "Silver plate and a cloak like the night sky: a Star Knight's whole suit." },
+  nightLeathers: { name: "Night Leathers", kind: "equip", slot: "body", rarity: "uncommon", lv: 94, slots: 1, atk: 14, def: 15, hp: 210, crit: 2, sell: 9500, art: [{ id: "leatherArmor" }, { id: "cape", colors: { cloth: "navy" } }], desc: "Dark leather and a midnight-blue cloak. Quiet as the night." },
+  astralRobe: { name: "Astral Robe", kind: "equip", slot: "body", rarity: "uncommon", lv: 94, slots: 1, atk: 14, def: 10, mp: 390, sell: 9500, art: [{ id: "tabardPurple" }, { id: "cape", colors: { cloth: "purple" } }], desc: "Purple silk scattered with tiny silver stars." },
   plateArmor: { name: "Plate Armour", kind: "equip", slot: "body", rarity: "rare", lv: 10, slots: 1, def: 6, hp: 40, sell: 600, art: [{ id: "plate" }, { id: "plateArms" }], desc: "Full steel plate. You clank, but you live." },
 
   // ------------------------------------------------------------ legs
@@ -338,6 +380,13 @@ export const ITEMS = def({
   emberRing: { name: "Ember Ring", kind: "equip", slot: "ring", rarity: "rare", lv: 75, slots: 1, atk: 6, def: 8, hp: 170, flee: 3, sell: 9000, icon: "ring_02e", desc: "A gold ring with a tiny flame trapped in its stone." },
   salamanderCharm: { name: "Salamander Charm", kind: "equip", slot: "amulet", rarity: "uncommon", lv: 73, slots: 1, atk: 11, mp: 140, crit: 5, sell: 6500, icon: "necklace_03d", desc: "A salamander's scale on a cord. It keeps you warm, and quick." },
   colossusHeart: { name: "Colossus Heart", kind: "equip", slot: "amulet", rarity: "epic", lv: 78, slots: 1, atk: 20, def: 7, hp: 340, sell: 22_000, icon: "necklace_03e", desc: "A chip of the Cinder Colossus's burning heart, set in black iron. It beats." },
+  sandRing: { name: "Sand Ring", kind: "equip", slot: "ring", rarity: "rare", lv: 85, slots: 1, atk: 7, def: 9, hp: 190, flee: 3, sell: 11_000, icon: "ring_03c", desc: "A gold ring with a grain of sand that never stops turning inside its stone." },
+  scarabCharm: { name: "Scarab Charm", kind: "equip", slot: "amulet", rarity: "uncommon", lv: 83, slots: 1, atk: 12, mp: 160, crit: 5, sell: 8000, icon: "necklace_02c", desc: "A little golden beetle on a cord. It brings luck, or so they say in Sunscar." },
+  sunMedallion: { name: "Sun Medallion", kind: "equip", slot: "amulet", rarity: "epic", lv: 88, slots: 1, atk: 22, def: 8, hp: 380, sell: 26_000, icon: "necklace_01c", desc: "The Dune King's own medallion, a golden sun on a heavy chain." },
+  starRing: { name: "Star Ring", kind: "equip", slot: "ring", rarity: "rare", lv: 95, slots: 1, atk: 8, def: 10, hp: 210, flee: 3, sell: 13_000, icon: "ring_03d", desc: "A silver ring set with a stone full of tiny stars." },
+  nightCharm: { name: "Night Charm", kind: "equip", slot: "amulet", rarity: "uncommon", lv: 93, slots: 1, atk: 13, mp: 180, crit: 5, sell: 9500, icon: "necklace_02d", desc: "A dark blue stone on a silver cord. It feels like midnight." },
+  tyrantsStar: { name: "Tyrant's Star", kind: "equip", slot: "amulet", rarity: "epic", lv: 98, slots: 1, atk: 24, def: 9, hp: 420, sell: 30_000, icon: "necklace_02e", desc: "A star the Star Tyrant wore round his neck. It's still burning." },
+  fallenStarRing: { name: "Ring of the Fallen Star", kind: "equip", slot: "ring", rarity: "legendary", lv: 98, slots: 1, atk: 12, def: 10, hp: 300, crit: 4, sell: 44_000, icon: "ring_03e", desc: "A ring made from a piece of the Star Tyrant's fallen star. Anyone may wear it." },
   stingerPendant: { name: "Stinger Pendant", kind: "equip", slot: "amulet", rarity: "uncommon", lv: 7, slots: 1, atk: 3, sell: 220, icon: "necklace_03d", desc: "A hornet's stinger set in gold. Sharp in more ways than one." },
 
   // ------------------------------------------------------------ monster cards
@@ -388,6 +437,18 @@ export const ITEMS = def({
   cinderWraithCard: { name: "Cinder Wraith Card", kind: "card", rarity: "epic", monster: "cinderWraith", fits: ["ring"], prefix: "Smouldering", atk: 4, flee: 6, sell: 0, desc: "A face in the smoke, and nothing else." },
   magmaGolemCard: { name: "Magma Golem Card", kind: "card", rarity: "epic", monster: "magmaGolem", fits: ["body"], prefix: "Molten", atk: 6, hp: 320, sell: 0, desc: "A slow, glowing giant made of lava." },
   cinderColossusCard: { name: "Cinder Colossus Card", kind: "card", rarity: "legendary", monster: "cinderColossus", fits: ["weapon"], prefix: "Colossal", atk: 12, crit: 6, hp: 200, sell: 0, desc: "The Cinder Colossus in his crater, on a gold card edged in fire." },
+  duneStalkerCard: { name: "Dune Stalker Card", kind: "card", rarity: "epic", monster: "duneStalker", fits: ["feet"], prefix: "Shifting", atk: 6, flee: 7, sell: 0, desc: "A sand lizard, half hidden in a dune." },
+  dustDjinnCard: { name: "Dust Djinn Card", kind: "card", rarity: "epic", monster: "dustDjinn", fits: ["head"], prefix: "Mirage", atk: 8, mp: 130, sell: 0, desc: "A face in a whirlwind of golden sand." },
+  tombWardenCard: { name: "Tomb Warden Card", kind: "card", rarity: "epic", monster: "tombWarden", fits: ["offhand"], prefix: "Entombed", def: 4, hp: 300, sell: 0, desc: "A skeleton in gold armour, still on guard." },
+  desertRaiderCard: { name: "Desert Raider Card", kind: "card", rarity: "epic", monster: "desertRaider", fits: ["weapon"], prefix: "Plundering", atk: 8, crit: 7, sell: 0, desc: "A hooded raider with a curved sword." },
+  sandGolemCard: { name: "Sand Golem Card", kind: "card", rarity: "epic", monster: "sandGolem", fits: ["body"], prefix: "Sandstone", atk: 7, hp: 360, sell: 0, desc: "A slow giant made of living sand." },
+  duneKingCard: { name: "Dune King Card", kind: "card", rarity: "legendary", monster: "duneKing", fits: ["legs"], prefix: "Sovereign", atk: 13, def: 7, hp: 340, sell: 0, desc: "The Dune King on his golden throne, on a gold card bright as the sun." },
+  voidBatCard: { name: "Void Bat Card", kind: "card", rarity: "epic", monster: "voidBat", fits: ["ring"], prefix: "Voidwing", atk: 5, drain: 4, sell: 0, desc: "A bat with wings like the night sky." },
+  astralSeerCard: { name: "Astral Seer Card", kind: "card", rarity: "epic", monster: "astralSeer", fits: ["amulet"], prefix: "Astral", atk: 8, mp: 140, crit: 4, sell: 0, desc: "A hooded stargazer, one hand raised to the sky." },
+  starKnightCard: { name: "Star Knight Card", kind: "card", rarity: "epic", monster: "starKnight", fits: ["offhand"], prefix: "Starsteel", def: 4, reflect: 20, sell: 0, desc: "A knight in armour that shines like starlight. Hit him, and you'll feel it too." },
+  nightWispCard: { name: "Night Wisp Card", kind: "card", rarity: "epic", monster: "nightWisp", fits: ["feet"], prefix: "Wisp", atk: 6, flee: 8, sell: 0, desc: "A cold blue light, drifting." },
+  crystalGolemCard: { name: "Crystal Golem Card", kind: "card", rarity: "epic", monster: "crystalGolem", fits: ["body"], prefix: "Crystal", def: 4, hp: 400, sell: 0, desc: "A slow giant of pale blue crystal." },
+  starTyrantCard: { name: "Star Tyrant Card", kind: "card", rarity: "legendary", monster: "starTyrant", fits: ["weapon"], prefix: "Starfallen", atk: 14, crit: 7, hp: 240, sell: 0, desc: "The Star Tyrant at his altar under the stars, on a silver card." },
   snapperCard: { name: "Snapper Flower Card", kind: "card", rarity: "epic", monster: "snapper", fits: ["offhand"], prefix: "Thorny", def: 1, reflect: 15, sell: 0, desc: "Bite it and it bites back." },
 });
 
@@ -400,6 +461,7 @@ export const OUTFITTER_STOCK: ItemId[] = [
   "redPotion",
   "orangePotion",
   "whitePotion",
+  "goldenPotion",
   "dagger",
   "shortSword",
   "squireSword",

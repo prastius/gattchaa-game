@@ -476,7 +476,7 @@ export class Town {
 
   /** A boat moored alongside the end of each pier, and a signpost where each path to one leaves its road. */
   private ferry() {
-    const { meadow, frostfell, dusk, ravenmoor, east, petalfall, ashpeak } = PIERS;
+    const { meadow, frostfell, dusk, ravenmoor, east, petalfall, ashpeak, sunscar, starfall } = PIERS;
     this.boat((meadow.x + meadow.w) * 32 + 52, (meadow.y + meadow.h - 1) * 32);
     this.boat((frostfell.x + frostfell.w) * 32 + 52, (frostfell.y + 2) * 32);
     this.boat((dusk.x + dusk.w - 3) * 32, (dusk.y + dusk.h) * 32 + 30);
@@ -484,9 +484,11 @@ export class Town {
     this.boat((east.x + east.w - 3) * 32, (east.y + east.h) * 32 + 30);
     this.boat((petalfall.x + 3) * 32, (petalfall.y + petalfall.h) * 32 + 30);
     this.boat((ashpeak.x + 3) * 32, (ashpeak.y + ashpeak.h) * 32 + 30);
+    this.boat((sunscar.x + 3) * 32, (sunscar.y + sunscar.h) * 32 + 30);
+    this.boat((starfall.x + 3) * 32, (starfall.y + starfall.h) * 32 + 30);
     this.signpost(199.5 * 32, 283 * 32 - 2, "FERRY", "FROSTFELL →", "#bfe9ff");
     this.signpost(329.5 * 32, 185 * 32 - 2, "FERRY", "RAVENMOOR →", "#d9b8ff");
-    this.signpost(246.5 * 32, 282 * 32 - 2, "FERRY", "PETALFALL · ASHPEAK →", "#ffc4da");
+    this.signpost(246.5 * 32, 282 * 32 - 2, "SHIPS", "PETALFALL & BEYOND →", "#ffc4da");
   }
 
   /** A little sailing boat on the water, rocking gently. */

@@ -436,6 +436,58 @@ export const NPCS: NpcDef[] = [
     chatter: ["Ship to Ashpeak! 1,500 gold!", "Ashpeak is for level 70 and up!", "Bring potions. Lots of potions.", "Take a party for the Cinder Colossus.", "Cassia sails you back for free."],
   },
   {
+    // On the same pier: the ship for Sunscar.
+    id: "ferry-dune",
+    name: "Soren",
+    title: "Ship Captain",
+    kind: "ferry",
+    look: look({ body: "male", hair: "messy", hairColor: "blonde", beard: "trimmed", skin: "amber", top: "longsleeve", topColor: "tan", bottom: "pants", bottomColor: "brown", shoes: "boots", shoesColor: "brown", hat: "bandana", hatColor: "yellow" }),
+    ...at(311.5, 282.4),
+    dir: Dir.Right,
+    greeting:
+      "Sunscar? An island of sand and old stone, north of Ashpeak, where the sun never lets up. It's for adventurers of level 80 and up. Dune Stalkers, Dust Djinn, Tomb Wardens, Desert Raiders and Sand Golems live there, and the Dune King sits on his throne in the sunken temple in the middle. I'll sail you over for 1,800 gold. Nadia brings you back for free.",
+    chatter: ["Ship to Sunscar! 1,800 gold!", "Sunscar is for level 80 and up!", "Bring water. And potions.", "The Dune King never leaves his temple.", "Nadia sails you back for free."],
+  },
+  {
+    // At the end of Sunscar's pier, on the island's west shore.
+    id: "ferry-sunscar",
+    name: "Nadia",
+    title: "Ferry Captain",
+    kind: "ferry",
+    look: look({ body: "female", hair: "long", hairColor: "black", skin: "amber", top: "longsleeve", topColor: "white", bottom: "pants", bottomColor: "tan", shoes: "boots", shoesColor: "brown", hat: "bandana", hatColor: "white" }),
+    ...at(522.5, 74.6),
+    dir: Dir.Left,
+    greeting:
+      "Welcome to Sunscar (Lv 80–90). Dune Stalkers (Lv 81) hide in the dunes south-west of the pier: they only fight back, but they're hard to hit, so use your skills. Dust Djinn (Lv 83) hurl hot wind from the north-west: close in fast. Tomb Wardens (Lv 85) stand guard north of the temple, and Desert Raiders (Lv 87) camp in the east. Sand Golems (Lv 89) wander the south: leave them be and they leave you be, but they hit very hard. Follow this road east to the temple, where the Dune King (Lv 94) waits. Take a party. When you've had enough, I'll sail you back for free.",
+    chatter: ["Ship back to the meadow! Free!", "Dune Stalkers dodge plain attacks. Use your skills!", "Dust Djinn throw hot wind. Close in fast!", "The Dune King waits in his temple…", "Leave the Sand Golems alone, unless you mean it."],
+  },
+  {
+    // At the start of the same pier: the ship for Starfall.
+    id: "ferry-star",
+    name: "Lyra",
+    title: "Ship Captain",
+    kind: "ferry",
+    look: look({ body: "female", hair: "long", hairColor: "platinum", skin: "light", top: "longsleeve", topColor: "navy", bottom: "pants", bottomColor: "black", shoes: "boots", shoesColor: "black", hat: "bandana", hatColor: "navy" }),
+    ...at(309.5, 283.6),
+    dir: Dir.Right,
+    greeting:
+      "Starfall? Far out in the south-eastern sea, past Ashpeak, there's an island where the night never ends and the stars hang close enough to touch. It's for the strongest adventurers: level 90 and up. Void Bats, Astral Seers, Star Knights, Night Wisps and Crystal Golems live there, and the Star Tyrant holds the altar by the lake. I'll sail you over for 2,200 gold. Celeste brings you back for free.",
+    chatter: ["Ship to Starfall! 2,200 gold!", "Starfall is for level 90 and up!", "It's always night on Starfall.", "Take a party for the Star Tyrant.", "Celeste sails you back for free."],
+  },
+  {
+    // At the end of Starfall's pier, on the island's west shore.
+    id: "ferry-starfall",
+    name: "Celeste",
+    title: "Ferry Captain",
+    kind: "ferry",
+    look: look({ body: "female", hair: "long", hairColor: "white", skin: "light", top: "longsleeve", topColor: "purple", bottom: "pants", bottomColor: "navy", shoes: "boots", shoesColor: "black", hat: "bandana", hatColor: "purple" }),
+    ...at(540.5, 436.6),
+    dir: Dir.Left,
+    greeting:
+      "Welcome to Starfall (Lv 90–100), where it's always night. Void Bats (Lv 91) swarm the south-west, and Astral Seers (Lv 93) cast starlight from the north-west: close in fast. Star Knights (Lv 95) guard the north, past the lake, and Night Wisps (Lv 97) drift along the east shore: they're hard to hit with plain attacks, so use your skills. Crystal Golems (Lv 99) wander the south: leave them be and they leave you be, but they hit harder than anything else in the world. Follow this road east along the lake and south to the altar, where the Star Tyrant (Lv 104) waits. Take a party. When you've had enough, I'll sail you back for free.",
+    chatter: ["Ship back to the meadow! Free!", "Night Wisps dodge plain attacks. Use your skills!", "Astral Seers cast from afar. Close in fast!", "The Star Tyrant waits at the altar…", "Leave the Crystal Golems alone, unless you mean it."],
+  },
+  {
     // At the end of Ashpeak's pier, on the island's west shore.
     id: "ferry-ashpeak",
     name: "Cassia",
@@ -669,6 +721,10 @@ export const FERRY: Record<string, { to: { x: number; y: number }; dir: number; 
   "ferry-petalfall": { to: at(314.5, 283.6), dir: Dir.Left, fare: 0, dest: "the meadow's east shore" },
   "ferry-ash": { to: at(529.5, 251.6), dir: Dir.Right, fare: 1500, dest: "Ashpeak", lv: 70 },
   "ferry-ashpeak": { to: at(314.5, 283.6), dir: Dir.Left, fare: 0, dest: "the meadow's east shore" },
+  "ferry-dune": { to: at(528.5, 74.6), dir: Dir.Right, fare: 1800, dest: "Sunscar", lv: 80 },
+  "ferry-sunscar": { to: at(314.5, 283.6), dir: Dir.Left, fare: 0, dest: "the meadow's east shore" },
+  "ferry-star": { to: at(546.5, 436.6), dir: Dir.Right, fare: 2200, dest: "Starfall", lv: 90 },
+  "ferry-starfall": { to: at(314.5, 283.6), dir: Dir.Left, fare: 0, dest: "the meadow's east shore" },
 };
 
 /** What an NPC's stall offers right now (sold-out items last for featured stalls). */

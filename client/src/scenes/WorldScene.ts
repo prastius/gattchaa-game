@@ -20,7 +20,7 @@ import { CLASSES, JOB_LEVEL, aClass, isClassId, isMonsterId, type ClassId } from
 import { SKILLS, type SkillId } from "../../../shared/skills";
 import { ITEMS, PICKUP_RANGE, RARITY, appearanceKey, cleanUpgrade, isItemId, parseCards } from "../../../shared/items";
 import { NPCS, type NpcDef } from "../../../shared/npcs";
-import { CASTLE, DOORS, GLOOM, HAZE, INTERIOR_ZONE, PROPS, RUINS, TOWN_AREA, biomeAt, inCastle, inRect } from "../../../shared/town";
+import { CASTLE, DOORS, DUST, GLOOM, HAZE, INTERIOR_ZONE, NIGHT, PROPS, RUINS, TOWN_AREA, biomeAt, inCastle, inRect } from "../../../shared/town";
 import { CASTLE_NAME, CRYSTAL, isGuardian } from "../../../shared/siege";
 import { emblemOf } from "../../../shared/guild";
 import { CharacterTextures, PlayerSprite } from "../PlayerSprite";
@@ -29,7 +29,7 @@ import { DropSprite } from "../DropSprite";
 import { createMonsterAnims, levelColor, preloadMonsters } from "../world/monsterArt";
 import { Fx, flightMs, type Missile, type NumberKind } from "../world/fx";
 import { ATLAS_MARGIN, ATLAS_SPACING, FLOOR_TEX, buildTerrainAtlas, floorCell, structKey, tileCells, type TerrainAtlas } from "../world/terrainTiles";
-import { WORLD_TEX, createDecor, makeAshSheets, registerDecorFrames, type DecorSprite } from "../world/decorSprites";
+import { WORLD_TEX, createDecor, makeIslandSheets, registerDecorFrames, type DecorSprite } from "../world/decorSprites";
 import { Town, preloadTown, type Hotspot } from "../world/town";
 import { SELLER_BUBBLE_LIFT, Shops } from "../world/shops";
 import { Interpolator, ServerClock } from "../interp";
@@ -282,6 +282,8 @@ export class WorldScene extends Phaser.Scene {
   private snow!: Weather;
   private petals!: Weather;
   private embers!: Weather;
+  private sand!: Weather;
+  private stars!: Weather;
   private leaves!: Weather;
   /** Inside the Gattchaa store (the interior zone)? */
   private indoors = false;
@@ -332,10 +334,18 @@ export class WorldScene extends Phaser.Scene {
         }
       }
     }
-    makeAshSheets(this);
+    makeIslandSheets(this);
     this.atlas = buildTerrainAtlas(
       this,
-      { summer: WORLD_TEX.terrain, winter: WORLD_TEX.terrainWinter, autumn: WORLD_TEX.terrainAutumn, spring: WORLD_TEX.terrainSpring, ash: WORLD_TEX.terrainAsh },
+      {
+        summer: WORLD_TEX.terrain,
+        winter: WORLD_TEX.terrainWinter,
+        autumn: WORLD_TEX.terrainAutumn,
+        spring: WORLD_TEX.terrainSpring,
+        ash: WORLD_TEX.terrainAsh,
+        desert: WORLD_TEX.terrainDesert,
+        starlit: WORLD_TEX.terrainStarlit,
+      },
       ATLAS_KEY,
       structs,
     );
@@ -349,8 +359,12 @@ export class WorldScene extends Phaser.Scene {
     this.leaves = new Weather(this, "leaves");
     this.petals = new Weather(this, "petals");
     this.embers = new Weather(this, "embers");
+    this.sand = new Weather(this, "sand");
+    this.stars = new Weather(this, "stars");
     this.overlay("gloom", GLOOM, [36, 18, 58], 0.38);
     this.overlay("haze", HAZE, [78, 26, 10], 0.3);
+    this.overlay("dust", DUST, [120, 90, 30], 0.16);
+    this.overlay("night", NIGHT, [10, 14, 48], 0.5);
     createMonsterAnims(this);
     this.fx = new Fx(this, () => this.textRes);
 
@@ -759,6 +773,8 @@ export class WorldScene extends Phaser.Scene {
     this.leaves.update(view, season === "autumn");
     this.petals.update(view, season === "spring");
     this.embers.update(view, season === "ash");
+    this.sand.update(view, season === "desert");
+    this.stars.update(view, season === "starlit");
     audio.calm = this.indoors || this.daylight.night;
     if (this.doorPendingUntil && performance.now() > this.doorPendingUntil) {
       // The server said no (or lag): don't leave the screen black.
@@ -1150,7 +1166,8 @@ export class WorldScene extends Phaser.Scene {
     let bestHeal = 0;
     bag.forEach((s, i) => {
       const heal = s ? (ITEMS[s.id].heal ?? 0) : 0;
-      if (!heal) return;
+      // Strong potions need a level (the Golden Potion: 70).
+      if (!heal || (ITEMS[s!.id].lv ?? 1) > (me.lv ?? 1)) return;
       const better = best < 0 || (bestHeal < missing ? heal > bestHeal : heal >= missing && heal < bestHeal);
       if (better) {
         best = i;

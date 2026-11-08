@@ -81,7 +81,7 @@ This connects 100 bots that walk around (using the real collision code) and chat
 
 ```
 shared/       Code used by both client and server
-  world.ts        Seeded generator (corner-based terrain) for the main island, Frostfell, Ravenmoor, Petalfall, Ashpeak and the Isle of Trials, decorations, collision
+  world.ts        Seeded generator (corner-based terrain) for the main island, Frostfell, Ravenmoor, Petalfall, Ashpeak, Sunscar, Starfall and the Isle of Trials, decorations, collision
   town.ts         The town's layout: walls, quarters, buildings, props, doors, the park and the Market Square; roads, bosses' camps, the islands and their seasons, Ravenmoor's castle, the Ogre Warlord's camp, the piers
   appearance.ts   Character look: encode/decode/validate, random looks
   catalog.ts      Generated list of hair/clothes/colour options
@@ -125,7 +125,7 @@ client/       Phaser game
   src/world/town.ts        Buildings and furniture, lit windows at night, bunting, live shop displays
   src/world/shops.ts       Player shops: rugs, signs, the away seller's look-alike
   src/world/daylight.ts    Day and night (Batam time), lamp and fire glow
-  src/world/ambience.ts    Butterflies by day, fireflies at night, snow over Frostfell, leaves over Ravenmoor, petals over Petalfall, embers over Ashpeak
+  src/world/ambience.ts    Butterflies by day, fireflies at night, snow over Frostfell, leaves over Ravenmoor, petals over Petalfall, embers over Ashpeak, sand over Sunscar, starlight over Starfall
   src/world/monsterArt.ts  Monster sprite sheets and their animations; humanoid monsters' parts
   src/world/fx.ts          Damage numbers, slashes, level-up light, arrows and magic bolts, skill effects
   src/scenes/WorldScene.ts   Chunk streaming, water glints, input, camera, interpolation
@@ -169,7 +169,7 @@ scripts/
 Ragnarok and TibiaME style: click a monster and your character fights it. Everything about a fight is decided on the server, and the numbers live in `shared/rpg.ts`.
 
 - **Classes.** Everyone starts as a Novice; at level 10 the Job Master makes you a Knight, Mage or Archer, and at level 50 a Lord Knight, Wizard or Hunter (see below). HP, MP, attack and defence grow by class as you level.
-- **Levels.** The cap is `LEVEL_CAP` (80 for now). The EXP curve (`expToNext`) is gentle through the Novice levels, then climbs to three times as much from the job change to level 13, so job levels take a few minutes each (about 4 at level 12, about 8 at level 18, 12 to 15 in the Orc Woods, 11 to 15 in the Wildlands, 10 to 16 on Frostfell, 14 to 17 on Ravenmoor, 15 to 20 on Petalfall, 12 to 24 on Ashpeak, fighting on-level monsters with plain attacks). It keeps going past the cap, so raising it is a one-line change. At the cap, EXP stops filling.
+- **Levels.** The cap is `LEVEL_CAP` (100). The EXP curve (`expToNext`) is gentle through the Novice levels, then climbs to three times as much from the job change to level 13, so job levels take a few minutes each (about 4 at level 12, about 8 at level 18, 12 to 15 in the Orc Woods, 11 to 15 in the Wildlands, 10 to 16 on Frostfell, 14 to 17 on Ravenmoor, 15 to 20 on Petalfall, 12 to 24 on Ashpeak, 13 to 23 on Sunscar and Starfall, fighting on-level monsters with plain attacks). It keeps going past the cap, so raising it is a one-line change. At the cap, EXP stops filling.
 - **Fields.** Monsters live outside the walls. The town (and the palace) is always safe: monsters never come in, and nobody can attack from inside. The first field is the **South Meadow**, out of the south gate (Rowan the Gate Guard explains it):
 
   | Monster | Level | Where | Behaviour |
@@ -256,6 +256,25 @@ Ragnarok and TibiaME style: click a monster and your character fights it. Everyt
   | Magma Golem | 79 | The south | Huge and slow; only fights back; hits hardest |
   | **Cinder Colossus** | 84 | His crater in the middle (`CINDER_CRATER`) | Field boss: 230,000 HP, throws fire from 150 px, 30 min respawn, for a party of four at level 80 |
 
+  The ninth and tenth fields are **Sunscar** (Lv 80–90, `SUNSCAR_ISLE`, north of Ashpeak) and **Starfall** (Lv 90–100, `STARFALL_ISLE`, south of it), which take the cap to 100. In the far eastern sea, `biomeAt` gives everything north of `SAND_LINE` the **desert** look and everything south of `NIGHT_LINE` the **starlit** one. Both are made from the summer sheets by `makeIslandSheets` (`decorSprites.ts`, with Ashpeak's ash, through one `recolorSheet` helper): grass to sand and leaves to dry olive on Sunscar, grass and leaves to night violets and blues on Starfall, the sea left alone. Sand blows across Sunscar under a warm `DUST` overlay; starlight drifts up over Starfall under a deep blue `NIGHT` one. Both ships leave from Marlow's pier too (Soren, 1,800 gold, level 80; Lyra, 2,200 gold, level 90), and Nadia and Celeste sail back for free. The Dune King's temple (`SUN_TEMPLE`) and the Star Tyrant's altar (`STAR_ALTAR`, south of Starfall's lake) are kept clear of trees. All twelve creatures are LPC character art or the pack's Ghost and Bat sheets, multiplied by a colour (`tinted`). With the Golden Potion (below), on-level hunting costs about as many potions as Ashpeak with White Potions:
+
+  | Monster | Level | Where | Behaviour |
+  | --- | --- | --- | --- |
+  | Dune Stalker | 81 | Sunscar's south-west dunes | Only fights back; plain attacks often miss it |
+  | Dust Djinn | 83 | Sunscar's north-west | Hurls searing bolts from 170 px; attacks on sight |
+  | Tomb Warden | 85 | North of the temple | Tough; attacks anyone close |
+  | Desert Raider | 87 | Sunscar's east | Quick; attacks anyone close |
+  | Sand Golem | 89 | Sunscar's south | Huge and slow; only fights back; hits hardest |
+  | **Dune King** | 94 | His temple (`SUN_TEMPLE`) | Field boss: 330,000 HP, throws fire from 150 px, for a party of four at level 90 |
+  | Void Bat | 91 | Starfall's south-west | Quick; attacks anyone close |
+  | Astral Seer | 93 | Starfall's north-west | Casts starlight from 170 px; attacks on sight |
+  | Star Knight | 95 | North of the lake | Tough; attacks anyone close |
+  | Night Wisp | 97 | The east shore | Plain attacks often miss it; attacks anyone close |
+  | Crystal Golem | 99 | Starfall's south-east | Huge and slow; only fights back; hits hardest |
+  | **Star Tyrant** | 104 | His altar (`STAR_ALTAR`) | Field boss: 450,000 HP, casts starlight from 150 px, for a party of four at level 100 |
+
+- **The Golden Potion.** Bram sells it (300 gold): 600 HP, but only from level 70 (`lv` on a usable item is checked by `Combat.drink`, and Q skips potions you can't drink yet). The White Potion's fixed 250 HP had stopped keeping up with how hard the highest monsters hit.
+
 - **Field boss.** The Pumpking is Dusk Hollow's boss, Ragnarok's MVP style: one at a time, 12,000 HP, breathes fire from 150 px, heals only slowly when left alone, and comes back 10 minutes after it falls. It's drawn bigger, with its name and health always showing. The whole town hears when it rises again and who brought it down. A level 20 Knight can just about beat it alone with plenty of potions; a party shares the EXP by damage. It always drops King's Candy (600 gold at Bram), often a good piece of gear, and very rarely the Moonblade or the Pumpking Card. The Orc Woods' Orc Warlord is the same kind of boss, bigger (24,000 HP, back after 15 minutes), with the Dragon Spear and his own card as the rare prizes. The Wildlands' Minotaur King is bigger again (45,000 HP, back after 20 minutes), with the legendary Sunfire Bow, Archmage Staff and his own card as the rare prizes, and other players free to attack whoever fights him. Frostfell's Frost Giant is bigger still (70,000 HP, back after 25 minutes), with the legendary Frost Scythe and his own card, Ravenmoor's Fallen King bigger again (110,000 HP, back after 30 minutes), with the legendary Fallen Crown (a helmet for anyone) and his own card, and Petalfall's Ogre Warlord the biggest yet (170,000 HP, back after 30 minutes), with the legendary Warlord's Helm (also for anyone) and his own card. Any monster can be a boss (`boss: true` in `MONSTERS`).
 
 - **Fighting.** You auto-attack once a second while the monster is in reach. Hits can miss (more often against higher levels), and 5 % are critical hits. The client only says what you're attacking and draws what the server reports: damage numbers, slashes, health bars.
@@ -306,6 +325,7 @@ Every item is in `shared/items.ts`: its stats, price, rarity, icon, and how it l
 - **Ravenmoor gear.** Level 52–58 drops: Gilded Blade, Dark Lance (a spear), Blood and Royal Bows, Bone and Soul Staves, the Ruin Shield, Bascinet, Shadow Hood, Night Hat, Shadow Cloak, Lich Robe, Dread Plate, the Bone Charm and Ring of Souls, and from the Fallen King his Seal and the legendary Fallen Crown. Six more cards (Wraith, Gargoyle, Dark Knight, Lich, Flesh Golem and the legendary Fallen King Card) bring the total to 34.
 - **Petalfall gear.** Level 62–68 drops: Blossom Blade, Thunder Glaive (a spear), Petal and Ogre-Bone Bows, Foxfire and Storm Staves, the Jade Shield, Phantom Helm, Crow Mask, Blossom Hat, Crow Mantle (black leather with a pair of crow's wings), Blossom Robe, Warlord Plate, the Foxfire Charm and Moonstone Ring, and from the Ogre Warlord his Fang and the legendary Warlord's Helm. Six more cards (Moon Hare, Fox Spirit, Crow Blade, Phantom Swordsman, Red Ogre and the legendary Ogre Warlord Card) bring the total to 40.
 - **Ashpeak gear.** Level 72–78 drops: Cinder Blade, Magma Lance (a spear), Ember and Obsidian Bows, Cinder and Magma Staves, the Obsidian Shield, Obsidian Helm, Ember Hood, Ashen Hood, Obsidian Plate, Cinder Robe, Ashen Leathers, the Ember Ring and Salamander Charm, and from the Cinder Colossus his Heart and the legendary Colossus Mantle. Six more cards (Ember Imp, Salamander, Obsidian Knight, Cinder Wraith, Magma Golem and the legendary Cinder Colossus Card) bring the total to 46.
+- **Sunscar and Starfall gear.** Level 82–98 drops: Sun and Star Blades, Sun Spear and Void Lance, the Sand, Sunbeam, Moon and Starlight Bows, the Djinn, Sun, Seer's and Astral Staves, Sun and Star Shields, three helmets and three suits for each island, rings and amulets, and from the bosses the Sun Medallion and Tyrant's Star, and the legendary Sun Aegis (a shield that burns back) and Ring of the Fallen Star. Twelve more cards bring the total to 58.
 - **Saving.** The bag and equipment are saved with the rest of your progress, plus right away after buying, selling or finding something good. Guests keep their bag until they leave.
 - **Defence.** Damage is softened by defence rather than reduced by it (defence equal to the attack halves a hit), so armour always helps but never makes you untouchable.
 
@@ -348,7 +368,7 @@ Hilda the Blacksmith works by her forge fire outside the south gate, west of Row
 | +10 | 25% | 2,500 gold | Star Crystal |
 
 - **What it adds.** Weapons get ATK for every level: an eighth of their own ATK, at least 1 (Saber +2, Moonblade +4). Shields, helmets, armour, legs and boots get DEF +1 per level. Rings and amulets can't be upgraded. A worn upgrade counts straight away.
-- **Ingots.** Hilda sells Iron Ingots (100 gold); monsters drop them too. Mithril Ingots drop in Dusk Hollow, the Orc Woods, the Wildlands, Frostfell, Ravenmoor, Petalfall and Ashpeak, and rarely from Snapper Flowers. Star Crystals come from Gazers and Ghosts (about 1 in 200 to 250), Orc Skeletons and Orc Zombies (about 1 in 125 to 170), the Wildlands' monsters past the Boarmen (about 1 in 100 to 170), Frostfell's monsters (about 1 in 70 to 125), Ravenmoor's (about 1 in 60 to 85), Petalfall's (about 1 in 55 to 65), the Pumpking (one kill in two), and the Orc Warlord, Minotaur King, Frost Giant, Fallen King and Ogre Warlord (always). The Pumpking also always carries a Mithril Ingot or two. Ingots are kept out of Bram's "sell all monster loot".
+- **Ingots.** Hilda sells Iron Ingots (100 gold); monsters drop them too. Mithril Ingots drop in Dusk Hollow, the Orc Woods, the Wildlands, Frostfell, Ravenmoor, Petalfall, Ashpeak, Sunscar and Starfall, and rarely from Snapper Flowers. Star Crystals come from Gazers and Ghosts (about 1 in 200 to 250), Orc Skeletons and Orc Zombies (about 1 in 125 to 170), the Wildlands' monsters past the Boarmen (about 1 in 100 to 170), Frostfell's monsters (about 1 in 70 to 125), Ravenmoor's (about 1 in 60 to 85), Petalfall's (about 1 in 55 to 65), the Pumpking (one kill in two), and the Orc Warlord, Minotaur King, Frost Giant, Fallen King and Ogre Warlord (always). The Pumpking also always carries a Mithril Ingot or two. Ingots are kept out of Bram's "sell all monster loot".
 - **The cost of luck.** Simulated over 20,000 tries, reaching +7 takes about 10 tries (6,000 gold, 4 Mithril), +9 about 29 tries (32,000 gold, 19 Mithril, 3 Star Crystals), and +10 about 74 tries (100,000 gold, 50 Mithril, 16 Star Crystals).
 - **Names.** Upgraded gear goes first in the name: "+7 Double Stinging Saber". The bag shows the level in the item's corner and what the upgrades add. Upgrades stay on gear that's dropped and picked up again; Bram won't buy upgraded gear.
 - **Auras.** Wear anything at +7 or higher and everyone sees an aura at your feet: a blue ring at +7, violet with rising sparks at +9, and gold with a column of light at +10. Legendary gear (or a legendary card in gear) gives an orange aura that ranks between +9 and +10. The best one you qualify for shows (`auraOf` in `shared/items.ts`), unless your shown title has its own. At night auras glow like the street lamps (a glow above the night tint).

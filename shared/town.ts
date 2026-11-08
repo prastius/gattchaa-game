@@ -109,6 +109,10 @@ export const PETALFALL_ISLE = { cx: 408, cy: 404, rx: 94, ry: 86 };
 export const CASTLE_ISLE = { cx: 386, cy: 74, rx: 60, ry: 44 };
 /** Ashpeak (Lv 70–80): a volcanic island far out in the eastern sea, past Ravenmoor and Petalfall. */
 export const ASHPEAK_ISLE = { cx: 576, cy: 252, rx: 54, ry: 88 };
+/** Sunscar (Lv 80–90): a desert island of sand and dry scrub, north of Ashpeak. */
+export const SUNSCAR_ISLE = { cx: 572, cy: 74, rx: 52, ry: 56 };
+/** Starfall (Lv 90–100): an island under a night that never ends, south of Ashpeak. */
+export const STARFALL_ISLE = { cx: 574, cy: 436, rx: 60, ry: 62 };
 /** Crownhold's walls: inside them, guilds fight over the castle during a siege (see shared/siege.ts). */
 export const CASTLE: Rect = { x: 372, y: 60, w: 44, h: 33 };
 /** The keep inside the walls, round the crystal. Its gate faces east, away from the castle gate. */
@@ -123,13 +127,20 @@ export const AUTUMN_LINE = 368;
 export const AUTUMN_TOP = 108;
 /** South-east of this corner (tiles) is Petalfall's sea: spring colours and cherry blossom. */
 export const SPRING_CORNER = { x: 320, y: 320 };
-/** Everything east of this column is Ashpeak's sea: ash instead of snow, and embers in the air. */
+/** Everything east of this column is the far eastern sea: Ashpeak's ash, Sunscar's sand north of it and Starfall's night south of it. */
 export const ASH_LINE = 512;
-/** Which season the art shows at a tile: the islands have their own (Ashpeak's is ash, not a season). */
-export type Biome = "summer" | "winter" | "autumn" | "spring" | "ash";
+/** In the far eastern sea, Sunscar's sea is north of this row and Starfall's south of the next. */
+export const SAND_LINE = 150;
+export const NIGHT_LINE = 360;
+/** Which season the art shows at a tile: the islands have their own (the far eastern ones aren't seasons at all). */
+export type Biome = "summer" | "winter" | "autumn" | "spring" | "ash" | "desert" | "starlit";
 export const biomeAt = (tx: number, ty: number): Biome =>
   tx >= ASH_LINE
-    ? "ash"
+    ? ty < SAND_LINE
+      ? "desert"
+      : ty > NIGHT_LINE
+        ? "starlit"
+        : "ash"
     : tx >= SPRING_CORNER.x && ty >= SPRING_CORNER.y
       ? "spring"
       : tx >= AUTUMN_LINE && ty >= AUTUMN_TOP
@@ -144,6 +155,14 @@ export const GLOOM: Rect = { x: 376, y: 112, w: 136, h: 168 };
 export const HAZE: Rect = { x: 516, y: 176, w: 120, h: 150 };
 /** The Cinder Colossus's crater in the middle of Ashpeak, where the road from the pier ends: kept clear of rocks. */
 export const CINDER_CRATER: Rect = { x: 566, y: 243, w: 20, h: 14 };
+/** Sunscar's warm, dusty light hangs over this area (tiles). */
+export const DUST: Rect = { x: 516, y: 22, w: 120, h: 104 };
+/** The Dune King's sunken temple in the middle of Sunscar, where the road from the pier ends: kept clear of trees. */
+export const SUN_TEMPLE: Rect = { x: 566, y: 67, w: 20, h: 14 };
+/** Starfall's endless night hangs over this area (tiles). */
+export const NIGHT: Rect = { x: 530, y: 384, w: 106, h: 104 };
+/** The Star Tyrant's altar south of Starfall's lake, where the road from the pier ends: kept clear of trees. */
+export const STAR_ALTAR: Rect = { x: 562, y: 441, w: 20, h: 13 };
 /** The Fallen King's ruined castle on Ravenmoor's high ground: broken walls round his throne, kept clear of trees. */
 export const RUINS: Rect = { x: 424, y: 139, w: 38, h: 27 };
 /** The Frost Giant's ring of standing stones on Frostfell's icy highlands: kept clear of trees and rocks. */
@@ -176,6 +195,9 @@ export const PIERS = {
   petalfall: { x: 326, y: 399, w: 9, h: 3 },
   // West from Ashpeak's shore, towards Petalfall and the meadow.
   ashpeak: { x: 523, y: 250, w: 9, h: 3 },
+  // West from Sunscar's and Starfall's shores.
+  sunscar: { x: 522, y: 73, w: 9, h: 3 },
+  starfall: { x: 540, y: 435, w: 9, h: 3 },
   // The long bridge from the Wildlands' east shore across the sea to Crownhold.
   castle: { x: 290, y: 80, w: 63, h: 3 },
 } satisfies Record<string, Rect>;
@@ -196,6 +218,9 @@ export const ROADS: Rect[] = [
   { x: 242, y: 282, w: 68, h: 4 }, // past the path down to Edda, on east to the pier for Petalfall
   { x: 334, y: 399, w: 108, h: 4 }, // Petalfall: from the pier east, up onto the high ground and into the Ogre Warlord's camp
   { x: 531, y: 250, w: 38, h: 4 }, // Ashpeak: from the pier east, over the rock to the Cinder Colossus's crater
+  { x: 530, y: 73, w: 37, h: 4 }, // Sunscar: from the pier east, over the sand to the Dune King's temple
+  { x: 548, y: 435, w: 20, h: 4 }, // Starfall: from the pier east along the lake…
+  { x: 564, y: 435, w: 4, h: 7 }, // …and south to the Star Tyrant's altar
   { x: 259, y: 116, w: 15, h: 4 }, // the Wildlands: from the top of the east path, east…
   { x: 270, y: 80, w: 4, h: 40 }, // …north past the vampires' high ground…
   { x: 270, y: 80, w: 21, h: 4 }, // …and east to the long bridge
@@ -407,6 +432,11 @@ export const FLOORS: { rect: Rect; floor: Floor }[] = [
   { rect: PIERS.east, floor: Floor.Pier },
   { rect: PIERS.petalfall, floor: Floor.Pier },
   { rect: PIERS.ashpeak, floor: Floor.Pier },
+  { rect: PIERS.sunscar, floor: Floor.Pier },
+  { rect: PIERS.starfall, floor: Floor.Pier },
+  // Old flagstones in the Dune King's temple, and round the Star Tyrant's altar.
+  { rect: { x: SUN_TEMPLE.x + 2, y: SUN_TEMPLE.y + 2, w: SUN_TEMPLE.w - 4, h: SUN_TEMPLE.h - 4 }, floor: Floor.Slab },
+  { rect: { x: STAR_ALTAR.x + 2, y: STAR_ALTAR.y + 2, w: STAR_ALTAR.w - 4, h: STAR_ALTAR.h - 4 }, floor: Floor.Slab },
   // Dark flagstones on the floor of the Cinder Colossus's crater.
   { rect: { x: CINDER_CRATER.x + 2, y: CINDER_CRATER.y + 2, w: CINDER_CRATER.w - 4, h: CINDER_CRATER.h - 4 }, floor: Floor.Slab },
   { rect: PIERS.castle, floor: Floor.Pier },
@@ -709,6 +739,27 @@ const props: Prop[] = [
   { type: "barrel", x: PIERS.petalfall.x + PIERS.petalfall.w + 1, y: PIERS.petalfall.y - 2 },
   { type: "crate", x: PIERS.ashpeak.x + PIERS.ashpeak.w + 2, y: PIERS.ashpeak.y - 2 },
   { type: "barrels", x: PIERS.ashpeak.x + PIERS.ashpeak.w + 3, y: PIERS.ashpeak.y + PIERS.ashpeak.h + 1 },
+
+  { type: "crate", x: PIERS.sunscar.x + PIERS.sunscar.w + 2, y: PIERS.sunscar.y - 2 },
+  { type: "barrel", x: PIERS.sunscar.x + PIERS.sunscar.w + 3, y: PIERS.sunscar.y + PIERS.sunscar.h + 1 },
+  { type: "barrels", x: PIERS.starfall.x + PIERS.starfall.w + 2, y: PIERS.starfall.y - 2 },
+
+  // ---- The Dune King's temple: two rows of pillars, his throne at the far end, and fires at the door.
+  ...[SUN_TEMPLE.x + 1, SUN_TEMPLE.x + 5, SUN_TEMPLE.x + 9, SUN_TEMPLE.x + 13].flatMap((x) =>
+    [SUN_TEMPLE.y + 1, SUN_TEMPLE.y + SUN_TEMPLE.h - 2].map((y): Prop => ({ type: "pillar", x, y })),
+  ),
+  { type: "throne", x: SUN_TEMPLE.x + 16, y: SUN_TEMPLE.y + 6 },
+  { type: "campfire", x: SUN_TEMPLE.x + 2, y: SUN_TEMPLE.y + 4 },
+  { type: "campfire", x: SUN_TEMPLE.x + 2, y: SUN_TEMPLE.y + 9 },
+
+  // ---- The Star Tyrant's altar: a wide ring of standing stones under the stars.
+  ...[STAR_ALTAR.x + 1, STAR_ALTAR.x + 7, STAR_ALTAR.x + 12, STAR_ALTAR.x + STAR_ALTAR.w - 2].flatMap((x) =>
+    [STAR_ALTAR.y + 1, STAR_ALTAR.y + STAR_ALTAR.h - 2].map((y): Prop => ({ type: "pillar", x, y })),
+  ),
+  { type: "lamp", x: STAR_ALTAR.x + 4, y: STAR_ALTAR.y + 3 },
+  { type: "lamp", x: STAR_ALTAR.x + STAR_ALTAR.w - 5, y: STAR_ALTAR.y + 3 },
+  { type: "lamp", x: STAR_ALTAR.x + 4, y: STAR_ALTAR.y + STAR_ALTAR.h - 4 },
+  { type: "lamp", x: STAR_ALTAR.x + STAR_ALTAR.w - 5, y: STAR_ALTAR.y + STAR_ALTAR.h - 4 },
 
   // ---- The Cinder Colossus's crater: a ring of old standing stones and four fires that never go out.
   ...[CINDER_CRATER.x + 1, CINDER_CRATER.x + 7, CINDER_CRATER.x + 12, CINDER_CRATER.x + CINDER_CRATER.w - 2].flatMap((x) =>
