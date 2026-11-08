@@ -15,7 +15,9 @@ import {
   CASTLE_ISLE,
   FROST_LAIR,
   WARLORD_CAMP,
+  CINDER_CRATER,
   TRIAL_ISLE,
+  ASHPEAK_ISLE,
   TRIAL_GROUND,
   CASTLE,
   CASTLE_CAMP,
@@ -45,7 +47,7 @@ import {
 import { FIELDS } from "./rpg";
 
 export const TILE_SIZE = 32;
-export const WORLD_TILES_W = 512;
+export const WORLD_TILES_W = 640;
 export const WORLD_TILES_H = 512;
 /** The main island is shaped round this tile (the world grew south and east for the islands; this stays put). */
 const MAIN_CX = 192;
@@ -178,7 +180,13 @@ export class World {
     const dy = (vy - MAIN_CY) / MAIN_CY;
     const dist = Math.sqrt(dx * dx + dy * dy);
     const e = fbm(vx / 70, vy / 70, this.seed, 5);
-    return Math.max(e * 1.2 - Math.pow(dist, 3.5) * 0.85 + 0.14, this.isleElevation(vx, vy, FROSTFELL_ISLE, 4242), this.isleElevation(vx, vy, RAVENMOOR_ISLE, 7373), this.isleElevation(vx, vy, PETALFALL_ISLE, 3131), this.isleElevation(vx, vy, CASTLE_ISLE, 9494), this.trialElevation(vx, vy));
+    return Math.max(e * 1.2 - Math.pow(dist, 3.5) * 0.85 + 0.14, this.isleElevation(vx, vy, FROSTFELL_ISLE, 4242), this.isleElevation(vx, vy, RAVENMOOR_ISLE, 7373), this.isleElevation(vx, vy, PETALFALL_ISLE, 3131), this.isleElevation(vx, vy, CASTLE_ISLE, 9494), this.trialElevation(vx, vy), this.ashElevation(vx, vy));
+  }
+
+  /** Ashpeak: an island like the others, but higher, so most of it is bare volcanic rock with grass only near the shore. */
+  private ashElevation(vx: number, vy: number): number {
+    const e = this.isleElevation(vx, vy, ASHPEAK_ISLE, 6161);
+    return e < 0 ? e : e + 0.1;
   }
 
   /** The Isle of Trials: small, low and round, so the circle in its middle is always dry grass. */
@@ -189,7 +197,7 @@ export class World {
     return 0.62 - d * d * 0.51 + (fbm(vx / 6, vy / 6, this.seed + 2468, 2) - 0.5) * 0.06;
   }
 
-  /** An island out at sea (Frostfell, Ravenmoor, Petalfall, Crownhold): its own hills, falling away to the shore. */
+  /** An island out at sea (Frostfell, Ravenmoor, Petalfall, Crownhold, Ashpeak): its own hills, falling away to the shore. */
   private isleElevation(vx: number, vy: number, isle: { cx: number; cy: number; rx: number; ry: number }, salt: number): number {
     const { cx, cy, rx, ry } = isle;
     const d = Math.hypot((vx - cx) / rx, (vy - cy) / ry);
@@ -373,7 +381,7 @@ export class World {
 
   /** Trees and rocks stay out of town, the Blacksmith's yard, the bosses' camps, the Isle of Trials' circle, the piers and off the roads. */
   private isReserved(tx: number, ty: number): boolean {
-    if (inRect(TOWN_AREA, tx, ty) || inRect(FORGE_YARD, tx, ty) || inRect(ORC_CAMP, tx, ty) || inRect(MINOTAUR_LAIR, tx, ty) || inRect(FROST_LAIR, tx, ty) || inRect(RUINS, tx, ty) || inRect(WARLORD_CAMP, tx, ty) || inRect(CASTLE, tx, ty) || inRect(CASTLE_CAMP, tx, ty)) return true;
+    if (inRect(TOWN_AREA, tx, ty) || inRect(FORGE_YARD, tx, ty) || inRect(ORC_CAMP, tx, ty) || inRect(MINOTAUR_LAIR, tx, ty) || inRect(FROST_LAIR, tx, ty) || inRect(RUINS, tx, ty) || inRect(WARLORD_CAMP, tx, ty) || inRect(CINDER_CRATER, tx, ty) || inRect(CASTLE, tx, ty) || inRect(CASTLE_CAMP, tx, ty)) return true;
     if (tx >= TRIAL_GROUND.x - 2 && ty >= TRIAL_GROUND.y - 3 && tx < TRIAL_GROUND.x + TRIAL_GROUND.w + 2 && ty < TRIAL_GROUND.y + TRIAL_GROUND.h + 2) return true;
     if (Object.values(PIERS).some((p) => tx >= p.x - 3 && ty >= p.y - 3 && tx < p.x + p.w + 3 && ty < p.y + p.h + 3)) return true;
     if (tx < INTERIOR_ZONE.x + INTERIOR_ZONE.w + 2 && ty < INTERIOR_ZONE.y + INTERIOR_ZONE.h + 2) return true;
@@ -486,7 +494,7 @@ export class World {
             d = [Decor.oak, Decor.oakTall, Decor.cypress, Decor.bush][Math.floor(r2 * 4)];
           } else if (r < 0.06) {
             d = r2 < 0.55 ? Decor.tallGrass : Decor.fern;
-          } else if (r < 0.1 && forest < (meadow ? 0.6 : 0.45) && !isSnowy(tx, ty)) {
+          } else if (r < 0.1 && forest < (meadow ? 0.6 : 0.45) && !isSnowy(tx, ty) && biomeAt(tx, ty) !== "ash") {
             d = Decor.flowers;
           }
         } else if (allDirt) {

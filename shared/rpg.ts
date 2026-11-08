@@ -8,7 +8,7 @@ import { TILE, TOWN_AREA, INTERIOR_ZONE, inRect, type Rect } from "./town";
 import type { Bonus, ItemId } from "./items";
 
 /** Highest level for now; raised step by step. The EXP curve already continues past it. */
-export const LEVEL_CAP = 70;
+export const LEVEL_CAP = 80;
 
 /**
  * EXP needed to go from `level` to the next one. Gentle through the Novice
@@ -176,6 +176,12 @@ export type MonsterId =
   | "phantom"
   | "redOgre"
   | "ogreWarlord"
+  | "emberImp"
+  | "salamander"
+  | "obsidianKnight"
+  | "cinderWraith"
+  | "magmaGolem"
+  | "cinderColossus"
   | "crystal"
   | "castleKnight"
   | "castleArcher"
@@ -521,6 +527,57 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
     ],
   },
 
+  // ---------------------------------------------------------------- Ashpeak (Lv 70–80), the volcanic island far out in the eastern sea
+  // Little red imps with bat wings, all over the rock by the pier. They swarm anyone who comes near.
+  emberImp: {
+    id: "emberImp", name: "Ember Imp", level: 71, hp: 6000, atk: 74, def: 42, exp: 30_000, gold: [94, 158], speed: 70, chase: 125, aggro: 40, range: 36, attackMs: 1300, radius: 11, respawnMs: 22_000,
+    drops: [
+      ["impHorn", 0.55], ["whitePotion", 0.08], ["cinderBlade", 0.004], ["emberBow", 0.004], ["emberRing", 0.002],
+      ["mithril", 0.08], ["starCrystal", 0.018], ["emberImpCard", 0.001],
+    ],
+  },
+  // Fire lizards on the south-west slopes: they spit fire from afar at anyone they see.
+  salamander: {
+    id: "salamander", name: "Salamander", level: 73, hp: 5800, atk: 64, def: 36, exp: 33_000, gold: [96, 162], speed: 45, chase: 90, aggro: 100, range: 170, attackMs: 2200, radius: 13, respawnMs: 24_000,
+    drops: [
+      ["salamanderScale", 0.55], ["whitePotion", 0.08], ["cinderStaff", 0.004], ["emberHood", 0.005], ["salamanderCharm", 0.003], ["magmaStaff", 0.002],
+      ["mithril", 0.08], ["starCrystal", 0.019], ["salamanderCard", 0.001],
+    ],
+  },
+  // Knights in black glass armour, on guard along the north of the island. They charge anyone who comes near.
+  obsidianKnight: {
+    id: "obsidianKnight", name: "Obsidian Knight", level: 75, hp: 6600, atk: 80, def: 50, exp: 36_000, gold: [98, 166], speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 13, respawnMs: 24_000,
+    drops: [
+      ["obsidianShard", 0.55], ["whitePotion", 0.08], ["obsidianHelm", 0.005], ["obsidianShield", 0.003], ["magmaLance", 0.002], ["obsidianPlate", 0.002],
+      ["mithril", 0.09], ["starCrystal", 0.02], ["obsidianKnightCard", 0.001],
+    ],
+  },
+  // Smoke with a face, drifting over the hot rock in the east. Hard to hit with plain attacks.
+  cinderWraith: {
+    id: "cinderWraith", name: "Cinder Wraith", level: 77, hp: 6800, atk: 74, def: 50, exp: 39_000, gold: [100, 170], speed: 55, chase: 105, aggro: 50, range: 36, attackMs: 1500, radius: 12, respawnMs: 24_000, flee: 0.15,
+    drops: [
+      ["cinderVeil", 0.55], ["whitePotion", 0.08], ["ashenHood", 0.005], ["ashenLeathers", 0.004], ["cinderRobe", 0.004], ["obsidianBow", 0.002],
+      ["mithril", 0.09], ["starCrystal", 0.02], ["cinderWraithCard", 0.001],
+    ],
+  },
+  // Walking lumps of cooling lava in the south. Leave them alone and they leave you alone; they hit harder than anything else here.
+  magmaGolem: {
+    id: "magmaGolem", name: "Magma Golem", level: 79, hp: 8600, atk: 124, def: 52, exp: 44_000, gold: [104, 176], speed: 30, chase: 70, aggro: 0, range: 48, attackMs: 2100, radius: 18, respawnMs: 26_000,
+    drops: [
+      ["magmaCore", 0.55], ["whitePotion", 0.1], ["obsidianPlate", 0.003], ["cinderBlade", 0.003], ["magmaLance", 0.002], ["magmaStaff", 0.002], ["obsidianBow", 0.002],
+      ["mithril", 0.09], ["starCrystal", 0.02], ["magmaGolemCard", 0.001],
+    ],
+  },
+  // Ashpeak's boss, in the crater at the top of the road. Throws fire at anyone out of reach.
+  cinderColossus: {
+    id: "cinderColossus", name: "Cinder Colossus", level: 84, hp: 230_000, atk: 220, def: 68, exp: 600_000, gold: [12_000, 20_000], speed: 35, chase: 85, aggro: 150, range: 150, attackMs: 2000, radius: 30, respawnMs: 1_800_000,
+    boss: true, regen: 0.004,
+    drops: [
+      ["heartOfFlame", 1], ["whitePotion", 0.8], ["magmaLance", 0.2], ["obsidianBow", 0.2], ["magmaStaff", 0.2], ["obsidianPlate", 0.15], ["obsidianShield", 0.15],
+      ["mithril", 1], ["starCrystal", 1], ["starCrystal", 0.8], ["colossusHeart", 0.06], ["colossusMantle", 0.015], ["cinderColossusCard", 0.02],
+    ],
+  },
+
   // ---------------------------------------------------------------- Crownhold, the guild castle
   // The crystal at the heart of the keep (see shared/siege.ts): it never moves or fights back, and
   // only guild members can strike it, only during a siege. Breaking it takes the castle; it's whole
@@ -716,6 +773,24 @@ export const FIELDS: Field[] = [
       { monster: "phantom", rect: { x: 410, y: 360, w: 40, h: 12 }, count: 8 },
       { monster: "redOgre", rect: { x: 370, y: 432, w: 56, h: 22 }, count: 8 },
       { monster: "ogreWarlord", rect: { x: 447, y: 399, w: 6, h: 5 }, count: 1 },
+    ],
+  },
+  {
+    // Far out in the eastern sea: a ship from the meadow's east shore sails here.
+    id: "ashpeak",
+    name: "Ashpeak",
+    levels: "Lv 70–80",
+    area: { x: 528, y: 186, w: 96, h: 130 },
+    wild: true,
+    spawns: [
+      // Ember Imps on the rock north of the pier, Salamanders on the south-west slopes, Obsidian Knights along the north.
+      { monster: "emberImp", rect: { x: 540, y: 222, w: 20, h: 24 }, count: 10 },
+      { monster: "salamander", rect: { x: 538, y: 258, w: 22, h: 24 }, count: 9 },
+      { monster: "obsidianKnight", rect: { x: 552, y: 200, w: 40, h: 16 }, count: 9 },
+      // Cinder Wraiths over the hot rock in the east, Magma Golems in the south; the Cinder Colossus in his crater.
+      { monster: "cinderWraith", rect: { x: 596, y: 222, w: 18, h: 44 }, count: 8 },
+      { monster: "magmaGolem", rect: { x: 552, y: 270, w: 48, h: 18 }, count: 8 },
+      { monster: "cinderColossus", rect: { x: 573, y: 247, w: 6, h: 5 }, count: 1 },
     ],
   },
   {

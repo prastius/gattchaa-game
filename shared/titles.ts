@@ -128,6 +128,7 @@ export const TITLES = def({
   legend: { name: "Legend", tier: "legendary", group: "Levels", goal: { kind: "level", n: 50 }, how: "Reach level 50." },
   mythic: { name: "Mythic", tier: "legendary", group: "Levels", goal: { kind: "level", n: 60 }, how: "Reach level 60." },
   immortal: { name: "Immortal", tier: "legendary", group: "Levels", goal: { kind: "level", n: 70 }, how: "Reach level 70." },
+  eternal: { name: "Eternal", tier: "legendary", group: "Levels", goal: { kind: "level", n: 80 }, how: "Reach level 80." },
   pioneer: {
     name: "Pioneer", tier: "legendary", group: "Levels", goal: { kind: "pioneer" }, aura: AURA_PIONEER,
     how: `Be one of the first ${PIONEERS} players to reach the level cap (now ${LEVEL_CAP}). Signed-in players only.`,
@@ -147,6 +148,8 @@ export const TITLES = def({
   exorcist: { name: "Exorcist", tier: "rare", group: "Hunting", goal: { kind: "kills", n: 500, monster: "wraith" }, how: "Help defeat 500 Wraiths." },
   ogrebane: { name: "Ogrebane", tier: "rare", group: "Hunting", goal: { kind: "kills", n: 300, monster: "redOgre" }, how: "Help defeat 300 Red Ogres." },
   warlordsBane: { name: "Warlord's Bane", tier: "epic", group: "Hunting", goal: { kind: "kills", n: 10, monster: "ogreWarlord" }, how: "Help defeat the Ogre Warlord 10 times." },
+  golemCrusher: { name: "Golem Crusher", tier: "rare", group: "Hunting", goal: { kind: "kills", n: 300, monster: "magmaGolem" }, how: "Help defeat 300 Magma Golems." },
+  colossusSlayer: { name: "Colossus Slayer", tier: "epic", group: "Hunting", goal: { kind: "kills", n: 10, monster: "cinderColossus" }, how: "Help defeat the Cinder Colossus 10 times." },
   usurper: { name: "Usurper", tier: "epic", group: "Hunting", goal: { kind: "kills", n: 10, monster: "fallenKing" }, how: "Help defeat the Fallen King 10 times." },
   giantslayer: { name: "Giantslayer", tier: "epic", group: "Hunting", goal: { kind: "kills", n: 10, monster: "frostGiant" }, aura: AURA_GIANTSLAYER, how: "Help defeat the Frost Giant 10 times." },
 

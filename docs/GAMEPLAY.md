@@ -62,7 +62,7 @@ Gattchaa Town is a walled royal town in the middle of an island, with gates to t
 - **The Market Square** (by the south gate) is where players run their own shops.
 - **The lakeside park** runs along the west wall, with a pond, benches and a campfire.
 - **The Collectors' Café** is in the east quarter, with **the Arena** behind it: a ring of sand where players duel, with benches for the crowd.
-- **The gates** lead to the monster fields: south to the South Meadow, east to Dusk Hollow, west to the Orc Woods. From the west and east roads, paths run north along the town walls to the Wildlands, and beyond them a long bridge crosses the sea to Crownhold, the guild castle. Off the south road, a path runs east to the meadow's south-east point, where a ferry sails to the snowy island of Frostfell, and on east to the meadow's east shore, where a ship sails to the spring island of Petalfall. And the east road runs on past the Pumpking to a boat for the autumn island of Ravenmoor.
+- **The gates** lead to the monster fields: south to the South Meadow, east to Dusk Hollow, west to the Orc Woods. From the west and east roads, paths run north along the town walls to the Wildlands, and beyond them a long bridge crosses the sea to Crownhold, the guild castle. Off the south road, a path runs east to the meadow's south-east point, where a ferry sails to the snowy island of Frostfell, and on east to the meadow's east shore, where a ship sails to the spring island of Petalfall (and another, from the same pier, to Ashpeak, a volcano far out in the eastern sea). And the east road runs on past the Pumpking to a boat for the autumn island of Ravenmoor.
 
 The town is always safe: monsters never come in, and nobody can attack anyone inside the walls, except in a duel both players agreed to.
 
@@ -102,6 +102,8 @@ The town is always safe: monsters never come in, and nobody can attack anyone in
 | Corvin | Ferryman | At the end of Ravenmoor's pier | Explains Ravenmoor, and rows you back for free |
 | Marlow | Ship Captain | At the end of the pier on the meadow's east shore | Sails you to Petalfall for 1,200 gold |
 | Willow | Ferry Captain | At the end of Petalfall's pier | Explains Petalfall, and sails you back for free |
+| Dorian | Ship Captain | On the same pier as Marlow, on the meadow's east shore | Sails you to Ashpeak for 1,500 gold |
+| Cassia | Ferry Captain | At the end of Ashpeak's pier | Explains Ashpeak, and sails you back for free |
 | Orin | Job Master | Just inside the south gate | Makes you a Knight, Mage or Archer at level 10, sets the Trial of Mastery from level 45, and gives you your second job once you pass it |
 | Vesna | Trial Keeper | On the Isle of Trials (Orin sends you there) | Raises the Shade you fight in the Trial of Mastery, and sends you home |
 | Bram | Outfitter | Outside the south gate, east of the road | Sells potions and starter gear, buys loot |
@@ -164,12 +166,15 @@ Shops also show as orange dots on the minimap.
 | Frostfell | 40–50 | The ferry from the meadow's south-east point (500 gold; the way back is free) | Edda, Bjorn |
 | Ravenmoor | 50–60 | The boat at the end of the east road, past the Pumpking (800 gold; the way back is free) | Finn, Corvin |
 | Petalfall | 60–70 | The ship from the meadow's east shore (1,200 gold; the way back is free) | Marlow, Willow |
+| Ashpeak | 70–80 | The other ship from the same pier (1,500 gold; the way back is free) | Dorian, Cassia |
 
 **The ferry.** Frostfell is an island across the sea, south of the South Meadow. Follow the south road out of the gate and take the path east (there's a signpost), past the Hornets, down to the pier on the meadow's south-east point. **Edda the Ferry Captain** waits at the end of it: talk to her and press **Sail to Frostfell** (500 gold). You step off at the end of Frostfell's pier, by **Bjorn the Ferryman**, who sails you back for free whenever you like. Fainting on Frostfell wakes you up in town as usual.
 
 **The boat to Ravenmoor.** Ravenmoor is an island across the strait east of Dusk Hollow. Follow the east road out of the gate, all the way past the Pumpking (there's a signpost), to the pier where the road meets the sea. **Finn the Boatman** rows you over for 800 gold; **Corvin the Ferryman** rows you back for free.
 
 **The ship to Petalfall.** Petalfall is an island far out in the sea south-east of the meadow, where it's always spring. Take the same path east off the south road as for Frostfell, but go straight on past the path down to Edda (there's a signpost), all the way to the pier on the meadow's east shore. **Marlow the Ship Captain** sails you over for 1,200 gold (level 60 and up); **Willow the Ferry Captain** sails you back for free.
+
+**The ship to Ashpeak.** Ashpeak is a volcanic island far out in the eastern sea, past Ravenmoor and Petalfall: bare black rock, charred pines, ash in the air and embers rising from the ground. Its ship leaves from the same pier as Marlow's, on the meadow's east shore: **Dorian the Ship Captain** sails you over for 1,500 gold (level 70 and up), and **Cassia the Ferry Captain** sails you back for free.
 
 **South Meadow**
 
@@ -246,6 +251,17 @@ Shops also show as orange dots on the minimap.
 | Red Ogre | 69 | 7,600 | The south of the island | Huge and slow, only fights back, hits very hard |
 | **Ogre Warlord** (boss) | 74 | 170,000 | His war camp on the high ground, where the road from the pier ends | See "Field bosses" below |
 
+**Ashpeak** (a volcanic island of black rock under a smoky red haze, with embers in the air; the Cinder Colossus in the crater in its middle)
+
+| Monster | Lv | HP | Where | Behaviour |
+| --- | --- | --- | --- | --- |
+| Ember Imp | 71 | 6,000 | The rock north of the pier | Quick, attacks anyone who comes close. There are a lot of them |
+| Salamander | 73 | 5,800 | The south-west slopes | Spits fire from far away, attacks on sight |
+| Obsidian Knight | 75 | 6,600 | Along the north of the island | Tough, attacks anyone who comes close |
+| Cinder Wraith | 77 | 6,800 | The hot rock in the east | Plain attacks often miss it (skills always hit). Attacks anyone who comes close |
+| Magma Golem | 79 | 8,600 | The south of the island | Huge and slow, only fights back, hits harder than anything else here |
+| **Cinder Colossus** (boss) | 84 | 230,000 | His crater in the middle of the island, where the road from the pier ends | See "Field bosses" below |
+
 Goblins, orcs, the undead and the beastmen of the Wildlands, Frostfell, Ravenmoor and Petalfall walk like people, carry real weapons (war axes, maces, flails, tridents, spears, katanas, bows) and lunge at you when they strike.
 
 ### How fighting works
@@ -262,7 +278,7 @@ Goblins, orcs, the undead and the beastmen of the Wildlands, Frostfell, Ravenmoo
 - **Gold** goes to whoever did the most damage.
 - **Easy monsters give less.** A monster more than 5 levels below you gives 15% less EXP for each extra level, down to 10%.
 - **Level-ups** heal you fully. Every 10th level is announced in chat.
-- The level cap is **70** for now and will be raised step by step.
+- The level cap is **80** for now and will be raised step by step.
 
 ### EXP needed per level
 
@@ -290,8 +306,11 @@ The Novice levels go fast. From the job change at level 10, each level needs a l
 | 60 | 595,256 |
 | 65 | 782,991 |
 | 69 | 963,031 |
+| 70 | 1,012,566 |
+| 75 | 1,289,762 |
+| 79 | 1,549,910 |
 
-Fighting monsters of your own level, a level takes about 4 minutes at level 12, about 8 minutes at level 18, about 12 to 15 minutes in the Orc Woods (levels 20–30), about 11 to 15 minutes in the Wildlands (levels 30–40), about 10 to 16 minutes on Frostfell (levels 40–50), about 14 to 17 minutes on Ravenmoor (levels 50–60), and about 15 to 20 minutes on Petalfall (levels 60–70). Using your skills makes it quicker.
+Fighting monsters of your own level, a level takes about 4 minutes at level 12, about 8 minutes at level 18, about 12 to 15 minutes in the Orc Woods (levels 20–30), about 11 to 15 minutes in the Wildlands (levels 30–40), about 10 to 16 minutes on Frostfell (levels 40–50), about 14 to 17 minutes on Ravenmoor (levels 50–60), about 15 to 20 minutes on Petalfall (levels 60–70), and about 12 to 24 minutes on Ashpeak (levels 70–80). Using your skills makes it quicker.
 
 ### Healing and fainting
 
@@ -345,6 +364,13 @@ Fighting monsters of your own level, a level takes about 4 minutes at level 12, 
 - When he falls, the whole town hears who brought him down. He comes back **30 minutes** later.
 - He's meant for a party of four at level 70: four level-70 players beat him in a few minutes, with one of them taking the hits and drinking potions.
 - **He always drops** the Heart of Spring (sells for 9,000 gold), a Mithril Ingot and a Star Crystal (often two), and usually a White Potion. He often drops good gear (Thunder Glaive, Ogre-Bone Longbow, Storm Staff, Warlord Plate, Jade Shield). Rarely he drops the **Warlord's Fang** (6%), and very rarely the legendary **Ogre Warlord Card** (2%) or **Warlord's Helm** (1.5%), a helmet anyone can wear.
+
+**The Cinder Colossus** sits in the crater in the middle of Ashpeak, at the end of the road from the pier: a ring of eight standing stones round dark flagstones, with four fires that never go out.
+
+- He has 230,000 HP, swings a huge war axe, throws fire at anyone out of his reach, and heals slowly if left alone. He's the biggest boss yet: red-skinned and horned, in black iron.
+- When he falls, the whole town hears who brought him down. He comes back **30 minutes** later.
+- He's meant for a party of four at level 80: four level-80 players beat him in about five minutes, with one of them taking the hits and drinking a lot of potions.
+- **He always drops** the Heart of Flame (sells for 12,000 gold), a Mithril Ingot and a Star Crystal (often two), and usually a White Potion. He often drops good gear (Magma Lance, Obsidian Longbow, Magma Staff, Obsidian Plate, Obsidian Shield). Rarely he drops the **Colossus Heart** (6%), and very rarely the legendary **Cinder Colossus Card** (2%) or **Colossus Mantle** (1.5%), armour anyone can wear.
 
 ## 6. Jobs and skills
 
@@ -405,7 +431,7 @@ In Frostfell gear with all three first-job skills learned, a level-50 player bea
 
 ### Skill points
 
-- You get **1 skill point** at the job change, and **1 more every level** after that: 41 at level 50, 51 at level 60, 61 at level 70. Until the late 60s that's not enough to max all six skills, so choose; by level 69 you can max them all.
+- You get **1 skill point** at the job change, and **1 more every level** after that: 41 at level 50, 51 at level 60, 61 at level 70, 71 at level 80. Until the late 60s that's not enough to max all six skills, so choose; by level 69 you can max them all.
 - Spend them in the skills window (**K**). Each skill goes up to **level 10** and gets stronger every level.
 - Use skills with keys **1–6** or the skill buttons. Each skill costs MP and has a cooldown, shown as a shadow on its button. There's also a short pause (0.7 s) between any two skills.
 - Aimed skills use your target. Without one, they pick the nearest monster and walk you into range.
@@ -489,7 +515,7 @@ Frozen (and snared) monsters turn icy blue and can't move or attack. While a buf
 - Monsters drop loot on the ground around them. Rarer loot glows.
 - For the first **15 seconds**, only the player who did the most damage (and their party) can pick it up (it looks faded to everyone else). After that, anyone can.
 - Loot disappears after **90 seconds**. Click it to walk over and pick it up.
-- Every monster drops its own loot to sell (Slime Jelly, Snake Scale, Wild Honey, Bloom Crystal, Sticky Silk, Bat Fang, Rock Shard, Gazer Lens, Ectoplasm, Goblin Charm, Orc Tusk, Orcish Arrowhead, Old Bone, Rotten Bandage, Boar Hide, Lizard Scale, Wolf Pelt, Troll Tooth, Blood Ruby, Yeti Fur, Ram Horn, Frozen Tear, Wight's Chain, Drake Scale, Wraith Essence, Gargoyle Shard, Rusted Key, Bone Dust, Golem's Heart, Moonstone, Foxfire Ember, Smoke Bomb, Faded Scroll, Ogre Brew), plus potions, now and then gear, ingots for the Blacksmith, and very rarely its card.
+- Every monster drops its own loot to sell (Slime Jelly, Snake Scale, Wild Honey, Bloom Crystal, Sticky Silk, Bat Fang, Rock Shard, Gazer Lens, Ectoplasm, Goblin Charm, Orc Tusk, Orcish Arrowhead, Old Bone, Rotten Bandage, Boar Hide, Lizard Scale, Wolf Pelt, Troll Tooth, Blood Ruby, Yeti Fur, Ram Horn, Frozen Tear, Wight's Chain, Drake Scale, Wraith Essence, Gargoyle Shard, Rusted Key, Bone Dust, Golem's Heart, Moonstone, Foxfire Ember, Smoke Bomb, Faded Scroll, Ogre Brew, Imp Horn, Salamander Scale, Obsidian Shard, Cinder Veil, Magma Core), plus potions, now and then gear, ingots for the Blacksmith, and very rarely its card.
 
 ### Bram the Outfitter
 
@@ -538,6 +564,7 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Ice Sword | 42 | ATK +60, Critical +3% | Novice, Knight | 2 | Yeti |
 | Gilded Blade | 52 | ATK +70, Critical +4% | Novice, Knight | 2 | Gargoyle |
 | Blossom Blade | 62 | ATK +84, Critical +5% | Novice, Knight | 2 | Moon Hare, Crow Blade |
+| Cinder Blade | 72 | ATK +96, Critical +5% | Novice, Knight | 2 | Ember Imp, Magma Golem |
 | Halberd (spear, both hands) | 25 | ATK +50 | Knight | 2 | Orc Warrior, Orc Warlord |
 | Dragon Spear (legendary, spear, both hands) | 30 | ATK +66, Critical +8% | Knight | 2 | Orc Warlord |
 | Long Spear (spear, both hands) | 32 | ATK +62 | Knight | 2 | Boarman, Lizardman |
@@ -546,6 +573,7 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Frost Scythe (legendary, spear, both hands) | 48 | ATK +102, Critical +8% | Knight | 2 | Frost Giant |
 | Dark Lance (spear, both hands) | 56 | ATK +104, Critical +4% | Knight | 2 | Dark Knight, Flesh Golem, Fallen King |
 | Thunder Glaive (spear, both hands) | 66 | ATK +124, Critical +4% | Knight | 2 | Phantom Swordsman, Red Ogre, Ogre Warlord |
+| Magma Lance (spear, both hands) | 76 | ATK +140, Critical +4% | Knight | 2 | Obsidian Knight, Magma Golem, Cinder Colossus |
 | Hunting Bow | 10 | ATK +9, reach 170 | Archer | 1 | Orin (job gift), Bram |
 | Recurve Bow | 12 | ATK +14, reach 190 | Archer | 2 | Snapper Flower |
 | Great Bow | 16 | ATK +23, reach 210 | Archer | 2 | Gazer, Pumpking |
@@ -559,6 +587,8 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Royal Bow | 56 | ATK +76, Critical +4%, reach 250 | Archer | 2 | Flesh Golem, Fallen King |
 | Petal Bow | 62 | ATK +74, reach 250 | Archer | 2 | Moon Hare |
 | Ogre-Bone Longbow | 66 | ATK +90, Critical +4%, reach 255 | Archer | 2 | Crow Blade, Red Ogre, Ogre Warlord |
+| Ember Bow | 72 | ATK +84, reach 255 | Archer | 2 | Ember Imp |
+| Obsidian Longbow | 76 | ATK +102, Critical +4%, reach 260 | Archer | 2 | Cinder Wraith, Magma Golem, Cinder Colossus |
 | Apprentice Staff | 10 | ATK +9, MP +15, reach 150 | Mage | 1 | Orin (job gift), Bram |
 | Gnarled Staff | 12 | ATK +14, MP +25, reach 160 | Mage | 2 | Snapper Flower |
 | Crystal Staff | 15 | ATK +19, MP +40, reach 170 | Mage | 2 | Snapper Flower |
@@ -573,6 +603,8 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Soul Staff | 56 | ATK +76, MP +260, reach 240 | Mage | 2 | Lich, Flesh Golem, Fallen King |
 | Foxfire Staff | 62 | ATK +74, MP +240, reach 240 | Mage | 2 | Fox Spirit |
 | Storm Staff | 66 | ATK +90, MP +300, reach 245 | Mage | 2 | Fox Spirit, Red Ogre, Ogre Warlord |
+| Cinder Staff | 72 | ATK +84, MP +280, reach 245 | Mage | 2 | Salamander |
+| Magma Staff | 76 | ATK +102, MP +340, reach 250 | Mage | 2 | Salamander, Magma Golem, Cinder Colossus |
 
 **Spears** are new for Knights (in Ragnarok, Knights carry spears). They hit harder than swords but need both hands, so no shield.
 
@@ -591,6 +623,7 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Frost Shield | 45 | DEF +16, HP +220 | Ramhorn |
 | Ruin Shield | 55 | DEF +18, HP +270 | Gargoyle, Dark Knight, Fallen King |
 | Jade Shield | 65 | DEF +20, HP +320 | Phantom Swordsman, Ogre Warlord |
+| Obsidian Shield | 75 | DEF +22, HP +360 | Obsidian Knight, Cinder Colossus |
 
 **Head**
 
@@ -620,6 +653,9 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Crow Mask | 63 | ATK +8, DEF +10, HP +110, Critical +3% | Crow Blade |
 | Blossom Hat | 63 | ATK +6, DEF +6, MP +250 | Fox Spirit |
 | Warlord's Helm (legendary, anyone) | 68 | ATK +10, DEF +14, HP +300, MP +140 | Ogre Warlord |
+| Obsidian Helm | 73 | DEF +19, HP +340 | Obsidian Knight |
+| Ashen Hood | 73 | ATK +9, DEF +11, HP +130, Critical +3% | Cinder Wraith |
+| Ember Hood | 73 | ATK +7, DEF +7, MP +290 | Salamander |
 | Meadow Crown (legendary) | 10 | ATK +4, DEF +4, HP +60 | Snapper Flower (1 in 2,000) |
 
 **Armour, legs and feet**
@@ -646,6 +682,10 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Crow Mantle | Armour | 64 | ATK +11, DEF +12, HP +150, Critical +2% (black leather and a pair of crow's wings) | Crow Blade |
 | Blossom Robe | Armour | 64 | ATK +11, DEF +7, MP +270 | Red Ogre |
 | Warlord Plate | Armour | 67 | DEF +25, HP +330 | Phantom Swordsman, Red Ogre, Ogre Warlord |
+| Ashen Leathers | Armour | 74 | ATK +12, DEF +13, HP +170, Critical +2% | Cinder Wraith |
+| Cinder Robe | Armour | 74 | ATK +12, DEF +8, MP +310 | Cinder Wraith |
+| Obsidian Plate | Armour | 77 | DEF +28, HP +370 | Obsidian Knight, Magma Golem, Cinder Colossus |
+| Colossus Mantle (legendary, anyone) | Armour | 78 | ATK +12, DEF +22, HP +360, MP +160 | Cinder Colossus |
 | Leather Pants | Legs | 1 | DEF +1 (no card slot) | Bram, Slime |
 | Iron Greaves | Legs | 6 | DEF +2, HP +10 | Hornet, Rock Worm |
 | Steel Greaves | Legs | 22 | DEF +4, HP +30 | Orc Warrior |
@@ -681,6 +721,9 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Foxfire Charm | Amulet | 63 | ATK +10, MP +120, Critical +5% | Fox Spirit |
 | Moonstone Ring | Ring | 65 | ATK +5, DEF +7, HP +150, Evade +3% | Moon Hare |
 | Warlord's Fang (epic) | Amulet | 68 | ATK +18, DEF +6, HP +300 | Ogre Warlord |
+| Salamander Charm | Amulet | 73 | ATK +11, MP +140, Critical +5% | Salamander |
+| Ember Ring | Ring | 75 | ATK +6, DEF +8, HP +170, Evade +3% | Ember Imp |
+| Colossus Heart (epic) | Amulet | 78 | ATK +20, DEF +7, HP +340 | Cinder Colossus |
 
 ## 8. Monster cards
 
@@ -728,6 +771,12 @@ Ragnarok style: every monster very rarely drops **its own card**. A card goes in
 | Phantom Swordsman Card | Phantom Swordsman | Ring | Phantom | ATK +5, Evade +5% | 1 in 1,000 |
 | Red Ogre Card | Red Ogre | Armour | Ogrish | ATK +5, HP +280 | 1 in 1,000 |
 | Ogre Warlord Card (legendary) | Ogre Warlord | Legs | Conquering | ATK +10, DEF +6, HP +300 | 1 in 50 kills |
+| Ember Imp Card | Ember Imp | Feet | Scorching | ATK +5, Evade +6% | 1 in 1,000 |
+| Salamander Card | Salamander | Head | Kindled | ATK +7, MP +110 | 1 in 1,000 |
+| Obsidian Knight Card | Obsidian Knight | Shield | Obsidian | DEF +3, 18% of every monster hit bounces back | 1 in 1,000 |
+| Cinder Wraith Card | Cinder Wraith | Ring | Smouldering | ATK +4, Evade +6% | 1 in 1,000 |
+| Magma Golem Card | Magma Golem | Armour | Molten | ATK +6, HP +320 | 1 in 1,000 |
+| Cinder Colossus Card (legendary) | Cinder Colossus | Weapon | Colossal | ATK +12, Critical +6%, HP +200 | 1 in 50 kills |
 
 - **Card slots.** Most gear has one slot and the better weapons have two. In the bag, small dots in the corner of an item show its slots: hollow when free, gold when filled. The Leather Cap, Leather Pants, Copper Ring and Clover Charm have no slots.
 - **Putting a card in.** In the bag, pick the card and press **Put in gear** (or double-click it). The gear it fits lights up, worn or in the bag. Pick one and confirm.
@@ -1058,7 +1107,8 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 | Legend | Legendary | Reach level 50 |
 | Mythic | Legendary | Reach level 60 |
 | Immortal | Legendary | Reach level 70 |
-| Pioneer ✦ | Legendary | Be one of the first 10 players to reach the level cap (now 70). Signed-in players only |
+| Eternal | Legendary | Reach level 80 |
+| Pioneer ✦ | Legendary | Be one of the first 10 players to reach the level cap (now 80). Signed-in players only |
 | **Hunting** | | |
 | Slime Squasher | Common | Help defeat 100 Slimes |
 | Monster Hunter | Uncommon | Help defeat 1,000 monsters |
@@ -1075,10 +1125,12 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 | Usurper | Epic | Help defeat the Fallen King 10 times |
 | Ogrebane | Rare | Help defeat 300 Red Ogres |
 | Warlord's Bane | Epic | Help defeat the Ogre Warlord 10 times |
+| Golem Crusher | Rare | Help defeat 300 Magma Golems |
+| Colossus Slayer | Epic | Help defeat the Cinder Colossus 10 times |
 | **Collecting** | | |
 | Card Finder | Rare | Find a monster card |
 | Card Collector | Epic | Find 5 different monster cards |
-| Card Master ✦ | Legendary | Find every kind of monster card (40 so far) |
+| Card Master ✦ | Legendary | Find every kind of monster card (46 so far) |
 | Lucky | Epic | Find a legendary item |
 | **The forge** | | |
 | Shiny | Rare | Upgrade any gear to +7 |
@@ -1158,6 +1210,12 @@ Pioneer places are counted per level cap: when the cap goes up, the first 10 pla
 | Phantom Swordsman | 67 | 6,000 | 84 | 50 | 24,200 | 88–148 | Phantom Helm, Jade Shield, Thunder Glaive, Warlord Plate, Mithril Ingot, Star Crystal |
 | Red Ogre | 69 | 7,600 | 116 | 46 | 29,500 | 92–156 | Blossom Robe, Warlord Plate, Ogre-Bone Longbow, Storm Staff, Thunder Glaive, Mithril Ingot, Star Crystal |
 | Ogre Warlord | 74 | 170,000 | 205 | 62 | 420,000 | 8,000–14,000 | See "Field bosses" |
+| Ember Imp | 71 | 6,000 | 74 | 42 | 30,000 | 94–158 | Cinder Blade, Ember Bow, Ember Ring, White Potion, Mithril Ingot, Star Crystal |
+| Salamander | 73 | 5,800 | 64 | 36 | 33,000 | 96–162 | Cinder Staff, Ember Hood, Salamander Charm, Magma Staff, Mithril Ingot, Star Crystal |
+| Obsidian Knight | 75 | 6,600 | 80 | 50 | 36,000 | 98–166 | Obsidian Helm, Obsidian Shield, Magma Lance, Obsidian Plate, Mithril Ingot, Star Crystal |
+| Cinder Wraith | 77 | 6,800 | 74 | 50 | 39,000 | 100–170 | Ashen Hood, Ashen Leathers, Cinder Robe, Obsidian Longbow, Mithril Ingot, Star Crystal |
+| Magma Golem | 79 | 8,600 | 124 | 52 | 44,000 | 104–176 | Obsidian Plate, Cinder Blade, Magma Lance, Magma Staff, Obsidian Longbow, Mithril Ingot, Star Crystal |
+| Cinder Colossus | 84 | 230,000 | 220 | 68 | 600,000 | 12,000–20,000 | See "Field bosses" |
 
 Every monster also drops its own card (see Monster cards) and often potions.
 
@@ -1181,6 +1239,8 @@ Every monster also drops its own card (see Monster cards) and often potions.
 16. **Level 55–60:** Dark Knights below the castle gate, Liches in the east, Flesh Golems in the south. At 60, bring a party of four into the castle for the **Fallen King**. **Corvin** rows you home for free.
 17. **Level 60–65:** Take the path east off the south road, straight on past Edda's pier, to **Marlow**'s ship on the meadow's east shore, and sail to **Petalfall** (1,200 gold). Moon Hares by the pier only fight back but dodge plain attacks: use your skills. Then the Fox Spirits in the north-west woods (close in fast, they throw fire) and the Crow Blades in the middle.
 18. **Level 65–70:** Phantom Swordsmen in the north-east, Red Ogres in the south (they only fight back, but they hit very hard). At 70, bring a party of four up the road to the **Ogre Warlord**'s camp. **Willow** sails you home for free.
+19. **Level 70–75:** Back to the meadow's east shore, where **Dorian** sails from Marlow's pier to **Ashpeak** (1,500 gold). Ember Imps swarm the rock north of the pier; Salamanders spit fire from the south-west slopes (close in fast). Then the Obsidian Knights along the north.
+20. **Level 75–80:** Cinder Wraiths in the east dodge plain attacks: use your skills. Magma Golems in the south only fight back, but they hit hardest of all. At 80, bring a party of four up the road to the **Cinder Colossus**'s crater. **Cassia** sails you home for free.
 
 Along the way, open your titles (T) now and then: you'll have earned a few. And from the Orc Woods on, hunt in a party: the bosses are made for four. From level 20, find a guild to join (or found your own with Leopold), so there's always someone to hunt with, and on Wednesday and Saturday evenings, march with it over the long bridge to fight for Crownhold.
 
@@ -1189,7 +1249,7 @@ Sell your monster loot to Bram whenever your bag fills up, and sit down (X) to h
 ## 18. Coming next
 
 - **More castles** for the guild wars.
-- **Raising the level cap** past 70, with new fields above it.
+- **Raising the level cap** past 80, with new fields above it.
 
 ---
 

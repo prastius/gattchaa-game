@@ -420,7 +420,33 @@ export const NPCS: NpcDef[] = [
     dir: Dir.Right,
     greeting:
       "Petalfall? Out across the south-east sea, where it's always spring and the cherry blossom never stops falling. Pretty, and deadly: it's for adventurers of level 60 and up. Moon Hares, Fox Spirits, Crow Blades, Phantom Swordsmen and Red Ogres live there, and the Ogre Warlord holds a war camp on the high ground. I'll sail you over for 1,200 gold. Willow brings you back for free.",
-    chatter: ["Ship to Petalfall! 1,200 gold!", "Petalfall is for level 60 and up!", "Go in a party. The Ogre Warlord is no joke.", "Willow sails you back for free."],
+    chatter: ["Ship to Petalfall! 1,200 gold!", "Petalfall is for level 60 and up!", "Go in a party. The Ogre Warlord is no joke.", "Willow sails you back for free.", "Level 70? Dorian sails to Ashpeak, from this same pier."],
+  },
+  {
+    // On the same pier as Marlow, on the meadow's east shore: the ship for Ashpeak.
+    id: "ferry-ash",
+    name: "Dorian",
+    title: "Ship Captain",
+    kind: "ferry",
+    look: look({ body: "male", hair: "messy", hairColor: "black", beard: "trimmed", skin: "bronze", top: "longsleeve", topColor: "black", bottom: "pants", bottomColor: "charcoal", shoes: "boots", shoesColor: "black", hat: "bandana", hatColor: "red" }),
+    ...at(313.5, 282.4),
+    dir: Dir.Right,
+    greeting:
+      "Ashpeak? A volcano, far out in the eastern sea, past Ravenmoor and Petalfall. The rock is bare and black, ash falls like snow, and it's for adventurers of level 70 and up. Ember Imps, Salamanders, Obsidian Knights, Cinder Wraiths and Magma Golems live there, and the Cinder Colossus sits in the crater at the top of the road. I'll sail you over for 1,500 gold. Cassia brings you back for free.",
+    chatter: ["Ship to Ashpeak! 1,500 gold!", "Ashpeak is for level 70 and up!", "Bring potions. Lots of potions.", "Take a party for the Cinder Colossus.", "Cassia sails you back for free."],
+  },
+  {
+    // At the end of Ashpeak's pier, on the island's west shore.
+    id: "ferry-ashpeak",
+    name: "Cassia",
+    title: "Ferry Captain",
+    kind: "ferry",
+    look: look({ body: "female", hair: "long", hairColor: "red", skin: "light", top: "longsleeve", topColor: "maroon", bottom: "pants", bottomColor: "black", shoes: "boots", shoesColor: "black", hat: "bandana", hatColor: "black" }),
+    ...at(523.5, 251.6),
+    dir: Dir.Left,
+    greeting:
+      "Welcome to Ashpeak (Lv 70–80). Mind the ash. Ember Imps (Lv 71) swarm the rock north of the pier, and Salamanders (Lv 73) spit fire from the south-west slopes: close in fast. Obsidian Knights (Lv 75) stand guard along the north, and Cinder Wraiths (Lv 77) drift over the hot rock in the east: they're hard to hit with plain attacks, so use your skills. Magma Golems (Lv 79) wander the south: leave them be and they leave you be, but they hit harder than anything else here. Follow this road east to the crater, where the Cinder Colossus (Lv 84) waits. Take a party. When you've had enough, I'll sail you back for free.",
+    chatter: ["Ship back to the meadow! Free!", "Cinder Wraiths dodge plain attacks. Use your skills!", "Salamanders spit fire. Close in fast!", "The Cinder Colossus waits in the crater…", "Leave the Magma Golems alone, unless you mean it."],
   },
   {
     // At the end of Petalfall's pier, on the island's west shore.
@@ -641,6 +667,8 @@ export const FERRY: Record<string, { to: { x: number; y: number }; dir: number; 
   "ferry-ravenmoor": { to: at(338.5, 186.6), dir: Dir.Left, fare: 0, dest: "Dusk Hollow" },
   "ferry-east": { to: at(329.5, 400.6), dir: Dir.Right, fare: 1200, dest: "Petalfall", lv: 60 },
   "ferry-petalfall": { to: at(314.5, 283.6), dir: Dir.Left, fare: 0, dest: "the meadow's east shore" },
+  "ferry-ash": { to: at(529.5, 251.6), dir: Dir.Right, fare: 1500, dest: "Ashpeak", lv: 70 },
+  "ferry-ashpeak": { to: at(314.5, 283.6), dir: Dir.Left, fare: 0, dest: "the meadow's east shore" },
 };
 
 /** What an NPC's stall offers right now (sold-out items last for featured stalls). */

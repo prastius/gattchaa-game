@@ -22,6 +22,10 @@ export const WORLD_TEX = {
   terrainSpring: "terrain-spring",
   treesSpring: "trees-spring",
   plantsSpring: "plants-spring",
+  // Ashpeak's: made from the winter sheets when the game starts (makeAshSheets), snow turned to ash.
+  terrainAsh: "terrain-ash",
+  treesAsh: "trees-ash",
+  plantsAsh: "plants-ash",
 } as const;
 
 /** The season's sheet standing in for a summer one on the islands. */
@@ -30,7 +34,53 @@ const SEASON: Record<Biome, Record<string, string>> = {
   winter: { [WORLD_TEX.trees]: WORLD_TEX.treesWinter, [WORLD_TEX.plants]: WORLD_TEX.plantsWinter },
   autumn: { [WORLD_TEX.trees]: WORLD_TEX.treesAutumn, [WORLD_TEX.plants]: WORLD_TEX.plantsAutumn },
   spring: { [WORLD_TEX.trees]: WORLD_TEX.treesSpring, [WORLD_TEX.plants]: WORLD_TEX.plantsSpring },
+  ash: { [WORLD_TEX.trees]: WORLD_TEX.treesAsh, [WORLD_TEX.plants]: WORLD_TEX.plantsAsh },
 };
+
+/**
+ * Ashpeak's sheets, from Frostfell's: everything bright (snow, frost, ice) becomes grey ash,
+ * and the darker colours (bark, needles, berries, rock) are burnt to charcoal browns. On the
+ * terrain sheet the sea stays sea. Same layout as the winter sheets, so the same cells and frames work.
+ */
+export function makeAshSheets(scene: Phaser.Scene) {
+  const pairs: [string, string, boolean][] = [
+    [WORLD_TEX.terrainWinter, WORLD_TEX.terrainAsh, true],
+    [WORLD_TEX.treesWinter, WORLD_TEX.treesAsh, false],
+    [WORLD_TEX.plantsWinter, WORLD_TEX.plantsAsh, false],
+  ];
+  for (const [from, to, hasWater] of pairs) {
+    if (scene.textures.exists(to)) continue;
+    const src = scene.textures.get(from).getSourceImage() as HTMLImageElement;
+    const canvas = document.createElement("canvas");
+    canvas.width = src.width;
+    canvas.height = src.height;
+    const ctx = canvas.getContext("2d")!;
+    ctx.drawImage(src, 0, 0);
+    const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const d = img.data;
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i + 3] === 0) continue;
+      const r = d[i];
+      const g = d[i + 1];
+      const b = d[i + 2];
+      const lum = 0.3 * r + 0.59 * g + 0.11 * b;
+      if (lum >= 140) {
+        // Snow and ice: ash grey, the brightest a little lighter.
+        const t = Math.min(1, (lum - 140) / 115);
+        d[i] = 78 + t * 60;
+        d[i + 1] = 72 + t * 56;
+        d[i + 2] = 70 + t * 54;
+      } else if (!hasWater || b <= r + 40) {
+        // Bark, needles, berries and rock: charcoal, with a little warmth left in it.
+        d[i] = lum * 0.92 + 10;
+        d[i + 1] = lum * 0.78 + 4;
+        d[i + 2] = lum * 0.7;
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+    scene.textures.addCanvas(to, canvas);
+  }
+}
 /** In spring these trees' second variant is cherry blossom: Petalfall shows it most of the time. */
 const BLOSSOM = new Set<string>(["oak", "oakRoots", "oakTall", "bushTree"]);
 const BLOSSOM_SHARE = 0.7;
@@ -87,7 +137,7 @@ export interface DecorSprite {
   tall: boolean;
 }
 
-/** Creates the sprite(s) for a decor at tile (tx, ty); `pick` in [0,1) chooses the variant. Snowy on Frostfell, autumn on Ravenmoor, in blossom on Petalfall. */
+/** Creates the sprite(s) for a decor at tile (tx, ty); `pick` in [0,1) chooses the variant. Snowy on Frostfell, autumn on Ravenmoor, in blossom on Petalfall, ashen on Ashpeak. */
 export function createDecor(scene: Phaser.Scene, decor: number, px: number, py: number, pick: number, biome: Biome = "summer"): DecorSprite | null {
   const id = DECOR[decor]?.id;
   if (!id || id === "none") return null;

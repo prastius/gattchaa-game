@@ -107,6 +107,8 @@ export const RAVENMOOR_ISLE = { cx: 440, cy: 200, rx: 66, ry: 86 };
 export const PETALFALL_ISLE = { cx: 408, cy: 404, rx: 94, ry: 86 };
 /** Crownhold, the guild castle's island in the sea north-east of the Wildlands, reached by a long bridge. */
 export const CASTLE_ISLE = { cx: 386, cy: 74, rx: 60, ry: 44 };
+/** Ashpeak (Lv 70–80): a volcanic island far out in the eastern sea, past Ravenmoor and Petalfall. */
+export const ASHPEAK_ISLE = { cx: 576, cy: 252, rx: 54, ry: 88 };
 /** Crownhold's walls: inside them, guilds fight over the castle during a siege (see shared/siege.ts). */
 export const CASTLE: Rect = { x: 372, y: 60, w: 44, h: 33 };
 /** The keep inside the walls, round the crystal. Its gate faces east, away from the castle gate. */
@@ -121,13 +123,27 @@ export const AUTUMN_LINE = 368;
 export const AUTUMN_TOP = 108;
 /** South-east of this corner (tiles) is Petalfall's sea: spring colours and cherry blossom. */
 export const SPRING_CORNER = { x: 320, y: 320 };
-/** Which season the art shows at a tile: the islands have their own. */
-export type Biome = "summer" | "winter" | "autumn" | "spring";
+/** Everything east of this column is Ashpeak's sea: ash instead of snow, and embers in the air. */
+export const ASH_LINE = 512;
+/** Which season the art shows at a tile: the islands have their own (Ashpeak's is ash, not a season). */
+export type Biome = "summer" | "winter" | "autumn" | "spring" | "ash";
 export const biomeAt = (tx: number, ty: number): Biome =>
-  tx >= SPRING_CORNER.x && ty >= SPRING_CORNER.y ? "spring" : tx >= AUTUMN_LINE && ty >= AUTUMN_TOP ? "autumn" : ty >= SNOW_LINE ? "winter" : "summer";
+  tx >= ASH_LINE
+    ? "ash"
+    : tx >= SPRING_CORNER.x && ty >= SPRING_CORNER.y
+      ? "spring"
+      : tx >= AUTUMN_LINE && ty >= AUTUMN_TOP
+        ? "autumn"
+        : ty >= SNOW_LINE
+          ? "winter"
+          : "summer";
 export const isSnowy = (tx: number, ty: number) => biomeAt(tx, ty) === "winter";
 /** Ravenmoor's endless dusk hangs over this area (tiles). */
 export const GLOOM: Rect = { x: 376, y: 112, w: 136, h: 168 };
+/** Ashpeak's smoky red haze hangs over this area (tiles). */
+export const HAZE: Rect = { x: 516, y: 176, w: 120, h: 150 };
+/** The Cinder Colossus's crater in the middle of Ashpeak, where the road from the pier ends: kept clear of rocks. */
+export const CINDER_CRATER: Rect = { x: 566, y: 243, w: 20, h: 14 };
 /** The Fallen King's ruined castle on Ravenmoor's high ground: broken walls round his throne, kept clear of trees. */
 export const RUINS: Rect = { x: 424, y: 139, w: 38, h: 27 };
 /** The Frost Giant's ring of standing stones on Frostfell's icy highlands: kept clear of trees and rocks. */
@@ -158,6 +174,8 @@ export const PIERS = {
   // East from the meadow's east shore, where the ferry path ends, and west from Petalfall's shore.
   east: { x: 309, y: 282, w: 9, h: 3 },
   petalfall: { x: 326, y: 399, w: 9, h: 3 },
+  // West from Ashpeak's shore, towards Petalfall and the meadow.
+  ashpeak: { x: 523, y: 250, w: 9, h: 3 },
   // The long bridge from the Wildlands' east shore across the sea to Crownhold.
   castle: { x: 290, y: 80, w: 63, h: 3 },
 } satisfies Record<string, Rect>;
@@ -177,6 +195,7 @@ export const ROADS: Rect[] = [
   { x: 441, y: 160, w: 4, h: 28 }, // …and north, up to the castle gate
   { x: 242, y: 282, w: 68, h: 4 }, // past the path down to Edda, on east to the pier for Petalfall
   { x: 334, y: 399, w: 108, h: 4 }, // Petalfall: from the pier east, up onto the high ground and into the Ogre Warlord's camp
+  { x: 531, y: 250, w: 38, h: 4 }, // Ashpeak: from the pier east, over the rock to the Cinder Colossus's crater
   { x: 259, y: 116, w: 15, h: 4 }, // the Wildlands: from the top of the east path, east…
   { x: 270, y: 80, w: 4, h: 40 }, // …north past the vampires' high ground…
   { x: 270, y: 80, w: 21, h: 4 }, // …and east to the long bridge
@@ -387,6 +406,9 @@ export const FLOORS: { rect: Rect; floor: Floor }[] = [
   { rect: PIERS.ravenmoor, floor: Floor.Pier },
   { rect: PIERS.east, floor: Floor.Pier },
   { rect: PIERS.petalfall, floor: Floor.Pier },
+  { rect: PIERS.ashpeak, floor: Floor.Pier },
+  // Dark flagstones on the floor of the Cinder Colossus's crater.
+  { rect: { x: CINDER_CRATER.x + 2, y: CINDER_CRATER.y + 2, w: CINDER_CRATER.w - 4, h: CINDER_CRATER.h - 4 }, floor: Floor.Slab },
   { rect: PIERS.castle, floor: Floor.Pier },
   // Crownhold: flagstones all round the bailey, and a red carpet from the keep's gate to the crystal.
   { rect: { x: CASTLE.x + 2, y: CASTLE.y + 2, w: CASTLE.w - 4, h: CASTLE.h - 4 }, floor: Floor.Slab },
@@ -685,6 +707,16 @@ const props: Prop[] = [
   { type: "crate", x: PIERS.east.x - 2, y: PIERS.east.y - 2 },
   { type: "barrels", x: PIERS.east.x - 4, y: PIERS.east.y + PIERS.east.h + 1 },
   { type: "barrel", x: PIERS.petalfall.x + PIERS.petalfall.w + 1, y: PIERS.petalfall.y - 2 },
+  { type: "crate", x: PIERS.ashpeak.x + PIERS.ashpeak.w + 2, y: PIERS.ashpeak.y - 2 },
+  { type: "barrels", x: PIERS.ashpeak.x + PIERS.ashpeak.w + 3, y: PIERS.ashpeak.y + PIERS.ashpeak.h + 1 },
+
+  // ---- The Cinder Colossus's crater: a ring of old standing stones and four fires that never go out.
+  ...[CINDER_CRATER.x + 1, CINDER_CRATER.x + 7, CINDER_CRATER.x + 12, CINDER_CRATER.x + CINDER_CRATER.w - 2].flatMap((x) =>
+    [CINDER_CRATER.y + 1, CINDER_CRATER.y + CINDER_CRATER.h - 2].map((y): Prop => ({ type: "pillar", x, y })),
+  ),
+  ...[CINDER_CRATER.x + 4, CINDER_CRATER.x + CINDER_CRATER.w - 5].flatMap((x) =>
+    [CINDER_CRATER.y + 3, CINDER_CRATER.y + CINDER_CRATER.h - 4].map((y): Prop => ({ type: "campfire", x, y })),
+  ),
 
   // ---- Crownhold: the holder's seat behind the crystal, pillars in the keep, and the herald's camp by the gate.
   { type: "throne", x: 396, y: 73 },

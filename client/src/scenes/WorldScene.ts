@@ -20,7 +20,7 @@ import { CLASSES, JOB_LEVEL, aClass, isClassId, isMonsterId, type ClassId } from
 import { SKILLS, type SkillId } from "../../../shared/skills";
 import { ITEMS, PICKUP_RANGE, RARITY, appearanceKey, cleanUpgrade, isItemId, parseCards } from "../../../shared/items";
 import { NPCS, type NpcDef } from "../../../shared/npcs";
-import { CASTLE, DOORS, GLOOM, INTERIOR_ZONE, PROPS, RUINS, TOWN_AREA, biomeAt, inCastle, inRect } from "../../../shared/town";
+import { CASTLE, DOORS, GLOOM, HAZE, INTERIOR_ZONE, PROPS, RUINS, TOWN_AREA, biomeAt, inCastle, inRect } from "../../../shared/town";
 import { CASTLE_NAME, CRYSTAL, isGuardian } from "../../../shared/siege";
 import { emblemOf } from "../../../shared/guild";
 import { CharacterTextures, PlayerSprite } from "../PlayerSprite";
@@ -29,7 +29,7 @@ import { DropSprite } from "../DropSprite";
 import { createMonsterAnims, levelColor, preloadMonsters } from "../world/monsterArt";
 import { Fx, flightMs, type Missile, type NumberKind } from "../world/fx";
 import { ATLAS_MARGIN, ATLAS_SPACING, FLOOR_TEX, buildTerrainAtlas, floorCell, structKey, tileCells, type TerrainAtlas } from "../world/terrainTiles";
-import { WORLD_TEX, createDecor, registerDecorFrames, type DecorSprite } from "../world/decorSprites";
+import { WORLD_TEX, createDecor, makeAshSheets, registerDecorFrames, type DecorSprite } from "../world/decorSprites";
 import { Town, preloadTown, type Hotspot } from "../world/town";
 import { SELLER_BUBBLE_LIFT, Shops } from "../world/shops";
 import { Interpolator, ServerClock } from "../interp";
@@ -281,6 +281,7 @@ export class WorldScene extends Phaser.Scene {
   /** Snow over Frostfell, leaves over Ravenmoor. */
   private snow!: Weather;
   private petals!: Weather;
+  private embers!: Weather;
   private leaves!: Weather;
   /** Inside the Gattchaa store (the interior zone)? */
   private indoors = false;
@@ -331,7 +332,13 @@ export class WorldScene extends Phaser.Scene {
         }
       }
     }
-    this.atlas = buildTerrainAtlas(this, { summer: WORLD_TEX.terrain, winter: WORLD_TEX.terrainWinter, autumn: WORLD_TEX.terrainAutumn, spring: WORLD_TEX.terrainSpring }, ATLAS_KEY, structs);
+    makeAshSheets(this);
+    this.atlas = buildTerrainAtlas(
+      this,
+      { summer: WORLD_TEX.terrain, winter: WORLD_TEX.terrainWinter, autumn: WORLD_TEX.terrainAutumn, spring: WORLD_TEX.terrainSpring, ash: WORLD_TEX.terrainAsh },
+      ATLAS_KEY,
+      structs,
+    );
     registerDecorFrames(this);
     if (!this.anims.exists("glint-a")) {
       this.anims.create({ key: "glint-a", frames: this.anims.generateFrameNumbers(WATER_FX, { start: 0, end: 3 }), frameRate: 6, repeat: -1 });
@@ -341,7 +348,9 @@ export class WorldScene extends Phaser.Scene {
     this.snow = new Weather(this, "snow");
     this.leaves = new Weather(this, "leaves");
     this.petals = new Weather(this, "petals");
-    this.gloom();
+    this.embers = new Weather(this, "embers");
+    this.overlay("gloom", GLOOM, [36, 18, 58], 0.38);
+    this.overlay("haze", HAZE, [78, 26, 10], 0.3);
     createMonsterAnims(this);
     this.fx = new Fx(this, () => this.textRes);
 
@@ -749,6 +758,7 @@ export class WorldScene extends Phaser.Scene {
     this.snow.update(view, season === "winter");
     this.leaves.update(view, season === "autumn");
     this.petals.update(view, season === "spring");
+    this.embers.update(view, season === "ash");
     audio.calm = this.indoors || this.daylight.night;
     if (this.doorPendingUntil && performance.now() > this.doorPendingUntil) {
       // The server said no (or lag): don't leave the screen black.
@@ -1800,9 +1810,11 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 
-  /** Ravenmoor's endless dusk: a purple shade over the island, fading out softly at its edges. */
-  private gloom() {
-    const key = "gloom";
+  /**
+   * A tint hanging over an island, fading out softly at its edges: Ravenmoor's endless purple
+   * dusk, Ashpeak's smoky red haze.
+   */
+  private overlay(key: string, area: { x: number; y: number; w: number; h: number }, [r, g, b]: [number, number, number], strength: number) {
     if (!this.textures.exists(key)) {
       const size = 128;
       const canvas = document.createElement("canvas");
@@ -1814,17 +1826,17 @@ export class WorldScene extends Phaser.Scene {
           const edge = Math.min(x, y, size - 1 - x, size - 1 - y) / (size * 0.18);
           const a = Math.min(1, edge);
           const o = (y * size + x) * 4;
-          img.data[o] = 36;
-          img.data[o + 1] = 18;
-          img.data[o + 2] = 58;
-          img.data[o + 3] = Math.round(255 * a * a * (3 - 2 * a) * 0.38);
+          img.data[o] = r;
+          img.data[o + 1] = g;
+          img.data[o + 2] = b;
+          img.data[o + 3] = Math.round(255 * a * a * (3 - 2 * a) * strength);
         }
       }
       ctx.putImageData(img, 0, 0);
       this.textures.addCanvas(key, canvas);
     }
     // Over the world, under the weather and the night tint.
-    this.add.image(GLOOM.x * TILE_SIZE, GLOOM.y * TILE_SIZE, key).setOrigin(0).setDisplaySize(GLOOM.w * TILE_SIZE, GLOOM.h * TILE_SIZE).setDepth(1e6 - 12);
+    this.add.image(area.x * TILE_SIZE, area.y * TILE_SIZE, key).setOrigin(0).setDisplaySize(area.w * TILE_SIZE, area.h * TILE_SIZE).setDepth(1e6 - 12);
   }
 
   /** Trees and tall plants turn see-through while the local player is behind them. */

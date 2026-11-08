@@ -227,6 +227,14 @@ function makeWeatherTextures(scene: Phaser.Scene) {
     ctx.fillRect(1, 2, 2, 1);
     scene.textures.addCanvas("leaf", canvas);
   }
+  if (!scene.textures.exists("ember")) {
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 2;
+    const ctx = canvas.getContext("2d")!;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, 2, 2);
+    scene.textures.addCanvas("ember", canvas);
+  }
   if (!scene.textures.exists("petal")) {
     const canvas = document.createElement("canvas");
     canvas.width = 4;
@@ -248,6 +256,8 @@ const WEATHER = {
   leaves: { tex: "leaf", speedX: { min: -40, max: -10 }, speedY: { min: 18, max: 42 }, scale: { min: 1, max: 1.8 }, frequency: 140, quantity: 1, tint: [0xe8832a, 0xd8452a, 0xf2c14e, 0x9a5a2a] },
   // Cherry blossom over Petalfall: a gentle, steady fall of pink petals, drifting on the breeze.
   petals: { tex: "petal", speedX: { min: -30, max: -4 }, speedY: { min: 12, max: 30 }, scale: { min: 1.2, max: 2 }, frequency: 80, quantity: 1, tint: [0xffc4da, 0xffadc9, 0xfff0f6, 0xf59ab9] },
+  // Embers over Ashpeak: sparks rising from the hot rock, and grey ash drifting among them.
+  embers: { tex: "ember", speedX: { min: -12, max: 12 }, speedY: { min: -34, max: -10 }, scale: { min: 0.8, max: 1.6 }, frequency: 70, quantity: 1, tint: [0xff8a3a, 0xffc04a, 0xff5a2a, 0x9a8a84] },
 } as const;
 
 /** Snow or leaves falling over the view while the camera is on an island that has them. */

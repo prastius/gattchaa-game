@@ -69,6 +69,13 @@ const skin = (color: string): ArtPart[] => [{ category: "body", id: "body", colo
 /** No palette has a red skin: the ogres are pale skin multiplied by these. */
 const OGRE_RED = 0xff7a66;
 const WARLORD_RED = 0xe0584a;
+/** Ashpeak's creatures: pale skin (and armour) multiplied by fire colours, since no palette has them. */
+const EMBER = 0xff6a40;
+const FLAME = 0xff9a4a;
+const OBSIDIAN = 0x5a4a50;
+const MAGMA = 0xff7a36;
+const COLOSSUS = 0xd8583a;
+const tinted = (parts: ArtPart[], tint: number): ArtPart[] => parts.map((p) => ({ ...p, tint }));
 /** The Shades: a second job's look, every part dimmed to dusky violet, and a little see-through. */
 const SHADE_TINT = 0x8a7ad0;
 const shade = (parts: ArtPart[], more: Partial<MonsterArt> = {}): MonsterArt =>
@@ -454,6 +461,81 @@ export const MONSTER_ART: Record<MonsterId, MonsterArt> = {
       { category: "gear", id: "bowSilver" },
     ],
     { scale: 1.05, w: 28, h: 52, missile: "arrow", missileFrom: 60 },
+  ),
+  // Ashpeak.
+  emberImp: humanoid(
+    tinted(
+      [
+        { category: "body", id: "body", colors: { body: "light" } },
+        { category: "mob", id: "lizardWings", colors: { body: "light" } },
+        { category: "mob", id: "goblinHead", colors: { body: "light" } },
+        { category: "bottom", id: "shorts", colors: { cloth: "black" } },
+        { category: "gear", id: "dagger" },
+      ],
+      EMBER,
+    ),
+    { scale: 0.85, h: 44 },
+  ),
+  salamander: humanoid(
+    [
+      ...tinted(
+        [
+          { category: "body", id: "body", colors: { body: "light" } },
+          { category: "mob", id: "lizardTail", colors: { body: "light" } },
+          { category: "mob", id: "lizardHead", colors: { body: "light" } },
+        ],
+        FLAME,
+      ),
+      { category: "bottom", id: "shorts", colors: { cloth: "maroon" } },
+    ],
+    { scale: 1.05, w: 28, h: 52, missile: "fire", missileFrom: 60 },
+  ),
+  obsidianKnight: humanoid(
+    tinted(
+      [
+        ...skin("light"),
+        { category: "gear", id: "cape", colors: { cloth: "red" } },
+        { category: "gear", id: "plate", colors: { metal: "steel" } },
+        { category: "gear", id: "plateArms", colors: { metal: "steel" } },
+        { category: "gear", id: "greaves", colors: { metal: "steel" } },
+        { category: "gear", id: "ironBoots", colors: { metal: "steel" } },
+        { category: "gear", id: "horned", colors: { metal: "steel" } },
+        { category: "gear", id: "kiteRed" },
+        { category: "gear", id: "glowswordRed" },
+      ],
+      OBSIDIAN,
+    ),
+    { scale: 1.1, w: 30, h: 54 },
+  ),
+  cinderWraith: { file: "ghost.png", tint: 0xe08a4a, frame: 64, cols: 6, feet: 56, attack: same([4, 5]), w: 36, h: 50, scale: 1.2 },
+  magmaGolem: humanoid(
+    tinted(
+      [
+        { category: "mob", id: "zombieBody" },
+        { category: "mob", id: "frankHead", colors: { body: "zombie_green" } },
+        { category: "mob", id: "mace" },
+      ],
+      MAGMA,
+    ),
+    { scale: 1.5, w: 40, h: 72 },
+  ),
+  cinderColossus: humanoid(
+    [
+      ...tinted(
+        [
+          { category: "body", id: "body", colors: { body: "light" } },
+          { category: "mob", id: "trollHead", colors: { body: "light" } },
+          { category: "mob", id: "hornsCurled", colors: { body: "fur_black" } },
+        ],
+        COLOSSUS,
+      ),
+      { category: "gear", id: "cape", colors: { cloth: "black" } },
+      { category: "gear", id: "plate", colors: { metal: "iron" } },
+      { category: "gear", id: "greaves", colors: { metal: "iron" } },
+      { category: "gear", id: "ironBoots", colors: { metal: "iron" } },
+      { category: "mob", id: "waraxe" },
+    ],
+    { scale: 2.1, w: 56, h: 108, missile: "fire", missileFrom: 70 },
   ),
   // The Isle of Trials.
   shadeLordKnight: shade([
