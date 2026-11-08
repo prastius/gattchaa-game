@@ -62,9 +62,9 @@ import {
   type ItemStack,
   type Slot,
 } from "../../../shared/items";
-import { CLASSES, JOBS, JOB_LEVEL, JOB_WEAPON, MONSTERS, SECOND_JOBS, SECOND_JOB_LEVEL, aClass, isClassId, statsFor, type ClassId } from "../../../shared/rpg";
+import { CLASSES, JOBS, JOB_LEVEL, JOB_WEAPON, MONSTERS, aClass, isClassId, jobTier, statsFor, type ClassId } from "../../../shared/rpg";
 import { skillsOf } from "../../../shared/skills";
-import { TRIAL_ASK_LEVEL, TRIAL_MS, TRIAL_PROOF, TRIAL_SHADE, Trial, isTrial } from "../../../shared/trial";
+import { TRIALS, TRIAL_MS, Trial, isTrial, type TrialDef } from "../../../shared/trial";
 import { PVP_DAMAGE, RATING_START, type ArenaBoard } from "../../../shared/duels";
 import type { WildBoard } from "../../../shared/pvp";
 import { FRAME, composeCharacter, itemIcon } from "../character";
@@ -144,6 +144,9 @@ const SHADE_STYLE: Partial<Record<string, string>> = {
   shadeLordKnight: "fights up close and hits hard",
   shadeWizard: "throws fire from afar",
   shadeHunter: "shoots from far away, and fast",
+  shadePaladin: "fights up close, and hits very hard",
+  shadeArchmage: "casts from afar, and hits very hard",
+  shadeRanger: "shoots from far away, fast and hard",
 };
 
 export class TownDialog {
@@ -424,9 +427,9 @@ export class TownDialog {
     const st = this.net.stats;
     const lv = st?.lv ?? 1;
     if (st && st.cls !== "novice" && isClassId(st.cls)) {
-      const next = SECOND_JOBS[st.cls];
-      if (next) return this.secondJob(npc, st.cls, next, lv);
-      this.body.append(el("p", "dialog-empty", `You are ${aClass(st.cls)} now. Every level brings a skill point: spend them in your skills (K).`));
+      const trial = TRIALS[st.cls];
+      if (trial) return this.nextJob(npc, st.cls, trial, lv);
+      this.body.append(el("p", "dialog-empty", `You are ${aClass(st.cls)} now, as far as any job goes. Every level brings a skill point: spend them in your skills (K).`));
       this.button("Open my skills", "K", () => this.openSkills?.(), "primary");
       return;
     }
@@ -757,16 +760,19 @@ export class TownDialog {
   }
 
   /**
-   * A Knight, Mage or Archer: what their second job is like, the Trial of Mastery
+   * A first or second job: what the next job is like, the Trial of Mastery
    * that leads to it (see shared/trial.ts), and once it's passed, the step up.
    */
-  private secondJob(npc: NpcDef, cls: ClassId, next: ClassId, lv: number) {
+  private nextJob(npc: NpcDef, cls: ClassId, def: TrialDef, lv: number) {
+    const next = def.next;
     const c = CLASSES[next];
+    const keys = jobTier(next) >= 3 ? "7 to 9" : "4 to 6";
+    const which = jobTier(next) >= 3 ? "third" : "second";
     const trial = isTrial(this.net.stats?.trial) ? this.net.stats.trial : Trial.None;
     const passed = trial === Trial.Passed;
     if (this.jobConfirm === next && passed) {
       this.body.append(el("p", "job-confirm", `Become ${aClass(next)}? You keep everything you've learned, and there's no going back.`));
-      this.button(`Yes, make me ${aClass(next)}`, "Three new skills on keys 4 to 6", () => {
+      this.button(`Yes, make me ${aClass(next)}`, `Three new skills on keys ${keys}`, () => {
         this.jobConfirm = undefined;
         this.net.chooseJob(npc.id, next);
       }, "primary");
@@ -776,19 +782,19 @@ export class TownDialog {
       });
       return;
     }
-    const ready = passed && lv >= SECOND_JOB_LEVEL;
+    const ready = passed && lv >= def.at;
     this.body.append(
       el(
         "p",
         "dialog-note",
         ready
-          ? `You've passed the Trial of Mastery, ${CLASSES[cls].name}. You're ready for your second job.`
-          : lv < TRIAL_ASK_LEVEL
-            ? `You're level ${lv}. From level ${TRIAL_ASK_LEVEL}, come and ask me about the Trial of Mastery: pass it, and I'll make you ${aClass(next)}. Frostfell, across the sea, is the place to get there.`
+          ? `You've passed the Trial of Mastery, ${CLASSES[cls].name}. You're ready for your ${which} job.`
+          : lv < def.ask
+            ? `You're level ${lv}. From level ${def.ask}, come and ask me about the Trial of Mastery: pass it, and I'll make you ${aClass(next)}. ${def.from}, across the sea, is the place to get there.`
             : `To become ${aClass(next)}, pass the Trial of Mastery.`,
       ),
     );
-    const at = Math.max(lv, SECOND_JOB_LEVEL);
+    const at = Math.max(lv, def.at);
     const now = statsFor(cls, at);
     const then = statsFor(next, at);
     const card = el("div", `job-card job-${next}`);
@@ -799,7 +805,7 @@ export class TownDialog {
       el("div", "job-skills", `Keeps your ${CLASSES[cls].name} skills and gear, and adds: ${skillsOf(next).filter((k) => k.cls === next).map((k) => k.name).join(", ")}`),
     );
     if (passed) {
-      const b = el("button", "job-choose", ready ? `Become ${aClass(next)}` : `Level ${SECOND_JOB_LEVEL} needed`);
+      const b = el("button", "job-choose", ready ? `Become ${aClass(next)}` : `Level ${def.at} needed`);
       b.type = "button";
       b.disabled = !ready;
       b.addEventListener("click", () => {
@@ -813,14 +819,13 @@ export class TownDialog {
     const cards = el("div", "job-cards");
     cards.append(card);
     this.body.append(cards);
-    if (!passed) this.trialSteps(npc, cls, next, lv, trial);
+    if (!passed) this.trialSteps(npc, def, lv, trial);
     this.button("Open my skills", "K", () => this.openSkills?.());
   }
 
   /** The Trial of Mastery's three steps, ticked off as you go, and Orin's button for the next one. */
-  private trialSteps(npc: NpcDef, cls: ClassId, next: ClassId, lv: number, trial: Trial) {
-    const proof = TRIAL_PROOF[cls] ?? [];
-    const shade = TRIAL_SHADE[cls];
+  private trialSteps(npc: NpcDef, def: TrialDef, lv: number, trial: Trial) {
+    const { proof, shade, next } = def;
     const have = (item: ItemId) => (this.net.bag?.bag ?? []).reduce((n, s) => n + (s?.id === item ? s.n : 0), 0);
     const proven = trial === Trial.Proven;
     this.section("The Trial of Mastery");
@@ -837,21 +842,21 @@ export class TownDialog {
       if (i) items.append(" · ");
       items.append(el("b", got >= n ? "enough" : "", `${got}/${n}`), ` ${ITEMS[item].name}`);
     });
-    step(proven, trial === Trial.Asked, "Bring me proof from Frostfell", trial === Trial.None ? `${proof.map(([item, n]) => `${n} ${ITEMS[item].name}`).join(" and ")}: its monsters drop them, or buy them in the Market Square.` : items);
-    step(false, proven, `Beat a ${shade ? MONSTERS[shade].name : "Shade"} on the Isle of Trials`, `From level ${SECOND_JOB_LEVEL}. I'll send you there; it fights only you, and you have ${TRIAL_MS / 60_000} minutes.`);
+    step(proven, trial === Trial.Asked, `Bring me proof from ${def.from}`, trial === Trial.None ? `${proof.map(([item, n]) => `${n} ${ITEMS[item].name}`).join(" and ")}: its monsters drop them, or buy them in the Market Square.` : items);
+    step(false, proven, `Beat the ${MONSTERS[shade].name} on the Isle of Trials`, `From level ${def.at}. I'll send you there; it fights only you, and you have ${TRIAL_MS / 60_000} minutes.`);
     step(false, false, `Come back to me, and become ${aClass(next)}`);
     this.body.append(steps);
 
     if (trial === Trial.None) {
-      if (lv < TRIAL_ASK_LEVEL) this.body.append(el("p", "dialog-note", `Come back at level ${TRIAL_ASK_LEVEL} and I'll set you the trial.`));
-      else this.button("Set me the trial", `Proof from Frostfell first`, () => this.net.trial(npc.id, "ask"), "primary");
+      if (lv < def.ask) this.body.append(el("p", "dialog-note", `Come back at level ${def.ask} and I'll set you the trial.`));
+      else this.button("Set me the trial", `Proof from ${def.from} first`, () => this.net.trial(npc.id, "ask"), "primary");
     } else if (trial === Trial.Asked) {
       const ok = proof.every(([item, n]) => have(item) >= n);
       this.button("Hand over the proof", ok ? "All of it, at once" : "You don't have it all yet", () => {
         if (ok) this.net.trial(npc.id, "prove");
       }, ok ? "primary" : "");
     } else if (proven) {
-      if (lv < SECOND_JOB_LEVEL) this.body.append(el("p", "dialog-note", `You're level ${lv}. Reach level ${SECOND_JOB_LEVEL} and I'll send you to the Isle of Trials.`));
+      if (lv < def.at) this.body.append(el("p", "dialog-note", `You're level ${lv}. Reach level ${def.at} and I'll send you to the Isle of Trials.`));
       else this.button("Send me to the Isle of Trials", "Bring potions", () => this.net.trial(npc.id, "go"), "primary");
     }
   }
@@ -862,8 +867,9 @@ export class TownDialog {
   private keeper(npc: NpcDef) {
     const st = this.net.stats;
     const cls = st && isClassId(st.cls) ? st.cls : undefined;
-    const shade = cls && TRIAL_SHADE[cls];
-    const next = cls && SECOND_JOBS[cls];
+    const def = cls ? TRIALS[cls] : undefined;
+    const shade = def?.shade;
+    const next = def?.next;
     const left = Math.max(0, this.net.trialEndsAt - Date.now());
     if (left > 0) {
       const s = Math.ceil(left / 1000);
@@ -871,7 +877,7 @@ export class TownDialog {
       this.button("Give up", "Try again whenever you like", () => this.net.trialKeeper(npc.id, "quit"));
     } else if (st?.trial === Trial.Passed) {
       this.body.append(el("p", "arena-me", next ? `You've passed! Go back to Orin and become ${aClass(next)}.` : "You've passed! Go back to Orin."));
-    } else if (shade && next && st?.trial === Trial.Proven && st.lv >= SECOND_JOB_LEVEL) {
+    } else if (def && shade && next && st?.trial === Trial.Proven && st.lv >= def.at) {
       const m = MONSTERS[shade];
       this.section("Your Shade");
       const card = el("div", "trial-shade");

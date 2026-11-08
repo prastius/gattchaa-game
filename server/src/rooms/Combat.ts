@@ -7,8 +7,9 @@ import {
   JOBS,
   JOB_LEVEL,
   JOB_WEAPON,
-  SECOND_JOBS,
-  SECOND_JOB_LEVEL,
+  NEXT_JOBS,
+  jobChain,
+  jobLevel,
   LEVEL_CAP,
   aClass,
   MONSTERS,
@@ -71,7 +72,7 @@ import { OUTLAW_MS, PVP_COMBAT_MS, PVP_RECOUNT_MS, bountyOf, pvpBlock, type PvpS
 import { PARTY_LEVEL_GAP, PARTY_SHARE_PX, partyShare } from "../../../shared/party";
 import { CRYSTAL, GUARDIAN_POSTS } from "../../../shared/siege";
 import { TRIAL_GROUND, TRIAL_SHADE_AT, inCastle } from "../../../shared/town";
-import { TRIAL_MS, TRIAL_PROOF, TRIAL_ASK_LEVEL, Trial, isTrial } from "../../../shared/trial";
+import { TRIALS, TRIAL_MS, Trial, isTrial } from "../../../shared/trial";
 import type { Progress } from "../db";
 import { Monster, type Player } from "./WorldState";
 import { Inventory, type GearAt } from "./Inventory";
@@ -329,7 +330,7 @@ export class Combat {
       book,
       titlesDirty: true,
       // Already in their second job (a test command, or a rule change): nothing left to do.
-      trial: isTrial(progress?.trial) && !CLASSES[cls].from ? progress.trial : Trial.None,
+      trial: isTrial(progress?.trial) && TRIALS[cls] ? progress.trial : Trial.None,
       outlawUntil: 0,
     };
     const outlaw = this.outlaws.get(player.name) ?? 0;
@@ -427,7 +428,7 @@ export class Combat {
     if (f.inv.add(item, Math.min(MAX_STACK, Math.max(1, Math.floor(n))), { up }) > 0) this.changed(f);
   }
 
-  /** Testing only: back to Novice, then (from level 10) straight into a job. */
+  /** Testing only: back to Novice, then (from level 10) straight into a job, through every job before it. */
   cheatJob(id: string, cls: ClassId) {
     const f = this.fighters.get(id);
     if (!f) return;
@@ -438,13 +439,14 @@ export class Combat {
     f.buffs.clear();
     this.restat(f);
     f.dirty = true;
-    const first = CLASSES[cls].from;
-    if (first) {
-      this.changeJob(id, first);
-      f.trial = Trial.Passed;
-      if (f.player.lv < SECOND_JOB_LEVEL) return this.hooks.notice(id, `Test command: you're ${aClass(first)}. ${CLASSES[cls].name} needs level ${SECOND_JOB_LEVEL}.`);
-    }
-    if (cls !== "novice") this.changeJob(id, cls);
+    if (cls === "novice") return;
+    jobChain(cls).forEach((job, i) => {
+      if (f.player.lv < jobLevel(job)) return;
+      // Skipping the trial for each job after the first.
+      if (i > 0) f.trial = Trial.Passed;
+      this.changeJob(id, job);
+    });
+    if ((f.cls as ClassId) !== cls) this.hooks.notice(id, `Test command: you're ${aClass(f.cls)}. ${CLASSES[cls].name} needs level ${jobLevel(cls)}.`);
   }
 
   /** Testing only: jump to a step of the Trial of Mastery. */
@@ -1483,23 +1485,23 @@ export class Combat {
     this.save(f);
   }
 
-  /** Orin tells a Knight, Mage or Archer of level 45 or more what to bring. False (having said why) if he can't yet. */
+  /** Orin tells a first job of level 45 (or a second job of level 75) what to bring. False (having said why) if he can't yet. */
   askTrial(id: string): boolean {
     const f = this.fighters.get(id);
-    if (!f || f.player.dead || f.trial !== Trial.None) return false;
-    if (!TRIAL_PROOF[f.cls]) return false;
-    if (f.player.lv < TRIAL_ASK_LEVEL) {
-      this.hooks.notice(id, `Come back at level ${TRIAL_ASK_LEVEL}.`);
+    const trial = f && TRIALS[f.cls];
+    if (!f || !trial || f.player.dead || f.trial !== Trial.None) return false;
+    if (f.player.lv < trial.ask) {
+      this.hooks.notice(id, `Come back at level ${trial.ask}.`);
       return false;
     }
     this.setTrial(f, Trial.Asked);
     return true;
   }
 
-  /** Hands Orin the proof from Frostfell, all of it at once. False (having said why) if something's missing. */
+  /** Hands Orin the proof (from Frostfell, or Ashpeak), all of it at once. False (having said why) if something's missing. */
   proveTrial(id: string): boolean {
     const f = this.fighters.get(id);
-    const proof = f && TRIAL_PROOF[f.cls];
+    const proof = f && TRIALS[f.cls]?.proof;
     if (!f || !proof || f.player.dead || f.trial !== Trial.Asked) return false;
     const missing = proof.filter(([item, n]) => f.inv.count(item) < n);
     if (missing.length) {
@@ -1571,12 +1573,12 @@ export class Combat {
   /**
    * Novice -> Knight, Mage or Archer, for good (the room checked you're with
    * the Job Master): the class's stats, its weapon, and a first skill point.
-   * From level 50 a first job goes on to its second job the same way.
+   * From level 50 a first job goes on to its second job, and from 80 a second job to its third (`nextJob`).
    */
   changeJob(id: string, cls: ClassId) {
     const f = this.fighters.get(id);
     if (!f || f.player.dead) return;
-    if (SECOND_JOBS[f.cls] === cls) return this.secondJob(f, cls);
+    if (NEXT_JOBS[f.cls] === cls) return this.nextJob(f, cls);
     if (!JOBS.includes(cls)) return;
     if (f.cls !== "novice") return this.hooks.notice(id, `You're already ${aClass(f.cls)}.`);
     if (f.player.lv < JOB_LEVEL) return this.hooks.notice(id, `Come back at level ${JOB_LEVEL}.`);
@@ -1612,11 +1614,11 @@ export class Combat {
   }
 
   /**
-   * Knight -> Lord Knight, Mage -> Wizard, Archer -> Hunter: better stats,
-   * three more skills (keys 4 to 6), and everything learned so far is kept.
+   * Knight -> Lord Knight -> Paladin, Mage -> Wizard -> Archmage, Archer -> Hunter -> Ranger:
+   * better stats, three more skills (keys 4 to 6, then 7 to 9), and everything learned so far is kept.
    */
-  private secondJob(f: Fighter, cls: ClassId) {
-    if (f.player.lv < SECOND_JOB_LEVEL) return this.hooks.notice(f.id, `Come back at level ${SECOND_JOB_LEVEL}.`);
+  private nextJob(f: Fighter, cls: ClassId) {
+    if (f.player.lv < jobLevel(cls)) return this.hooks.notice(f.id, `Come back at level ${jobLevel(cls)}.`);
     if (f.trial !== Trial.Passed) return this.hooks.notice(f.id, "Pass the Trial of Mastery first: ask Orin about it.");
     f.trial = Trial.None;
     f.cls = cls;

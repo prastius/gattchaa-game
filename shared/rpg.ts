@@ -22,12 +22,12 @@ export function expToNext(level: number): number {
 
 // ---------------------------------------------------------------- classes
 
-export type ClassId = "novice" | "knight" | "mage" | "archer" | "lordKnight" | "wizard" | "hunter";
+export type ClassId = "novice" | "knight" | "mage" | "archer" | "lordKnight" | "wizard" | "hunter" | "paladin" | "archmage" | "ranger";
 
 export interface ClassDef {
   id: ClassId;
   name: string;
-  /** Second jobs: the first job they grow out of (they keep its weapons, gear and skills). */
+  /** Second and third jobs: the job they grow out of (they keep its weapons, gear and skills, all the way down). */
   from?: ClassId;
   /** What the Job Master says about it. */
   blurb: string;
@@ -75,12 +75,35 @@ export const CLASSES: Record<ClassId, ClassDef> = {
     id: "hunter", name: "Hunter", from: "archer", blurb: "An Archer with a falcon on the arm and snares in the pack. Pins the prey down, then never misses.",
     hp: [50, 11.8], mp: [22, 4.4], atk: [9, 2.45], def: [2, 0.48], range: 40, attackMs: 1000, deathExpLoss: 0.03,
   },
+  // Third jobs, from level 80. Again each grows a little faster than the job before it.
+  paladin: {
+    id: "paladin", name: "Paladin", from: "lordKnight", blurb: "A Lord Knight sworn to the light. Calls holy fire down on the enemy, shields itself, and passes judgement on everything around it.",
+    hp: [100, 18], mp: [26, 3.4], atk: [12, 2.6], def: [4, 0.86], range: 40, attackMs: 1000, deathExpLoss: 0.03,
+  },
+  archmage: {
+    id: "archmage", name: "Archmage", from: "wizard", blurb: "A Wizard who has mastered the stars themselves: arcane blasts, falling comets, and a focus nothing can break.",
+    hp: [48, 10.2], mp: [52, 9.2], atk: [11, 2.9], def: [3, 0.35], range: 40, attackMs: 1200, deathExpLoss: 0.03,
+  },
+  ranger: {
+    id: "ranger", name: "Ranger", from: "hunter", blurb: "A Hunter who never misses twice. Volleys of arrows, a barrage that pins whole packs down, and a hawk's eye.",
+    hp: [60, 12.6], mp: [28, 4.8], atk: [11, 2.6], def: [3, 0.52], range: 40, attackMs: 1000, deathExpLoss: 0.03,
+  },
 };
 
 export const isClassId = (id: unknown): id is ClassId => typeof id === "string" && Object.hasOwn(CLASSES, id);
 
-/** The first job a class belongs to: a Lord Knight is still a Knight (itself for first jobs and Novices). */
-export const jobLine = (cls: ClassId): ClassId => CLASSES[cls].from ?? cls;
+/** The first job a class belongs to: a Lord Knight and a Paladin are still Knights (itself for first jobs and Novices). */
+export const jobLine = (cls: ClassId): ClassId => {
+  let c = cls;
+  while (CLASSES[c].from) c = CLASSES[c].from!;
+  return c;
+};
+
+/** A class and the jobs it grew out of, first job first: Paladin -> [knight, lordKnight, paladin]. */
+export const jobChain = (cls: ClassId): ClassId[] => (CLASSES[cls].from ? [...jobChain(CLASSES[cls].from!), cls] : [cls]);
+
+/** 0 for Novices, 1 for first jobs, 2 for second jobs, 3 for third jobs. */
+export const jobTier = (cls: ClassId): number => (cls === "novice" ? 0 : jobChain(cls).length);
 
 /** "a Knight", "an Archer". */
 export const aClass = (cls: ClassId) => `${/^[AEIOU]/.test(CLASSES[cls].name) ? "an" : "a"} ${CLASSES[cls].name}`;
@@ -91,10 +114,20 @@ export const JOB_LEVEL = 10;
 export const JOBS: ClassId[] = ["knight", "mage", "archer"];
 /** The weapon each job starts with, a gift from the Job Master. */
 export const JOB_WEAPON: Partial<Record<ClassId, ItemId>> = { knight: "squireSword", mage: "apprenticeStaff", archer: "huntingBow" };
-/** A first job can become its second job from this level, again with the Job Master. */
+/** A first job can become its second job from this level, and a second job its third, again with the Job Master. */
 export const SECOND_JOB_LEVEL = 50;
-/** Each first job's second job. */
-export const SECOND_JOBS: Partial<Record<ClassId, ClassId>> = { knight: "lordKnight", mage: "wizard", archer: "hunter" };
+export const THIRD_JOB_LEVEL = 80;
+/** What each job grows into next: first jobs into second jobs, second jobs into third jobs. */
+export const NEXT_JOBS: Partial<Record<ClassId, ClassId>> = {
+  knight: "lordKnight",
+  mage: "wizard",
+  archer: "hunter",
+  lordKnight: "paladin",
+  wizard: "archmage",
+  hunter: "ranger",
+};
+/** The level a job needs: 50 for second jobs, 80 for third jobs. */
+export const jobLevel = (cls: ClassId): number => (jobTier(cls) >= 3 ? THIRD_JOB_LEVEL : jobTier(cls) === 2 ? SECOND_JOB_LEVEL : JOB_LEVEL);
 
 /** Skill points earned so far: one at the job change and one more every level after. */
 export const skillPoints = (cls: ClassId, level: number) => (cls === "novice" ? 0 : Math.max(0, level - JOB_LEVEL + 1));
@@ -199,7 +232,10 @@ export type MonsterId =
   | "castleArcher"
   | "shadeLordKnight"
   | "shadeWizard"
-  | "shadeHunter";
+  | "shadeHunter"
+  | "shadePaladin"
+  | "shadeArchmage"
+  | "shadeRanger";
 
 export interface MonsterDef {
   id: MonsterId;
@@ -724,6 +760,22 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   shadeWizard: {
     id: "shadeWizard", name: "Shade of a Wizard", level: 52, hp: 32_000, atk: 115, def: 26, exp: 0, gold: [0, 0], speed: 45, chase: 90, aggro: 600, range: 170, attackMs: 2000, radius: 12, respawnMs: 0,
+    regen: 0,
+    drops: [],
+  },
+  // The third-job Shades, for level-80 second jobs.
+  shadePaladin: {
+    id: "shadePaladin", name: "Shade of a Paladin", level: 82, hp: 58_000, atk: 200, def: 70, exp: 0, gold: [0, 0], speed: 55, chase: 110, aggro: 600, range: 44, attackMs: 1500, radius: 14, respawnMs: 0,
+    regen: 0,
+    drops: [],
+  },
+  shadeArchmage: {
+    id: "shadeArchmage", name: "Shade of an Archmage", level: 82, hp: 85_000, atk: 190, def: 50, exp: 0, gold: [0, 0], speed: 45, chase: 90, aggro: 600, range: 170, attackMs: 2000, radius: 12, respawnMs: 0,
+    regen: 0,
+    drops: [],
+  },
+  shadeRanger: {
+    id: "shadeRanger", name: "Shade of a Ranger", level: 82, hp: 62_000, atk: 170, def: 60, exp: 0, gold: [0, 0], speed: 55, chase: 105, aggro: 600, range: 190, attackMs: 1700, radius: 12, respawnMs: 0,
     regen: 0,
     drops: [],
   },

@@ -16,7 +16,7 @@ import {
   type SitMessage,
   type TargetMessage,
 } from "../../../shared/protocol";
-import { CLASSES, JOB_LEVEL, aClass, isClassId, isMonsterId, type ClassId } from "../../../shared/rpg";
+import { CLASSES, JOB_LEVEL, aClass, isClassId, isMonsterId, jobTier, type ClassId } from "../../../shared/rpg";
 import { SKILLS, type SkillId } from "../../../shared/skills";
 import { ITEMS, PICKUP_RANGE, RARITY, appearanceKey, cleanUpgrade, isItemId, parseCards } from "../../../shared/items";
 import { NPCS, type NpcDef } from "../../../shared/npcs";
@@ -158,6 +158,9 @@ const JOB_TINT: Record<ClassId, number> = {
   lordKnight: 0xffb35c,
   wizard: 0x8fb4ff,
   hunter: 0xc8e86a,
+  paladin: 0xfff2a8,
+  archmage: 0xd6a8ff,
+  ranger: 0xa8f0c8,
 };
 /** Flight time of a missile between two bodies (same as Fx.missile). */
 const flightMsFor = (a: { x: number; mid: number }, t: { x: number; mid: number }) => flightMs(Math.hypot(t.x - a.x, t.mid - a.mid));
@@ -486,8 +489,8 @@ export class WorldScene extends Phaser.Scene {
       else if (e.key === "k" || e.key === "K") this.toggleSkills();
       else if (e.key === "t" || e.key === "T") this.toggleTitles();
       else if (e.key === "g" || e.key === "G") this.toggleGuild();
-      // 1-6: your skills, in skill-bar order (emotes are on the emote button).
-      else if (/^[1-6]$/.test(e.key) && !e.repeat) {
+      // 1-9: your skills, in skill-bar order (emotes are on the emote button).
+      else if (/^[1-9]$/.test(e.key) && !e.repeat) {
         const skill = this.skills.mine[Number(e.key) - 1];
         if (skill) this.castSkill(skill.id as SkillId);
       }
@@ -1059,7 +1062,7 @@ export class WorldScene extends Phaser.Scene {
   private missileFor(ev: Extract<FxEvent, { k: "hit" | "miss" }>, a: { x: number; y: number; mob?: MonsterSprite }, t: { x: number; y: number }): Missile | undefined {
     if (ev.k === "hit" && ev.skill) {
       const fx = SKILLS[ev.skill].fx;
-      return fx === "fire" ? "fire" : fx === "arrows" || fx === "sharp" ? "arrow" : undefined;
+      return fx === "fire" ? "fire" : fx === "arrows" || fx === "sharp" || fx === "volley" ? "arrow" : undefined;
     }
     if (a.mob) {
       const art = a.mob.art;
@@ -1331,7 +1334,7 @@ export class WorldScene extends Phaser.Scene {
         if (a && t) {
           if (a.mob) a.mob.attack(dirTo(t.x - a.x, t.y - a.y));
           // Swords swing; bows, staves and spells don't.
-          else if (!missile && (!skill || skill.fx === "bash" || skill.fx === "pierce" || skill.fx === "brandish")) a.player?.lunge(t.x - a.x, t.y - a.y);
+          else if (!missile && (!skill || skill.fx === "bash" || skill.fx === "pierce" || skill.fx === "brandish" || skill.fx === "smite")) a.player?.lunge(t.x - a.x, t.y - a.y);
           if (ev.a === me && this.self) this.self.dir = dirTo(t.x - a.x, t.y - a.y);
         }
         if (!t) return;
@@ -1345,8 +1348,8 @@ export class WorldScene extends Phaser.Scene {
           if (stagger) this.time.delayedCall(stagger, fly);
           delay = stagger + (stagger ? flightMsFor(a, t) : fly());
           if (ev.a === me && !skill) audio.shoot(missile !== "arrow");
-        } else if (skill?.fx === "rain") delay = RAIN_LAND_MS;
-        else if (skill?.fx === "meteor") delay = METEOR_LAND_MS;
+        } else if (skill?.fx === "rain" || skill?.fx === "barrage") delay = RAIN_LAND_MS;
+        else if (skill?.fx === "meteor" || skill?.fx === "comet") delay = METEOR_LAND_MS;
         else if (skill?.fx === "falcon") delay = FALCON_LAND_MS;
         const land = () => {
           const tb = this.body(ev.t) ?? t;
@@ -1430,6 +1433,39 @@ export class WorldScene extends Phaser.Scene {
           case "sharp":
             this.fx.burst(a.x, a.mid, [0xffe08a, 0xffffff], 8);
             break;
+          // Third jobs.
+          case "smite":
+            if (t) {
+              this.fx.lightning(t.x, t.y);
+              this.fx.burst(t.x, t.mid, [0xffffff, 0xfff2a8], 18);
+            }
+            break;
+          case "aegis":
+            this.fx.aura(a.x, a.y, 0xfff2a8);
+            break;
+          case "judgement":
+            this.fx.whirl(a.x, a.y, s.radius ?? 100);
+            this.fx.burst(a.x, a.mid, [0xffffff, 0xfff2a8], 16);
+            break;
+          case "arcane":
+            this.fx.nova(a.x, a.y, s.radius ?? 120);
+            this.fx.burst(a.x, a.mid, [0xd6a8ff, 0xffffff], 16);
+            break;
+          case "comet":
+            if (t) this.fx.meteor(t.x, t.y, s.radius ?? 110);
+            break;
+          case "focus":
+            this.fx.aura(a.x, a.y, 0xd6a8ff);
+            break;
+          case "volley":
+            this.fx.burst(a.x, a.mid, [0xa8f0c8, 0xffffff], 10);
+            break;
+          case "barrage":
+            if (t) this.fx.rain(t.x, t.y, s.radius ?? 90);
+            break;
+          case "hawk":
+            this.fx.aura(a.x, a.y, 0xa8f0c8);
+            break;
           default:
             break;
         }
@@ -1448,7 +1484,7 @@ export class WorldScene extends Phaser.Scene {
           audio.levelUp();
           this.chat.addSystem(
             cls.from
-              ? `You are now ${aClass(ev.cls)}! Three new skills wait in your skills window (K), on keys 4, 5 and 6.`
+              ? `You are now ${aClass(ev.cls)}! Three new skills wait in your skills window (K), on keys ${jobTier(ev.cls) >= 3 ? "7, 8 and 9" : "4, 5 and 6"}.`
               : `You are now ${aClass(ev.cls)}! You have a skill point: open your skills (K) and learn one, then use it with key 1, 2 or 3.`,
           );
         }

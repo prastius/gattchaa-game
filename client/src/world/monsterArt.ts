@@ -715,6 +715,48 @@ export const MONSTER_ART: Record<MonsterId, MonsterArt> = {
     ],
     { missile: "arrow", missileFrom: 60 },
   ),
+  shadePaladin: shade(
+    [
+      ...skin("light"),
+      { category: "head", id: "male", colors: { body: "light" } },
+      { category: "gear", id: "cape", colors: { cloth: "white" } },
+      { category: "gear", id: "plate", colors: { metal: "gold" } },
+      { category: "gear", id: "plateArms", colors: { metal: "gold" } },
+      { category: "gear", id: "greaves", colors: { metal: "gold" } },
+      { category: "gear", id: "ironBoots", colors: { metal: "gold" } },
+      { category: "gear", id: "greathelm", colors: { metal: "gold" } },
+      { category: "gear", id: "crusader" },
+      { category: "gear", id: "longsword" },
+    ],
+    { scale: 1.2, w: 32, h: 58 },
+  ),
+  shadeArchmage: shade(
+    [
+      ...skin("light"),
+      { category: "head", id: "male", colors: { body: "light" } },
+      { category: "beard", id: "beard", colors: { hair: "white" } },
+      { category: "bottom", id: "pants", colors: { cloth: "purple" } },
+      { category: "shoes", id: "boots", colors: { cloth: "black" } },
+      { category: "gear", id: "cape", colors: { cloth: "purple" } },
+      { category: "gear", id: "tabardPurple" },
+      { category: "gear", id: "celestial" },
+      { category: "gear", id: "diamond" },
+    ],
+    { scale: 1.2, w: 32, h: 58, missile: "bolt", missileFrom: 60 },
+  ),
+  shadeRanger: shade(
+    [
+      ...skin("light"),
+      { category: "head", id: "male", colors: { body: "light" } },
+      { category: "bottom", id: "pants", colors: { cloth: "forest" } },
+      { category: "shoes", id: "boots", colors: { cloth: "brown" } },
+      { category: "gear", id: "cape", colors: { cloth: "forest" } },
+      { category: "gear", id: "leatherArmor" },
+      { category: "gear", id: "hood", colors: { cloth: "forest" } },
+      { category: "gear", id: "greatBowGold" },
+    ],
+    { scale: 1.2, w: 32, h: 58, missile: "arrow", missileFrom: 60 },
+  ),
 };
 
 const MOVE_COLS = [0, 1, 2, 1];

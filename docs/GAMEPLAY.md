@@ -108,7 +108,7 @@ The town is always safe: monsters never come in, and nobody can attack anyone in
 | Nadia | Ferry Captain | At the end of Sunscar's pier | Explains Sunscar, and sails you back for free |
 | Lyra | Ship Captain | At the start of the same pier | Sails you to Starfall for 2,200 gold |
 | Celeste | Ferry Captain | At the end of Starfall's pier | Explains Starfall, and sails you back for free |
-| Orin | Job Master | Just inside the south gate | Makes you a Knight, Mage or Archer at level 10, sets the Trial of Mastery from level 45, and gives you your second job once you pass it |
+| Orin | Job Master | Just inside the south gate | Makes you a Knight, Mage or Archer at level 10, sets the Trial of Mastery from level 45 (and again from 75), and gives you your second job (and third) once you pass it |
 | Vesna | Trial Keeper | On the Isle of Trials (Orin sends you there) | Raises the Shade you fight in the Trial of Mastery, and sends you home |
 | Bram | Outfitter | Outside the south gate, east of the road | Sells potions and starter gear, buys loot |
 | Hilda | Blacksmith | Outside the south gate, west of Rowan | Upgrades gear from +0 to +10 |
@@ -450,9 +450,22 @@ A second job has to be earned: pass the **Trial of Mastery** (below) and **Orin*
 - Your stats grow a little faster from then on, so the change itself is a step up (you're fully healed too).
 - There's no gift weapon this time, and the whole town hears about it.
 
+### Third jobs
+
+From **level 80**, a second job can go one step further, through a second **Trial of Mastery** (below). It's for life too:
+
+| Second job | Third job | What changes | Lv 90 HP / MP / ATK / DEF |
+| --- | --- | --- | --- |
+| Lord Knight | **Paladin** | Sworn to the light: holy fire from the sky, a divine shield, and judgement on everything around it. +99 HP, +14 ATK at the change | 1,702 / 328 / 243 / 80 |
+| Wizard | **Archmage** | Master of the stars: arcane blasts, falling comets, and a focus nothing can break. +55 HP, +18 ATK at the change | 955 / 870 / 269 / 34 |
+| Hunter | **Ranger** | Never misses twice: volleys of arrows, a barrage that pins whole packs down, and a hawk's eye. +73 HP, +14 ATK at the change | 1,181 / 455 / 242 / 49 |
+
+- **You keep everything** again: all six skills so far, your gear and your points. A Paladin still wears Knight gear.
+- **Three more skills**, on keys **7, 8 and 9**. With nine skills, the 91 points you have at level 100 are enough to max nearly all of them (90 points max all nine).
+
 ### The Trial of Mastery
 
-Ragnarok style, the way to your second job is a quest in three steps. Orin's window shows them, ticked off as you go.
+Ragnarok style, the way to your second job is a quest in three steps, and the way to your third job is the same quest again. Orin's window shows the steps, ticked off as you go.
 
 1. **Proof from Frostfell.** From **level 45**, talk to **Orin** and press **Set me the trial**. He asks for loot from Frostfell's monsters, different for each job. They drop it often, or you can buy it in other players' shops. When you have it all, press **Hand over the proof**: he takes all of it at once.
 
@@ -479,11 +492,21 @@ Ragnarok style, the way to your second job is a quest in three steps. Orin's win
 
 In Frostfell gear with all three first-job skills learned, a level-50 player beats their Shade in a minute or two, with some potions (Knights drink the most; Mages can mostly heal themselves).
 
+**For a third job**, it's the same three steps, from **level 75** (the proof) and **level 80** (the Shade). The proof comes from **Ashpeak**, and the Shades are much stronger:
+
+| Your job | Proof | Your Shade | Level | HP | How it fights |
+| --- | --- | --- | --- | --- | --- |
+| Lord Knight | 20 Obsidian Shard (Obsidian Knights) and 20 Magma Core (Magma Golems) | Shade of a Paladin | 82 | 58,000 | Up close, and hits very hard |
+| Wizard | 20 Salamander Scale (Salamanders) and 20 Magma Core (Magma Golems) | Shade of an Archmage | 82 | 85,000 | Casts from afar, and hits very hard |
+| Hunter | 20 Imp Horn (Ember Imps) and 20 Cinder Veil (Cinder Wraiths) | Shade of a Ranger | 82 | 62,000 | Shoots from far away, fast and hard |
+
+In Ashpeak gear with all six skills learned and Golden Potions, a level-80 player beats it in about a minute and a half to two minutes.
+
 ### Skill points
 
-- You get **1 skill point** at the job change, and **1 more every level** after that: 41 at level 50, 51 at level 60, 61 at level 70, 71 at level 80, 91 at level 100. Until the late 60s that's not enough to max all six skills, so choose; by level 69 you can max them all.
+- You get **1 skill point** at the job change, and **1 more every level** after that: 41 at level 50, 51 at level 60, 61 at level 70, 71 at level 80, 91 at level 100. Until the late 60s that's not enough to max all six skills, so choose; by level 69 you can max them all. Third jobs have nine skills: 90 points max them all, and you have 91 at level 100.
 - Spend them in the skills window (**K**). Each skill goes up to **level 10** and gets stronger every level.
-- Use skills with keys **1–6** or the skill buttons. Each skill costs MP and has a cooldown, shown as a shadow on its button. There's also a short pause (0.7 s) between any two skills.
+- Use skills with keys **1–9** or the skill buttons. Each skill costs MP and has a cooldown, shown as a shadow on its button. There's also a short pause (0.7 s) between any two skills.
 - Aimed skills use your target. Without one, they pick the nearest monster and walk you into range.
 - Attack skills don't work inside the town.
 
@@ -538,6 +561,30 @@ In Frostfell gear with all three first-job skills learned, a level-50 player bea
 | Falcon Strike | 4 | Your falcon dives at your target three times from far away, each 88% → 160% of ATK | 18 → 36 | 5 s |
 | Ankle Snare | 5 | A snare on your target: 66% → 120% of ATK, and it can't move or attack for 3.3 → 6 s | 14 → 32 | 12 s |
 | Sharp Shooting | 6 | One perfect arrow: always a critical hit (1.5× and ignores defence), 176% → 320% of ATK. Needs a bow | 18 → 36 | 6 s |
+
+**Paladin** (keeps the Knight's and Lord Knight's six on keys 1–6)
+
+| Skill | Key | What it does | MP | Cooldown |
+| --- | --- | --- | --- | --- |
+| Holy Strike | 7 | Holy fire falls on your target from the sky: 286% → 520% of ATK | 26 → 44 | 6 s |
+| Divine Shield | 8 | Heals 16.5% → 30% of your max HP, and DEF +34% → +70% for 20 s | 28 → 46 | 40 s |
+| Judgement | 9 | A ring of holy light round you: 175% → 310% of ATK to every monster in it, stunned for 1.65 → 3 s | 33 → 60 | 12 s |
+
+**Archmage** (keeps the Mage's and Wizard's six on keys 1–6)
+
+| Skill | Key | What it does | MP | Cooldown |
+| --- | --- | --- | --- | --- |
+| Arcane Nova | 7 | A blast of pure magic round you: 198% → 360% of ATK to every monster in it | 35 → 62 | 10 s |
+| Comet | 8 | A comet falls on your target and every monster near it: 330% → 600% of ATK | 48 → 84 | 20 s |
+| Arcane Focus | 9 | ATK +23% → +50% and critical chance +11.5% → +25% for 20 s | 28 → 46 | 45 s |
+
+**Ranger** (keeps the Archer's and Hunter's six on keys 1–6)
+
+| Skill | Key | What it does | MP | Cooldown |
+| --- | --- | --- | --- | --- |
+| Piercing Volley | 7 | Four arrows at once into your target, each 99% → 180% of ATK, from far away. Needs a bow | 24 → 42 | 6 s |
+| Barrage | 8 | Arrows rain on your target and every monster near it: 121% → 220% of ATK, pinned down for 1.65 → 3 s. Needs a bow | 37 → 64 | 14 s |
+| Hawk Eye | 9 | ATK +17% → +35% and critical chance +17% → +35% for 25 s | 26 → 44 | 45 s |
 
 Frozen (and snared) monsters turn icy blue and can't move or attack. While a buff is running, its skill button glows.
 
@@ -951,7 +998,7 @@ Fight other players, just for fun or for the ranking. **Nobody ever loses EXP, g
 
 1. **Challenge.** Click (or tap) another player standing near you and press **Challenge to a duel**. They get a pop-up and have 20 seconds to **Accept** or **Decline**.
 2. **Countdown.** "3, 2, 1, FIGHT!" appears over both of you. You automatically aim at your opponent.
-3. **Fight.** Attack like you would a monster: click them or press Space, and use your skills (keys 1–6). A bar across the top shows who you're fighting and the time left, with a **Give up** button.
+3. **Fight.** Attack like you would a monster: click them or press Space, and use your skills (keys 1–9). A bar across the top shows who you're fighting and the time left, with a **Give up** button.
 4. **The end.** Whoever drops to 0 HP loses. The winner gets a "WINNER!" banner, and you're both healed straight away.
 
 ### Rules
@@ -1355,7 +1402,7 @@ Every monster also drops its own card (see Monster cards) and often potions.
 17. **Level 60–65:** Take the path east off the south road, straight on past Edda's pier, to **Marlow**'s ship on the meadow's east shore, and sail to **Petalfall** (1,200 gold). Moon Hares by the pier only fight back but dodge plain attacks: use your skills. Then the Fox Spirits in the north-west woods (close in fast, they throw fire) and the Crow Blades in the middle.
 18. **Level 65–70:** Phantom Swordsmen in the north-east, Red Ogres in the south (they only fight back, but they hit very hard). At 70, bring a party of four up the road to the **Ogre Warlord**'s camp. **Willow** sails you home for free.
 19. **Level 70–75:** Back to the meadow's east shore, where **Dorian** sails from Marlow's pier to **Ashpeak** (1,500 gold). Ember Imps swarm the rock north of the pier; Salamanders spit fire from the south-west slopes (close in fast). Then the Obsidian Knights along the north.
-20. **Level 75–80:** Cinder Wraiths in the east dodge plain attacks: use your skills. Magma Golems in the south only fight back, but they hit hardest of all. At 80, bring a party of four up the road to the **Cinder Colossus**'s crater. **Cassia** sails you home for free.
+20. **Level 75–80:** Cinder Wraiths in the east dodge plain attacks: use your skills. Magma Golems in the south only fight back, but they hit hardest of all. At 80, bring a party of four up the road to the **Cinder Colossus**'s crater. **Cassia** sails you home for free. At 75, ask **Orin** about your **third job** and keep the Ashpeak loot he asks for; at 80, beat your Shade on the Isle of Trials and become a **Paladin**, **Archmage** or **Ranger**.
 21. **Level 80–90:** Switch to Bram's **Golden Potions** (from level 70). **Soren** sails from the same pier to **Sunscar** (1,800 gold). Dune Stalkers in the dunes dodge plain attacks; Dust Djinn throw hot wind from the north-west; then the Tomb Wardens and the Desert Raiders' camp in the east. At 90, bring a party for the **Dune King** in his temple.
 22. **Level 90–100:** **Lyra** sails to **Starfall** (2,200 gold), where it's always night. Void Bats swarm the south-west, Astral Seers cast from the north-west, Star Knights guard the north, Night Wisps drift along the east shore, and Crystal Golems in the south-east hit hardest of all. At 100, the **Star Tyrant** waits at his altar south of the lake: take your strongest party.
 
@@ -1366,7 +1413,6 @@ Sell your monster loot to Bram whenever your bag fills up, and sit down (X) to h
 ## 18. Coming next
 
 - **More castles** for the guild wars.
-- **Somewhere to spend your skill points** past level 69 (all six skills are maxed at 60 points, and you keep earning them up to 100).
 
 ---
 

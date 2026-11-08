@@ -1,5 +1,5 @@
-import { CLASSES, JOB_LEVEL, SECOND_JOBS, SECOND_JOB_LEVEL, aClass, isClassId } from "../../../shared/rpg";
-import { TRIAL_ASK_LEVEL } from "../../../shared/trial";
+import { CLASSES, JOB_LEVEL, aClass, isClassId } from "../../../shared/rpg";
+import { TRIALS } from "../../../shared/trial";
 import { WEAPON_NAMES } from "../../../shared/items";
 import { GLOBAL_COOLDOWN_MS, SKILLS, SKILL_MAX, skillsOf, type SkillDef, type SkillId } from "../../../shared/skills";
 import { packIcon } from "../character";
@@ -121,6 +121,7 @@ export class SkillsUI {
     this.slots = [];
     const skills = this.mine;
     this.bar.hidden = skills.length === 0;
+    this.bar.classList.toggle("nine", skills.length > 6);
     skills.forEach((skill, i) => {
       const el = document.createElement("button");
       el.type = "button";
@@ -177,11 +178,12 @@ export class SkillsUI {
     hint.className = "skills-hint";
     hint.textContent = `Keys 1–${this.mine.length} (or the skill buttons) use your skills. You get a skill point every level.`;
     this.list.append(hint);
-    const next = SECOND_JOBS[st.cls];
-    if (next) {
+    const trial = TRIALS[st.cls];
+    const next = trial?.next;
+    if (trial && next) {
       const more = document.createElement("p");
       more.className = "skills-hint";
-      more.textContent = `From level ${TRIAL_ASK_LEVEL}, ask Orin the Job Master about the Trial of Mastery. Pass it (from level ${SECOND_JOB_LEVEL}) and he makes you ${aClass(next)}, with three more skills: ${skillsOf(next).filter((k) => k.cls === next).map((k) => k.name).join(", ")}.`;
+      more.textContent = `From level ${trial.ask}, ask Orin the Job Master about the Trial of Mastery. Pass it (from level ${trial.at}) and he makes you ${aClass(next)}, with three more skills: ${skillsOf(next).filter((k) => k.cls === next).map((k) => k.name).join(", ")}.`;
       this.list.append(more);
     }
   }

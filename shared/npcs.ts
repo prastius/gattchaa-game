@@ -523,7 +523,7 @@ export const NPCS: NpcDef[] = [
     ...at(198.5, 241.6),
     dir: Dir.Left,
     greeting:
-      "Every hero starts as a Novice. Reach level 10 out in the meadow and come back to me: I'll make you a Knight, a Mage or an Archer. Choose well, for a job is for life. The second job has to be earned: from level 45, come and ask me about the Trial of Mastery. Pass it, and Knights become Lord Knights, Mages become Wizards, and Archers become Hunters.",
+      "Every hero starts as a Novice. Reach level 10 out in the meadow and come back to me: I'll make you a Knight, a Mage or an Archer. Choose well, for a job is for life. The second job has to be earned: from level 45, come and ask me about the Trial of Mastery. Pass it, and Knights become Lord Knights, Mages become Wizards, and Archers become Hunters. And from level 75 there's one more trial, for a third job: Paladin, Archmage or Ranger.",
     chatter: [
       "Knight, Mage or Archer… which will you be?",
       "Level 10, and not a day before!",
@@ -531,6 +531,7 @@ export const NPCS: NpcDef[] = [
       "Your skills grow with every level.",
       "Level 45? Ask me about the Trial of Mastery!",
       "The Shades on the Isle of Trials fight only you.",
+      "Level 75? There's a third job waiting for you.",
     ],
   },
   {

@@ -4,7 +4,7 @@
 // draws the skill bar, the skills window and the effects). Skill ids are saved
 // in the database, so never rename one; retire it instead.
 
-import { CLASSES, skillPoints, type ClassId } from "./rpg";
+import { jobChain, skillPoints, type ClassId } from "./rpg";
 import type { WeaponType } from "./items";
 
 /**
@@ -32,7 +32,16 @@ export type SkillFx =
   | "lightning"
   | "falcon"
   | "snare"
-  | "sharp";
+  | "sharp"
+  | "smite"
+  | "aegis"
+  | "judgement"
+  | "arcane"
+  | "comet"
+  | "focus"
+  | "volley"
+  | "barrage"
+  | "hawk";
 
 export interface SkillBuff {
   ms: number;
@@ -206,19 +215,82 @@ export const SKILLS = def({
     power: (lv) => 1.6 + 0.16 * lv,
     effect: (lv) => `One perfect arrow: always a critical hit, ${pct(1.6 + 0.16 * lv)} of your ATK (1.5x, ignoring defence).`,
   },
+
+  // ------------------------------------------------------------ Paladin (keeps the Knight's and Lord Knight's six)
+  holyStrike: {
+    name: "Holy Strike", cls: "paladin", kind: "strike", icon: "sword_02c", fx: "smite",
+    mp: (lv) => 24 + 2 * lv, cooldownMs: 6000,
+    power: (lv) => 2.6 + 0.26 * lv,
+    effect: (lv) => `Holy fire falls on your target from the sky: ${pct(2.6 + 0.26 * lv)} of your ATK.`,
+  },
+  divineShield: {
+    name: "Divine Shield", cls: "paladin", kind: "self", icon: "shield_03e", fx: "aegis",
+    mp: (lv) => 26 + 2 * lv, cooldownMs: 40_000,
+    heal: (lv) => 0.15 + 0.015 * lv,
+    buff: { ms: 20_000, def: (lv) => 0.3 + 0.04 * lv },
+    effect: (lv) => `Heals ${pct(0.15 + 0.015 * lv)} of your max HP, and DEF +${pct(0.3 + 0.04 * lv)} for 20 s.`,
+  },
+  judgement: {
+    name: "Judgement", cls: "paladin", kind: "burst", icon: "spellbook_02e", fx: "judgement",
+    mp: (lv) => 30 + 3 * lv, cooldownMs: 12_000, radius: 100,
+    power: (lv) => 1.6 + 0.15 * lv,
+    freezeMs: (lv) => 1500 + 150 * lv,
+    effect: (lv) => `A ring of holy light round you: ${pct(1.6 + 0.15 * lv)} of your ATK to every monster in it, stunned for ${secs(1500 + 150 * lv)}.`,
+  },
+
+  // ------------------------------------------------------------ Archmage (keeps the Mage's and Wizard's six)
+  arcaneNova: {
+    name: "Arcane Nova", cls: "archmage", kind: "burst", icon: "spellbook_02a", fx: "arcane",
+    mp: (lv) => 32 + 3 * lv, cooldownMs: 10_000, radius: 120,
+    power: (lv) => 1.8 + 0.18 * lv,
+    effect: (lv) => `A blast of pure magic round you: ${pct(1.8 + 0.18 * lv)} of your ATK to every monster in it.`,
+  },
+  comet: {
+    name: "Comet", cls: "archmage", kind: "rain", icon: "spellbook_03e", fx: "comet",
+    mp: (lv) => 44 + 4 * lv, cooldownMs: 20_000, range: 240, radius: 110,
+    power: (lv) => 3 + 0.3 * lv,
+    effect: (lv) => `A comet falls on your target and every monster near it: ${pct(3 + 0.3 * lv)} of your ATK.`,
+  },
+  arcaneFocus: {
+    name: "Arcane Focus", cls: "archmage", kind: "self", icon: "book_05c", fx: "focus",
+    mp: (lv) => 26 + 2 * lv, cooldownMs: 45_000,
+    buff: { ms: 20_000, atk: (lv) => 0.2 + 0.03 * lv, crit: (lv) => 0.1 + 0.015 * lv },
+    effect: (lv) => `ATK +${pct(0.2 + 0.03 * lv)} and critical chance +${pct(0.1 + 0.015 * lv)} for 20 s.`,
+  },
+
+  // ------------------------------------------------------------ Ranger (keeps the Archer's and Hunter's six)
+  piercingVolley: {
+    name: "Piercing Volley", cls: "ranger", kind: "strike", icon: "arrow_02e", fx: "volley", weapon: "bow",
+    mp: (lv) => 22 + 2 * lv, cooldownMs: 6000, range: 250, hits: 4,
+    power: (lv) => 0.9 + 0.09 * lv,
+    effect: (lv) => `Four arrows at once into your target, each ${pct(0.9 + 0.09 * lv)} of your ATK, from up to 250 px away.`,
+  },
+  barrage: {
+    name: "Barrage", cls: "ranger", kind: "rain", icon: "arrow_03d", fx: "barrage", weapon: "bow",
+    mp: (lv) => 34 + 3 * lv, cooldownMs: 14_000, range: 240, radius: 90,
+    power: (lv) => 1.1 + 0.11 * lv,
+    freezeMs: (lv) => 1500 + 150 * lv,
+    effect: (lv) => `Arrows rain on your target and every monster near it: ${pct(1.1 + 0.11 * lv)} of your ATK, pinned down for ${secs(1500 + 150 * lv)}.`,
+  },
+  hawkEye: {
+    name: "Hawk Eye", cls: "ranger", kind: "self", icon: "arrow_01e", fx: "hawk",
+    mp: (lv) => 24 + 2 * lv, cooldownMs: 45_000,
+    buff: { ms: 25_000, atk: (lv) => 0.15 + 0.02 * lv, crit: (lv) => 0.15 + 0.02 * lv },
+    effect: (lv) => `ATK +${pct(0.15 + 0.02 * lv)} and critical chance +${pct(0.15 + 0.02 * lv)} for 25 s.`,
+  },
 });
 
 export type SkillId = keyof typeof SKILLS;
 export const isSkillId = (id: unknown): id is SkillId => typeof id === "string" && Object.hasOwn(SKILLS, id);
 
-/** A class's skills in skill-bar order (keys 1, 2, 3…): a second job's come after its first job's. */
+/** A class's skills in skill-bar order (keys 1, 2, 3…): its first job's, then its second job's, then its own. */
 export const skillsOf = (cls: ClassId): SkillDef[] => {
-  const from = CLASSES[cls].from;
-  return Object.values(SKILLS).filter((s) => s.cls === cls || s.cls === from);
+  const chain = jobChain(cls);
+  return chain.flatMap((c) => Object.values(SKILLS).filter((s) => s.cls === c));
 };
 
-/** Whether a class has this skill (its own, or its first job's). */
-export const hasSkill = (cls: ClassId, s: SkillDef) => s.cls === cls || s.cls === CLASSES[cls].from;
+/** Whether a class has this skill (its own, or one of the jobs it grew out of). */
+export const hasSkill = (cls: ClassId, s: SkillDef) => jobChain(cls).includes(s.cls);
 
 /** Learned skills and their levels. */
 export type SkillLevels = Partial<Record<SkillId, number>>;

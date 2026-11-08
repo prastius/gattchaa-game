@@ -319,14 +319,17 @@ export class SoundSystem {
     if (t === undefined) return;
     switch (fx) {
       case "bash":
+      case "smite":
         this.noiseHit(t, "lowpass", 900, 0.3, 0.16, this.sfxBus);
         this.tone(130, t, 0.16, "square", 0.1, 60);
         break;
       case "whirl":
+      case "judgement":
         this.noiseHit(t, "bandpass", 1800, 0.22, 0.3, this.sfxBus);
         this.tone(300, t, 0.3, "sawtooth", 0.04, 900);
         break;
       case "guard":
+      case "aegis":
         [60, 67, 72].forEach((n, i) => this.tone(midiHz(n), t + i * 0.05, 0.35, "square", 0.05));
         break;
       case "fire":
@@ -334,6 +337,7 @@ export class SoundSystem {
         this.tone(240, t, 0.25, "sawtooth", 0.05, 110);
         break;
       case "nova":
+      case "arcane":
         [88, 91, 95, 100].forEach((n, i) => this.tone(midiHz(n), t + i * 0.03, 0.4, "sine", 0.05));
         this.noiseHit(t, "highpass", 5000, 0.1, 0.45, this.sfxBus);
         break;
@@ -341,6 +345,7 @@ export class SoundSystem {
         [72, 76, 79, 84].forEach((n, i) => this.tone(midiHz(n), t + i * 0.06, 0.3, "triangle", 0.07));
         break;
       case "arrows":
+      case "volley":
         this.tone(420, t, 0.07, "triangle", 0.1, 140);
         this.tone(460, t + 0.09, 0.07, "triangle", 0.1, 150);
         break;

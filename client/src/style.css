@@ -3391,3 +3391,20 @@ button.dialog-link:disabled {
   color: #d9c2ff;
   font-size: 14px;
 }
+
+/* Third jobs have nine skills. Where the long bar would reach the chat, it moves to the bottom right;
+   on a phone it wraps into two rows (five, then four). */
+@media (min-width: 601px) and (max-width: 1320px) {
+  .skillbar.nine {
+    left: auto;
+    right: 12px;
+    transform: none;
+  }
+}
+@media (max-width: 600px) {
+  .skillbar.nine {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    width: calc(5 * 46px + 4 * 4px + 2 * 4px + 2px);
+  }
+}
