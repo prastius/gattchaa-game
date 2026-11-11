@@ -6,7 +6,7 @@ The game has three parts:
 
 1. **Hanging out.** The town is a meeting place. Chat, sit by the fountain, found or join a guild, visit the Gattchaa staff, and run your own shop in the Market Square: trade gear, ingots and monster cards for gold, and show off your real cards.
 2. **Adventure.** Outside the walls, monsters wait in fields sorted by level. Level up, choose a job, find gear and monster cards, and upgrade your equipment.
-3. **Player vs player.** Challenge anyone to a duel, climb the ranking in the Arena, fight anyone (and be fought) in the Wildlands, the open PVP field north of town, or fight with your guild for Crownhold, the guild castle, twice a week.
+3. **Player vs player.** Challenge anyone to a duel, climb the ranking in the Arena, fight anyone (and be fought) in the Battle Pit by the Arena, earning Glory for every win, or fight with your guild for Crownhold, the guild castle, twice a week.
 
 > **One rule about money.** Real cards are bought and paid for only on gattchaaoripa.com. In-game gold buys in-game things (potions, gear, upgrades, other players' loot) and never real cards.
 
@@ -33,7 +33,7 @@ The game has three parts:
 | Invite someone to your guild (leader or officer) | Click them, then **Invite to guild** | Tap them, then the same button |
 | Talk to your guild only | Type **/g** and your message in the chat | The same |
 | Attack your duel opponent | Click them, or **Space** | Tap them, or the sword button |
-| Attack a player in the Wildlands | Click them, then **Attack** (an Outlaw: just click them) | Tap them, then the same |
+| Attack a player in the Battle Pit | Click them | Tap them |
 | Use a skill | Keys **1** to **6**, or the skill buttons | The skill buttons (above the chat) |
 | Drink a potion | **Q** | The potion button |
 | Bag and equipment | **I** | The bag button |
@@ -104,7 +104,8 @@ The town is always safe: monsters never come in, and nobody can attack anyone in
 | Hana | Dungeon Warden | In Petalfall, by the portal down to the Blossom Grotto | Explains the Blossom Grotto |
 | Kesh | Dungeon Warden | In Sunscar, by the portal down to the Sunken Tomb | Explains the Sunken Tomb |
 | Selene | Dungeon Warden | In Starfall, by the portal down to the Void Rift | Explains the Void Rift |
-| Sable | Bounty Hunter | North of town, by the path up from the west road | Explains the Wildlands and their PVP rules, and keeps the board of who's wanted and the best hunters |
+| Rook | Scout | North of town, by the path up from the west road | Explains the Wildlands |
+| Sable | Pit Keeper | In the Battle Pit's gate hall | Explains the Battle Pit's rules, and keeps the board of its best fighters |
 | Edda | Ferry Captain | At the end of the pier on the meadow's south-east point | Sails you to Frostfell for 500 gold |
 | Bjorn | Ferryman | At the end of Frostfell's pier | Explains Frostfell, and sails you back for free |
 | Finn | Boatman | At the end of the pier where the east road meets the sea | Rows you to Ravenmoor for 800 gold |
@@ -121,7 +122,7 @@ The town is always safe: monsters never come in, and nobody can attack anyone in
 | Vesna | Trial Keeper | On the Isle of Trials (Orin sends you there) | Raises the Shade you fight in the Trial of Mastery, and sends you home |
 | Bram | Outfitter | Outside the south gate, east of the road | Sells potions and starter gear, buys loot |
 | Hilda | Blacksmith | Outside the south gate, west of Rowan | Upgrades gear from +0 to +10 |
-| Magnus | Arena Master | By the Arena, east of the Market Square | Explains duels and keeps the arena ranking |
+| Magnus | Arena Master | By the Arena, east of the Market Square | Explains duels, keeps the arena ranking, and trades Glory for potions, ingots and Glory gear |
 | Leopold | Guild Registrar | On the main street just east of the fountain plaza, by the GUILDS signpost | Founds guilds, and keeps the ranking of the top guilds |
 | Aldric | Castle Herald | At the camp outside Crownhold's gate | Explains the sieges, pays the castle's guild its daily tribute, and hires out guardians |
 
@@ -175,7 +176,8 @@ Shops also show as orange dots on the minimap.
 | South Meadow | 1–10 | Out of the south gate | Rowan |
 | Dusk Hollow | 10–20 | Out of the east gate | Mara |
 | Orc Woods | 20–30 | Out of the west gate | Gregor |
-| Wildlands (open PVP) | 30–40 | Up the paths north along the town walls, from the west or east road | Sable |
+| Wildlands | 30–40 | Up the paths north along the town walls, from the west or east road | Rook |
+| Battle Pit (PVP) | 20+ | The red portal by the Arena, between the ring and the town wall | Sable |
 | Orc Caves (dungeon) | 28–36 | The portal in the clearing in the Orc Woods, east of the Orc Warlord's camp | Brok |
 | Hollow Burrows (dungeon) | 14–22 | The portal in Dusk Hollow, just south of the east road, between the Grubs and the Rock Worms | Tilda |
 | Frozen Crypt (dungeon) | 46–54 | The portal in Frostfell, down the path south of Frostfell's pier | Halvard |
@@ -233,7 +235,7 @@ Shops also show as orange dots on the minimap.
 | Orc Zombie | 29 | 2,100 | Far to the south | Very slow, but hits the hardest |
 | **Orc Warlord** (boss) | 33 | 24,000 | His camp, where the west road ends | See "Field bosses" below |
 
-**Wildlands** (open PVP: other players can attack you here, see "Open PVP: the Wildlands". Grass and woods round rocky highlands, home to the beastmen)
+**Wildlands** (grass and woods round rocky highlands, home to the beastmen)
 
 | Monster | Lv | HP | Where | Behaviour |
 | --- | --- | --- | --- | --- |
@@ -372,7 +374,7 @@ Fighting monsters of your own level, a level takes about 4 minutes at level 12, 
 - **Potions** heal straight away, even in the middle of a fight: one every 0.8 seconds. Q drinks the smallest potion that heals you fully.
 - From **level 70** you can drink **Golden Potions** (600 HP, from Bram). Below that they're too strong for you, and Q skips them.
 - **Fainting.** At 0 HP you faint and wake up back in town, fully healed. Novices lose nothing. Knights, Mages and Archers lose 3% of a level's EXP.
-- **Beaten by another player** in the Wildlands, you lose nothing, unless you're an Outlaw (see "Open PVP: the Wildlands").
+- **Beaten by another player** (in the Battle Pit, a duel or a siege), you lose nothing.
 
 ### Field bosses
 
@@ -413,7 +415,7 @@ A party that steps out of the circles takes far less damage than one that stands
 
 - He has 45,000 HP, swings a huge war axe, and heals slowly if left alone. He's drawn very big, horned, in gold plate and a dark red cape.
 - When he falls, the whole town hears who brought him down. He comes back **20 minutes** later.
-- He lives in the Wildlands, so **other players can attack you while you fight him**. He's meant for a party of four around level 40: four level-42 players beat him in under two minutes, with one of them taking the hits and drinking potions.
+- He's meant for a party of four around level 40: four level-42 players beat him in under two minutes, with one of them taking the hits and drinking potions.
 - **He always drops** the Minotaur's Crown (sells for 3,000 gold), a Mithril Ingot and a Star Crystal (often two), and usually a White Potion. He often drops good gear (Trident, Close Helm, Engrailed Shield, Golden Plate, Flame Blade). Rarely he drops the **Minotaur Horn** (6%), and very rarely the legendary **Minotaur King Card** (2%), **Sunfire Bow** or **Archmage Staff** (1.5% each).
 
 **The Frost Giant** keeps a ring of six old stones on Frostfell's icy highlands, where the path from the pier ends.
@@ -478,7 +480,7 @@ Ragnarok style, every land but the Wildlands has a **dungeon** underneath: dark 
 
 - **Getting in:** walk into the glowing **portal** in the clearing in the Orc Woods, east of the Orc Warlord's camp (there's a signpost, and **Brok the Cave Warden** next to it). There's a portal back up in the entrance hall.
 - **Two floors.** The first floor's big cavern has Cave Bats; the miners' cavern below it has Cave Crawlers and Orc Miners. The red portal at the far end is the **stairs** down to the second floor (and a blue one there takes you back up). The second floor has Orc Shamans, Orc Guards, and the **Orc Chieftain** on his throne in the deepest chamber.
-- **No PVP down there:** only monsters can attack you, so it's the place to level between 28 and 36 if the Wildlands aren't for you. The EXP is about the same as up there.
+- **Only monsters down there**, as everywhere outside the Battle Pit. The EXP is about the same as in the Wildlands.
 - Fainting underground wakes you up in town as usual. The camera stays inside the caves while you're in them.
 
 | Monster | Lv | HP | Where | Behaviour |
@@ -1052,6 +1054,9 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Frozen Ring (legendary, anyone) | Ring | 54 | ATK +9, DEF +8, HP +220, Critical +3% | Ice Bat, Ice Seer, Crypt Lord (Frozen Crypt) |
 | Drake's Eye (epic) | Amulet | 86 | ATK +22, DEF +8, HP +370 | Molten Drake (Magma Depths) |
 | Ring of the Depths (legendary, anyone) | Ring | 84 | ATK +11, DEF +9, HP +280, Critical +4% | Lava Bat, Molten Knight, Molten Drake (Magma Depths) |
+| Gladiator's Medal | Amulet | 30 | ATK +6, DEF +3, HP +100 | Magnus, for 40 Glory |
+| Champion's Ring | Ring | 60 | ATK +6, DEF +7, HP +160 | Magnus, for 80 Glory |
+| Conqueror's Crest (epic) | Amulet | 90 | ATK +20, DEF +8, HP +360 | Magnus, for 150 Glory |
 | Jelly Ring (legendary, anyone) | Ring | 12 | ATK +3, DEF +2, HP +40, Critical +1% | Cellar Bat, Goblin Thief, Slime King (Slime Cellar) |
 | Slime King's Drop (epic) | Amulet | 13 | ATK +4, HP +50 | Slime King (Slime Cellar) |
 | Shadow Ring (legendary, anyone) | Ring | 64 | ATK +10, DEF +8, HP +250, Critical +3% | Shadow Bat, Shadow Priest, Shadow Count (Shadow Vault) |
@@ -1303,52 +1308,62 @@ The Arena is the ring of sand behind the café. **A duel counts for the ranking 
 - **Stepping out of the ring during a ranked duel loses it.**
 - Every ranked win is announced to the whole town, with the winner's new rating.
 - **Magnus the Arena Master** explains the rules and shows your place, rating and wins and losses, plus the ten best players.
+- A ranked win also earns **3 Glory** (see "The Battle Pit and Glory").
 - Guests can duel anywhere, but only signed-in players are ranked.
 
-## 11. Open PVP: the Wildlands
+## 11. The Battle Pit and Glory
 
-North of town, past a dashed red line with little red flags, lie **the Wildlands** (levels 30–40). There's no law up there: **players can attack each other without asking.** Two paths run north along the town walls, one from the west road and one from the east road, with a sign where each crosses the line. **Sable the Bounty Hunter** waits by the west path to explain the rules, with her **WANTED** board across the path. The minimap shows the Wildlands in red, and a banner tells you when you cross in or out.
+Like Ragnarok's PVP rooms, players only fight each other where they choose to: in a duel, in a guild war at Crownhold, or down in **the Battle Pit**. The monster lands (the Wildlands too) are never PVP: only monsters can attack you there.
+
+The Battle Pit is a big cave arena through the **red portal by the Arena**, between the ring and the town wall (there's a **BATTLE PIT** signpost). The portal lands you in the pit's **gate hall**, where nobody fights and **Sable the Pit Keeper** keeps her board; walk down the passage into the pit itself, a wide sandy cave with stone pillars to hide behind. The minimap shows the pit in red, and a banner tells you when you go in or come back out. The blue portal in the gate hall takes you back to town.
 
 ### The rules
 
 | Rule | |
 | --- | --- |
-| Where | Only inside the Wildlands. Step back over the line and nobody can touch you. The town and the other fields stay safe |
+| Where | Only down in the pit. The gate hall, the town and every monster land stay safe |
 | Who | Players from **level 20**. Below that, you can't attack anyone and nobody can attack you |
-| How | Click (or tap) a player, then **Attack**. An Outlaw is attacked with a single click, like a monster |
+| How | Click (or tap) a player to attack them, like a monster |
 | Damage | Player hits do **half damage**, as in duels. Potions and healing work as usual |
 | Skills | Aimed skills hit the player you aim at. Area skills only catch the player you're fighting, never bystanders. Freezes and snares don't work on players |
 | Duelists | Two players in a duel only fight each other; nobody else can join in |
-| Parties | Members of the same party can't attack each other (a duel between them is still fine) |
-| Guilds | Members of the same guild can't attack each other either |
-| Crownhold | During a siege, inside the castle's walls, guild members fight every other guild's, at any level, without becoming Outlaws (see "Guild wars") |
+| Parties and guilds | Members of the same party, or the same guild, can't attack each other (a duel between them is still fine) |
+| Beaten | **You lose nothing**: no EXP, no gold, no items. You wake up by the Arena, beside the portal |
+| Leaving mid-fight | Leaving the game within 10 seconds of another player's attack counts as being beaten by them |
+| Crownhold | During a siege, inside the castle's walls, guild members fight every other guild's, at any level (see "Guild wars") |
 
-### Outlaws and bounties
+### Glory
 
-- **Attack a player who isn't an Outlaw and you become one**, for **3 minutes** from your latest such attack. Your name turns red with a skull (☠), and a timer shows under your gold.
-- **Hitting an Outlaw is always free.** So fighting back when someone attacks you never makes you an Outlaw: your attacker already is one.
-- **Beaten by a player while you're not an Outlaw, you lose nothing.** You wake up in town as after any fainting, with all your EXP and gold.
-- **Beaten while you are an Outlaw,** you lose EXP like any fainting (3% of a level), and a **bounty of 5% of your gold** (at most 5,000) goes to whoever beat you. Then your name is clean again.
-- **Fainting to a monster** works as usual, wherever you are.
-- **Leaving the game mid-fight** (within 10 seconds of another player's attack) counts as being beaten by them. Leaving and coming back doesn't clear an Outlaw's name either.
+Every win earns **Glory**, spent at **Magnus the Arena Master** (his **Glory shop** tab). Only signed-in players earn and spend it.
+
+- **2 Glory** for beating a player in the Battle Pit.
+- **3 Glory** for winning a ranked duel in the Arena's ring.
+- Beating the same player again only counts once every **10 minutes** (for Glory, Sable's board and the titles), so nobody can farm a friend.
+
+| For | Glory |
+| --- | --- |
+| 10 White Potions | 2 |
+| 10 Golden Potions | 5 |
+| Mithril Ingot | 4 |
+| Star Crystal | 20 |
+| **Gladiator's Medal** (rare amulet, Lv 30: ATK +6, DEF +3, HP +100) | 40 |
+| **Champion's Ring** (rare ring, Lv 60: ATK +6, DEF +7, HP +160) | 80 |
+| **Conqueror's Crest** (epic amulet, Lv 90: ATK +20, DEF +8, HP +360) | 150 |
+
+The medal, the ring and the crest come from nowhere else, and no merchant buys them.
 
 ### Sable's board
 
-Talk to **Sable** (press E by her) to read her board. It has three pages:
+Talk to **Sable** in the gate hall (press E by her) to read her board:
 
-- **Most wanted:** everyone who's an Outlaw right now, the biggest bounty first, with their level, their bounty and how long until their name is clean again. Your own name is marked if you're on it.
-- **This week:** the ten best hunters this week, by players beaten in the Wildlands. Level on that, whoever beat more Outlaws goes first. The weekly board starts again every **Monday at midnight**, Batam time.
+- **This week:** the ten best fighters this week, by players beaten in the pit. The weekly board starts again every **Monday at midnight**, Batam time.
 - **All time:** the same, since the board began.
 
-Both rankings show **your own place** too, with how many players and Outlaws you've beaten and the bounty gold you've collected.
+Both show **your own place** too. Only signed-in players are ranked. When someone takes the lead for the week (with at least 3 players beaten), the whole town hears about it.
 
-- **Only signed-in players are ranked.** Guests can read the board, but their wins don't go on it.
-- A win only counts when it would count for the titles: beating the same player again within 10 minutes doesn't count again.
-- When someone takes the lead for the week (with at least 3 players beaten), the whole town hears about it.
+### Battle Pit titles
 
-### Wildlands titles
-
-Beating players counts towards the Wildlands titles (see Titles): **Raider** (10 players), **Bounty Hunter** (25 Outlaws) and **Reaper** (250 players). Beating the same player again only counts once every 10 minutes, so nobody can farm a friend.
+Beating players in the pit counts towards the Battle Pit titles (see Titles): **Raider** (10 players), **Pit Champion** (50) and **Reaper** (250).
 
 ## 12. Parties
 
@@ -1372,7 +1387,7 @@ When a monster falls, the EXP your party earned from it (everyone's damage added
 
 - Loot from a monster your party fought is yours to pick up for the first 15 seconds, whoever in the party did the most damage.
 - Gold still goes to whoever did the most damage.
-- In the Wildlands, members of the same party **can't attack each other**.
+- In the Battle Pit, members of the same party **can't attack each other**.
 
 ## 13. Guilds
 
@@ -1439,7 +1454,7 @@ Every guild has a purse: shared gold that belongs to the guild, not to anyone in
 - **Over your head:** your guild's emblem and name, in its colour, above your name. Click a player to see their guild on their card.
 - **Guild chat:** type **/g** and a message (for example `/g guild hunt at eight`). Only your guild sees it, in blue.
 - **Online and offline:** when a member comes into town or leaves, the others get a line in the chat.
-- **No fighting each other:** in the Wildlands, members of the same guild can't attack each other (a duel is still fine).
+- **No fighting each other:** in the Battle Pit, members of the same guild can't attack each other (a duel is still fine).
 - **Guilds and parties are separate:** you can hunt in a party with anyone, in your guild or not.
 
 ## 14. Guild wars: Crownhold
@@ -1448,7 +1463,7 @@ Ragnarok's War of Emperium, Gattchaa style. **Crownhold**, the guild castle, sta
 
 ### Getting there
 
-Take the path north from the east road into the **Wildlands** (where other players can attack you), then the road east from the top of the path, north past the Vampires' high ground and east again to the sea. A signpost marks the start of the **long bridge**: about 60 tiles of planks over the sea to Crownhold's island. **Aldric the Castle Herald** waits at the camp outside the castle gate.
+Take the path north from the east road into the **Wildlands**, then the road east from the top of the path, north past the Vampires' high ground and east again to the sea. A signpost marks the start of the **long bridge**: about 60 tiles of planks over the sea to Crownhold's island. **Aldric the Castle Herald** waits at the camp outside the castle gate.
 
 ### When
 
@@ -1466,7 +1481,7 @@ Every **Wednesday and Saturday, 8 to 9 pm** Batam time. The whole town hears whe
 | What | How it works |
 | --- | --- |
 | Who goes in | Only **guild members** may go inside the walls. Anyone else inside when a siege begins is put outside the gate, and can't walk back in until it's over |
-| Fighting | Inside the walls, every guild fights every other: click a member of another guild to attack them. **Any level**, and **nobody becomes an Outlaw**. Party mates and guild mates never fight each other |
+| Fighting | Inside the walls, every guild fights every other: click a member of another guild to attack them. **Any level**. Party mates and guild mates never fight each other |
 | Guardians | The holding guild's hired guards attack any other guild's members inside the walls (see "Guardians") |
 | Falling | Costs **nothing**, whether a player or a guardian beat you: no EXP, no gold. Get up, and you're at the camp outside the gate, ready to walk back in |
 | The crystal | Only members of a guild that **doesn't** hold the castle can strike it, and only during a siege |
@@ -1519,7 +1534,7 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 - "Help defeat" means you hurt the monster before it fell: everyone in a fight gets the count, not just the one who landed the last hit.
 - Cards and legendary items only count when they're **fresh from a monster**, not when someone hands them to you.
 - Characters from before titles existed get their level titles straight away when they come back.
-- Players beaten in the Wildlands count once every 10 minutes for the same player.
+- Players beaten in the Battle Pit count once every 10 minutes for the same player.
 
 | Title | Rarity | How to earn it |
 | --- | --- | --- |
@@ -1588,10 +1603,10 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 | Good Sport | Common | Fight 10 duels, win or lose (a draw counts) |
 | Duelist | Uncommon | Win 10 duels |
 | Gladiator | Epic | Win 50 duels in the Arena's ring |
-| **The Wildlands** | | |
-| Raider | Uncommon | Beat 10 players in the Wildlands |
-| Bounty Hunter | Rare | Beat 25 Outlaws in the Wildlands |
-| Reaper | Epic | Beat 250 players in the Wildlands |
+| **The Battle Pit** | | |
+| Raider | Uncommon | Beat 10 players in the Battle Pit |
+| Pit Champion | Rare | Beat 50 players in the Battle Pit |
+| Reaper | Epic | Beat 250 players in the Battle Pit |
 | **Guild wars** | | |
 | Siegebreaker | Rare | Help break Crownhold's crystal 5 times |
 | Castle Lord ✦ | Epic | Be in the guild holding Crownhold when a siege ends (and in town at the time) |
@@ -1744,7 +1759,7 @@ Every monster also drops its own card (see Monster cards) and often potions.
 7. **Level 20:** Team up for the **Pumpking**. Save your Mithril and Star Crystals for **Hilda**, and aim for your first aura at +7. Ten Pumpking fights make you a **Kingslayer**.
 8. **Level 20–25:** Out of the **west gate** into the **Orc Woods**: Goblins in the grass north of the road, then Orc Warriors on the rocks south of it. Knights, try a **Halberd** from level 25.
 9. **Level 25–30:** Orc Archers up north, Orc Skeletons west of the inlet, and Orc Zombies far to the south. At 30, gather a party for the **Orc Warlord**.
-10. **Level 30–35:** Take the path north from the west road, past **Sable**, into the **Wildlands**, or, if you'd rather nobody could attack you, walk into the portal in the Orc Woods and down into the **Orc Caves** (level 28–36), with the **Orc Chieftain** at the bottom. Read her rules first: other players can attack you up there. Boarmen roam past the west path; Lizardmen past the east path only fight back. Bram's **White Potions** heal 250 HP.
+10. **Level 30–35:** Take the path north from the west road, past **Rook**, into the **Wildlands**, or walk into the portal in the Orc Woods and down into the **Orc Caves** (level 28–36), with the **Orc Chieftain** at the bottom. Read her rules first: other players can attack you up there. Boarmen roam past the west path; Lizardmen past the east path only fight back. Bram's **White Potions** heal 250 HP.
 11. **Level 35–40:** Werewolves in the north-west woods, Trolls on the highlands, Vampires on the high ground to the north-east. From 40, bring a party for the **Minotaur King**, and watch your back.
 12. **Level 40–45:** Take the path east off the south road to **Edda**'s pier and sail to **Frostfell** (500 gold). Yetis jump you in the woods west of the pier; Ramhorns to the east only fight back. Then the Frost Shamans on the west shore: close in fast, they throw ice.
 13. **Level 45–50:** Frost Wights on the icy highlands and Frost Drakes in the east. At 50, bring a party of four for the **Frost Giant** at the end of the path. **Bjorn** sails you home for free. If you'd rather nobody could attack you, go down into the **Frozen Crypt** (Lv 46–54) through the portal south of Frostfell's pier, with the **Crypt Lord** at the bottom.

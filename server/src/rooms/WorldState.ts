@@ -30,8 +30,6 @@ export const Player = schema(
     title: t.string().default(""),
     /** Session id of the player they're in a duel with ("" = none). */
     duel: t.string().default(""),
-    /** Attacked a player who wasn't an Outlaw, in the Wildlands, not long ago (see shared/pvp.ts). */
-    outlaw: t.boolean().default(false),
     /** Their party's id ("" = none; see Parties.ts). */
     party: t.string().default(""),
     /** Their guild's name and emblem ("" = none; see Guilds.ts and shared/guild.ts). */

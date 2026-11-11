@@ -135,8 +135,8 @@ export const NIGHT_LINE = 360;
 /** Which season the art shows at a tile: the islands have their own (the far eastern ones aren't seasons at all). */
 export type Biome = "summer" | "winter" | "autumn" | "spring" | "ash" | "desert" | "starlit";
 export const biomeAt = (tx: number, ty: number): Biome =>
-  // Underground, each dungeon has its own look, whatever the sea round it would be.
-  dungeonAt(tx, ty)?.biome ??
+  // Underground, each dungeon (and the Battle Pit) has its own look, whatever the sea round it would be.
+  caveAt(tx, ty)?.biome ??
   (tx >= ASH_LINE
     ? ty < SAND_LINE
       ? "desert"
@@ -390,14 +390,26 @@ export const LOUNGE: Rect = { x: 10, y: 26, w: 12, h: 8 };
 // (16 tiles) for that. Inside a zone everything is solid rock except the
 // rooms and passages (with ragged edges and boulders, see World.carveCaves).
 
-export interface Dungeon {
+/** A walled-off zone of cave: solid rock except its rooms and passages (a dungeon, or the Battle Pit). */
+export interface CaveZone {
   id: string;
   name: string;
-  levels: string;
-  /** 80 x 112 tiles: floor 1 is the top half, floor 2 the bottom half. */
+  /** Chunk-aligned (16 tiles), somewhere nobody can walk to. */
   zone: Rect;
   /** Rooms and passages (tiles); the rest of the zone is rock. */
   rooms: Rect[];
+  /** How the ground looks underground, and the gloom over it. */
+  biome: Biome;
+  shade: [number, number, number];
+  strength: number;
+  /** Whose falling weather to use underground, if any (embers in the Magma Depths, petals in the Blossom Grotto). */
+  weather?: Biome;
+}
+
+export interface Dungeon extends CaveZone {
+  levels: string;
+  /** 80 x 112 tiles: floor 1 is the top half, floor 2 the bottom half. */
+  zone: Rect;
   /** The portal in the overworld, and inside: where you land, the portal back out, the stairs down, where they
    * land you on floor 2, the stairs back up, and where those land you on floor 1 (tiles). */
   mouth: { x: number; y: number };
@@ -407,12 +419,6 @@ export interface Dungeon {
   landing: { x: number; y: number };
   up: { x: number; y: number };
   upLanding: { x: number; y: number };
-  /** How the ground looks underground, and the gloom over it. */
-  biome: Biome;
-  shade: [number, number, number];
-  strength: number;
-  /** Whose falling weather to use underground, if any (embers in the Magma Depths, petals in the Blossom Grotto). */
-  weather?: Biome;
   /** Colours of the signpost at the mouth and of the portals. */
   sign: string;
   portal: number;
@@ -733,11 +739,42 @@ export const DUNGEONS: Dungeon[] = [
   },
 ];
 
+// ---------------------------------------------------------------- the Battle Pit
+//
+// The one place outside a duel or a siege where players fight each other:
+// a cave pit in the far south-western sea, through a portal by the Arena.
+// The gate hall is safe; down in the pit itself anyone from level 20 may
+// attack anyone (but their party and guild mates). See shared/pvp.ts.
+
+/** The portal in town, between the Arena's ring and the town wall (tiles). */
+export const PIT_MOUTH = { x: 251.5, y: 223.5 };
+export const BATTLE_PIT: CaveZone & { gate: Rect; ring: Rect; inside: { x: number; y: number }; exit: { x: number; y: number } } = {
+  id: "pit",
+  name: "Battle Pit",
+  zone: { x: 0, y: 464, w: 48, h: 48 },
+  rooms: [
+    { x: 3, y: 484, w: 12, h: 10 },
+    { x: 14, y: 487, w: 6, h: 4 },
+    { x: 19, y: 470, w: 26, h: 36 },
+  ],
+  /** The gate hall, where nobody fights, and the pit (tiles). */
+  gate: { x: 3, y: 484, w: 17, h: 10 },
+  ring: { x: 19, y: 470, w: 26, h: 36 },
+  /** Where the portal from town lands you, and the portal back (tiles). */
+  inside: { x: 10, y: 490 },
+  exit: { x: 6.5, y: 487.5 },
+  biome: "desert",
+  shade: [44, 10, 8],
+  strength: 0.36,
+};
+
+/** Every cave zone: the dungeons and the Battle Pit. */
+export const CAVES: CaveZone[] = [...DUNGEONS, BATTLE_PIT];
+
 /** Rooms big enough for ragged walls and loose stones (passages stay clean, 4 tiles wide). */
 export const isCaveRoom = (r: Rect) => r.w >= 10 && r.h >= 10;
-/** The dungeon at a tile, if any. */
-export const dungeonAt = (tx: number, ty: number): Dungeon | undefined => DUNGEONS.find((d) => inRect(d.zone, tx, ty));
-export const inDungeon = (px: number, py: number) => Boolean(dungeonAt(px / TILE, py / TILE));
+/** The cave zone (a dungeon, or the Battle Pit) at a tile, if any. */
+export const caveAt = (tx: number, ty: number): CaveZone | undefined => CAVES.find((d) => inRect(d.zone, tx, ty));
 
 /** Where the in-palace shopper may wander. */
 export const STORE_WANDER: Rect = { x: 24, y: 15, w: 16, h: 20 };
@@ -906,6 +943,9 @@ export const DOORS: Door[] = [
     { id: `${d.id}-down`, label: "Down to the second floor", trigger: portalAt(d.down.x, d.down.y), dir: -1, to: { x: d.landing.x * TILE, y: d.landing.y * TILE }, portal: 0xff6a3a },
     { id: `${d.id}-up`, label: "Up to the first floor", trigger: portalAt(d.up.x, d.up.y), dir: -1, to: { x: d.upLanding.x * TILE, y: d.upLanding.y * TILE }, portal: 0x8fd0ff },
   ]),
+  // The Battle Pit: in from beside the Arena, and back.
+  { id: "pit-in", label: "Into the Battle Pit", trigger: portalAt(PIT_MOUTH.x, PIT_MOUTH.y), dir: -1, to: { x: BATTLE_PIT.inside.x * TILE, y: BATTLE_PIT.inside.y * TILE }, portal: 0xff4a3a },
+  { id: "pit-out", label: "Back to town", trigger: portalAt(BATTLE_PIT.exit.x, BATTLE_PIT.exit.y), dir: -1, to: { x: PIT_MOUTH.x * TILE, y: (PIT_MOUTH.y + 2.5) * TILE }, portal: 0x8fd0ff },
 ];
 
 /**
@@ -1256,6 +1296,13 @@ const props: Prop[] = [
   { type: "campfire", x: 629, y: 621 },
   { type: "campfire", x: 618, y: 632 },
   { type: "campfire", x: 629, y: 632 },
+
+  // ---- The Battle Pit: torches in the gate hall and round the pit, and pillars to hide behind.
+  { type: "campfire", x: 12, y: 486 },
+  ...[22, 41].flatMap((x) => [473, 502].map((y): Prop => ({ type: "campfire", x, y }))),
+  ...[25, 38].flatMap((x) => [478, 497].map((y): Prop => ({ type: "pillar", x, y }))),
+  { type: "pillar", x: 31, y: 487 },
+  { type: "pillar", x: 32, y: 487 },
 
   // ---- The Ogre Warlord's war camp: a ring of standing stones, his seat at the far end, fires and his plunder.
   ...[WARLORD_CAMP.x + 1, WARLORD_CAMP.x + 6, WARLORD_CAMP.x + 11, WARLORD_CAMP.x + WARLORD_CAMP.w - 2].flatMap((x) =>

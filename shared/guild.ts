@@ -1,7 +1,7 @@
 // Guilds, Ragnarok style: a name and an emblem everyone sees over your head,
 // a leader and officers who invite and run things, a member list that shows
 // who's online, a notice for everyone, and their own chat channel. Guild
-// mates never attack each other in the Wildlands. Any member can give gold
+// mates never attack each other in the Battle Pit. Any member can give gold
 // to the guild's purse, which pays for its guardians, and the Registrar ranks
 // every guild by what it has done in the guild wars.
 //

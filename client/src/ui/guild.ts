@@ -131,7 +131,7 @@ export class GuildUI {
           "skills-hint",
           `Ask a guild's leader or an officer to invite you, or found your own: Leopold, the Guild Registrar on the main street just east of the fountain plaza, founds one for ${GUILD_FOUND_GOLD.toLocaleString("en-US")} gold from level ${GUILD_FOUND_LV}.`,
         ),
-        el("p", "skills-hint", "Guild mates wear their guild's name and emblem over their heads, talk on their own chat (/g), and never fight each other in the Wildlands."),
+        el("p", "skills-hint", "Guild mates wear their guild's name and emblem over their heads, talk on their own chat (/g), and never fight each other in the Battle Pit."),
       );
       return;
     }
@@ -323,7 +323,7 @@ export class GuildUI {
     const guild = el("b", "", `${symbol} ${ev.guild}`);
     guild.style.color = color;
     text.append(el("b", "", ev.name), " invites you to join ", guild, ` (${ev.size}/${GUILD_MAX})!`);
-    const sub = el("div", "duel-ask-sub", "A guild is for good: its name and emblem go over your head, you get guild chat (/g), and guild mates never fight in the Wildlands.");
+    const sub = el("div", "duel-ask-sub", "A guild is for good: its name and emblem go over your head, you get guild chat (/g), and guild mates never fight in the Battle Pit.");
     const buttons = el("div", "duel-ask-buttons");
     const yes = el("button", "dialog-link primary", "Join");
     const no = el("button", "dialog-link", "No thanks");

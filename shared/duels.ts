@@ -96,4 +96,6 @@ export interface ArenaBoard {
   me?: ArenaRow & { rank: number };
   /** Signed in (guests can duel, but aren't ranked). */
   saved: boolean;
+  /** Your Glory to spend (signed-in players; see shared/pvp.ts). */
+  glory?: number;
 }

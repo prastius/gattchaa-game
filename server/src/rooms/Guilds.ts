@@ -21,7 +21,7 @@ import {
 // to the purse, and who's online. The database holds every guild and its
 // members (accounts); this keeps track of the members who are here right now,
 // puts the guild's name and emblem on their synced Player (for the names over
-// heads, and so guild mates never fight in the Wildlands), and sends each of
+// heads, and so guild mates never fight in the Battle Pit), and sends each of
 // them the guild window's contents whenever something changes.
 
 export interface GuildHooks {

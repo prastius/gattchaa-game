@@ -1,7 +1,7 @@
 // Parties, Ragnarok style: up to six players who hunt together. Monster EXP
 // the party earns is shared evenly among the members close by (with a bonus
 // for each of them), party members may pick up each other's loot straight
-// away, never attack each other in the Wildlands, and talk on their own channel.
+// away, never attack each other in the Battle Pit, and talk on their own channel.
 //
 // Rules shared by the server (which keeps every party) and the client (the
 // party panel, green names, the invite buttons).

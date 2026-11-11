@@ -33,7 +33,7 @@ import type { Announcement, NpcSay } from "../../shared/gattchaa";
 import type { ChatUI } from "./ui/chat";
 import { audio } from "./audio";
 import type { HUD } from "./ui/hud";
-import type { WildBoard } from "../../shared/pvp";
+import type { GloryBuyMessage, PitBoard } from "../../shared/pvp";
 import type { PartyAnswerMessage, PartyAskEvent, PartyInviteMessage, PartyKickMessage, PartyMessage } from "../../shared/party";
 import type {
   GuildAnswerMessage,
@@ -90,7 +90,7 @@ export class Net {
   readonly onDuelStart = new Set<(ev: DuelStartEvent) => void>();
   readonly onDuelEnd = new Set<(ev: DuelEndEvent) => void>();
   readonly onArenaBoard = new Set<(b: ArenaBoard) => void>();
-  readonly onWildBoard = new Set<(b: WildBoard) => void>();
+  readonly onPitBoard = new Set<(b: PitBoard) => void>();
   /** Your latest character sheet. */
   stats?: StatsMessage;
   /** While your Shade is up on the Isle of Trials: when the time runs out (local clock; 0 = no Shade). */
@@ -153,8 +153,8 @@ export class Net {
     room.onMessage("arena:board", (b: ArenaBoard) => {
       for (const fn of this.onArenaBoard) fn(b);
     });
-    room.onMessage("wild:board", (b: WildBoard) => {
-      for (const fn of this.onWildBoard) fn(b);
+    room.onMessage("pit:board", (b: PitBoard) => {
+      for (const fn of this.onPitBoard) fn(b);
     });
     room.onMessage("party", (p: PartyMessage | null) => {
       for (const fn of this.onParty) fn(p);
@@ -376,8 +376,13 @@ export class Net {
     this.room.send("arena:board", { npc });
   }
 
-  wildBoard(npc: string) {
-    this.room.send("wild:board", { npc });
+  pitBoard(npc: string) {
+    this.room.send("pit:board", { npc });
+  }
+
+  /** Trades Glory for GLORY_SHOP[i] at the Arena Master. */
+  gloryBuy(npc: string, i: number) {
+    this.room.send("glory:buy", { npc, i } satisfies GloryBuyMessage);
   }
 
   ferry(npc: string) {

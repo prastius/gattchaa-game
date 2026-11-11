@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import {
   DOORS,
   DUNGEONS,
+  PIT_MOUTH,
   FACADES,
   MACHINES,
   PALACE_DOOR_X,
@@ -27,7 +28,6 @@ import {
 } from "../../../shared/town";
 import { NPCS, npcProducts } from "../../../shared/npcs";
 import { emblemOf } from "../../../shared/guild";
-import { FIELDS } from "../../../shared/rpg";
 import { ROOM_MODES, type ShopProduct, type ShopRoom, type ShopSnapshot } from "../../../shared/gattchaa";
 import { FLOOR_TEX } from "./terrainTiles";
 import { GLOW, makeGlowTexture, type Light } from "./daylight";
@@ -434,41 +434,9 @@ export class Town {
     }
   }
 
-  /**
-   * Where the Wildlands start (open PVP past it): a dashed red line on the
-   * ground, red pennants on stakes along it, and a sign by each path north.
-   */
-  wildBorder(isLand: (tx: number, ty: number) => boolean) {
-    const wild = FIELDS.find((f) => f.pvp);
-    if (!wild) return;
-    const { x: x0, y: y0, w } = wild.area;
-    const line = this.scene.add.graphics().setDepth(-0.3);
-    const dash = (x: number, y: number, horizontal: boolean) => {
-      const [dw, dh] = horizontal ? [11, 3] : [3, 11];
-      line.fillStyle(0x10202b, 0.45).fillRect(x - 1, y - 1, dw + 2, dh + 2);
-      line.fillStyle(0xd84a3f, 0.85).fillRect(x, y, dw, dh);
-    };
-    const stake = (px: number, py: number) => {
-      const g = this.scene.add.graphics().setDepth(py);
-      g.fillStyle(0x4a3520, 1).fillRect(px - 1, py - 20, 2, 20);
-      g.fillStyle(0xd84a3f, 1).fillTriangle(px + 1, py - 20, px + 12, py - 16, px + 1, py - 12);
-      g.fillStyle(0x10202b, 0.3).fillEllipse(px, py, 8, 3);
-    };
-    // Along the south edge, west to east…
-    for (let tx = x0; tx < x0 + w; tx++) {
-      if (!isLand(tx, WILD_BORDER_Y)) continue;
-      for (const ox of [3, 19]) dash(tx * 32 + ox, WILD_BORDER_Y * 32 - 1, true);
-      if (tx % 4 === 0 && !WILD_CROSSINGS.some((c) => Math.abs(tx - c) <= 3)) stake(tx * 32 + 16, WILD_BORDER_Y * 32 + 2);
-    }
-    // …and up the west edge.
-    for (let ty = y0; ty < WILD_BORDER_Y; ty++) {
-      if (!isLand(x0, ty)) continue;
-      for (const oy of [3, 19]) dash(x0 * 32 - 1, ty * 32 + oy, false);
-      if (ty % 4 === 0) stake(x0 * 32, ty * 32 + 16);
-    }
-    for (const c of WILD_CROSSINGS) this.signpost((c + 3.5) * 32, (WILD_BORDER_Y + 1) * 32, "WILDLANDS", "⚔ OPEN PVP", "#ff8a7a");
-    // Sable's board, across the west path from her.
-    this.signpost(126.8 * 32, 140.6 * 32, "WANTED", "☠ BOUNTIES", "#ffd27a");
+  /** Signs: a signpost by each path north into the Wildlands, and others round town. */
+  signs() {
+    for (const c of WILD_CROSSINGS) this.signpost((c + 3.5) * 32, (WILD_BORDER_Y + 1) * 32, "WILDLANDS", "LV 30–40 ↑", "#9fd67a");
     // Where the road through the Wildlands meets the long bridge to Crownhold.
     this.signpost(287.6 * 32, 80 * 32 - 2, "CROWNHOLD", "⚔ CASTLE →", "#c9a2ff");
     // Leopold's corner, on the main street east of the fountain plaza.
@@ -489,6 +457,7 @@ export class Town {
     this.boat((starfall.x + 3) * 32, (starfall.y + starfall.h) * 32 + 30);
     this.signpost(199.5 * 32, 283 * 32 - 2, "FERRY", "FROSTFELL →", "#bfe9ff");
     for (const d of DUNGEONS) this.signpost((d.mouth.x - 3) * 32, (d.mouth.y - 1) * 32, d.name.toUpperCase(), `DUNGEON · ${d.levels.toUpperCase()}`, d.sign);
+    this.signpost(PIT_MOUTH.x * 32, (PIT_MOUTH.y - 3) * 32, "BATTLE PIT", "PVP · LV 20+", "#ff8a7a");
     for (const d of DOORS) if (d.portal !== undefined) this.portal(d.trigger.x + d.trigger.w / 2, d.trigger.y + d.trigger.h / 2, d.portal);
     this.signpost(329.5 * 32, 185 * 32 - 2, "FERRY", "RAVENMOOR →", "#d9b8ff");
     this.signpost(246.5 * 32, 282 * 32 - 2, "SHIPS", "PETALFALL & BEYOND →", "#ffc4da");

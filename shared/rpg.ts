@@ -445,7 +445,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
     ],
   },
 
-  // ---------------------------------------------------------------- the Wildlands (Lv 30–40), north of town: open PVP
+  // ---------------------------------------------------------------- the Wildlands (Lv 30–40), north of town
   // Boarmen roam the grass just past the border and charge anyone who comes near.
   boarman: {
     id: "boarman", name: "Boarman", level: 31, hp: 2100, atk: 46, def: 22, exp: 2500, gold: [38, 62], speed: 50, chase: 110, aggro: 60, range: 38, attackMs: 1600, radius: 13, respawnMs: 18_000,
@@ -1307,13 +1307,32 @@ export interface Field {
   area: Rect;
   /** Left as the land is (trees and rocks stay). Otherwise the world generator thins the trees into open meadow. */
   wild?: boolean;
-  /** Open PVP: players may fight each other here (see shared/pvp.ts). */
+  /** Players may fight each other here: only the Battle Pit (see shared/pvp.ts). */
   pvp?: boolean;
   spawns: SpawnGroup[];
 }
 
 /** Hunting grounds outside the walls. The town itself is always safe. */
 export const FIELDS: Field[] = [
+  {
+    // The Battle Pit (BATTLE_PIT in shared/town.ts), through the portal by the Arena: no monsters, only players.
+    id: "pit",
+    name: "Battle Pit",
+    levels: "Lv 20+",
+    area: { x: 19, y: 470, w: 26, h: 36 },
+    wild: true,
+    pvp: true,
+    spawns: [],
+  },
+  {
+    // Its gate hall, where nobody fights.
+    id: "pit-gate",
+    name: "Battle Pit gate",
+    levels: "safe",
+    area: { x: 0, y: 464, w: 19, h: 48 },
+    wild: true,
+    spawns: [],
+  },
   {
     id: "south-meadow",
     name: "South Meadow",
@@ -1372,7 +1391,6 @@ export const FIELDS: Field[] = [
     levels: "Lv 30–40",
     area: { x: 120, y: 16, w: 216, h: 120 },
     wild: true,
-    pvp: true,
     spawns: [
       // Boarmen in the grass past the west path, lizardmen on the dry ground past the east path.
       { monster: "boarman", rect: { x: 128, y: 112, w: 40, h: 22 }, count: 10 },

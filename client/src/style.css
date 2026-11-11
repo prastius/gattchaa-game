@@ -1135,9 +1135,9 @@ button {
   }
 }
 
-/* ---------- The Wildlands (open PVP) ---------- */
+/* ---------- The Battle Pit (PVP) ---------- */
 
-/* Crossing into (or out of) the Wildlands: a banner under your character for a few seconds, clear of the buttons. */
+/* Down into (or back out of) the Battle Pit: a banner under your character for a few seconds, clear of the buttons. */
 .zone-banner {
   position: fixed;
   top: 62%;
@@ -1183,7 +1183,7 @@ button {
   color: var(--ink);
 }
 
-/* "· Wildlands (Lv 30–40) · PVP" in red at the top. */
+/* "· Battle Pit (Lv 20+) · PVP" in red at the top. */
 .hud-place.pvp {
   color: #ff8a7a;
   font-weight: 700;
@@ -1292,18 +1292,6 @@ button {
   background: #7ddb6e;
 }
 
-/* Under your gold while you're an Outlaw: how long it lasts. */
-.status-outlaw {
-  margin-top: 4px;
-  padding: 2px 6px;
-  border-radius: 6px;
-  background: rgba(229, 83, 75, 0.22);
-  color: #ff8a7a;
-  font-size: 11px;
-  font-weight: 700;
-  text-align: center;
-}
-
 .player-card-attack {
   width: 100%;
   margin-bottom: 6px;
@@ -1314,11 +1302,6 @@ button {
   background: #c8443c;
   border-color: #c8443c;
   color: #fff;
-}
-
-.player-card-outlaw {
-  color: #ff6b5e;
-  font-weight: 700;
 }
 
 /* ---------- Titles ---------- */
@@ -2121,6 +2104,12 @@ button.dialog-link:disabled {
   font-size: 14px;
 }
 
+/* Your Glory, at the end of the Arena Master's tabs. */
+.glory {
+  color: #ffd76a;
+  font-weight: 700;
+}
+
 .sell-all {
   width: 100%;
   margin-bottom: 8px;
@@ -2879,12 +2868,6 @@ button.dialog-link:disabled {
 .arena-wl {
   color: var(--ink-dim);
   font-size: 12px;
-}
-
-/* Sable's board: the Outlaws, with a skull where the rank would be. */
-.wanted-skull {
-  color: #ff6b6b;
-  font-weight: 700;
 }
 
 /* ---------- Guilds ---------- */

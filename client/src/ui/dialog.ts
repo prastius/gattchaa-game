@@ -66,7 +66,7 @@ import { CLASSES, JOBS, JOB_LEVEL, JOB_WEAPON, MONSTERS, aClass, isClassId, jobT
 import { skillsOf } from "../../../shared/skills";
 import { TRIALS, TRIAL_MS, Trial, isTrial, type TrialDef } from "../../../shared/trial";
 import { PVP_DAMAGE, RATING_START, type ArenaBoard } from "../../../shared/duels";
-import type { WildBoard } from "../../../shared/pvp";
+import { GLORY_DUEL_WIN, GLORY_PIT_WIN, GLORY_SHOP, PVP_MIN_LEVEL, PVP_RECOUNT_MS, type PitBoard } from "../../../shared/pvp";
 import { FRAME, composeCharacter, itemIcon } from "../character";
 import type { Shop } from "../shop";
 import type { Vending } from "../vending";
@@ -178,8 +178,9 @@ export class TownDialog {
   /** The Arena Master's ranking, as of the last time you asked. */
   private board?: ArenaBoard;
   /** Sable's board, and which part of it you're reading. */
-  private wild?: WildBoard;
-  private wildTab: "wanted" | "week" | "all" = "wanted";
+  private pitBoard?: PitBoard;
+  private pitTab: "week" | "all" = "week";
+  private arenaTab: "duels" | "glory" = "duels";
   /** Which side of the Market Keeper's window is showing, and what you searched for. */
   private keeperTab: "shops" | "find" = "shops";
   private marketQuery = "";
@@ -233,9 +234,9 @@ export class TownDialog {
       this.board = b;
       if (this.openKind === "arena") this.render(this.openTarget!, false);
     });
-    net.onWildBoard.add((b) => {
-      this.wild = b;
-      if (this.openKind === "bounty") this.render(this.openTarget!, false);
+    net.onPitBoard.add((b) => {
+      this.pitBoard = b;
+      if (this.openKind === "pit") this.render(this.openTarget!, false);
     });
     // Only the ranking is drawn again: you may be typing a new guild's name on the form above it.
     net.onGuildBoard.add((b) => {
@@ -396,8 +397,8 @@ export class TownDialog {
       case "ferry":
         this.ferry(npc);
         break;
-      case "bounty":
-        this.hunters(npc);
+      case "pit":
+        this.pit(npc);
         break;
       case "guild":
         this.registrar(npc);
@@ -478,64 +479,48 @@ export class TownDialog {
     this.body.append(cards);
   }
 
-  // ------------------------------------------------------------------ the Bounty Hunter
+  // ------------------------------------------------------------------ the Pit Keeper
 
-  /** Sable's board: who's an Outlaw right now (and their bounty), and the best hunters this week and of all time. */
-  private hunters(npc: NpcDef) {
-    if (!this.wild || this.renderFresh) this.net.wildBoard(npc.id);
+  /** Sable's board: the Battle Pit's best fighters this week and of all time. */
+  private pit(npc: NpcDef) {
+    if (!this.pitBoard || this.renderFresh) this.net.pitBoard(npc.id);
+    this.section("How the Battle Pit works");
+    const rules = el("ul", "arena-rules");
+    for (const line of [
+      `Past this hall, anyone from level ${PVP_MIN_LEVEL} can attack anyone: click them. Party and guild mates never fight each other.`,
+      "Beaten, you lose nothing (no EXP, no gold) and wake up by the Arena.",
+      `Every win earns ${GLORY_PIT_WIN} Glory if you're signed in. Spend it at Magnus the Arena Master.`,
+      `Beating the same player again only counts after ${PVP_RECOUNT_MS / 60_000} minutes.`,
+    ]) rules.append(el("li", "", line));
+    this.body.append(rules);
     this.body.append(
-      this.tabs(npc, [["wanted", "Most wanted"], ["week", "This week"], ["all", "All time"]], this.wildTab, (tab) => {
-        this.wildTab = tab;
-        this.net.wildBoard(npc.id);
+      this.tabs(npc, [["week", "This week"], ["all", "All time"]], this.pitTab, (tab) => {
+        this.pitTab = tab;
+        this.net.pitBoard(npc.id);
       }, this.net.stats?.gold ?? 0),
     );
-    const b = this.wild;
+    const b = this.pitBoard;
     if (!b) return void this.body.append(el("p", "dialog-empty", "Reading the board…"));
-    if (this.wildTab === "wanted") {
-      if (!b.wanted.length) {
-        this.body.append(el("p", "dialog-empty", "No Outlaws right now. The Wildlands are quiet… for now."));
-      } else {
-        const list = el("ol", "arena-board wanted-board");
-        for (const w of b.wanted) {
-          const s = Math.ceil(w.ms / 1000);
-          const row = el("li", w.you ? "me" : "");
-          row.append(
-            el("span", "wanted-skull", "☠"),
-            el("span", "arena-name", `${w.name} · Lv ${w.lv}`),
-            el("span", "arena-rating", `${goldText(w.bounty)} gold`),
-            el("span", "arena-wl", `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")} left`),
-          );
-          list.append(row);
-        }
-        this.body.append(list);
-      }
-      this.body.append(el("p", "dialog-note", "Beat an Outlaw in the Wildlands and their bounty is yours: 5% of their gold, at most 5,000. Hunting Outlaws never makes you one."));
-      return;
-    }
-    const rows = this.wildTab === "week" ? b.week : b.all;
-    const mine = this.wildTab === "week" ? b.me?.week : b.me?.all;
+    const rows = this.pitTab === "week" ? b.week : b.all;
+    const mine = this.pitTab === "week" ? b.me?.week : b.me?.all;
     if (!b.saved) this.body.append(el("p", "dialog-note", "Sign in with Gattchaa to get your name on the board."));
-    else if (mine) this.body.append(el("p", "arena-me", `You: #${mine.rank} · ${mine.wins} beaten · ${mine.bounties} Outlaw${mine.bounties === 1 ? "" : "s"} (${goldText(mine.gold)} gold in bounties)`));
-    else this.body.append(el("p", "dialog-empty", this.wildTab === "week" ? "You haven't beaten anyone up there this week." : "You haven't beaten anyone up there yet."));
-    this.section(this.wildTab === "week" ? "Top hunters this week" : "Top hunters of all time");
-    if (!rows.length) this.body.append(el("p", "dialog-empty", this.wildTab === "week" ? "Nobody yet this week. The board is yours for the taking!" : "Nobody yet. Be the first!"));
+    else if (mine) this.body.append(el("p", "arena-me", `You: #${mine.rank} · ${mine.wins} beaten`));
+    else this.body.append(el("p", "dialog-empty", this.pitTab === "week" ? "You haven't beaten anyone down there this week." : "You haven't beaten anyone down there yet."));
+    this.section(this.pitTab === "week" ? "Top fighters this week" : "Top fighters of all time");
+    if (!rows.length) this.body.append(el("p", "dialog-empty", this.pitTab === "week" ? "Nobody yet this week. The board is yours for the taking!" : "Nobody yet. Be the first!"));
     else {
       const list = el("ol", "arena-board");
       rows.forEach((r, i) => {
         const row = el("li", mine && r.name === mine.name && mine.rank === i + 1 ? "me" : "");
-        row.append(el("span", "arena-rank", `${i + 1}`), el("span", "arena-name", r.name), el("span", "arena-rating", `${r.wins} beaten`), el("span", "arena-wl", `${r.bounties} ☠`));
+        row.append(el("span", "arena-rank", `${i + 1}`), el("span", "arena-name", r.name), el("span", "arena-rating", `${r.wins} beaten`));
         list.append(row);
       });
       this.body.append(list);
     }
-    const days = Math.max(1, Math.ceil((b.resetAt - Date.now()) / 86_400_000));
-    this.body.append(
-      el(
-        "p",
-        "dialog-note",
-        `${this.wildTab === "week" ? `The weekly board starts again every Monday (in ${days} day${days === 1 ? "" : "s"}). ` : ""}Only signed-in players are ranked, and beating the same player again only counts once every 10 minutes. ☠ counts the Outlaws among them.`,
-      ),
-    );
+    if (this.pitTab === "week") {
+      const days = Math.max(1, Math.ceil((b.resetAt - Date.now()) / 86_400_000));
+      this.body.append(el("p", "dialog-note", `The weekly board starts again every Monday (in ${days} day${days === 1 ? "" : "s"}). Only signed-in players are ranked.`));
+    }
   }
 
   // ------------------------------------------------------------------ the ferry
@@ -755,7 +740,7 @@ export class TownDialog {
     this.actions.append(found);
     update();
     this.body.append(
-      el("p", "dialog-note", `You'll lead it: you choose officers, and together you can invite up to ${GUILD_MAX} members. Guild chat is /g, and guild mates never fight each other in the Wildlands.`),
+      el("p", "dialog-note", `You'll lead it: you choose officers, and together you can invite up to ${GUILD_MAX} members. Guild chat is /g, and guild mates never fight each other in the Battle Pit.`),
     );
   }
 
@@ -895,21 +880,24 @@ export class TownDialog {
 
   // ------------------------------------------------------------------ the Arena Master
 
-  /** How duels work, your record, and the ten best. */
+  /** How duels work, your record and the ten best; or the Glory shop. */
   private arena(npc: NpcDef) {
     if (!this.board || this.renderFresh) this.net.arenaBoard(npc.id);
+    const b = this.board;
+    this.body.append(this.tabs(npc, [["duels", "Duels"], ["glory", "Glory shop"]], this.arenaTab, (tab) => (this.arenaTab = tab), 0, b?.glory ?? 0));
+    if (this.arenaTab === "glory") return this.gloryShop(npc);
     const half = Math.round((1 - PVP_DAMAGE) * 100);
     this.section("How duels work");
     const rules = el("ul", "arena-rules");
     for (const line of [
       "Click (or tap) another player and choose Challenge to a duel. They have 20 seconds to accept.",
       `After 3, 2, 1 you fight until one of you drops. Player hits do ${half}% less damage, so use your skills. No potions.`,
-      "Fight inside this ring, both signed in, and it counts for the ranking: the winner takes rating points from the loser. Step out of the ring and you lose.",
+      `Fight inside this ring, both signed in, and it counts for the ranking: the winner takes rating points from the loser, and earns ${GLORY_DUEL_WIN} Glory. Step out of the ring and you lose.`,
       "Anywhere else a duel is just for fun. Either way, you're both healed afterwards, and nobody loses EXP or items.",
+      "Want a free-for-all? The red portal by the town wall goes down to the Battle Pit.",
     ]) rules.append(el("li", "", line));
     this.body.append(rules);
 
-    const b = this.board;
     this.section("Your record");
     if (!b) this.body.append(el("p", "dialog-empty", "Fetching the ranking…"));
     else if (!b.saved) this.body.append(el("p", "dialog-empty", "Guests can duel, but only signed-in players are ranked."));
@@ -927,6 +915,27 @@ export class TownDialog {
       });
       this.body.append(list);
     }
+  }
+
+  /** What Magnus gives for Glory. */
+  private gloryShop(npc: NpcDef) {
+    const b = this.board;
+    if (b && !b.saved) this.body.append(el("p", "dialog-note", "Only signed-in players earn and spend Glory. Sign in with Gattchaa to keep yours."));
+    const glory = b?.glory ?? 0;
+    const list = el("div", "ware-list");
+    GLORY_SHOP.forEach((w, i) => {
+      const it = ITEMS[w.item];
+      const title = w.n > 1 ? `${w.n} × ${it.name}` : it.name;
+      list.append(this.ware(it, this.wareInfo(it), [this.wareButton(`★ ${w.glory}`, glory >= w.glory, () => this.net.gloryBuy(npc.id, i))], title));
+    });
+    this.body.append(
+      list,
+      el(
+        "p",
+        "dialog-note",
+        `Earn Glory by beating players in the Battle Pit (${GLORY_PIT_WIN} a win) and winning ranked duels in the ring (${GLORY_DUEL_WIN} a win). The medal, the ring and the crest are found nowhere else, and no merchant buys them.`,
+      ),
+    );
   }
 
   // ------------------------------------------------------------------ the Blacksmith
@@ -987,8 +996,8 @@ export class TownDialog {
     );
   }
 
-  /** Tabs across the top of a merchant's window, with your gold at the end. */
-  private tabs<T extends string>(npc: NpcDef, tabs: [T, string][], current: T, pick: (tab: T) => void, gold: number) {
+  /** Tabs across the top of a merchant's window, with your gold (or your Glory) at the end. */
+  private tabs<T extends string>(npc: NpcDef, tabs: [T, string][], current: T, pick: (tab: T) => void, gold: number, glory?: number) {
     const row = el("div", "trade-tabs");
     for (const [tab, label] of tabs) {
       const b = el("button", `trade-tab${current === tab ? " on" : ""}`, label);
@@ -1001,6 +1010,10 @@ export class TownDialog {
         this.body.scrollTop = 0;
       });
       row.append(b);
+    }
+    if (glory !== undefined) {
+      row.append(el("span", "glory trade-gold", `★ ${glory.toLocaleString("en-US")} Glory`));
+      return row;
     }
     const purse = el("span", "gold trade-gold");
     purse.append(el("span", "coin"), el("span", "", gold.toLocaleString("en-US")));

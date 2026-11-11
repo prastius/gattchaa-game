@@ -20,7 +20,7 @@ import { CLASSES, JOB_LEVEL, aClass, isClassId, isMonsterId, jobTier, type Class
 import { SKILLS, type SkillId } from "../../../shared/skills";
 import { ITEMS, PICKUP_RANGE, RARITY, appearanceKey, cleanUpgrade, isItemId, parseCards } from "../../../shared/items";
 import { NPCS, type NpcDef } from "../../../shared/npcs";
-import { CASTLE, DOORS, DUNGEONS, DUST, OVERWORLD_H, GLOOM, HAZE, INTERIOR_ZONE, NIGHT, PROPS, RUINS, TOWN_AREA, biomeAt, inCastle, inRect } from "../../../shared/town";
+import { CASTLE, CAVES, DOORS, DUST, OVERWORLD_H, GLOOM, HAZE, INTERIOR_ZONE, NIGHT, PROPS, RUINS, TOWN_AREA, biomeAt, inCastle, inRect } from "../../../shared/town";
 import { CASTLE_NAME, CRYSTAL, isGuardian } from "../../../shared/siege";
 import { emblemOf } from "../../../shared/guild";
 import { CharacterTextures, PlayerSprite } from "../PlayerSprite";
@@ -46,7 +46,7 @@ import type { GuildUI } from "../ui/guild";
 import type { TitlesUI } from "../ui/titles";
 import type { DuelUI } from "../ui/duel";
 import { PLAYER_RADIUS } from "../../../shared/duels";
-import { OUTLAW_MS, PVP_MIN_LEVEL, inPvpZone, pvpBlock, type PvpSide } from "../../../shared/pvp";
+import { GLORY_PIT_WIN, PVP_MIN_LEVEL, inPvpZone, pvpBlock, type PvpSide } from "../../../shared/pvp";
 import { TITLES, isTitleId, type TitleDef } from "../../../shared/titles";
 import type { Net } from "../net";
 import type { Shop } from "../shop";
@@ -261,7 +261,7 @@ export class WorldScene extends Phaser.Scene {
   private hovered?: string;
   private wasDead = false;
   private noTargetHintAt = 0;
-  /** Hides the Wildlands banner. */
+  /** Hides the Battle Pit banner. */
   private zoneTimer?: number;
   private sitTipShown = false;
   private clock = new ServerClock();
@@ -370,7 +370,7 @@ export class WorldScene extends Phaser.Scene {
     this.overlay("haze", HAZE, [78, 26, 10], 0.3);
     this.overlay("dust", DUST, [120, 90, 30], 0.16);
     this.overlay("night", NIGHT, [10, 14, 48], 0.5);
-    for (const d of DUNGEONS) this.overlay(`dungeon:${d.id}`, d.zone, d.shade, d.strength);
+    for (const d of CAVES) this.overlay(`cave:${d.id}`, d.zone, d.shade, d.strength);
     createMonsterAnims(this);
     this.fx = new Fx(this, () => this.textRes);
 
@@ -381,7 +381,7 @@ export class WorldScene extends Phaser.Scene {
     this.scale.on(Phaser.Scale.Events.RESIZE, () => this.applyZoom());
 
     this.town = new Town(this, this.textRes);
-    this.town.wildBorder((tx, ty) => !this.world.corners(tx, ty).some(isWet));
+    this.town.signs();
     this.daylight = new Daylight(this, this.town.lights, this.town.nightWindows);
     this.shop.onChange((data) => this.town.update(data, this.shop.openRooms));
 
@@ -688,7 +688,6 @@ export class WorldScene extends Phaser.Scene {
       if (me) {
         this.self.setLook(appearanceKey(me.state.look, me.state.gear)); // wardrobe and gear changes come back via state
         this.self.setAura(me.state.aura ?? 0);
-        this.self.setOutlaw(Boolean(me.state.outlaw));
         this.self.setGuild(me.state.guild ?? "", me.state.emblem ?? 0);
         this.showTitle(this.self, me.state.title);
         this.updateHealth(me.state);
@@ -723,11 +722,10 @@ export class WorldScene extends Phaser.Scene {
       if (!e.npc) {
         sprite.dead = Boolean(s.dead);
         sprite.setAura(s.aura ?? 0);
-        sprite.setOutlaw(Boolean(s.outlaw));
         sprite.setParty(Boolean(s.party) && s.party === this.party.id);
         sprite.setGuild(s.guild ?? "", s.emblem ?? 0);
         this.showTitle(sprite, s.title);
-        // Duelists' health shows for everyone watching, and everyone's in the Wildlands.
+        // Duelists' health shows for everyone watching, and everyone's in the Battle Pit.
         sprite.setHp(s.hp ?? 0, s.mhp ?? 0, (s.hp ?? 0) < (s.mhp ?? 0) || Boolean(s.duel) || (this.hud.pvp && inPvpZone(s.x, s.y)));
       }
       sprite.animate();
@@ -775,7 +773,7 @@ export class WorldScene extends Phaser.Scene {
     this.critters.update(time, dt, this.cameras.main.worldView, this.daylight.night, this.indoors);
     const view = this.cameras.main.worldView;
     // Underground there's no weather, except a dungeon's own (embers in the Magma Depths, petals in the Blossom Grotto).
-    const below = DUNGEONS.find((d) => this.zone === d.zone);
+    const below = CAVES.find((d) => this.zone === d.zone);
     const season = this.indoors ? "summer" : below ? (below.weather ?? "summer") : biomeAt(view.centerX / TILE_SIZE, view.centerY / TILE_SIZE);
     this.snow.update(view, season === "winter");
     this.leaves.update(view, season === "autumn");
@@ -959,7 +957,7 @@ export class WorldScene extends Phaser.Scene {
     return s.range !== undefined ? s.range + radius : this.myReach(radius);
   }
 
-  /** Where your target is and how big: a monster, your duel opponent, or a player you may fight in the Wildlands. */
+  /** Where your target is and how big: a monster, your duel opponent, or a player you may fight in the Battle Pit. */
   private targetSpot(id = this.target): { x: number; y: number; radius: number; mob?: MobEntity; player?: Entity } | undefined {
     if (!id) return undefined;
     const mob = this.monsters.get(id);
@@ -968,25 +966,19 @@ export class WorldScene extends Phaser.Scene {
     return player && { x: player.sprite.x, y: player.sprite.y, radius: PLAYER_RADIUS, player };
   }
 
-  /** Why you can't attack this player outside a duel ("" if you can: you're both fair game in the Wildlands). */
+  /** Why you can't attack this player outside a duel ("" if you can: you're both fair game in the Battle Pit, or a siege). */
   private pvpWhy(id: string): string {
     const me = this.entities.get(this.room.sessionId)?.state;
     const them = id !== this.room.sessionId ? this.entities.get(id)?.state : undefined;
     return me && them ? pvpBlock(sideOf(me), sideOf(them), this.castleState.siege) : "Nobody to fight";
   }
 
-  /** Clicking them attacks at once: you may, and it costs nothing more (they're an Outlaw, you already are, or you're already fighting them). */
+  /** Clicking them attacks at once: your duel opponent, or anyone fair game in the Battle Pit or a siege (it costs nothing). */
   private quickAttack(id: string): boolean {
-    if (id === this.duel.opponent) return true;
-    if (this.pvpWhy(id)) return false;
-    const me = this.entities.get(this.room.sessionId)?.state;
-    const them = this.entities.get(id)?.state;
-    // In a siege, inside the walls, any other guild's member is fair game: one click.
-    const siege = this.castleState.siege && Boolean(me && them && inCastle(me.x, me.y) && inCastle(them.x, them.y));
-    return siege || id === this.target || Boolean(them?.outlaw) || Boolean(me?.outlaw);
+    return id === this.duel.opponent || !this.pvpWhy(id);
   }
 
-  /** Crossing into the Wildlands (or back out): a banner for a few seconds, and a line in the chat. */
+  /** Down into the Battle Pit (or back up to its gate): a banner for a few seconds, and a line in the chat. */
   private zoneBanner(on: boolean) {
     const sub = !on
       ? "Players can't attack you here."
@@ -995,7 +987,7 @@ export class WorldScene extends Phaser.Scene {
         : "Other players can attack you here.";
     const banner = document.getElementById("zone-banner")!;
     const head = document.createElement("b");
-    head.textContent = on ? "⚔ Wildlands · Open PVP" : "Back on safe ground";
+    head.textContent = on ? "⚔ Battle Pit · PVP" : "Back on safe ground";
     const line = document.createElement("span");
     line.textContent = sub;
     banner.replaceChildren(head, line);
@@ -1009,7 +1001,7 @@ export class WorldScene extends Phaser.Scene {
     }, 3500);
     if (on && this.myLevel >= PVP_MIN_LEVEL) {
       this.chat.addSystem(
-        `You entered the Wildlands: other players can attack you here. Hitting a player who isn't an Outlaw makes you one for ${OUTLAW_MS / 60_000} minutes. Click a player to see your choices.`,
+        `You're in the Battle Pit: anyone can attack you here, and you them (click a player). Beaten, you lose nothing. Every win earns ${GLORY_PIT_WIN} Glory for the Arena Master.`,
       );
     }
   }
@@ -1188,7 +1180,7 @@ export class WorldScene extends Phaser.Scene {
     this.net.useItem(best);
   }
 
-  /** Click/tap on a monster attacks it; so does one on your duel opponent, or an Outlaw in the Wildlands. */
+  /** Click/tap on a monster attacks it; so does one on your duel opponent, or anyone fair game in the Battle Pit. */
   private tryTarget(p: Phaser.Input.Pointer): boolean {
     const player = this.playerAt(p);
     const id = this.monsterAt(p) ?? (player && this.quickAttack(player) ? player : undefined);
@@ -1197,7 +1189,7 @@ export class WorldScene extends Phaser.Scene {
     return true;
   }
 
-  /** Click/tap on another player: their card, with a duel challenge (and in the Wildlands, an Attack button). */
+  /** Click/tap on another player: their card, with a duel challenge (and in the Battle Pit, an Attack button). */
   private tryPlayer(p: Phaser.Input.Pointer): boolean {
     const id = this.playerAt(p);
     const e = id && this.entities.get(id);
@@ -1206,7 +1198,7 @@ export class WorldScene extends Phaser.Scene {
     const attack = this.pvpWhy(id) ? undefined : () => this.setTarget(id);
     this.duel.openCard(
       id,
-      { name: s.name, lv: s.lv, cls: s.cls, title: s.title, outlaw: s.outlaw, guild: s.guild, emblem: s.emblem },
+      { name: s.name, lv: s.lv, cls: s.cls, title: s.title, guild: s.guild, emblem: s.emblem },
       attack,
       this.party.inviteFor(id, s.party),
       this.guild.inviteFor(id, s.guild),
@@ -1285,7 +1277,7 @@ export class WorldScene extends Phaser.Scene {
       this.status.showTarget(mob.sprite.def.name, mob.sprite.def.level, mob.state.hp, mob.sprite.def.hp, color);
     } else if (t?.player) {
       const s = t.player.state;
-      this.status.showTarget(s.outlaw ? `☠ ${s.name}` : s.name, s.lv ?? 1, s.hp ?? 0, s.mhp ?? 1, "#ff8a7a");
+      this.status.showTarget(s.name, s.lv ?? 1, s.hp ?? 0, s.mhp ?? 1, "#ff8a7a");
     }
 
     // Desktop: point at a monster (or loot) to see its name.
@@ -1817,7 +1809,7 @@ export class WorldScene extends Phaser.Scene {
   private updateIndoors() {
     const self = this.self;
     if (!self) return;
-    const zone = [INTERIOR_ZONE, ...DUNGEONS.map((d) => d.zone)].find((z) => inRect(z, self.x / TILE_SIZE, self.y / TILE_SIZE));
+    const zone = [INTERIOR_ZONE, ...CAVES.map((d) => d.zone)].find((z) => inRect(z, self.x / TILE_SIZE, self.y / TILE_SIZE));
     if (zone === this.zone) return;
     this.zone = zone;
     this.indoors = zone === INTERIOR_ZONE;
@@ -1843,7 +1835,7 @@ export class WorldScene extends Phaser.Scene {
   private chunkAllowed(cx: number, cy: number): boolean {
     const within = (z: { x: number; y: number; w: number; h: number }) =>
       cx * CHUNK_TILES >= z.x && cy * CHUNK_TILES >= z.y && (cx + 1) * CHUNK_TILES <= z.x + z.w && (cy + 1) * CHUNK_TILES <= z.y + z.h;
-    return this.zone ? within(this.zone) : !within(INTERIOR_ZONE) && !DUNGEONS.some((d) => within(d.zone));
+    return this.zone ? within(this.zone) : !within(INTERIOR_ZONE) && !CAVES.some((d) => within(d.zone));
   }
 
   private unloadChunk(chunk: Chunk) {

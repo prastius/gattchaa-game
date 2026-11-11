@@ -130,8 +130,6 @@ export interface StatsMessage {
   buffs: { id: SkillId; ms: number }[];
   /** Signed in, so progress is saved. Guests start over next visit. */
   saved: boolean;
-  /** An Outlaw (see shared/pvp.ts): for how much longer (ms). */
-  outlaw?: number;
   /** How far along the Trial of Mastery (see shared/trial.ts), when it's started… */
   trial?: number;
   /** …and while their Shade is up: how long they have left to beat it (ms). */
@@ -270,8 +268,6 @@ export interface PlayerView {
   title?: string;
   /** Session id of their duel opponent ("" = none). */
   duel?: string;
-  /** An Outlaw: attacked an innocent player in the Wildlands not long ago. */
-  outlaw?: boolean;
   /** Their party's id ("" or missing: none). */
   party?: string;
   /** Their guild's name ("" or missing: none) and emblem (see emblemOf in guild.ts). */

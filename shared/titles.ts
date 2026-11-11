@@ -28,15 +28,14 @@ export interface Deeds {
   duels: number;
   duelWins: number;
   arenaWins: number;
-  /** Players beaten in the Wildlands, and how many of them were Outlaws. */
+  /** Players beaten in the Battle Pit (once in a while per player, see PVP_RECOUNT_MS). */
   pvpWins: number;
-  bounties: number;
   /** Gold given to their guild's purse. */
   given: number;
 }
 
 export const noDeeds = (): Deeds => ({
-  kills: {}, cards: [], legendary: 0, bestUp: 0, upFails: 0, shop: false, sold: 0, duels: 0, duelWins: 0, arenaWins: 0, pvpWins: 0, bounties: 0, given: 0,
+  kills: {}, cards: [], legendary: 0, bestUp: 0, upFails: 0, shop: false, sold: 0, duels: 0, duelWins: 0, arenaWins: 0, pvpWins: 0, given: 0,
 });
 
 const count = (raw: unknown) => (Number.isFinite(Number(raw)) ? Math.max(0, Math.floor(Number(raw))) : 0);
@@ -59,7 +58,6 @@ export function cleanDeeds(raw: unknown): Deeds {
   d.duelWins = count(r.duelWins);
   d.arenaWins = count(r.arenaWins);
   d.pvpWins = count(r.pvpWins);
-  d.bounties = count(r.bounties);
   d.given = count(r.given);
   return d;
 }
@@ -79,8 +77,8 @@ export type TitleGoal =
   | { kind: "sold"; n: number }
   /** Fight `n` duels, win `n` duels, or win `n` ranked duels in the Arena. */
   | { kind: "duels"; n: number; won?: "any" | "ranked" }
-  /** Beat `n` players in the Wildlands (or `n` Outlaws). */
-  | { kind: "pvp"; n: number; outlaws?: true }
+  /** Beat `n` players in the Battle Pit. */
+  | { kind: "pvp"; n: number }
   /** Give `n` gold to your guild's purse. */
   | { kind: "given"; n: number }
   /** One of the first PIONEERS players to reach the level cap. */
@@ -88,8 +86,8 @@ export type TitleGoal =
   /** In the guild holding Crownhold when a siege ends (handed out by the siege, like Pioneer). */
   | { kind: "castle" };
 
-export type TitleGroup = "Levels" | "Hunting" | "Collecting" | "The forge" | "The Arena" | "The Wildlands" | "Guild wars" | "Town";
-export const TITLE_GROUPS: TitleGroup[] = ["Levels", "Hunting", "Collecting", "The forge", "The Arena", "The Wildlands", "Guild wars", "Town"];
+export type TitleGroup = "Levels" | "Hunting" | "Collecting" | "The forge" | "The Arena" | "The Battle Pit" | "Guild wars" | "Town";
+export const TITLE_GROUPS: TitleGroup[] = ["Levels", "Hunting", "Collecting", "The forge", "The Arena", "The Battle Pit", "Guild wars", "Town"];
 
 export interface TitleDef {
   id: string;
@@ -196,9 +194,9 @@ export const TITLES = def({
   duelist: { name: "Duelist", tier: "uncommon", group: "The Arena", goal: { kind: "duels", n: 10, won: "any" }, how: "Win 10 duels." },
   gladiator: { name: "Gladiator", tier: "epic", group: "The Arena", goal: { kind: "duels", n: 50, won: "ranked" }, how: "Win 50 duels in the Arena's ring." },
 
-  // ------------------------------------------------------------ the wildlands (open PVP)
-  raider: { name: "Raider", tier: "uncommon", group: "The Wildlands", goal: { kind: "pvp", n: 10 }, how: "Beat 10 players in the Wildlands." },
-  bountyHunter: { name: "Bounty Hunter", tier: "rare", group: "The Wildlands", goal: { kind: "pvp", n: 25, outlaws: true }, how: "Beat 25 Outlaws in the Wildlands." },
+  // ------------------------------------------------------------ the Battle Pit
+  raider: { name: "Raider", tier: "uncommon", group: "The Battle Pit", goal: { kind: "pvp", n: 10 }, how: "Beat 10 players in the Battle Pit." },
+  pitChampion: { name: "Pit Champion", tier: "rare", group: "The Battle Pit", goal: { kind: "pvp", n: 50 }, how: "Beat 50 players in the Battle Pit." },
   siegebreaker: { name: "Siegebreaker", tier: "rare", group: "Guild wars", goal: { kind: "kills", n: 5, monster: "crystal" }, how: "Help break Crownhold's crystal 5 times." },
   castleLord: {
     name: "Castle Lord", tier: "epic", group: "Guild wars", goal: { kind: "castle" }, aura: AURA_CASTLE_LORD,
@@ -206,7 +204,7 @@ export const TITLES = def({
   },
   patron: { name: "Patron", tier: "rare", group: "Guild wars", goal: { kind: "given", n: 100_000 }, how: "Give 100,000 gold to your guild's purse." },
   benefactor: { name: "Benefactor", tier: "epic", group: "Guild wars", goal: { kind: "given", n: 1_000_000 }, how: "Give 1,000,000 gold to your guild's purse." },
-  reaper: { name: "Reaper", tier: "epic", group: "The Wildlands", goal: { kind: "pvp", n: 250 }, how: "Beat 250 players in the Wildlands." },
+  reaper: { name: "Reaper", tier: "epic", group: "The Battle Pit", goal: { kind: "pvp", n: 250 }, how: "Beat 250 players in the Battle Pit." },
 
   // ------------------------------------------------------------ town
   shopkeeper: { name: "Shopkeeper", tier: "uncommon", group: "Town", goal: { kind: "shop" }, how: "Open your own shop in the Market Square." },
@@ -245,7 +243,7 @@ export function titleProgress(t: TitleDef, d: Deeds, level: number): [number, nu
       return [Math.min(n, g.n), g.n];
     }
     case "pvp": {
-      const n = g.outlaws ? d.bounties : d.pvpWins;
+      const n = d.pvpWins;
       return [Math.min(n, g.n), g.n];
     }
     case "given":

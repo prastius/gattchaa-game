@@ -69,7 +69,7 @@ import {
   type DuelAskEvent,
   type DuelStartEvent,
 } from "../../../shared/duels";
-import { OUTLAW_MS, PVP_COMBAT_MS, PVP_RECOUNT_MS, bountyOf, pvpBlock, type PvpSide, type WantedRow } from "../../../shared/pvp";
+import { PVP_COMBAT_MS, PVP_RECOUNT_MS, pvpBlock, type PvpSide } from "../../../shared/pvp";
 import { PARTY_LEVEL_GAP, PARTY_SHARE_PX, partyShare } from "../../../shared/party";
 import { CRYSTAL, GUARDIAN_POSTS } from "../../../shared/siege";
 import { TRIAL_GROUND, TRIAL_SHADE_AT, inCastle } from "../../../shared/town";
@@ -138,8 +138,8 @@ export interface CombatHooks {
   titleEarned(id: string, title: TitleDef): void;
   /** Someone reached the level cap: maybe a Pioneer (the room knows the accounts). */
   reachedCap(id: string, cap: number): void;
-  /** `id` beat another player in the Wildlands, and it counts (`outlaw`: they were one, and paid `bounty`). */
-  pvpWin(id: string, outlaw: boolean, bounty: number): void;
+  /** `id` beat another player in the Battle Pit, and it counts (not the same pair again too soon). */
+  pvpWin(id: string): void;
   /** `by` broke Crownhold's crystal (see shared/siege.ts): the castle is their guild's. */
   crystal(by: string): void;
   /** The guardian at this post fell: it's gone until someone hires another. */
@@ -203,9 +203,7 @@ interface Fighter {
   /** How far along the Trial of Mastery. */
   trial: Trial;
   titlesDirty: boolean;
-  /** An Outlaw until then (0: not one). */
-  outlawUntil: number;
-  /** The last player to attack them in the Wildlands, and when. */
+  /** The last player to attack them in the Battle Pit (or a siege), and when. */
   pvpBy?: { id: string; at: number };
 }
 
@@ -270,13 +268,11 @@ export class Combat {
   /** Open challenges by challenger: whom, and until when. */
   private asks = new Map<string, { to: string; until: number }>();
   private askedAt = new Map<string, number>();
-  /** Outlaws who left the game, by name, and until when: coming back doesn't clear their name. */
-  private outlaws = new Map<string, number>();
   /** Crownhold is under siege (set by the room's Siege), and the guild holding it ("" = nobody). */
   siege = false;
   castleGuild = "";
-  /** Beaten in the siege and not up again yet: they get up at the castle's camp. */
-  private siegeDowns = new Set<string>();
+  /** Beaten in a siege or the Battle Pit and not up again yet: they get up at the castle's camp, or by the Arena. */
+  private downs = new Map<string, "siege" | "pit">();
   /** "winner>loser" names, and when that last counted towards titles. */
   private beatenAt = new Map<string, number>();
   private nextId = 0;
@@ -337,12 +333,7 @@ export class Combat {
       titlesDirty: true,
       // Already in their second job (a test command, or a rule change): nothing left to do.
       trial: isTrial(progress?.trial) && TRIALS[cls] ? progress.trial : Trial.None,
-      outlawUntil: 0,
     };
-    const outlaw = this.outlaws.get(player.name) ?? 0;
-    this.outlaws.delete(player.name);
-    if (outlaw > Date.now()) f.outlawUntil = outlaw;
-    player.outlaw = f.outlawUntil > 0;
     player.lv = lv;
     player.cls = cls;
     player.mhp = s.maxHp;
@@ -362,11 +353,10 @@ export class Combat {
     const duel = this.duels.get(id);
     if (duel) this.endDuel(duel, duel.a === id ? duel.b : duel.a, `${f.player.name} left`);
     const now = Date.now();
-    // Leaving mid-fight in the Wildlands counts as being beaten by whoever attacked you last.
+    // Leaving mid-fight in the Battle Pit counts as being beaten by whoever attacked you last.
     const by = f.pvpBy && now - f.pvpBy.at < PVP_COMBAT_MS && !f.player.dead ? this.fighters.get(f.pvpBy.id) : undefined;
     if (by && by !== f && !by.player.dead) this.beaten(f, by);
-    if (f.outlawUntil > now) this.outlaws.set(f.player.name, f.outlawUntil);
-    this.siegeDowns.delete(id);
+    this.downs.delete(id);
     this.asks.delete(id);
     this.askedAt.delete(id);
     for (const [from, ask] of this.asks) if (ask.to === id) this.asks.delete(from);
@@ -489,12 +479,6 @@ export class Combat {
       this.fight(f, now);
       this.regen(f, now);
       this.expireBuffs(f, now);
-      if (f.player.outlaw && now >= f.outlawUntil) {
-        f.player.outlaw = false;
-        f.outlawUntil = 0;
-        f.sheetDirty = true;
-        this.hooks.notice(f.id, "You're no longer an Outlaw.");
-      }
     }
     this.tickDuels(now);
 
@@ -502,7 +486,6 @@ export class Combat {
       this.saveAt = now + SAVE_MS;
       for (const f of this.fighters.values()) if (f.dirty) this.save(f);
       for (const [key, at] of this.beatenAt) if (now - at >= PVP_RECOUNT_MS) this.beatenAt.delete(key);
-      for (const [name, until] of this.outlaws) if (now >= until) this.outlaws.delete(name);
     }
     for (const f of this.fighters.values()) {
       if (f.sheetDirty) {
@@ -660,9 +643,11 @@ export class Combat {
     }
   }
 
-  /** Woke up after being beaten in the siege (once): they get up at the camp outside the castle gate, not in town. */
-  wokeInSiege(id: string): boolean {
-    return this.siegeDowns.delete(id);
+  /** Woke up after being beaten in a siege or the Battle Pit (once): where they get up, if not in town. */
+  wokeIn(id: string): "siege" | "pit" | undefined {
+    const where = this.downs.get(id);
+    this.downs.delete(id);
+    return where;
   }
 
   /** The castle's daily tribute for a member of its guild. False (having said why) if their bag is too full. */
@@ -804,7 +789,7 @@ export class Combat {
     } else f.mpAcc = 0;
   }
 
-  /** Down to 0 HP: knocked out until they go back to town (`loseExp` false: beaten by a player while not an Outlaw). */
+  /** Down to 0 HP: knocked out until they go back to town (`loseExp` false: beaten by a player, by your Shade, or in a siege). */
   private knockOut(f: Fighter, loseExp = true) {
     // A monster got a duelist: the other one wins.
     const duel = this.duels.get(f.id);
@@ -842,7 +827,6 @@ export class Combat {
       points: pointsLeft(f.cls, f.player.lv, f.skills),
       buffs: [...f.buffs].map(([id, b]) => ({ id, ms: Math.max(0, b.until - now) })),
       saved: f.saved,
-      ...(f.player.outlaw && { outlaw: Math.max(0, f.outlawUntil - now) }),
       ...(f.trial !== Trial.None && { trial: f.trial }),
       ...(this.shadeOf(f.id) && { trialLeft: Math.max(0, (this.shadeOf(f.id)!.until ?? 0) - now) }),
     };
@@ -978,6 +962,21 @@ export class Combat {
     else if (item.rarity !== "uncommon") this.hooks.notice(id, `You found ${item.rarity === "epic" ? "an" : "a"} ${RARITY[item.rarity].name.toLowerCase()} item: ${item.name}!`);
   }
 
+  /** Hands over `n` of `item` if there's room in the bag and `pay()` agrees (Glory at the Arena Master). */
+  grant(id: string, item: ItemId, n: number, pay: () => boolean): boolean {
+    const f = this.fighters.get(id);
+    if (!f || f.player.dead) return false;
+    if (f.inv.room(item, n) < n) {
+      this.hooks.notice(id, "Your bag is full.");
+      return false;
+    }
+    if (!pay()) return false;
+    f.inv.add(item, n);
+    this.hooks.tell(id, { k: "loot", item, n });
+    this.traded(f);
+    return true;
+  }
+
   /** Buys from a merchant (the room checked you're at their counter and they sell it). */
   buy(id: string, item: ItemId, n: number) {
     const f = this.fighters.get(id);
@@ -1022,15 +1021,6 @@ export class Combat {
     this.hooks.tell(id, { k: "gain", exp: 0, gold });
     this.traded(f);
     return gold;
-  }
-
-  /** Everyone who's an Outlaw right now, the biggest bounty first (for Sable's board). */
-  wanted(): WantedRow[] {
-    const now = Date.now();
-    return [...this.fighters.values()]
-      .filter((f) => f.player.outlaw && f.outlawUntil > now)
-      .map((f) => ({ name: f.player.name, lv: f.player.lv, bounty: bountyOf(f.gold), ms: f.outlawUntil - now }))
-      .sort((a, b) => b.bounty - a.bounty || b.ms - a.ms);
   }
 
   /** Pays the ferry fare (the room checked you're with the captain). False if you can't sail now. */
@@ -1133,7 +1123,7 @@ export class Combat {
     return d && (d.a === f.id ? d.b : d.a);
   }
 
-  /** The player `id`, if `f` may hit them now: their duel opponent once the countdown is over, or anyone fair game in the Wildlands. */
+  /** The player `id`, if `f` may hit them now: their duel opponent once the countdown is over, or anyone fair game in the Battle Pit. */
   private foe(f: Fighter, id: string | undefined): Fighter | undefined {
     if (!id || id.startsWith(MONSTER_ID_PREFIX)) return undefined;
     const d = this.duels.get(f.id);
@@ -1206,7 +1196,7 @@ export class Combat {
     if (d && f) this.endDuel(d, d.a === id ? d.b : d.a, `${f.player.name} gave up`);
   }
 
-  /** Auto-attacks on a player: your duel opponent (once the countdown is over), or anyone fair game in the Wildlands. */
+  /** Auto-attacks on a player: your duel opponent (once the countdown is over), or anyone fair game in the Battle Pit. */
   private playerFight(f: Fighter, now: number) {
     const g = this.foe(f, f.target);
     if (!g) {
@@ -1246,69 +1236,43 @@ export class Combat {
     else this.beaten(g, f);
   }
 
-  // ---------------------------------------------------------------- open PVP (the Wildlands)
+  // ---------------------------------------------------------------- the Battle Pit (and sieges)
 
-  /** `f` attacks `g` in the Wildlands: unless `g` is an Outlaw, that makes `f` one (or keeps them one a while longer). */
+  /** `f` attacks `g` in the Battle Pit (or a siege): remembered, so leaving mid-fight counts as a loss. */
   private aggress(f: Fighter, g: Fighter, now: number) {
     if (this.duels.has(f.id)) return;
-    if (this.siegeFight(f, g)) {
-      g.pvpBy = { id: f.id, at: now };
-      return;
-    }
     const fresh = g.pvpBy?.id !== f.id || now - g.pvpBy.at > PVP_COMBAT_MS;
     g.pvpBy = { id: f.id, at: now };
-    if (!g.player.outlaw) {
-      if (!f.player.outlaw) {
-        this.hooks.notice(
-          f.id,
-          `You attacked ${g.player.name}, who isn't an Outlaw: now you are one, for ${OUTLAW_MS / 60_000} minutes. If someone beats you meanwhile, you lose EXP and a bounty from your gold.`,
-        );
-      }
-      f.outlawUntil = now + OUTLAW_MS;
-      f.player.outlaw = true;
-      f.sheetDirty = true;
-    }
-    if (fresh) this.hooks.notice(g.id, `${f.player.name} is attacking you!${g.player.outlaw ? "" : " Fighting back won't make you an Outlaw."}`);
+    if (fresh && !this.siegeFight(f, g)) this.hooks.notice(g.id, `${f.player.name} is attacking you!`);
   }
 
-  /** `f` beat `g` in the Wildlands. An Outlaw pays: EXP like any knock-out, and a bounty from their gold to `f`. */
+  /** `f` beat `g` in the Battle Pit (or a siege). Nobody loses anything; a win counts once in a while per pair. */
   private beaten(g: Fighter, f: Fighter) {
     if (this.siegeFight(f, g)) {
       this.knockOut(g, false);
-      this.siegeDowns.add(g.id);
+      this.downs.set(g.id, "siege");
       this.hooks.notice(f.id, `You beat ${g.player.name}!`);
       this.hooks.notice(g.id, `${f.player.name} beat you. In a siege you lose nothing: you'll get up at the camp outside the gate.`);
       return;
     }
     const now = Date.now();
-    const outlaw = g.player.outlaw;
-    const bounty = outlaw ? bountyOf(g.gold) : 0;
-    // Paid for: their name is clean again.
-    g.outlawUntil = 0;
-    g.player.outlaw = false;
-    if (bounty) {
-      g.gold -= bounty;
-      f.gold += bounty;
-      g.sheetDirty = f.dirty = f.sheetDirty = true;
-      this.hooks.tell(f.id, { k: "gain", exp: 0, gold: bounty });
-    }
-    this.knockOut(g, outlaw);
+    this.knockOut(g, false);
+    this.downs.set(g.id, "pit");
     // Beating the same player over and over only counts once in a while.
     const key = `${f.player.name}>${g.player.name}`;
-    if (now - (this.beatenAt.get(key) ?? -Infinity) >= PVP_RECOUNT_MS) {
+    const counts = now - (this.beatenAt.get(key) ?? -Infinity) >= PVP_RECOUNT_MS;
+    if (counts) {
       this.beatenAt.set(key, now);
       f.book.deeds.pvpWins++;
-      if (outlaw) f.book.deeds.bounties++;
       this.deed(f);
-      this.hooks.pvpWin(f.id, outlaw, bounty);
+      this.hooks.pvpWin(f.id);
     }
-    const gold = bounty ? ` and a bounty of ${goldText(bounty)} gold` : "";
-    this.hooks.notice(f.id, outlaw ? `You beat the Outlaw ${g.player.name}${bounty ? ` and claimed a bounty of ${goldText(bounty)} gold` : ""}!` : `You beat ${g.player.name}!`);
-    this.hooks.notice(g.id, outlaw ? `${f.player.name} beat you. As an Outlaw, you lost EXP${gold}.` : `${f.player.name} beat you. You lost nothing, as you weren't an Outlaw.`);
+    this.hooks.notice(f.id, counts ? `You beat ${g.player.name}!` : `You beat ${g.player.name} again. Beating the same player only counts once every ${PVP_RECOUNT_MS / 60_000} minutes.`);
+    this.hooks.notice(g.id, `${f.player.name} beat you. In the Battle Pit you lose nothing: you'll get up by the Arena.`);
     this.save(f);
   }
 
-  /** Both inside Crownhold's walls during a siege: the siege's rules, not the Wildlands'. */
+  /** Both inside Crownhold's walls during a siege: the siege's rules, not the Battle Pit's. */
   private siegeFight(f: Fighter, g: Fighter): boolean {
     return this.siege && inCastle(f.pos.x, f.pos.y) && inCastle(g.pos.x, g.pos.y);
   }
@@ -1927,7 +1891,7 @@ export class Combat {
       if (mob.post === undefined) return this.knockOut(f);
       // Falling in a siege costs nothing, whoever does it.
       this.knockOut(f, false);
-      this.siegeDowns.add(f.id);
+      this.downs.set(f.id, "siege");
       return this.hooks.notice(f.id, `A ${mob.def.name} beat you. In a siege you lose nothing: you'll get up at the camp outside the gate.`);
     }
     // Snapper Flower Cards bite back (always at least 1, so they matter against weak monsters too).

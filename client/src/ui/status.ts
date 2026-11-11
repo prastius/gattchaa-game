@@ -27,10 +27,6 @@ export class StatusPanel {
   private knockedOut = $("knocked-out");
   private returnBtn = $<HTMLButtonElement>("return-btn");
   private shown = { hp: -1, mhp: -1, target: "" };
-  private outlaw = $("status-outlaw");
-  /** An Outlaw until then (performance.now() time; 0 = not one). */
-  private outlawUntil = 0;
-  private outlawTimer?: number;
 
   constructor(name: string) {
     $("status-name").textContent = name;
@@ -57,22 +53,6 @@ export class StatusPanel {
     }
     this.gold.textContent = s.gold.toLocaleString();
     this.note.hidden = s.saved;
-    this.outlawUntil = s.outlaw ? performance.now() + s.outlaw : 0;
-    this.tickOutlaw();
-    if (this.outlawUntil && !this.outlawTimer) this.outlawTimer = window.setInterval(() => this.tickOutlaw(), 500);
-  }
-
-  /** "☠ Outlaw · 2:41" while it lasts. */
-  private tickOutlaw() {
-    const left = this.outlawUntil - performance.now();
-    this.outlaw.hidden = left <= 0;
-    if (left > 0) {
-      const s = Math.ceil(left / 1000);
-      this.outlaw.textContent = `☠ Outlaw · ${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-    } else if (this.outlawTimer) {
-      clearInterval(this.outlawTimer);
-      this.outlawTimer = undefined;
-    }
   }
 
   setHp(hp: number, mhp: number) {

@@ -1,5 +1,5 @@
 import { DECOR, TILE_SIZE, Terrain, isWet, type World } from "../../../shared/world";
-import { Floor, biomeAt, dungeonAt, inRect, type Biome } from "../../../shared/town";
+import { Floor, biomeAt, caveAt, inRect, type Biome } from "../../../shared/town";
 import { EMOTES, EMOTE_NAMES } from "../../../shared/protocol";
 import { FIELDS, fieldAt, inSafeZone } from "../../../shared/rpg";
 import { inPvpZone } from "../../../shared/pvp";
@@ -70,9 +70,9 @@ export class HUD {
   private party: readonly Dot[] = [];
   /** Outside the town walls, where monsters roam. */
   inField = false;
-  /** In the Wildlands, where players can fight each other. */
+  /** In the Battle Pit, where players can fight each other. */
   pvp = false;
-  /** Crossed into the Wildlands (true) or back out. */
+  /** Went down into the Battle Pit (true) or back out. */
   onPvp?: (on: boolean) => void;
 
   constructor(private world: World) {
@@ -96,7 +96,7 @@ export class HUD {
             ? (FLOOR_RGB[floor] ?? [200, 200, 200])
             : (SEASON_RGB[biomeAt(tx, ty)][world.vertexAt(tx, ty)] ?? TERRAIN_RGB[world.vertexAt(tx, ty)] ?? [0, 0, 0]);
         const d = DECOR[world.decorAt(tx, ty)];
-        // The Wildlands' land has a red cast, so you can see where PVP starts.
+        // The Battle Pit's floor has a red cast, so you can see where PVP starts.
         const pvp = !isWet(world.vertexAt(tx, ty)) && FIELDS.some((f) => f.pvp && inRect(f.area, tx, ty));
         const k = (d.block ? 0.62 : 1) * (pvp ? 0.8 : 1);
         const o = (ty * world.width + tx) * 4;
@@ -255,8 +255,8 @@ export class HUD {
     ctx.fillRect(0, 0, minimap.width, minimap.height);
     ctx.imageSmoothingEnabled = true; // ~1.3 px per tile: smoothing keeps streets even
     ctx.drawImage(this.terrain, left, top, MINIMAP_TILES, MINIMAP_TILES, 0, 0, minimap.width, minimap.height);
-    // Underground, only the dungeon you're in: the rest is rock.
-    const below = self && dungeonAt(self.x / TILE_SIZE, self.y / TILE_SIZE);
+    // Underground, only the dungeon (or the Battle Pit) you're in: the rest is rock.
+    const below = self && caveAt(self.x / TILE_SIZE, self.y / TILE_SIZE);
     if (below) {
       const z = below.zone;
       const x0 = mx(z.x * TILE_SIZE), y0 = my(z.y * TILE_SIZE), x1 = mx((z.x + z.w) * TILE_SIZE), y1 = my((z.y + z.h) * TILE_SIZE);

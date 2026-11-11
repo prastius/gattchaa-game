@@ -43,7 +43,7 @@ import { PIONEERS, TITLES, isTitleId, type TitleShowMessage } from "../../../sha
 import type { ArenaBoard, DuelAnswerMessage, DuelAskMessage, DuelEndEvent } from "../../../shared/duels";
 import { BAG_SIZE, ITEMS, MAX_STACK, OUTFITTER_STOCK, SMITH_STOCK, cleanUpgrade, isItemId, isSlot, itemName } from "../../../shared/items";
 import { FERRY, NPCS, type NpcKind } from "../../../shared/npcs";
-import { TOP_HUNTER_NEWS, weekEndsAt, weekOf, type WildBoard } from "../../../shared/pvp";
+import { GLORY_DUEL_WIN, GLORY_PIT_WIN, GLORY_SHOP, PVP_RECOUNT_MS, TOP_FIGHTER_NEWS, weekEndsAt, weekOf, type GloryBuyMessage, type PitBoard } from "../../../shared/pvp";
 import {
   SHOP_AWAY_HOURS,
   SHOP_ID_RE,
@@ -68,7 +68,7 @@ import { Parties } from "./Parties";
 import { Guilds } from "./Guilds";
 import { Siege } from "./Siege";
 import { Trials } from "./Trials";
-import { CASTLE_CAMP } from "../../../shared/town";
+import { CASTLE_CAMP, PIT_MOUTH, TILE } from "../../../shared/town";
 import { CRYSTAL, campSpot, type TributeResult } from "../../../shared/siege";
 import { isTrial, type TrialKeeperMessage, type TrialMessage } from "../../../shared/trial";
 import {
@@ -187,6 +187,8 @@ export class WorldRoom extends Room<{ state: WorldState }> {
   private shopOwners = new Map<string, Account>();
   /** One town session per account (account id -> session id); a second window takes over. */
   private sessionOf = new Map<number, string>();
+  /** "winner>loser" account ids, and when a ranked win between them last earned Glory. */
+  private duelGloryAt = new Map<string, number>();
   private lastRecount = Date.now();
   private openNewsAt = new Map<number, number>();
 
@@ -292,23 +294,28 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       if (this.itemOk(client) && this.npcNear(client, msg?.npc, "castle")) client.send("castle:tribute", this.siege.tribute(client.sessionId) satisfies TributeResult);
     },
     "arena:board": (client: Client, msg: { npc?: string }) => {
-      if (!this.itemOk(client) || !this.npcNear(client, msg?.npc, "arena")) return;
-      const account = this.meta.get(client.sessionId)?.account;
-      client.send("arena:board", { ...db.arenaBoard(10, account?.id), saved: Boolean(account) } satisfies ArenaBoard);
+      if (this.itemOk(client) && this.npcNear(client, msg?.npc, "arena")) this.sendArenaBoard(client);
     },
-    "wild:board": (client: Client, msg: { npc?: string }) => {
-      if (!this.itemOk(client) || !this.npcNear(client, msg?.npc, "bounty")) return;
+    "glory:buy": (client: Client, msg: GloryBuyMessage) => {
+      if (!this.itemOk(client) || !this.npcNear(client, msg?.npc, "arena")) return;
+      const ware = Number.isInteger(msg?.i) ? GLORY_SHOP[msg.i] : undefined;
+      if (!ware) return;
+      const account = this.meta.get(client.sessionId)?.account;
+      if (!account) return this.notice(client.sessionId, "Only signed-in players earn and spend Glory.");
+      const name = ITEMS[ware.item].name;
+      const got = this.combat.grant(client.sessionId, ware.item, ware.n, () => {
+        if (db.spendGlory(account.id, ware.glory)) return true;
+        this.notice(client.sessionId, `${name} costs ${ware.glory} Glory, and you have ${db.glory(account.id)}.`);
+        return false;
+      });
+      if (got) this.notice(client.sessionId, `Magnus hands you ${ware.n > 1 ? `${ware.n} × ${name}` : name} for ${ware.glory} Glory.`);
+      this.sendArenaBoard(client);
+    },
+    "pit:board": (client: Client, msg: { npc?: string }) => {
+      if (!this.itemOk(client) || !this.npcNear(client, msg?.npc, "pit")) return;
       const account = this.meta.get(client.sessionId)?.account;
       const week = weekOf(Date.now());
-      client.send("wild:board", {
-        ...db.wildBoard(10, week, account?.id),
-        wanted: this.combat
-          .wanted()
-          .slice(0, 10)
-          .map((w) => (w.name === this.state.players.get(client.sessionId)?.name ? { ...w, you: true as const } : w)),
-        resetAt: weekEndsAt(week),
-        saved: Boolean(account),
-      } satisfies WildBoard);
+      client.send("pit:board", { ...db.pitBoard(10, week, account?.id), resetAt: weekEndsAt(week), saved: Boolean(account) } satisfies PitBoard);
     },
     "title:show": (client: Client, msg: TitleShowMessage) => {
       const id = msg?.id;
@@ -392,13 +399,16 @@ export class WorldRoom extends Room<{ state: WorldState }> {
         const name = by && this.state.players.get(by)?.name;
         this.system(name ? `🏆 ${name} defeated the ${def.name}!` : `🏆 The ${def.name} has fallen!`);
       },
-      pvpWin: (id, outlaw, bounty) => {
+      pvpWin: (id) => {
         const account = this.meta.get(id)?.account;
         const name = this.state.players.get(id)?.name;
-        if (!account || !name) return;
-        const r = db.wildWin(account.id, outlaw, bounty, weekOf(Date.now()));
-        if (r.after === account.id && r.before !== account.id && r.weekWins >= TOP_HUNTER_NEWS) {
-          this.system(`🏹 ${name} is now the Wildlands' top hunter this week, with ${r.weekWins} players beaten!`);
+        if (!name) return;
+        if (!account) return this.notice(id, "Sign in with Gattchaa to earn Glory for your wins.");
+        const glory = db.addGlory(account.id, GLORY_PIT_WIN);
+        this.notice(id, `+${GLORY_PIT_WIN} Glory (${glory} in all). Spend it at the Arena Master.`);
+        const r = db.pitWin(account.id, weekOf(Date.now()));
+        if (r.after === account.id && r.before !== account.id && r.weekWins >= TOP_FIGHTER_NEWS) {
+          this.system(`⚔️ ${name} is now the Battle Pit's top fighter this week, with ${r.weekWins} players beaten!`);
         }
       },
       trialOver: (id, how) => this.trials.over(id, how),
@@ -704,7 +714,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     const meta = this.meta.get(client.sessionId);
     if (!meta || meta.shop) return;
     const id = typeof msg?.id === "string" ? msg.id.slice(0, 16) : "";
-    // (A player id is accepted only for your duel opponent, or someone fair game in the Wildlands.)
+    // (A player id is accepted only for your duel opponent, or someone fair game in the Battle Pit or a siege.)
     this.combat.setTarget(client.sessionId, id);
   }
 
@@ -712,7 +722,14 @@ export class WorldRoom extends Room<{ state: WorldState }> {
   private handleRevive(client: Client) {
     if (!this.combat.revive(client.sessionId)) return;
     // Beaten in a siege: up again at the camp outside Crownhold's gate, not in town.
-    const spawn = this.combat.wokeInSiege(client.sessionId) ? campSpot(CASTLE_CAMP, Math.floor(Math.random() * 32)) : world.findSpawn();
+    // Beaten in the Battle Pit: up again beside its portal, by the Arena.
+    const woke = this.combat.wokeIn(client.sessionId);
+    const spawn =
+      woke === "siege"
+        ? campSpot(CASTLE_CAMP, Math.floor(Math.random() * 32))
+        : woke === "pit"
+          ? { x: PIT_MOUTH.x * TILE, y: (PIT_MOUTH.y + 2.5 + Math.random() * 2) * TILE }
+          : world.findSpawn();
     this.teleport(client, spawn.x, spawn.y, Dir.Down);
   }
 
@@ -759,9 +776,28 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       const rating = ratings && (result === "win" ? ratings.winner : ratings.loser);
       this.clients.getById(id)?.send("duel:end", { result, why: yours(id), ...(rating && { rating }) } satisfies DuelEndEvent);
     }
-    if (d.winner && loser && ratings) {
+    if (d.winner && loser && ratings && wAcc && lAcc) {
       this.system(`⚔️ ${name(d.winner)} beat ${name(loser)} in the Arena! (rating ${ratings.winner[1]})`);
+      // Glory for a ranked win, once in a while for the same pair (no trading wins with a friend).
+      const key = `${wAcc.id}>${lAcc.id}`;
+      const now = Date.now();
+      if (now - (this.duelGloryAt.get(key) ?? -Infinity) >= PVP_RECOUNT_MS) {
+        this.duelGloryAt.set(key, now);
+        const glory = db.addGlory(wAcc.id, GLORY_DUEL_WIN);
+        this.notice(d.winner, `+${GLORY_DUEL_WIN} Glory (${glory} in all). Spend it at the Arena Master.`);
+      }
+      for (const [k, at] of this.duelGloryAt) if (now - at >= PVP_RECOUNT_MS) this.duelGloryAt.delete(k);
     }
+  }
+
+  /** The Arena Master's ranking, your place in it, and your Glory. */
+  private sendArenaBoard(client: Client) {
+    const account = this.meta.get(client.sessionId)?.account;
+    client.send("arena:board", {
+      ...db.arenaBoard(10, account?.id),
+      saved: Boolean(account),
+      ...(account && { glory: db.glory(account.id) }),
+    } satisfies ArenaBoard);
   }
 
   /** The NPC of that kind, if you're standing with them. */

@@ -8,7 +8,7 @@ import { MARKET_WANDER, PARK_WANDER, STORE_WANDER, TILE, WANDER_AREA, type Rect 
 import type { ShopProduct } from "./gattchaa";
 import { Dir } from "./protocol";
 
-export type NpcKind = "guide" | "shop" | "kuji" | "rooms" | "market" | "grading" | "pickup" | "crier" | "keeper" | "outfitter" | "jobs" | "smith" | "arena" | "ferry" | "bounty" | "guild" | "castle" | "trial" | "local";
+export type NpcKind = "guide" | "shop" | "kuji" | "rooms" | "market" | "grading" | "pickup" | "crier" | "keeper" | "outfitter" | "jobs" | "smith" | "arena" | "ferry" | "pit" | "guild" | "castle" | "trial" | "local";
 
 export interface NpcDef {
   id: string;
@@ -313,29 +313,27 @@ export const NPCS: NpcDef[] = [
       "Orc Archers shoot from up north. Keep moving!",
       "The Warlord's camp is where the road ends…",
       "Level 20? You're ready for the woods.",
-      "Past level 30? Take the path north to the Wildlands. Mind the other players!",
+      "Past level 30? Take the path north to the Wildlands. Mind the Trolls!",
     ],
   },
   {
-    // Beside the path north from the west road, just short of the Wildlands' border.
-    id: "bounty",
-    name: "Sable",
-    title: "Bounty Hunter",
-    kind: "bounty",
-    look: look({ body: "female", hair: "long", hairColor: "black", skin: "olive", top: "longsleeve", topColor: "black", bottom: "leggings", bottomColor: "charcoal", shoes: "boots", shoesColor: "black", hat: "bandana", hatColor: "red" }),
+    // Beside the path north from the west road, where the Wildlands begin.
+    id: "wild-scout",
+    name: "Rook",
+    title: "Scout",
+    kind: "local",
+    look: look({ body: "male", hair: "unkempt", hairColor: "chestnut", beard: "stubble", skin: "bronze", top: "longsleeve", topColor: "forest", bottom: "pants", bottomColor: "brown", shoes: "boots", shoesColor: "brown", hat: "bandana", hatColor: "forest" }),
     ...at(119.6, 139.6),
     dir: Dir.Down,
     greeting:
-      "Past the red line lie the Wildlands (Lv 30–40), and there's no law up there: players can attack each other. Hit someone who isn't an Outlaw and you become one for 3 minutes. Get beaten while you're an Outlaw and you lose EXP, and a bounty from your gold goes to whoever beat you. Fight back, or hunt Outlaws, and you lose nothing. Players under level 20 can't fight or be fought. Inside: Boarmen (Lv 31), Lizardmen (Lv 33), Werewolves (Lv 35), Trolls (Lv 37), Vampires (Lv 39), and the Minotaur King (Lv 44) on the highest ground.",
+      "North of here lie the Wildlands (Lv 30–40): Boarmen (Lv 31) in the grass past this path, Lizardmen (Lv 33) past the east path, then Werewolves (Lv 35) in the north-west woods, Trolls (Lv 37) on the highlands, Vampires (Lv 39) on the high ground to the north-east, and the Minotaur King (Lv 44) on the highest ground of all. Only monsters fight you up there. Want to fight other players? Try the Battle Pit, through the portal by the Arena in town.",
     chatter: [
-      "Past the red line, anyone can attack you!",
-      "Red names are Outlaws. Hunting them costs you nothing.",
-      "An Outlaw's bounty goes to whoever beats them.",
-      "Bring White Potions. Bram sells them by the south gate.",
+      "Boarmen in the grass, Lizardmen on the dry ground.",
       "The Minotaur King waits on the highest ground…",
+      "Bring White Potions. Bram sells them by the south gate.",
       "Past level 40? The ferry south of the meadow sails to Frostfell.",
-      "Want to see who's wanted? Come and read my board.",
-      "Top hunter of the week? Your name goes on my board.",
+      "Looking for a fight with a player? The Battle Pit's by the Arena.",
+      "Sieges at Crownhold, Wednesdays and Saturdays at 8!",
     ],
   },
   {
@@ -523,7 +521,7 @@ export const NPCS: NpcDef[] = [
     ...at(83.5, 218.6),
     dir: Dir.Right,
     greeting:
-      "That glow is the way down to the Orc Caves (Lv 28–36), where the orcs of these woods dig for their Chieftain. Nobody can attack you down there but the monsters, so it's the place to level if the Wildlands aren't for you. The first floor has Cave Bats, Cave Crawlers and Orc Miners; take the stairs at the far end down to the Orc Shamans and the Orc Guards, and the Orc Chieftain (Lv 38) on his throne in the deepest chamber. Bring a party for him, and step out of the red circles. Walk into the portal to go down; there's one back up in the entrance hall.",
+      "That glow is the way down to the Orc Caves (Lv 28–36), where the orcs of these woods dig for their Chieftain. It's about as good as the Wildlands for your level, and out of the rain. The first floor has Cave Bats, Cave Crawlers and Orc Miners; take the stairs at the far end down to the Orc Shamans and the Orc Guards, and the Orc Chieftain (Lv 38) on his throne in the deepest chamber. Bring a party for him, and step out of the red circles. Walk into the portal to go down; there's one back up in the entrance hall.",
     chatter: ["The Orc Caves are down there. Mind your step.", "No player can attack you underground. Just the orcs.", "The Chieftain is in the deepest chamber.", "Step out of the red circles!", "Level 28 or more? Down you go."],
   },
   {
@@ -725,13 +723,33 @@ export const NPCS: NpcDef[] = [
     ...at(226.5, 183.6),
     dir: Dir.Down,
     greeting:
-      "A guild of your own? Reach level 20, bring 10,000 gold, and choose a name and an emblem. Your guild's name and emblem show over every member's head, you get your own chat (type /g), and guild mates never fight each other in the Wildlands. The founder leads: they choose officers, and together they can invite up to 30 members. Every guild has a purse for its gold, and I keep the ranking of the top guilds.",
+      "A guild of your own? Reach level 20, bring 10,000 gold, and choose a name and an emblem. Your guild's name and emblem show over every member's head, you get your own chat (type /g), and guild mates never fight each other in the Battle Pit. The founder leads: they choose officers, and together they can invite up to 30 members. Every guild has a purse for its gold, and I keep the ranking of the top guilds.",
     chatter: [
       "Found a guild! Level 20 and 10,000 gold.",
       "A guild is for good: it's still there tomorrow.",
-      "Guild mates never fight in the Wildlands.",
+      "Guild mates never fight in the Battle Pit.",
       "Type /g to talk to your guild.",
       "Sieges at Crownhold, Wednesdays and Saturdays at 8!",
+    ],
+  },
+  {
+    // In the Battle Pit's gate hall, by the way down into the pit.
+    id: "pit-keeper",
+    name: "Sable",
+    title: "Pit Keeper",
+    kind: "pit",
+    look: look({ body: "female", hair: "long", hairColor: "black", skin: "olive", top: "longsleeve", topColor: "black", bottom: "leggings", bottomColor: "charcoal", shoes: "boots", shoesColor: "black", hat: "bandana", hatColor: "red" }),
+    ...at(13, 490.6),
+    dir: Dir.Left,
+    greeting:
+      "Welcome to the Battle Pit, the one place where players fight each other without a duel. In here, the gate hall, nobody fights. Down in the pit, anyone from level 20 can attack anyone, except their party and guild mates. Beaten, you lose nothing, no EXP and no gold, and you wake up by the Arena. Every win earns Glory (if you're signed in), to spend at Magnus the Arena Master. Beating the same player again only counts after 10 minutes. The week's best fighters go on my board.",
+    chatter: [
+      "Down there, anyone can attack you!",
+      "Beaten in the pit? You lose nothing.",
+      "Every win earns Glory. Magnus trades it for good things.",
+      "Party and guild mates never fight each other.",
+      "Top fighter of the week? Your name goes on my board.",
+      "Hide behind the pillars, if you must.",
     ],
   },
   {
@@ -744,13 +762,15 @@ export const NPCS: NpcDef[] = [
     ...at(231.5, 225.6),
     dir: Dir.Right,
     greeting:
-      "Welcome to the Arena! Click any player and challenge them to a duel. Fight it out here on the sand and it counts for my ranking: win, and your rating goes up. Out there it's just for fun. Nobody loses anything in a duel, and I patch you both up after.",
+      "Welcome to the Arena! Click any player and challenge them to a duel. Fight it out here on the sand and it counts for my ranking: win, and your rating goes up, and you earn Glory. Out there it's just for fun. Nobody loses anything in a duel, and I patch you both up after. Want a free-for-all? The portal by the town wall goes down to the Battle Pit, where every win earns Glory too. Bring me your Glory and I'll trade it for potions, ingots, Star Crystals and gear you can't get anywhere else.",
     chatter: [
       "Who's next on the sand?",
       "Click a player to challenge them!",
       "Duels in the ring count for the ranking!",
       "No potions in a duel. Skill wins!",
       "Nobody gets hurt for real here. Promise.",
+      "Glory buys things gold can't. Ask me!",
+      "The Battle Pit's through the red portal, by the wall.",
     ],
   },
   {

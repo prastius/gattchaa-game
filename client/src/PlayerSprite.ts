@@ -137,10 +137,8 @@ export class PlayerSprite {
   private hpBar?: Phaser.GameObjects.Graphics;
   private hpKey = "";
   private fainted = false;
-  /** The name as given, and its usual colour (an Outlaw's is red, with a skull). */
-  private nameText: string;
+  /** The name's usual colour. */
   private nameColor: string;
-  private outlaw = false;
   private partyMate = false;
   private lungeTween?: Phaser.Tweens.Tween;
   /** The aura, when there is one: on the ground behind the body, and motes rising in front of it. */
@@ -165,7 +163,6 @@ export class PlayerSprite {
     opts: SpriteOptions,
   ) {
     this.textRes = opts.textRes;
-    this.nameText = name;
     this.nameColor = opts.isSelf ? "#ffe680" : opts.npc ? "#ffb35c" : "#ffffff";
     const hasTitle = !!opts.title;
     this.bubbleY = hasTitle ? -80 : -70;
@@ -395,18 +392,11 @@ export class PlayerSprite {
     this.bubble?.setY(this.bubble.y + 11 * up);
   }
 
-  /** Outlaws (see shared/pvp.ts) wear their name in red, with a skull. */
-  setOutlaw(on: boolean) {
-    if (on === this.outlaw) return;
-    this.outlaw = on;
-    this.label.setText(on ? `☠ ${this.nameText}` : this.nameText).setColor(on ? "#ff5a4f" : this.partyMate ? PARTY_NAME : this.nameColor);
-  }
-
-  /** Members of your party wear their name in green (an Outlaw's red still wins). */
+  /** Members of your party wear their name in green. */
   setParty(on: boolean) {
     if (on === this.partyMate) return;
     this.partyMate = on;
-    if (!this.outlaw) this.label.setColor(on ? PARTY_NAME : this.nameColor);
+    this.label.setColor(on ? PARTY_NAME : this.nameColor);
   }
 
   /** A quick step toward what you're hitting, and back. */

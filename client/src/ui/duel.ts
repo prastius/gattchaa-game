@@ -3,13 +3,12 @@ import { emblemOf } from "../../../shared/guild";
 import { RARITY } from "../../../shared/items";
 import { TITLES, isTitleId, type TitleDef } from "../../../shared/titles";
 import type { DuelAskEvent, DuelEndEvent, DuelStartEvent } from "../../../shared/duels";
-import { OUTLAW_MS } from "../../../shared/pvp";
 import type { Net } from "../net";
 import type { ChatUI } from "./chat";
 import { audio } from "../audio";
 
 // Duels on screen: the card that opens when you click another player (with
-// "Challenge to a duel", and "Attack" in the Wildlands), a challenge you
+// "Challenge to a duel", and "Attack" in the Battle Pit), a challenge you
 // receive (Accept or Decline), and the bar across the top while you fight.
 // The server runs the duel itself.
 
@@ -28,7 +27,6 @@ export interface PlayerInfo {
   lv?: number;
   cls?: string;
   title?: string;
-  outlaw?: boolean;
   /** Their guild ("" or missing: none) and its emblem. */
   guild?: string;
   emblem?: number;
@@ -71,7 +69,7 @@ export class DuelUI {
 
   // ------------------------------------------------------------------ the player card
 
-  /** Someone else was clicked: who they are, a challenge button, (in the Wildlands) `attack` them, and a party invite (or why not). */
+  /** Someone else was clicked: who they are, a challenge button, (in the Battle Pit) `attack` them, and a party invite (or why not). */
   openCard(id: string, p: PlayerInfo, attack?: () => void, party?: { go?: () => void; note: string }, guild?: { go?: () => void; note: string }) {
     this.card.replaceChildren();
     const head = el("div", "player-card-head");
@@ -89,7 +87,6 @@ export class DuelUI {
       tag.style.color = RARITY[t.tier].color;
       about.append(" · ", tag);
     }
-    if (p.outlaw) about.append(" · ", el("span", "player-card-outlaw", "☠ Outlaw"));
     const guildLine: HTMLElement[] = [];
     if (p.guild) {
       const { symbol, color } = emblemOf(p.emblem ?? 0);
@@ -106,7 +103,7 @@ export class DuelUI {
         attack();
         this.closeCard();
       });
-      fight.push(button, el("p", "player-card-note", `They aren't an Outlaw: attacking makes you one for ${OUTLAW_MS / 60_000} minutes. Beaten while you're an Outlaw, you lose EXP and a bounty from your gold.`));
+      fight.push(button, el("p", "player-card-note", "This is the Battle Pit: whoever is beaten loses nothing."));
     }
     const challenge = el("button", "dialog-link primary player-card-duel", "⚔ Challenge to a duel");
     challenge.type = "button";
