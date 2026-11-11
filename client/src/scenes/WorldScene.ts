@@ -774,9 +774,9 @@ export class WorldScene extends Phaser.Scene {
     PlayerSprite.nightLight = this.daylight.lamps;
     this.critters.update(time, dt, this.cameras.main.worldView, this.daylight.night, this.indoors);
     const view = this.cameras.main.worldView;
-    // Underground there's no weather, except a dungeon's own (embers in the Magma Depths).
+    // Underground there's no weather, except a dungeon's own (embers in the Magma Depths, petals in the Blossom Grotto).
     const below = DUNGEONS.find((d) => this.zone === d.zone);
-    const season = this.indoors ? "summer" : below ? (below.weather === "embers" ? "ash" : "summer") : biomeAt(view.centerX / TILE_SIZE, view.centerY / TILE_SIZE);
+    const season = this.indoors ? "summer" : below ? (below.weather ?? "summer") : biomeAt(view.centerX / TILE_SIZE, view.centerY / TILE_SIZE);
     this.snow.update(view, season === "winter");
     this.leaves.update(view, season === "autumn");
     this.petals.update(view, season === "spring");

@@ -99,6 +99,11 @@ The town is always safe: monsters never come in, and nobody can attack anyone in
 | Tilda | Dungeon Warden | In Dusk Hollow, by the portal down to the Hollow Burrows | Explains the Hollow Burrows |
 | Halvard | Dungeon Warden | In Frostfell, by the portal down to the Frozen Crypt | Explains the Frozen Crypt |
 | Ignis | Dungeon Warden | In Ashpeak, by the portal down to the Magma Depths | Explains the Magma Depths |
+| Pip | Dungeon Warden | In South Meadow, by the portal down to the Slime Cellar | Explains the Slime Cellar |
+| Morwen | Dungeon Warden | In Ravenmoor, by the portal down to the Shadow Vault | Explains the Shadow Vault |
+| Hana | Dungeon Warden | In Petalfall, by the portal down to the Blossom Grotto | Explains the Blossom Grotto |
+| Kesh | Dungeon Warden | In Sunscar, by the portal down to the Sunken Tomb | Explains the Sunken Tomb |
+| Selene | Dungeon Warden | In Starfall, by the portal down to the Void Rift | Explains the Void Rift |
 | Sable | Bounty Hunter | North of town, by the path up from the west road | Explains the Wildlands and their PVP rules, and keeps the board of who's wanted and the best hunters |
 | Edda | Ferry Captain | At the end of the pier on the meadow's south-east point | Sails you to Frostfell for 500 gold |
 | Bjorn | Ferryman | At the end of Frostfell's pier | Explains Frostfell, and sails you back for free |
@@ -175,6 +180,11 @@ Shops also show as orange dots on the minimap.
 | Hollow Burrows (dungeon) | 14–22 | The portal in Dusk Hollow, just south of the east road, between the Grubs and the Rock Worms | Tilda |
 | Frozen Crypt (dungeon) | 46–54 | The portal in Frostfell, down the path south of Frostfell's pier | Halvard |
 | Magma Depths (dungeon) | 76–84 | The portal in Ashpeak, north of the Cinder Colossus's crater | Ignis |
+| Slime Cellar (dungeon) | 6–12 | The portal in South Meadow, in the trees just west of the south road, north of the Snapper Flowers | Pip |
+| Shadow Vault (dungeon) | 56–64 | The portal in Ravenmoor, in the middle of the moor, south of the Wraiths' woods | Morwen |
+| Blossom Grotto (dungeon) | 66–74 | The portal in Petalfall, in the cherry woods, south of the Phantom Swordsmen | Hana |
+| Sunken Tomb (dungeon) | 86–94 | The portal in Sunscar, in the scrub on the island's west side, between the Dust Djinns and the Dune Stalkers | Kesh |
+| Void Rift (dungeon) | 94–100 | The portal in Starfall, at the island's north end, above the Star Knights | Selene |
 | Frostfell | 40–50 | The ferry from the meadow's south-east point (500 gold; the way back is free) | Edda, Bjorn |
 | Ravenmoor | 50–60 | The boat at the end of the east road, past the Pumpking (800 gold; the way back is free) | Finn, Corvin |
 | Petalfall | 60–70 | The ship from the meadow's east shore (1,200 gold; the way back is free) | Marlow, Willow |
@@ -450,14 +460,19 @@ A party that steps out of the circles takes far less damage than one that stands
 
 ### Dungeons
 
-Ragnarok style, some lands have a **dungeon** underneath: dark caves with their own monsters and a boss at the bottom, through a glowing **portal** in the land (each has a signpost and a Dungeon Warden next to it). Every dungeon has **two floors**: a red portal at the far end of the first is the **stairs** down, and a blue one takes you back up (another in the entrance hall takes you back to the surface). Nobody but the monsters can attack you underground. Fainting wakes you up in town as usual.
+Ragnarok style, every land but the Wildlands has a **dungeon** underneath: dark caves with their own monsters and a boss at the bottom, through a glowing **portal** in the land (each has a signpost and a Dungeon Warden next to it). Every dungeon has **two floors**: a red portal at the far end of the first is the **stairs** down, and a blue one takes you back up (another in the entrance hall takes you back to the surface). Nobody but the monsters can attack you underground. Fainting wakes you up in town as usual.
 
 | Dungeon | Levels | Under | Boss |
 | --- | --- | --- | --- |
+| Slime Cellar | 6–12 | South Meadow | Slime King (Lv 14) |
 | Hollow Burrows | 14–22 | Dusk Hollow | Burrow Queen (Lv 24) |
 | Orc Caves | 28–36 | The Orc Woods | Orc Chieftain (Lv 38) |
 | Frozen Crypt | 46–54 | Frostfell | Crypt Lord (Lv 57) |
+| Shadow Vault | 56–64 | Ravenmoor | Shadow Count (Lv 67) |
+| Blossom Grotto | 66–74 | Petalfall | Jade Serpent (Lv 77) |
 | Magma Depths | 76–84 | Ashpeak | Molten Drake (Lv 87) |
+| Sunken Tomb | 86–94 | Sunscar | Tomb Pharaoh (Lv 97) |
+| Void Rift | 94–100 | Starfall | Void Wyrm (Lv 106) |
 
 **The Orc Caves** (level 28–36), under the Orc Woods, where the orcs of the woods dig for their Chieftain.
 
@@ -515,6 +530,71 @@ Ragnarok style, some lands have a **dungeon** underneath: dark caves with their 
 | **Molten Drake** (boss) | 87 | 280,000 | Second floor, the deepest chamber | Boss: slam and blast like a field boss (see "Field bosses"); back 20–30 minutes after it falls |
 
 **The Molten Drake** always drops the Molten Heart, a Mithril Ingot and a Star Crystal, often good gear (Molten Blade, Drake Lance, Flame Priest's Staff, Magma Bow), rarely the **Drake's Eye** (6%), and very rarely the legendary **Ring of the Depths** (2%, anyone can wear it) or its own card (2%). Four players beat it in a few minutes.
+
+**The Slime Cellar** (level 6–12): an old farm cellar, full of slimes now, and of goblins stealing what's left. The portal is in South Meadow, in the trees just west of the south road, north of the Snapper Flowers, with **Pip the Dungeon Warden** next to it.
+
+| Monster | Lv | HP | Where | Behaviour |
+| --- | --- | --- | --- | --- |
+| Cellar Bat | 6 | 110 | First floor, the big cellar | Attacks anyone who comes close; plain attacks sometimes miss it |
+| Blue Jelly | 7 | 210 | First floor, the wine cellar | Only fights back |
+| Cellar Viper | 8 | 190 | First floor, the wine cellar | Attacks anyone who comes close |
+| Goblin Thief | 10 | 240 | Second floor, the pantry | Attacks from far away |
+| Great Slime | 11 | 460 | Second floor, the King's cellar | Only fights back |
+| **Slime King** (boss) | 14 | 5,000 | Second floor, the deepest cellar | Boss: slam and blast like a field boss (see "Field bosses"); back 15 minutes after it falls |
+
+**The Slime King** always drops the Royal Gel, an Iron Ingot and a Star Crystal, often good gear (Cellar Cleaver, Slime Staff, Cellar Bow), rarely the **Slime King's Drop** (6%), and very rarely the legendary **Jelly Ring** (2%, anyone can wear it) or its own card (2%). Three or four players around level 12 beat it in a few minutes.
+
+**The Shadow Vault** (level 56–64): where the Shadow Count hid his treasure, and himself. The portal is in Ravenmoor, in the middle of the moor, south of the Wraiths' woods, with **Morwen the Dungeon Warden** next to it.
+
+| Monster | Lv | HP | Where | Behaviour |
+| --- | --- | --- | --- | --- |
+| Shadow Bat | 56 | 4,100 | First floor, the first hall | Attacks anyone who comes close; plain attacks sometimes miss it |
+| Bone Crawler | 58 | 5,600 | First floor, the bone hall | Only fights back |
+| Vault Knight | 59 | 5,200 | First floor, the bone hall | Attacks anyone who comes close |
+| Shadow Priest | 61 | 4,500 | Second floor, the chapel | Attacks from far away, on sight |
+| Bone Colossus | 63 | 7,000 | Second floor, the long hall | Only fights back |
+| **Shadow Count** (boss) | 67 | 130,000 | Second floor, the treasure hall | Boss: slam and blast like a field boss (see "Field bosses"); back 25 minutes after it falls |
+
+**The Shadow Count** always drops the Count's Signet, a Mithril Ingot and a Star Crystal, often good gear (Vault Blade, Shadow Scythe, Shadow Staff, Vault Bow), rarely the **Count's Brooch** (6%), and very rarely the legendary **Shadow Ring** (2%, anyone can wear it) or its own card (2%). Four players around level 64 beat it in a few minutes.
+
+**The Blossom Grotto** (level 66–74): a cave under the cherry roots, round a hidden spring. The portal is in Petalfall, in the cherry woods, south of the Phantom Swordsmen, with **Hana the Dungeon Warden** next to it.
+
+| Monster | Lv | HP | Where | Behaviour |
+| --- | --- | --- | --- | --- |
+| Blossom Wasp | 66 | 5,000 | First floor, the big cave | Attacks anyone who comes close; plain attacks sometimes miss it |
+| Root Crawler | 68 | 7,400 | First floor, the root cave | Only fights back |
+| Fox Guard | 69 | 6,400 | First floor, the root cave | Attacks anyone who comes close |
+| Lantern Ghost | 71 | 5,600 | Second floor, the lantern cave | Attacks from far away, on sight |
+| Stone Oni | 73 | 8,600 | Second floor, the long cave | Only fights back |
+| **Jade Serpent** (boss) | 77 | 200,000 | Second floor, the spring | Boss: slam and blast like a field boss (see "Field bosses"); back 30 minutes after it falls |
+
+**The Jade Serpent** always drops the Jade Pearl, a Mithril Ingot and a Star Crystal, often good gear (Jade Katana, Jade Glaive, Lantern Staff, Blossom Longbow), rarely the **Jade Scale** (6%), and very rarely the legendary **Lotus Ring** (2%, anyone can wear it) or its own card (2%). Four players around level 74 beat it in a few minutes.
+
+**The Sunken Tomb** (level 86–94): where Sunscar's old kings were buried, and one of them won't stay dead. The portal is in Sunscar, in the scrub on the island's west side, between the Dust Djinns and the Dune Stalkers, with **Kesh the Dungeon Warden** next to it.
+
+| Monster | Lv | HP | Where | Behaviour |
+| --- | --- | --- | --- | --- |
+| Tomb Scarab | 86 | 7,000 | First floor, the first hall | Attacks anyone who comes close; plain attacks sometimes miss it |
+| Sand Worm | 88 | 10,000 | First floor, the sand hall | Only fights back |
+| Tomb Mummy | 89 | 8,600 | First floor, the sand hall | Attacks anyone who comes close |
+| Jackal Priest | 91 | 7,400 | Second floor, the priests' hall | Attacks from far away, on sight |
+| Sandstone Colossus | 93 | 11,400 | Second floor, the long hall | Only fights back |
+| **Tomb Pharaoh** (boss) | 97 | 320,000 | Second floor, the throne room | Boss: slam and blast like a field boss (see "Field bosses"); back 30 minutes after it falls |
+
+**The Tomb Pharaoh** always drops the Pharaoh's Mask, a Mithril Ingot and a Star Crystal, often good gear (Pharaoh's Khopesh, Tomb Spear, Jackal Staff, Tomb Bow), rarely the **Pharaoh's Ankh** (6%), and very rarely the legendary **Ring of the Sands** (2%, anyone can wear it) or its own card (2%). Four players around level 94 beat it in about five minutes.
+
+**The Void Rift** (level 94–100): a crack in the sky that fell here with the stars. The portal is in Starfall, at the island's north end, above the Star Knights, with **Selene the Dungeon Warden** next to it.
+
+| Monster | Lv | HP | Where | Behaviour |
+| --- | --- | --- | --- | --- |
+| Rift Bat | 94 | 7,800 | First floor, the big cavern | Attacks anyone who comes close; plain attacks sometimes miss it |
+| Void Worm | 95 | 11,000 | First floor, the dark cavern | Only fights back |
+| Rift Knight | 97 | 9,000 | First floor, the dark cavern | Attacks anyone who comes close |
+| Void Eye | 98 | 8,000 | Second floor, the first hall | Attacks from far away, on sight |
+| Void Golem | 99 | 12,000 | Second floor, the long hall | Only fights back |
+| **Void Wyrm** (boss) | 106 | 340,000 | Second floor, the deepest chamber | Boss: slam and blast like a field boss (see "Field bosses"); back 35 minutes after it falls |
+
+**The Void Wyrm** always drops the Wyrm Heart, a Mithril Ingot and a Star Crystal, often good gear (Rift Blade, Void Scythe, Rift Staff, Rift Bow), rarely the **Wyrm's Eye** (6%), and very rarely the legendary **Ring of the Rift** (2%, anyone can wear it) or its own card (2%). Four level-100 players beat it in about five minutes.
 
 ## 6. Jobs and skills
 
@@ -747,6 +827,7 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Bronze Sword | 6 | ATK +10 | Novice, Knight | 2 | Hornet |
 | Saber | 9 | ATK +15 | Novice, Knight | 2 | Snapper Flower |
 | Squire's Longsword | 10 | ATK +12 | Knight | 1 | Orin (job gift), Bram |
+| Cellar Cleaver | 11 | ATK +15, Critical +2% | Novice, Knight | 2 | Cellar Bat, Goblin Thief, Slime King (Slime Cellar) |
 | Rapier | 13 | ATK +17, Critical +3% | Novice, Knight | 2 | Grub, Night Bat |
 | Knight's Blade | 17 | ATK +25 | Knight | 2 | Ghost, Pumpking |
 | Burrow Blade | 18 | ATK +26, Critical +3% | Novice, Knight | 2 | Tunnel Bat, Fungus Eye, Burrow Queen (Hollow Burrows) |
@@ -757,11 +838,15 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Ice Sword | 42 | ATK +60, Critical +3% | Novice, Knight | 2 | Yeti |
 | Crypt Blade | 50 | ATK +68, Critical +4% | Novice, Knight | 2 | Ice Bat, Ice Golem, Crypt Lord (Frozen Crypt) |
 | Gilded Blade | 52 | ATK +70, Critical +4% | Novice, Knight | 2 | Gargoyle |
+| Vault Blade | 60 | ATK +80, Critical +5% | Novice, Knight | 2 | Shadow Bat, Bone Colossus, Shadow Count (Shadow Vault) |
 | Blossom Blade | 62 | ATK +84, Critical +5% | Novice, Knight | 2 | Moon Hare, Crow Blade |
+| Jade Katana | 70 | ATK +94, Critical +6% | Novice, Knight | 2 | Blossom Wasp, Stone Oni, Jade Serpent (Blossom Grotto) |
 | Cinder Blade | 72 | ATK +96, Critical +5% | Novice, Knight | 2 | Ember Imp, Magma Golem |
 | Molten Blade | 80 | ATK +104, Critical +5% | Novice, Knight | 2 | Lava Bat, Obsidian Golem, Molten Drake (Magma Depths) |
 | Sun Blade | 82 | ATK +108, Critical +5% | Novice, Knight | 2 | Dune Stalker, Sand Golem |
+| Pharaoh's Khopesh | 90 | ATK +118, Critical +6% | Novice, Knight | 2 | Tomb Scarab, Sandstone Colossus, Tomb Pharaoh (Sunken Tomb) |
 | Star Blade | 92 | ATK +120, Critical +6% | Novice, Knight | 2 | Void Bat, Crystal Golem |
+| Rift Blade | 98 | ATK +128, Critical +6% | Novice, Knight | 2 | Rift Bat, Void Golem, Void Wyrm (Void Rift) |
 | Halberd (spear, both hands) | 25 | ATK +50 | Knight | 2 | Orc Warrior, Orc Warlord |
 | Dragon Spear (legendary, spear, both hands) | 30 | ATK +66, Critical +8% | Knight | 2 | Orc Warlord |
 | Long Spear (spear, both hands) | 32 | ATK +62 | Knight | 2 | Boarman, Lizardman |
@@ -771,15 +856,20 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Frost Scythe (legendary, spear, both hands) | 48 | ATK +102, Critical +8% | Knight | 2 | Frost Giant |
 | Frost Glaive (spear, both hands) | 54 | ATK +100, Critical +4% | Knight | 2 | Frozen Knight, Crypt Lord (Frozen Crypt) |
 | Dark Lance (spear, both hands) | 56 | ATK +104, Critical +4% | Knight | 2 | Dark Knight, Flesh Golem, Fallen King |
+| Shadow Scythe (spear, both hands) | 64 | ATK +120, Critical +4% | Knight | 2 | Bone Crawler, Shadow Count (Shadow Vault) |
 | Thunder Glaive (spear, both hands) | 66 | ATK +124, Critical +4% | Knight | 2 | Phantom Swordsman, Red Ogre, Ogre Warlord |
+| Jade Glaive (spear, both hands) | 74 | ATK +136, Critical +4% | Knight | 2 | Root Crawler, Jade Serpent (Blossom Grotto) |
 | Magma Lance (spear, both hands) | 76 | ATK +140, Critical +4% | Knight | 2 | Obsidian Knight, Magma Golem, Cinder Colossus |
 | Drake Lance (spear, both hands) | 84 | ATK +152, Critical +4% | Knight | 2 | Magma Crawler, Molten Drake (Magma Depths) |
 | Sun Spear (spear, both hands) | 86 | ATK +158, Critical +4% | Knight | 2 | Tomb Warden, Sand Golem, Dune King |
+| Tomb Spear (spear, both hands) | 94 | ATK +170, Critical +4% | Knight | 2 | Sand Worm, Tomb Pharaoh (Sunken Tomb) |
 | Void Lance (spear, both hands) | 96 | ATK +176, Critical +4% | Knight | 2 | Star Knight, Crystal Golem, Star Tyrant |
+| Void Scythe (spear, both hands) | 100 | ATK +186, Critical +5% | Knight | 2 | Void Worm, Void Wyrm (Void Rift) |
 | Hunting Bow | 10 | ATK +9, reach 170 | Archer | 1 | Orin (job gift), Bram |
+| Cellar Bow | 11 | ATK +14, reach 185 | Archer | 2 | Cellar Viper, Slime King (Slime Cellar) |
 | Recurve Bow | 12 | ATK +14, reach 190 | Archer | 2 | Snapper Flower |
 | Great Bow | 16 | ATK +23, reach 210 | Archer | 2 | Gazer, Pumpking |
-| Tunnel Bow | 18 | ATK +25 | Archer | 2 | Mole Goblin, Burrow Queen (Hollow Burrows) |
+| Tunnel Bow | 18 | ATK +25, reach 200 | Archer | 2 | Mole Goblin, Burrow Queen (Hollow Burrows) |
 | Composite Bow | 22 | ATK +30, reach 210 | Archer | 2 | Orc Archer |
 | Crossbow | 27 | ATK +40, Critical +4%, reach 220 | Archer | 2 | Orc Archer, Orc Warlord |
 | Longbow | 32 | ATK +46, reach 230 | Archer | 2 | Werewolf |
@@ -788,22 +878,27 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Frost Bow | 42 | ATK +54, reach 235 | Archer | 2 | Ramhorn |
 | Glacier Bow | 46 | ATK +66, Critical +4%, reach 245 | Archer | 2 | Frost Wight, Frost Giant |
 | Blood Bow | 52 | ATK +62, reach 245 | Archer | 2 | Wraith |
-| Crypt Bow | 52 | ATK +70, Critical +3% | Archer | 2 | Ice Seer, Crypt Lord (Frozen Crypt) |
+| Crypt Bow | 52 | ATK +70, Critical +3%, reach 248 | Archer | 2 | Ice Seer, Crypt Lord (Frozen Crypt) |
 | Royal Bow | 56 | ATK +76, Critical +4%, reach 250 | Archer | 2 | Flesh Golem, Fallen King |
 | Petal Bow | 62 | ATK +74, reach 250 | Archer | 2 | Moon Hare |
+| Vault Bow | 62 | ATK +82, Critical +3%, reach 252 | Archer | 2 | Shadow Priest, Shadow Count (Shadow Vault) |
 | Ogre-Bone Longbow | 66 | ATK +90, Critical +4%, reach 255 | Archer | 2 | Crow Blade, Red Ogre, Ogre Warlord |
 | Ember Bow | 72 | ATK +84, reach 255 | Archer | 2 | Ember Imp |
+| Blossom Longbow | 72 | ATK +94, Critical +3%, reach 258 | Archer | 2 | Lantern Ghost, Jade Serpent (Blossom Grotto) |
 | Obsidian Longbow | 76 | ATK +102, Critical +4%, reach 260 | Archer | 2 | Cinder Wraith, Magma Golem, Cinder Colossus |
-| Magma Bow | 82 | ATK +102, Critical +4% | Archer | 2 | Molten Knight, Molten Drake (Magma Depths) |
+| Magma Bow | 82 | ATK +102, Critical +4%, reach 262 | Archer | 2 | Molten Knight, Molten Drake (Magma Depths) |
 | Sand Bow | 82 | ATK +94, reach 260 | Archer | 2 | Dune Stalker |
 | Sunbeam Longbow | 86 | ATK +114, Critical +4%, reach 265 | Archer | 2 | Desert Raider, Sand Golem, Dune King |
 | Moon Bow | 92 | ATK +104, reach 265 | Archer | 2 | Void Bat |
+| Tomb Bow | 92 | ATK +118, Critical +3%, reach 268 | Archer | 2 | Jackal Priest, Tomb Pharaoh (Sunken Tomb) |
 | Starlight Longbow | 96 | ATK +126, Critical +4%, reach 270 | Archer | 2 | Night Wisp, Crystal Golem, Star Tyrant |
+| Rift Bow | 99 | ATK +130, Critical +4%, reach 272 | Archer | 2 | Void Eye, Void Wyrm (Void Rift) |
 | Apprentice Staff | 10 | ATK +9, MP +15, reach 150 | Mage | 1 | Orin (job gift), Bram |
+| Slime Staff | 11 | ATK +14, MP +30, reach 160 | Mage | 2 | Blue Jelly, Great Slime, Slime King (Slime Cellar) |
 | Gnarled Staff | 12 | ATK +14, MP +25, reach 160 | Mage | 2 | Snapper Flower |
 | Crystal Staff | 15 | ATK +19, MP +40, reach 170 | Mage | 2 | Snapper Flower |
 | Ember Staff | 16 | ATK +23, MP +50, reach 180 | Mage | 2 | Gazer, Pumpking |
-| Fungus Staff | 18 | ATK +25, MP +50 | Mage | 2 | Burrow Worm, Burrow Brute, Burrow Queen (Hollow Burrows) |
+| Fungus Staff | 18 | ATK +25, MP +50, reach 180 | Mage | 2 | Burrow Worm, Burrow Brute, Burrow Queen (Hollow Burrows) |
 | Ring Staff | 22 | ATK +30, MP +65, reach 190 | Mage | 2 | Goblin, Orc Archer |
 | Diamond Staff | 27 | ATK +40, MP +90, reach 200 | Mage | 2 | Orc Zombie, Orc Warlord |
 | Serpent Staff | 32 | ATK +46, MP +120, reach 210 | Mage | 2 | Lizardman |
@@ -812,17 +907,21 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Winter Staff | 42 | ATK +54, MP +160, reach 220 | Mage | 2 | Frost Shaman |
 | Aurora Staff | 46 | ATK +66, MP +220, reach 235 | Mage | 2 | Frost Drake, Frost Giant |
 | Bone Staff | 52 | ATK +62, MP +200, reach 230 | Mage | 2 | Lich |
-| Ice Seer's Staff | 52 | ATK +68, MP +220 | Mage | 2 | Crypt Wraith, Crypt Lord (Frozen Crypt) |
+| Ice Seer's Staff | 52 | ATK +68, MP +220, reach 235 | Mage | 2 | Crypt Wraith, Crypt Lord (Frozen Crypt) |
 | Soul Staff | 56 | ATK +76, MP +260, reach 240 | Mage | 2 | Lich, Flesh Golem, Fallen King |
 | Foxfire Staff | 62 | ATK +74, MP +240, reach 240 | Mage | 2 | Fox Spirit |
+| Shadow Staff | 62 | ATK +80, MP +270, reach 245 | Mage | 2 | Vault Knight, Shadow Count (Shadow Vault) |
 | Storm Staff | 66 | ATK +90, MP +300, reach 245 | Mage | 2 | Fox Spirit, Red Ogre, Ogre Warlord |
 | Cinder Staff | 72 | ATK +84, MP +280, reach 245 | Mage | 2 | Salamander |
+| Lantern Staff | 72 | ATK +92, MP +310, reach 250 | Mage | 2 | Fox Guard, Jade Serpent (Blossom Grotto) |
 | Magma Staff | 76 | ATK +102, MP +340, reach 250 | Mage | 2 | Salamander, Magma Golem, Cinder Colossus |
-| Flame Priest's Staff | 82 | ATK +100, MP +330 | Mage | 2 | Flame Priest, Molten Drake (Magma Depths) |
+| Flame Priest's Staff | 82 | ATK +100, MP +330, reach 252 | Mage | 2 | Flame Priest, Molten Drake (Magma Depths) |
 | Djinn Staff | 82 | ATK +94, MP +320, reach 250 | Mage | 2 | Dust Djinn |
 | Sun Staff | 86 | ATK +114, MP +380, reach 255 | Mage | 2 | Dust Djinn, Sand Golem, Dune King |
 | Seer's Staff | 92 | ATK +104, MP +360, reach 255 | Mage | 2 | Astral Seer |
+| Jackal Staff | 92 | ATK +116, MP +390, reach 258 | Mage | 2 | Tomb Mummy, Tomb Pharaoh (Sunken Tomb) |
 | Astral Staff | 96 | ATK +126, MP +420, reach 260 | Mage | 2 | Astral Seer, Crystal Golem, Star Tyrant |
+| Rift Staff | 99 | ATK +130, MP +440, reach 262 | Mage | 2 | Rift Knight, Void Wyrm (Void Rift) |
 
 **Spears** are new for Knights (in Ragnarok, Knights carry spears). They hit harder than swords but need both hands, so no shield.
 
@@ -953,6 +1052,16 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Frozen Ring (legendary, anyone) | Ring | 54 | ATK +9, DEF +8, HP +220, Critical +3% | Ice Bat, Ice Seer, Crypt Lord (Frozen Crypt) |
 | Drake's Eye (epic) | Amulet | 86 | ATK +22, DEF +8, HP +370 | Molten Drake (Magma Depths) |
 | Ring of the Depths (legendary, anyone) | Ring | 84 | ATK +11, DEF +9, HP +280, Critical +4% | Lava Bat, Molten Knight, Molten Drake (Magma Depths) |
+| Jelly Ring (legendary, anyone) | Ring | 12 | ATK +3, DEF +2, HP +40, Critical +1% | Cellar Bat, Goblin Thief, Slime King (Slime Cellar) |
+| Slime King's Drop (epic) | Amulet | 13 | ATK +4, HP +50 | Slime King (Slime Cellar) |
+| Shadow Ring (legendary, anyone) | Ring | 64 | ATK +10, DEF +8, HP +250, Critical +3% | Shadow Bat, Shadow Priest, Shadow Count (Shadow Vault) |
+| Count's Brooch (epic) | Amulet | 66 | ATK +17, DEF +6, HP +290 | Shadow Count (Shadow Vault) |
+| Lotus Ring (legendary, anyone) | Ring | 74 | ATK +11, DEF +9, HP +270, Critical +3% | Blossom Wasp, Lantern Ghost, Jade Serpent (Blossom Grotto) |
+| Jade Scale (epic) | Amulet | 76 | ATK +20, DEF +7, HP +330 | Jade Serpent (Blossom Grotto) |
+| Ring of the Sands (legendary, anyone) | Ring | 94 | ATK +12, DEF +10, HP +300, Critical +4% | Tomb Scarab, Jackal Priest, Tomb Pharaoh (Sunken Tomb) |
+| Pharaoh's Ankh (epic) | Amulet | 96 | ATK +24, DEF +9, HP +410 | Tomb Pharaoh (Sunken Tomb) |
+| Ring of the Rift (legendary, anyone) | Ring | 100 | ATK +13, DEF +11, HP +320, Critical +5% | Rift Bat, Void Eye, Void Wyrm (Void Rift) |
+| Wyrm's Eye (epic) | Amulet | 100 | ATK +26, DEF +10, HP +450 | Void Wyrm (Void Rift) |
 | Minotaur Horn (epic) | Amulet | 40 | ATK +12, HP +180 | Minotaur King |
 | Snowflake Pendant | Amulet | 44 | ATK +7, MP +80, Critical +4% | Frost Shaman |
 | Frost Ring | Ring | 46 | ATK +3, DEF +5, HP +100 | Frost Wight |
@@ -1026,6 +1135,36 @@ Ragnarok style: every monster very rarely drops **its own card**. A card goes in
 | Molten Knight Card | Molten Knight | Shield | Molten | DEF +4, Reflects 18% of damage | 1 in 1,000 |
 | Obsidian Golem Card | Obsidian Golem | Weapon | Obsidian | ATK +8, Critical +6% | 1 in 1,000 |
 | Molten Drake Card (legendary) | Molten Drake | Weapon | Drake-fire | ATK +12, HP +220, Critical +6% | 1 in 50 kills |
+| Cellar Bat Card | Cellar Bat | Feet | Flitting | Evade +3% | 1 in 1,000 |
+| Blue Jelly Card | Blue Jelly | Armour | Jellied | DEF +1, HP +40 | 1 in 1,000 |
+| Cellar Viper Card | Cellar Viper | Weapon | Venomous | ATK +2, Critical +2% | 1 in 1,000 |
+| Goblin Thief Card | Goblin Thief | Head | Sneaky | ATK +1, Evade +3% | 1 in 1,000 |
+| Great Slime Card | Great Slime | Shield | Sticky | DEF +2, HP +40 | 1 in 1,000 |
+| Slime King Card (legendary) | Slime King | Legs | Kingly | ATK +2, DEF +2, HP +60 | 1 in 50 kills |
+| Shadow Bat Card | Shadow Bat | Feet | Shadowed | ATK +4, Evade +6% | 1 in 1,000 |
+| Bone Crawler Card | Bone Crawler | Armour | Bone-plated | DEF +3, HP +260 | 1 in 1,000 |
+| Vault Knight Card | Vault Knight | Shield | Knightly | DEF +3, Reflects 16% of damage | 1 in 1,000 |
+| Shadow Priest Card | Shadow Priest | Head | Dark | ATK +5, MP +100 | 1 in 1,000 |
+| Bone Colossus Card | Bone Colossus | Amulet | Colossal | ATK +4, HP +200 | 1 in 1,000 |
+| Shadow Count Card (legendary) | Shadow Count | Weapon | Count's | ATK +9, HP +180, Critical +6% | 1 in 50 kills |
+| Blossom Wasp Card | Blossom Wasp | Feet | Stinging | ATK +4, Evade +6% | 1 in 1,000 |
+| Root Crawler Card | Root Crawler | Armour | Rooted | DEF +4, HP +280 | 1 in 1,000 |
+| Fox Guard Card | Fox Guard | Ring | Foxfire | ATK +5, Evade +5% | 1 in 1,000 |
+| Lantern Ghost Card | Lantern Ghost | Head | Lantern | ATK +6, MP +110 | 1 in 1,000 |
+| Stone Oni Card | Stone Oni | Weapon | Oni | ATK +7, Critical +5% | 1 in 1,000 |
+| Jade Serpent Card (legendary) | Jade Serpent | Amulet | Jade | ATK +10, DEF +4, HP +240 | 1 in 50 kills |
+| Tomb Scarab Card | Tomb Scarab | Feet | Scuttling | ATK +5, Evade +7% | 1 in 1,000 |
+| Sand Worm Card | Sand Worm | Armour | Sand-skinned | DEF +4, HP +320 | 1 in 1,000 |
+| Tomb Mummy Card | Tomb Mummy | Shield | Wrapped | DEF +4, Reflects 20% of damage | 1 in 1,000 |
+| Jackal Priest Card | Jackal Priest | Head | Jackal | ATK +7, MP +130 | 1 in 1,000 |
+| Sandstone Colossus Card | Sandstone Colossus | Weapon | Sandstone | ATK +8, Critical +6% | 1 in 1,000 |
+| Tomb Pharaoh Card (legendary) | Tomb Pharaoh | Legs | Pharaoh's | ATK +12, DEF +6, HP +300 | 1 in 50 kills |
+| Rift Bat Card | Rift Bat | Feet | Rifting | ATK +6, Evade +7% | 1 in 1,000 |
+| Void Worm Card | Void Worm | Armour | Void-skinned | DEF +5, HP +340 | 1 in 1,000 |
+| Rift Knight Card | Rift Knight | Ring | Riftbound | ATK +6, Evade +6% | 1 in 1,000 |
+| Void Eye Card | Void Eye | Head | All-seeing | ATK +8, MP +140 | 1 in 1,000 |
+| Void Golem Card | Void Golem | Shield | Voidstone | DEF +5, Reflects 20% of damage | 1 in 1,000 |
+| Void Wyrm Card (legendary) | Void Wyrm | Weapon | Wyrm's | ATK +14, HP +260, Critical +7% | 1 in 50 kills |
 | Yeti Card | Yeti | Legs | Shaggy | DEF +2, HP +120 | 1 in 1,000 |
 | Ramhorn Card | Ramhorn | Feet | Nimble | ATK +3, Evade +6% | 1 in 1,000 |
 | Frost Shaman Card | Frost Shaman | Head | Wintry | ATK +4, MP +60 | 1 in 1,000 |
@@ -1414,6 +1553,16 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 | Lord of Frost | Epic | Help defeat the Crypt Lord 10 times |
 | Depth Diver | Rare | Help defeat 300 Obsidian Golems in the Magma Depths |
 | Drakeslayer | Epic | Help defeat the Molten Drake 10 times |
+| Slime Sweeper | Rare | Help defeat 300 Great Slimes in the Slime Cellar |
+| Jelly Crusher | Epic | Help defeat the Slime King 10 times |
+| Vault Breaker | Rare | Help defeat 300 Bone Colossi in the Shadow Vault |
+| Count's Bane | Epic | Help defeat the Shadow Count 10 times |
+| Oni Hunter | Rare | Help defeat 300 Stone Oni in the Blossom Grotto |
+| Serpent Tamer | Epic | Help defeat the Jade Serpent 10 times |
+| Tombbreaker | Rare | Help defeat 300 Sandstone Colossi in the Sunken Tomb |
+| Pharaoh's Bane | Epic | Help defeat the Tomb Pharaoh 10 times |
+| Riftwalker | Rare | Help defeat 300 Void Golems in the Void Rift |
+| Wyrmslayer | Epic | Help defeat the Void Wyrm 10 times |
 | Dragonslayer | Rare | Help defeat 300 Frost Drakes |
 | Giantslayer ✦ | Epic | Help defeat the Frost Giant 10 times |
 | Exorcist | Rare | Help defeat 500 Wraiths |
@@ -1429,7 +1578,7 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 | **Collecting** | | |
 | Card Finder | Rare | Find a monster card |
 | Card Collector | Epic | Find 5 different monster cards |
-| Card Master ✦ | Legendary | Find every kind of monster card (82 so far) |
+| Card Master ✦ | Legendary | Find every kind of monster card (112 so far) |
 | Lucky | Epic | Find a legendary item |
 | **The forge** | | |
 | Shiny | Rare | Upgrade any gear to +7 |
@@ -1515,6 +1664,36 @@ Pioneer places are counted per level cap: when the cap goes up, the first 10 pla
 | Molten Knight (Magma Depths) | 81 | 8,200 | 84 | 58 | 47,000 | 106–180 | Golden Potion, Magma Bow, Ring of the Depths, Mithril Ingot, Star Crystal |
 | Obsidian Golem (Magma Depths) | 83 | 10,800 | 140 | 62 | 54,000 | 110–186 | Golden Potion, Molten Blade, Mithril Ingot, Star Crystal |
 | Molten Drake (Magma Depths) | 87 | 280,000 | 250 | 78 | 800,000 | 14,000–24,000 | See "Dungeons" |
+| Cellar Bat (Slime Cellar) | 6 | 110 | 8 | 2 | 55 | 4–8 | Red Potion, Cellar Cleaver, Jelly Ring, Iron Ingot, Star Crystal |
+| Blue Jelly (Slime Cellar) | 7 | 210 | 10 | 4 | 85 | 5–10 | Red Potion, Slime Staff, Iron Ingot, Star Crystal |
+| Cellar Viper (Slime Cellar) | 8 | 190 | 12 | 3 | 105 | 6–12 | Red Potion, Cellar Bow, Iron Ingot, Star Crystal |
+| Goblin Thief (Slime Cellar) | 10 | 240 | 13 | 4 | 170 | 8–15 | Red Potion, Cellar Cleaver, Jelly Ring, Iron Ingot, Star Crystal |
+| Great Slime (Slime Cellar) | 11 | 460 | 18 | 7 | 270 | 10–18 | Red Potion, Slime Staff, Iron Ingot, Star Crystal |
+| Slime King (Slime Cellar) | 14 | 5,000 | 34 | 10 | 5,000 | 120–240 | See "Dungeons" |
+| Shadow Bat (Shadow Vault) | 56 | 4,100 | 54 | 34 | 12,500 | 68–114 | White Potion, Vault Blade, Shadow Ring, Mithril Ingot, Star Crystal |
+| Bone Crawler (Shadow Vault) | 58 | 5,600 | 82 | 46 | 14,000 | 70–118 | White Potion, Shadow Scythe, Mithril Ingot, Star Crystal |
+| Vault Knight (Shadow Vault) | 59 | 5,200 | 66 | 44 | 15,000 | 72–120 | White Potion, Shadow Staff, Mithril Ingot, Star Crystal |
+| Shadow Priest (Shadow Vault) | 61 | 4,500 | 60 | 32 | 16,500 | 74–124 | White Potion, Vault Bow, Shadow Ring, Mithril Ingot, Star Crystal |
+| Bone Colossus (Shadow Vault) | 63 | 7,000 | 110 | 48 | 19,000 | 78–130 | White Potion, Vault Blade, Mithril Ingot, Star Crystal |
+| Shadow Count (Shadow Vault) | 67 | 130,000 | 190 | 58 | 300,000 | 5,500–9,500 | See "Dungeons" |
+| Blossom Wasp (Blossom Grotto) | 66 | 5,000 | 62 | 36 | 22,000 | 86–144 | White Potion, Jade Katana, Lotus Ring, Mithril Ingot, Star Crystal |
+| Root Crawler (Blossom Grotto) | 68 | 7,400 | 92 | 50 | 25,000 | 88–148 | White Potion, Jade Glaive, Mithril Ingot, Star Crystal |
+| Fox Guard (Blossom Grotto) | 69 | 6,400 | 74 | 48 | 26,500 | 90–150 | White Potion, Lantern Staff, Mithril Ingot, Star Crystal |
+| Lantern Ghost (Blossom Grotto) | 71 | 5,600 | 66 | 38 | 29,000 | 92–154 | White Potion, Blossom Longbow, Lotus Ring, Mithril Ingot, Star Crystal |
+| Stone Oni (Blossom Grotto) | 73 | 8,600 | 124 | 54 | 33,000 | 96–160 | White Potion, Jade Katana, Mithril Ingot, Star Crystal |
+| Jade Serpent (Blossom Grotto) | 77 | 200,000 | 205 | 66 | 500,000 | 9,000–16,000 | See "Dungeons" |
+| Tomb Scarab (Sunken Tomb) | 86 | 7,000 | 74 | 50 | 58,000 | 110–190 | Golden Potion, Pharaoh's Khopesh, Ring of the Sands, Mithril Ingot, Star Crystal |
+| Sand Worm (Sunken Tomb) | 88 | 10,000 | 104 | 60 | 63,000 | 112–194 | Golden Potion, Tomb Spear, Mithril Ingot, Star Crystal |
+| Tomb Mummy (Sunken Tomb) | 89 | 8,600 | 86 | 58 | 66,000 | 114–196 | Golden Potion, Jackal Staff, Mithril Ingot, Star Crystal |
+| Jackal Priest (Sunken Tomb) | 91 | 7,400 | 78 | 46 | 71,000 | 116–200 | Golden Potion, Tomb Bow, Ring of the Sands, Mithril Ingot, Star Crystal |
+| Sandstone Colossus (Sunken Tomb) | 93 | 11,400 | 148 | 64 | 78,000 | 120–206 | Golden Potion, Pharaoh's Khopesh, Mithril Ingot, Star Crystal |
+| Tomb Pharaoh (Sunken Tomb) | 97 | 320,000 | 260 | 80 | 1,400,000 | 18,000–30,000 | See "Dungeons" |
+| Rift Bat (Void Rift) | 94 | 7,800 | 78 | 56 | 80,000 | 122–210 | Golden Potion, Rift Blade, Ring of the Rift, Mithril Ingot, Star Crystal |
+| Void Worm (Void Rift) | 95 | 11,000 | 112 | 64 | 84,000 | 124–212 | Golden Potion, Void Scythe, Mithril Ingot, Star Crystal |
+| Rift Knight (Void Rift) | 97 | 9,000 | 90 | 66 | 90,000 | 126–216 | Golden Potion, Rift Staff, Mithril Ingot, Star Crystal |
+| Void Eye (Void Rift) | 98 | 8,000 | 82 | 52 | 93,000 | 128–218 | Golden Potion, Rift Bow, Ring of the Rift, Mithril Ingot, Star Crystal |
+| Void Golem (Void Rift) | 99 | 12,000 | 158 | 68 | 99,000 | 130–222 | Golden Potion, Rift Blade, Mithril Ingot, Star Crystal |
+| Void Wyrm (Void Rift) | 106 | 340,000 | 285 | 86 | 2,200,000 | 26,000–40,000 | See "Dungeons" |
 | Yeti | 41 | 2,900 | 50 | 26 | 5,200 | 52–86 | Snow Hood, Fur Cloak, Ice Sword, White Potion, Mithril Ingot, Star Crystal |
 | Ramhorn | 43 | 3,300 | 66 | 34 | 5,900 | 54–90 | Frost Shield, Frost Greaves, Frost Bow, Glacier Lance, Mithril Ingot, Star Crystal |
 | Frost Shaman | 45 | 2,600 | 52 | 24 | 6,200 | 56–94 | Moon Hat, Winter Robe, Winter Staff, Snowflake Pendant, Mithril Ingot, Star Crystal |
@@ -1558,7 +1737,7 @@ Every monster also drops its own card (see Monster cards) and often potions.
 
 1. **Level 1–4:** Slimes by the road, south of town. Buy a few Red Potions and a Dagger or Short Sword from Bram.
 2. **Level 4–7:** Grass Snakes in the west grass. Wear what you find.
-3. **Level 7–10:** Hornets in the east field. They attack on sight, so keep potions ready (Q).
+3. **Level 7–10:** Hornets in the east field. They attack on sight, so keep potions ready (Q). Or, from about level 6, go down into the **Slime Cellar** (Lv 6–12) through the portal in the trees just west of the south road, with the **Slime King** at the bottom.
 4. **Level 10:** Visit **Orin** just inside the south gate and choose your job. Spend your first skill point (K).
 5. **Level 10–14:** Snapper Flowers by the lake, or Grubs and Night Bats out of the **east gate**.
 6. **Level 14–20:** Rock Worms, Gazers and Ghosts deeper in Dusk Hollow. Use skills on Ghosts, since plain attacks often miss them. Or go down into the **Hollow Burrows** (Lv 14–22), through the portal just south of Dusk Hollow's east road, with the **Burrow Queen** at the bottom.
@@ -1571,21 +1750,19 @@ Every monster also drops its own card (see Monster cards) and often potions.
 13. **Level 45–50:** Frost Wights on the icy highlands and Frost Drakes in the east. At 50, bring a party of four for the **Frost Giant** at the end of the path. **Bjorn** sails you home for free. If you'd rather nobody could attack you, go down into the **Frozen Crypt** (Lv 46–54) through the portal south of Frostfell's pier, with the **Crypt Lord** at the bottom.
 14. **Level 45–50:** Ask **Orin** about the **Trial of Mastery** at 45, and keep the Frostfell loot he asks for instead of selling it. At 50 he sends you to the **Isle of Trials**: beat your Shade (bring potions), then come back for your second job: **Lord Knight**, **Wizard** or **Hunter**. Spend your new points on the skills on keys 4–6.
 15. **Level 50–55:** Down the east road past the Pumpking to **Finn**'s boat, and over to **Ravenmoor** (800 gold). Wraiths in the woods by the pier dodge plain attacks: use your skills. Then the Gargoyles either side of the castle.
-16. **Level 55–60:** Dark Knights below the castle gate, Liches in the east, Flesh Golems in the south. At 60, bring a party of four into the castle for the **Fallen King**. **Corvin** rows you home for free.
+16. **Level 55–60:** Dark Knights below the castle gate, Liches in the east, Flesh Golems in the south. At 60, bring a party of four into the castle for the **Fallen King**. **Corvin** rows you home for free. Or go down into the **Shadow Vault** (Lv 56–64), through the portal in the middle of the moor, where the **Shadow Count** waits in his treasure hall.
 17. **Level 60–65:** Take the path east off the south road, straight on past Edda's pier, to **Marlow**'s ship on the meadow's east shore, and sail to **Petalfall** (1,200 gold). Moon Hares by the pier only fight back but dodge plain attacks: use your skills. Then the Fox Spirits in the north-west woods (close in fast, they throw fire) and the Crow Blades in the middle.
-18. **Level 65–70:** Phantom Swordsmen in the north-east, Red Ogres in the south (they only fight back, but they hit very hard). At 70, bring a party of four up the road to the **Ogre Warlord**'s camp. **Willow** sails you home for free.
+18. **Level 65–70:** Phantom Swordsmen in the north-east, Red Ogres in the south (they only fight back, but they hit very hard). At 70, bring a party of four up the road to the **Ogre Warlord**'s camp. **Willow** sails you home for free. Or go down into the **Blossom Grotto** (Lv 66–74), through the portal in the cherry woods, with the **Jade Serpent** at the bottom.
 19. **Level 70–75:** Back to the meadow's east shore, where **Dorian** sails from Marlow's pier to **Ashpeak** (1,500 gold). Ember Imps swarm the rock north of the pier; Salamanders spit fire from the south-west slopes (close in fast). Then the Obsidian Knights along the north.
 20. **Level 75–80:** Cinder Wraiths in the east dodge plain attacks: use your skills. Magma Golems in the south only fight back, but they hit hardest of all. At 80, bring a party of four up the road to the **Cinder Colossus**'s crater. **Cassia** sails you home for free. At 75, ask **Orin** about your **third job** and keep the Ashpeak loot he asks for; at 80, beat your Shade on the Isle of Trials and become a **Paladin**, **Archmage** or **Ranger**. Or go down into the **Magma Depths** (Lv 76–84), through the portal north of the crater, where the **Molten Drake** waits.
-21. **Level 80–90:** Switch to Bram's **Golden Potions** (from level 70). **Soren** sails from the same pier to **Sunscar** (1,800 gold). Dune Stalkers in the dunes dodge plain attacks; Dust Djinn throw hot wind from the north-west; then the Tomb Wardens and the Desert Raiders' camp in the east. At 90, bring a party for the **Dune King** in his temple.
-22. **Level 90–100:** **Lyra** sails to **Starfall** (2,200 gold), where it's always night. Void Bats swarm the south-west, Astral Seers cast from the north-west, Star Knights guard the north, Night Wisps drift along the east shore, and Crystal Golems in the south-east hit hardest of all. At 100, the **Star Tyrant** waits at his altar south of the lake: take your strongest party.
+21. **Level 80–90:** Switch to Bram's **Golden Potions** (from level 70). **Soren** sails from the same pier to **Sunscar** (1,800 gold). Dune Stalkers in the dunes dodge plain attacks; Dust Djinn throw hot wind from the north-west; then the Tomb Wardens and the Desert Raiders' camp in the east. At 90, bring a party for the **Dune King** in his temple. From 86, try the **Sunken Tomb** (Lv 86–94) through the portal on the island's west side, with the **Tomb Pharaoh** on his throne at the bottom.
+22. **Level 90–100:** **Lyra** sails to **Starfall** (2,200 gold), where it's always night. Void Bats swarm the south-west, Astral Seers cast from the north-west, Star Knights guard the north, Night Wisps drift along the east shore, and Crystal Golems in the south-east hit hardest of all. At 100, the **Star Tyrant** waits at his altar south of the lake: take your strongest party. Or go down into the **Void Rift** (Lv 94–100) through the portal at the island's north end; the **Void Wyrm** at the bottom is the highest-level monster in the world.
 
 Along the way, open your titles (T) now and then: you'll have earned a few. And from the Orc Woods on, hunt in a party: the bosses are made for four. From level 20, find a guild to join (or found your own with Leopold), so there's always someone to hunt with, and on Wednesday and Saturday evenings, march with it over the long bridge to fight for Crownhold.
 
 Sell your monster loot to Bram whenever your bag fills up, and sit down (X) to heal faster between fights. Spare gear, ingots and cards are worth more to other players: open a shop in the Market Square, or look in theirs for what you need.
 
 ## 18. Coming next
-
-- **More dungeons**, under the lands that don't have one yet.
 
 - **More castles** for the guild wars.
 

@@ -449,6 +449,71 @@ export const NPCS: NpcDef[] = [
     chatter: ["The Magma Depths are down there.", "No player can attack you underground.", "Step out of the red circles!", "Level 76–84. Down you go."],
   },
   {
+    // By the portal down to the Slime Cellar.
+    id: "cellar-warden",
+    name: "Pip",
+    title: "Dungeon Warden",
+    kind: "local",
+    look: look({ body: "male", hair: "messy", hairColor: "light_brown", beard: "trimmed", skin: "light", top: "longsleeve", topColor: "green", bottom: "pants", bottomColor: "charcoal", shoes: "boots", shoesColor: "black", hat: "bandana", hatColor: "green" }),
+    ...at(180, 288.1),
+    dir: Dir.Right,
+    greeting:
+      "Down there is the Slime Cellar (Lv 6–12), an old farm cellar full of slimes now, and goblins stealing what's left. No player can hurt you down there. The first cellar has Cellar Bats, Blue Jellies and Cellar Vipers; the stairs at the far end go down to the Goblin Thieves, the Great Slimes, and the Slime King (Lv 14) himself. Take a friend or two for him, and step out of the red circles. Walk into the portal to go down.",
+    chatter: ["The Slime Cellar is down there.", "No player can attack you underground.", "Step out of the red circles!", "Level 6–12. Down you go."],
+  },
+  {
+    // By the portal down to the Shadow Vault.
+    id: "vault-warden",
+    name: "Morwen",
+    title: "Dungeon Warden",
+    kind: "local",
+    look: look({ body: "female", hair: "long", hairColor: "black", skin: "light", top: "longsleeve", topColor: "purple", bottom: "pants", bottomColor: "charcoal", shoes: "boots", shoesColor: "black", hat: "bandana", hatColor: "purple" }),
+    ...at(426, 206.1),
+    dir: Dir.Right,
+    greeting:
+      "Below the moor is the Shadow Vault (Lv 56–64), where the Shadow Count hid his treasure, and himself. Shadow Bats, Bone Crawlers and Vault Knights guard the first floor; the stairs go down to the Shadow Priests, the Bone Colossi, and the Count (Lv 67) in his treasure hall. Take a party, and step out of the red circles. Walk into the portal to go down.",
+    chatter: ["The Shadow Vault is down there.", "No player can attack you underground.", "Step out of the red circles!", "Level 56–64. Down you go."],
+  },
+  {
+    // By the portal down to the Blossom Grotto.
+    id: "grotto-warden",
+    name: "Hana",
+    title: "Dungeon Warden",
+    kind: "local",
+    look: look({ body: "female", hair: "bun", hairColor: "pink", skin: "light", top: "longsleeve", topColor: "rose", bottom: "pants", bottomColor: "charcoal", shoes: "boots", shoesColor: "black", hat: "bandana", hatColor: "rose" }),
+    ...at(416, 391.1),
+    dir: Dir.Right,
+    greeting:
+      "The portal leads down into the Blossom Grotto (Lv 66–74), where the cherry roots reach a hidden spring. Blossom Wasps, Root Crawlers and Fox Guards live on the first floor; the stairs go down to the Lantern Ghosts, the Stone Oni, and the Jade Serpent (Lv 77) round its spring. Take a party, and step out of the red circles.",
+    chatter: ["The Blossom Grotto is down there.", "No player can attack you underground.", "Step out of the red circles!", "Level 66–74. Down you go."],
+  },
+  {
+    // By the portal down to the Sunken Tomb.
+    id: "tomb-warden",
+    name: "Kesh",
+    title: "Dungeon Warden",
+    kind: "local",
+    look: look({ body: "male", hair: "buzzcut", hairColor: "black", beard: "trimmed", skin: "bronze", top: "longsleeve", topColor: "tan", bottom: "pants", bottomColor: "charcoal", shoes: "boots", shoesColor: "black", hat: "bandana", hatColor: "tan" }),
+    ...at(546, 68.1),
+    dir: Dir.Right,
+    greeting:
+      "Under the sand lies the Sunken Tomb (Lv 86–94), where the old kings of Sunscar were buried, and one of them won't stay dead. Tomb Scarabs, Sand Worms and Tomb Mummies fill the first floor; the stairs go down to the Jackal Priests, the Sandstone Colossi, and the Tomb Pharaoh (Lv 97) on his throne. Bring Golden Potions and a strong party, and step out of the red circles.",
+    chatter: ["The Sunken Tomb is down there.", "No player can attack you underground.", "Step out of the red circles!", "Level 86–94. Down you go."],
+  },
+  {
+    // By the portal down to the Void Rift.
+    id: "rift-warden",
+    name: "Selene",
+    title: "Dungeon Warden",
+    kind: "local",
+    look: look({ body: "female", hair: "longStraight", hairColor: "platinum", skin: "light", top: "longsleeve", topColor: "navy", bottom: "pants", bottomColor: "charcoal", shoes: "boots", shoesColor: "black", hat: "bandana", hatColor: "navy" }),
+    ...at(579, 401.1),
+    dir: Dir.Right,
+    greeting:
+      "That portal goes down to the Void Rift (Lv 94–100), a crack in the sky that fell here with the stars. Rift Bats, Void Worms and Rift Knights wait on the first floor; the stairs go down to the Void Eyes, the Void Golems, and the Void Wyrm (Lv 106) at the very bottom, the strongest thing in the world. Bring your best party and plenty of Golden Potions, and step out of the red circles.",
+    chatter: ["The Void Rift is down there.", "No player can attack you underground.", "Step out of the red circles!", "Level 94–100. Down you go."],
+  },
+  {
     // In the Orc Woods clearing, by the portal down to the Orc Caves.
     id: "cave-warden",
     name: "Brok",

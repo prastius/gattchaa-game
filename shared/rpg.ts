@@ -233,6 +233,36 @@ export type MonsterId =
   | "moltenKnight"
   | "obsidianGolem"
   | "moltenDrake"
+  | "cellarBat"
+  | "blueJelly"
+  | "cellarViper"
+  | "goblinThief"
+  | "greatSlime"
+  | "slimeKing"
+  | "shadowBat"
+  | "boneCrawler"
+  | "vaultKnight"
+  | "shadowPriest"
+  | "boneColossus"
+  | "shadowCount"
+  | "blossomWasp"
+  | "rootCrawler"
+  | "foxGuard"
+  | "lanternGhost"
+  | "stoneOni"
+  | "jadeSerpent"
+  | "tombScarab"
+  | "sandWorm"
+  | "tombMummy"
+  | "jackalPriest"
+  | "sandstoneColossus"
+  | "tombPharaoh"
+  | "riftBat"
+  | "voidWorm"
+  | "riftKnight"
+  | "voidEye"
+  | "voidGolem"
+  | "voidWyrm"
   | "caveBat"
   | "caveCrawler"
   | "orcMiner"
@@ -813,6 +843,236 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
     ],
   },
 
+  // ---------------------------------------------------------------- the Slime Cellar (Lv 6–12), a dungeon
+  // Small brown bats in the first cellar. They flap at anyone who comes near.
+  cellarBat: {
+    id: "cellarBat", name: "Cellar Bat", level: 6, hp: 110, atk: 8, def: 2, exp: 55, gold: [4, 8], speed: 70, chase: 110, aggro: 40, range: 34, attackMs: 1300, radius: 10, respawnMs: 12_000, flee: 0.08,
+    drops: [
+      ["dustyWing", 0.55], ["redPotion", 0.06], ["cellarCleaver", 0.004], ["jellyRing", 0.001], ["ironIngot", 0.05], ["starCrystal", 0.001], ["cellarBatCard", 0.001],
+    ],
+  },
+  // Wobbly blue slimes in the wine cellar. They only fight back.
+  blueJelly: {
+    id: "blueJelly", name: "Blue Jelly", level: 7, hp: 210, atk: 10, def: 4, exp: 85, gold: [5, 10], speed: 30, chase: 70, aggro: 0, range: 36, attackMs: 1900, radius: 12, respawnMs: 14_000,
+    drops: [
+      ["jellyBlob", 0.55], ["redPotion", 0.06], ["slimeStaff", 0.004], ["ironIngot", 0.05], ["starCrystal", 0.001], ["blueJellyCard", 0.001],
+    ],
+  },
+  // Dark snakes coiled among the barrels. They bite anyone who comes near.
+  cellarViper: {
+    id: "cellarViper", name: "Cellar Viper", level: 8, hp: 190, atk: 12, def: 3, exp: 105, gold: [6, 12], speed: 45, chase: 95, aggro: 40, range: 38, attackMs: 1500, radius: 11, respawnMs: 14_000,
+    drops: [
+      ["viperSkin", 0.55], ["redPotion", 0.06], ["cellarBow", 0.004], ["ironIngot", 0.05], ["starCrystal", 0.001], ["cellarViperCard", 0.001],
+    ],
+  },
+  // Goblins raiding the cellar for the Slime King. They shoot little bolts at anyone they see.
+  goblinThief: {
+    id: "goblinThief", name: "Goblin Thief", level: 10, hp: 240, atk: 13, def: 4, exp: 170, gold: [8, 15], speed: 40, chase: 85, aggro: 90, range: 150, attackMs: 2100, radius: 12, respawnMs: 15_000,
+    drops: [
+      ["stolenSpoon", 0.55], ["redPotion", 0.06], ["cellarCleaver", 0.004], ["jellyRing", 0.001], ["ironIngot", 0.05], ["starCrystal", 0.001], ["goblinThiefCard", 0.001],
+    ],
+  },
+  // Big green slimes in the King's cellar. Leave them alone and they leave you alone; they hit hard for their size.
+  greatSlime: {
+    id: "greatSlime", name: "Great Slime", level: 11, hp: 460, atk: 18, def: 7, exp: 270, gold: [10, 18], speed: 30, chase: 70, aggro: 0, range: 40, attackMs: 2000, radius: 15, respawnMs: 16_000,
+    drops: [
+      ["slimeCore", 0.55], ["redPotion", 0.06], ["slimeStaff", 0.004], ["ironIngot", 0.05], ["starCrystal", 0.001], ["greatSlimeCard", 0.001],
+    ],
+  },
+  // The Slime Cellar's boss: a slime as big as a cart, the oldest and greediest in the cellar. Spits slime at anyone out of reach.
+  slimeKing: {
+    id: "slimeKing", name: "Slime King", level: 14, hp: 5_000, atk: 34, def: 10, exp: 5_000, gold: [120, 240], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 30, respawnMs: 900_000,
+    boss: true, regen: 0.004,
+    slam: { radius: 70, power: 1.3, everyMs: 11_000 }, blast: { radius: 60, power: 1.1, everyMs: 13_000, reach: 320 },
+    drops: [
+      ["royalGel", 1], ["redPotion", 0.8], ["cellarCleaver", 0.2], ["slimeStaff", 0.2], ["cellarBow", 0.2], ["ironIngot", 1], ["starCrystal", 1], ["slimeDrop", 0.06], ["jellyRing", 0.02], ["slimeKingCard", 0.02],
+    ],
+  },
+
+  // ---------------------------------------------------------------- the Shadow Vault (Lv 56–64), a dungeon
+  // Black bats in the first hall, hard to see in the dark. They swoop at anyone who comes near.
+  shadowBat: {
+    id: "shadowBat", name: "Shadow Bat", level: 56, hp: 4_100, atk: 54, def: 34, exp: 12_500, gold: [68, 114], speed: 70, chase: 120, aggro: 50, range: 36, attackMs: 1300, radius: 10, respawnMs: 20_000, flee: 0.1,
+    drops: [
+      ["shadowWing", 0.55], ["whitePotion", 0.06], ["vaultBlade", 0.004], ["shadowRing", 0.001], ["mithril", 0.08], ["starCrystal", 0.015], ["shadowBatCard", 0.001],
+    ],
+  },
+  // Pale worms that live in the vault's old bones. They only fight back, and they hit hard.
+  boneCrawler: {
+    id: "boneCrawler", name: "Bone Crawler", level: 58, hp: 5_600, atk: 82, def: 46, exp: 14_000, gold: [70, 118], speed: 30, chase: 70, aggro: 0, range: 44, attackMs: 1900, radius: 16, respawnMs: 22_000,
+    drops: [
+      ["boneShard", 0.55], ["whitePotion", 0.06], ["shadowScythe", 0.004], ["mithril", 0.08], ["starCrystal", 0.015], ["boneCrawlerCard", 0.001],
+    ],
+  },
+  // Dead knights still guarding the Count's treasure. They charge anyone who comes near.
+  vaultKnight: {
+    id: "vaultKnight", name: "Vault Knight", level: 59, hp: 5_200, atk: 66, def: 44, exp: 15_000, gold: [72, 120], speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 13, respawnMs: 22_000,
+    drops: [
+      ["vaultCrest", 0.55], ["whitePotion", 0.06], ["shadowStaff", 0.004], ["mithril", 0.08], ["starCrystal", 0.015], ["vaultKnightCard", 0.001],
+    ],
+  },
+  // Pale priests of the Shadow Count. They throw dark bolts from afar at anyone they see.
+  shadowPriest: {
+    id: "shadowPriest", name: "Shadow Priest", level: 61, hp: 4_500, atk: 60, def: 32, exp: 16_500, gold: [74, 124], speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 22_000,
+    drops: [
+      ["darkRosary", 0.55], ["whitePotion", 0.06], ["vaultBow", 0.004], ["shadowRing", 0.001], ["mithril", 0.08], ["starCrystal", 0.015], ["shadowPriestCard", 0.001],
+    ],
+  },
+  // Giants stitched together from a hundred skeletons. Leave them alone and they leave you alone; they hit very hard.
+  boneColossus: {
+    id: "boneColossus", name: "Bone Colossus", level: 63, hp: 7_000, atk: 110, def: 48, exp: 19_000, gold: [78, 130], speed: 30, chase: 70, aggro: 0, range: 48, attackMs: 2100, radius: 18, respawnMs: 24_000,
+    drops: [
+      ["colossusBone", 0.55], ["whitePotion", 0.06], ["vaultBlade", 0.004], ["mithril", 0.08], ["starCrystal", 0.015], ["boneColossusCard", 0.001],
+    ],
+  },
+  // The Shadow Vault's boss: the Count who built the vault, a vampire in his treasure hall. Throws dark bolts at anyone out of reach.
+  shadowCount: {
+    id: "shadowCount", name: "Shadow Count", level: 67, hp: 130_000, atk: 190, def: 58, exp: 300_000, gold: [5_500, 9_500], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 26, respawnMs: 1_500_000,
+    boss: true, regen: 0.004,
+    slam: { radius: 110, power: 1.6, everyMs: 9_000 }, blast: { radius: 80, power: 1.4, everyMs: 11_000, reach: 420 },
+    drops: [
+      ["countsSignet", 1], ["whitePotion", 0.8], ["vaultBlade", 0.2], ["shadowScythe", 0.2], ["shadowStaff", 0.2], ["vaultBow", 0.2], ["mithril", 1], ["starCrystal", 1], ["countsBrooch", 0.06], ["shadowRing", 0.02], ["shadowCountCard", 0.02],
+    ],
+  },
+
+  // ---------------------------------------------------------------- the Blossom Grotto (Lv 66–74), a dungeon
+  // Pink wasps as big as cats, nesting in the first cave. They sting anyone who comes near.
+  blossomWasp: {
+    id: "blossomWasp", name: "Blossom Wasp", level: 66, hp: 5_000, atk: 62, def: 36, exp: 22_000, gold: [86, 144], speed: 75, chase: 120, aggro: 50, range: 36, attackMs: 1300, radius: 10, respawnMs: 20_000, flee: 0.12,
+    drops: [
+      ["blossomStinger", 0.55], ["whitePotion", 0.06], ["jadeKatana", 0.004], ["lotusRing", 0.001], ["mithril", 0.085], ["starCrystal", 0.017], ["blossomWaspCard", 0.001],
+    ],
+  },
+  // Mossy worms that tunnel through the cherry roots. They only fight back, and they hit hard.
+  rootCrawler: {
+    id: "rootCrawler", name: "Root Crawler", level: 68, hp: 7_400, atk: 92, def: 50, exp: 25_000, gold: [88, 148], speed: 30, chase: 70, aggro: 0, range: 44, attackMs: 1900, radius: 16, respawnMs: 22_000,
+    drops: [
+      ["twistedRoot", 0.55], ["whitePotion", 0.06], ["jadeGlaive", 0.004], ["mithril", 0.085], ["starCrystal", 0.017], ["rootCrawlerCard", 0.001],
+    ],
+  },
+  // Fox spirits in armour who guard the Jade Serpent's spring. They charge anyone who comes near.
+  foxGuard: {
+    id: "foxGuard", name: "Fox Guard", level: 69, hp: 6_400, atk: 74, def: 48, exp: 26_500, gold: [90, 150], speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 13, respawnMs: 22_000,
+    drops: [
+      ["foxMask", 0.55], ["whitePotion", 0.06], ["lanternStaff", 0.004], ["mithril", 0.085], ["starCrystal", 0.017], ["foxGuardCard", 0.001],
+    ],
+  },
+  // Spirits that glow like paper lanterns. They throw fire from afar at anyone they see.
+  lanternGhost: {
+    id: "lanternGhost", name: "Lantern Ghost", level: 71, hp: 5_600, atk: 66, def: 38, exp: 29_000, gold: [92, 154], speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 22_000,
+    drops: [
+      ["paperLantern", 0.55], ["whitePotion", 0.06], ["blossomBow", 0.004], ["lotusRing", 0.001], ["mithril", 0.085], ["starCrystal", 0.017], ["lanternGhostCard", 0.001],
+    ],
+  },
+  // Horned giants of grey stone, asleep on their feet. Leave them alone and they leave you alone; they hit very hard.
+  stoneOni: {
+    id: "stoneOni", name: "Stone Oni", level: 73, hp: 8_600, atk: 124, def: 54, exp: 33_000, gold: [96, 160], speed: 30, chase: 70, aggro: 0, range: 48, attackMs: 2100, radius: 18, respawnMs: 24_000,
+    drops: [
+      ["oniHorn", 0.55], ["whitePotion", 0.06], ["jadeKatana", 0.004], ["mithril", 0.085], ["starCrystal", 0.017], ["stoneOniCard", 0.001],
+    ],
+  },
+  // The Blossom Grotto's boss: a winged serpent of green jade, coiled round the spring at the bottom. Breathes light at anyone out of reach.
+  jadeSerpent: {
+    id: "jadeSerpent", name: "Jade Serpent", level: 77, hp: 200_000, atk: 205, def: 66, exp: 500_000, gold: [9_000, 16_000], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 30, respawnMs: 1_800_000,
+    boss: true, regen: 0.004,
+    slam: { radius: 115, power: 1.6, everyMs: 8_800 }, blast: { radius: 85, power: 1.45, everyMs: 10_800, reach: 430 },
+    drops: [
+      ["jadePearl", 1], ["whitePotion", 0.8], ["jadeKatana", 0.2], ["jadeGlaive", 0.2], ["lanternStaff", 0.2], ["blossomBow", 0.2], ["mithril", 1], ["starCrystal", 1], ["jadeScale", 0.06], ["lotusRing", 0.02], ["jadeSerpentCard", 0.02],
+    ],
+  },
+
+  // ---------------------------------------------------------------- the Sunken Tomb (Lv 86–94), a dungeon
+  // Blue-gold beetles that swarm the first hall. They bite anyone who comes near.
+  tombScarab: {
+    id: "tombScarab", name: "Tomb Scarab", level: 86, hp: 7_000, atk: 74, def: 50, exp: 58_000, gold: [110, 190], speed: 75, chase: 125, aggro: 50, range: 36, attackMs: 1300, radius: 10, respawnMs: 22_000, flee: 0.1,
+    drops: [
+      ["scarabShell", 0.55], ["goldenPotion", 0.06], ["khopesh", 0.004], ["sandsRing", 0.001], ["mithril", 0.095], ["starCrystal", 0.022], ["tombScarabCard", 0.001],
+    ],
+  },
+  // Huge worms that swim through the tomb's sand. They only fight back, and they hit hard.
+  sandWorm: {
+    id: "sandWorm", name: "Sand Worm", level: 88, hp: 10_000, atk: 104, def: 60, exp: 63_000, gold: [112, 194], speed: 30, chase: 70, aggro: 0, range: 46, attackMs: 1900, radius: 16, respawnMs: 24_000,
+    drops: [
+      ["sandwormTooth", 0.55], ["goldenPotion", 0.06], ["tombSpear", 0.004], ["mithril", 0.095], ["starCrystal", 0.022], ["sandWormCard", 0.001],
+    ],
+  },
+  // The Pharaoh's servants, wrapped and walking. They shuffle after anyone who comes near.
+  tombMummy: {
+    id: "tombMummy", name: "Tomb Mummy", level: 89, hp: 8_600, atk: 86, def: 58, exp: 66_000, gold: [114, 196], speed: 40, chase: 90, aggro: 50, range: 42, attackMs: 1700, radius: 13, respawnMs: 24_000,
+    drops: [
+      ["mummyWrap", 0.55], ["goldenPotion", 0.06], ["jackalStaff", 0.004], ["mithril", 0.095], ["starCrystal", 0.022], ["tombMummyCard", 0.001],
+    ],
+  },
+  // Jackal-headed priests of the tomb. They throw golden bolts from afar at anyone they see.
+  jackalPriest: {
+    id: "jackalPriest", name: "Jackal Priest", level: 91, hp: 7_400, atk: 78, def: 46, exp: 71_000, gold: [116, 200], speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 24_000,
+    drops: [
+      ["jackalIdol", 0.55], ["goldenPotion", 0.06], ["tombBow", 0.004], ["sandsRing", 0.001], ["mithril", 0.095], ["starCrystal", 0.022], ["jackalPriestCard", 0.001],
+    ],
+  },
+  // Statues of the Pharaoh's guard that walk. Leave them alone and they leave you alone; they hit very hard.
+  sandstoneColossus: {
+    id: "sandstoneColossus", name: "Sandstone Colossus", level: 93, hp: 11_400, atk: 148, def: 64, exp: 78_000, gold: [120, 206], speed: 30, chase: 70, aggro: 0, range: 48, attackMs: 2100, radius: 18, respawnMs: 26_000,
+    drops: [
+      ["sandstoneEye", 0.55], ["goldenPotion", 0.06], ["khopesh", 0.004], ["mithril", 0.095], ["starCrystal", 0.022], ["sandstoneColossusCard", 0.001],
+    ],
+  },
+  // The Sunken Tomb's boss: a king who would not stay dead, on his golden throne at the bottom. Throws fire at anyone out of reach.
+  tombPharaoh: {
+    id: "tombPharaoh", name: "Tomb Pharaoh", level: 97, hp: 320_000, atk: 260, def: 80, exp: 1_400_000, gold: [18_000, 30_000], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 28, respawnMs: 1_800_000,
+    boss: true, regen: 0.004,
+    slam: { radius: 120, power: 1.7, everyMs: 8_500 }, blast: { radius: 90, power: 1.5, everyMs: 10_500, reach: 440 },
+    drops: [
+      ["pharaohsMask", 1], ["goldenPotion", 0.8], ["khopesh", 0.2], ["tombSpear", 0.2], ["jackalStaff", 0.2], ["tombBow", 0.2], ["mithril", 1], ["starCrystal", 1], ["pharaohsAnkh", 0.06], ["sandsRing", 0.02], ["tombPharaohCard", 0.02],
+    ],
+  },
+
+  // ---------------------------------------------------------------- the Void Rift (Lv 94–100), a dungeon
+  // Bats from beyond the stars, with violet light in their wings. They swoop at anyone who comes near.
+  riftBat: {
+    id: "riftBat", name: "Rift Bat", level: 94, hp: 7_800, atk: 78, def: 56, exp: 80_000, gold: [122, 210], speed: 70, chase: 125, aggro: 50, range: 36, attackMs: 1300, radius: 11, respawnMs: 22_000, flee: 0.1,
+    drops: [
+      ["riftWing", 0.55], ["goldenPotion", 0.06], ["riftBlade", 0.004], ["riftRing", 0.001], ["mithril", 0.1], ["starCrystal", 0.025], ["riftBatCard", 0.001],
+    ],
+  },
+  // Worms of living darkness. They only fight back, and they hit hard.
+  voidWorm: {
+    id: "voidWorm", name: "Void Worm", level: 95, hp: 11_000, atk: 112, def: 64, exp: 84_000, gold: [124, 212], speed: 30, chase: 70, aggro: 0, range: 46, attackMs: 1900, radius: 16, respawnMs: 24_000,
+    drops: [
+      ["voidOoze", 0.55], ["goldenPotion", 0.06], ["voidScythe", 0.004], ["mithril", 0.1], ["starCrystal", 0.025], ["voidWormCard", 0.001],
+    ],
+  },
+  // Knights who stepped through the rift and never came back. They charge anyone who comes near.
+  riftKnight: {
+    id: "riftKnight", name: "Rift Knight", level: 97, hp: 9_000, atk: 90, def: 66, exp: 90_000, gold: [126, 216], speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 13, respawnMs: 24_000,
+    drops: [
+      ["riftCrest", 0.55], ["goldenPotion", 0.06], ["riftStaff", 0.004], ["mithril", 0.1], ["starCrystal", 0.025], ["riftKnightCard", 0.001],
+    ],
+  },
+  // Great violet eyes floating in the dark. They stare beams from afar at anyone they see.
+  voidEye: {
+    id: "voidEye", name: "Void Eye", level: 98, hp: 8_000, atk: 82, def: 52, exp: 93_000, gold: [128, 218], speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 24_000,
+    drops: [
+      ["voidLens", 0.55], ["goldenPotion", 0.06], ["riftBow", 0.004], ["riftRing", 0.001], ["mithril", 0.1], ["starCrystal", 0.025], ["voidEyeCard", 0.001],
+    ],
+  },
+  // Golems of black star-stone. Leave them alone and they leave you alone; they hit very hard.
+  voidGolem: {
+    id: "voidGolem", name: "Void Golem", level: 99, hp: 12_000, atk: 158, def: 68, exp: 99_000, gold: [130, 222], speed: 30, chase: 70, aggro: 0, range: 48, attackMs: 2100, radius: 18, respawnMs: 26_000,
+    drops: [
+      ["voidCore", 0.55], ["goldenPotion", 0.06], ["riftBlade", 0.004], ["mithril", 0.1], ["starCrystal", 0.025], ["voidGolemCard", 0.001],
+    ],
+  },
+  // The Void Rift's boss: a dragon of darkness that crawled out of the rift. Throws violet bolts at anyone out of reach.
+  voidWyrm: {
+    id: "voidWyrm", name: "Void Wyrm", level: 106, hp: 340_000, atk: 285, def: 86, exp: 2_200_000, gold: [26_000, 40_000], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 32, respawnMs: 2_100_000,
+    boss: true, regen: 0.004,
+    slam: { radius: 125, power: 1.75, everyMs: 8_200 }, blast: { radius: 95, power: 1.55, everyMs: 10_200, reach: 450 },
+    drops: [
+      ["wyrmHeart", 1], ["goldenPotion", 0.8], ["riftBlade", 0.2], ["voidScythe", 0.2], ["riftStaff", 0.2], ["riftBow", 0.2], ["mithril", 1], ["starCrystal", 1], ["wyrmsEye", 0.06], ["riftRing", 0.02], ["voidWyrmCard", 0.02],
+    ],
+  },
+
   // ---------------------------------------------------------------- the Orc Caves (Lv 28–36), a dungeon under the Orc Woods
   // Big grey bats in the first cavern. They swoop at anyone who comes near, and they're quick to dodge.
   caveBat: {
@@ -1246,6 +1506,86 @@ export const FIELDS: Field[] = [
       { monster: "moltenKnight", rect: { x: 192, y: 590, w: 20, h: 14 }, count: 7 },
       { monster: "obsidianGolem", rect: { x: 202, y: 618, w: 26, h: 10 }, count: 7 },
       { monster: "moltenDrake", rect: { x: 176, y: 620, w: 6, h: 6 }, count: 1 },
+    ],
+  },
+  {
+    // A dungeon, through the portal in its land (see DUNGEONS in shared/town.ts).
+    id: "cellar",
+    name: "Slime Cellar",
+    levels: "Lv 6–12",
+    area: { x: 240, y: 528, w: 80, h: 112 },
+    wild: true,
+    spawns: [
+      { monster: "cellarBat", rect: { x: 270, y: 534, w: 18, h: 14 }, count: 7 },
+      { monster: "blueJelly", rect: { x: 256, y: 564, w: 12, h: 12 }, count: 4 },
+      { monster: "cellarViper", rect: { x: 268, y: 564, w: 12, h: 12 }, count: 5 },
+      { monster: "goblinThief", rect: { x: 272, y: 590, w: 22, h: 14 }, count: 7 },
+      { monster: "greatSlime", rect: { x: 292, y: 620, w: 22, h: 12 }, count: 7 },
+      { monster: "slimeKing", rect: { x: 262, y: 622, w: 6, h: 6 }, count: 1 },
+    ],
+  },
+  {
+    // A dungeon, through the portal in its land (see DUNGEONS in shared/town.ts).
+    id: "vault",
+    name: "Shadow Vault",
+    levels: "Lv 56–64",
+    area: { x: 320, y: 528, w: 80, h: 112 },
+    wild: true,
+    spawns: [
+      { monster: "shadowBat", rect: { x: 348, y: 564, w: 18, h: 16 }, count: 7 },
+      { monster: "boneCrawler", rect: { x: 348, y: 532, w: 11, h: 10 }, count: 4 },
+      { monster: "vaultKnight", rect: { x: 359, y: 532, w: 11, h: 10 }, count: 5 },
+      { monster: "shadowPriest", rect: { x: 353, y: 616, w: 21, h: 16 }, count: 7 },
+      { monster: "boneColossus", rect: { x: 358, y: 588, w: 30, h: 8 }, count: 7 },
+      { monster: "shadowCount", rect: { x: 333, y: 594, w: 6, h: 6 }, count: 1 },
+    ],
+  },
+  {
+    // A dungeon, through the portal in its land (see DUNGEONS in shared/town.ts).
+    id: "grotto",
+    name: "Blossom Grotto",
+    levels: "Lv 66–74",
+    area: { x: 400, y: 528, w: 80, h: 112 },
+    wild: true,
+    spawns: [
+      { monster: "blossomWasp", rect: { x: 432, y: 560, w: 16, h: 18 }, count: 7 },
+      { monster: "rootCrawler", rect: { x: 430, y: 535, w: 12, h: 11 }, count: 4 },
+      { monster: "foxGuard", rect: { x: 442, y: 535, w: 12, h: 11 }, count: 5 },
+      { monster: "lanternGhost", rect: { x: 428, y: 620, w: 20, h: 14 }, count: 7 },
+      { monster: "stoneOni", rect: { x: 412, y: 596, w: 26, h: 10 }, count: 7 },
+      { monster: "jadeSerpent", rect: { x: 458, y: 598, w: 6, h: 6 }, count: 1 },
+    ],
+  },
+  {
+    // A dungeon, through the portal in its land (see DUNGEONS in shared/town.ts).
+    id: "tomb",
+    name: "Sunken Tomb",
+    levels: "Lv 86–94",
+    area: { x: 480, y: 528, w: 80, h: 112 },
+    wild: true,
+    spawns: [
+      { monster: "tombScarab", rect: { x: 512, y: 564, w: 18, h: 14 }, count: 7 },
+      { monster: "sandWorm", rect: { x: 520, y: 536, w: 12, h: 12 }, count: 4 },
+      { monster: "tombMummy", rect: { x: 532, y: 536, w: 12, h: 12 }, count: 5 },
+      { monster: "jackalPriest", rect: { x: 506, y: 620, w: 22, h: 14 }, count: 7 },
+      { monster: "sandstoneColossus", rect: { x: 486, y: 592, w: 22, h: 12 }, count: 7 },
+      { monster: "tombPharaoh", rect: { x: 532, y: 596, w: 6, h: 6 }, count: 1 },
+    ],
+  },
+  {
+    // A dungeon, through the portal in its land (see DUNGEONS in shared/town.ts).
+    id: "rift",
+    name: "Void Rift",
+    levels: "Lv 94–100",
+    area: { x: 560, y: 528, w: 80, h: 112 },
+    wild: true,
+    spawns: [
+      { monster: "riftBat", rect: { x: 594, y: 532, w: 18, h: 16 }, count: 7 },
+      { monster: "voidWorm", rect: { x: 590, y: 570, w: 11, h: 10 }, count: 4 },
+      { monster: "riftKnight", rect: { x: 601, y: 570, w: 11, h: 10 }, count: 5 },
+      { monster: "voidEye", rect: { x: 586, y: 592, w: 21, h: 16 }, count: 7 },
+      { monster: "voidGolem", rect: { x: 572, y: 628, w: 30, h: 8 }, count: 7 },
+      { monster: "voidWyrm", rect: { x: 621, y: 624, w: 6, h: 6 }, count: 1 },
     ],
   },
   {

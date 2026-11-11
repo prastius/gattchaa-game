@@ -433,13 +433,15 @@ export class World {
     return { top: this.structTop[i], face: this.structFace[i], row: this.faceRow[i] };
   }
 
-  /** Trees and rocks stay out of town, the Blacksmith's yard, the bosses' camps, the Isle of Trials' circle, the piers and off the roads. */
+  /** Trees and rocks stay out of town, the Blacksmith's yard, the bosses' camps, the Isle of Trials' circle, the piers, the dungeon portals and off the roads. */
   private isReserved(tx: number, ty: number): boolean {
     if (inRect(TOWN_AREA, tx, ty) || inRect(FORGE_YARD, tx, ty) || inRect(ORC_CAMP, tx, ty) || inRect(MINOTAUR_LAIR, tx, ty) || inRect(FROST_LAIR, tx, ty) || inRect(RUINS, tx, ty) || inRect(WARLORD_CAMP, tx, ty) || inRect(CINDER_CRATER, tx, ty) || inRect(SUN_TEMPLE, tx, ty) || inRect(STAR_ALTAR, tx, ty) || inRect(CASTLE, tx, ty) || inRect(CASTLE_CAMP, tx, ty)) return true;
     if (tx >= TRIAL_GROUND.x - 2 && ty >= TRIAL_GROUND.y - 3 && tx < TRIAL_GROUND.x + TRIAL_GROUND.w + 2 && ty < TRIAL_GROUND.y + TRIAL_GROUND.h + 2) return true;
     if (Object.values(PIERS).some((p) => tx >= p.x - 3 && ty >= p.y - 3 && tx < p.x + p.w + 3 && ty < p.y + p.h + 3)) return true;
     if (tx < INTERIOR_ZONE.x + INTERIOR_ZONE.w + 2 && ty < INTERIOR_ZONE.y + INTERIOR_ZONE.h + 2) return true;
     if (DUNGEONS.some((d) => inRect(d.zone, tx, ty))) return true;
+    // A clearing round every dungeon's portal (its signpost and warden stand in it too).
+    if (DUNGEONS.some((d) => Math.abs(tx + 0.5 - d.mouth.x) <= 4.5 && ty >= d.mouth.y - 3 && ty <= d.mouth.y + 4)) return true;
     return ROADS.some((r) => tx >= r.x - 2 && ty >= r.y - 2 && tx < r.x + r.w + 1 && ty < r.y + r.h + 1);
   }
 

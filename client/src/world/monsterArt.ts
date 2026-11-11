@@ -691,6 +691,213 @@ export const MONSTER_ART: Record<MonsterId, MonsterArt> = {
     ),
     { scale: 2.1, w: 56, h: 102, missile: "fire", missileFrom: 70 },
   ),
+  // The Slime Cellar.
+  cellarBat: { file: "bat.png", tint: 0xc8a888, frame: 64, cols: 7, feet: 52, move: [1, 2, 3, 2], attack: same([4, 5, 6]), w: 26, h: 30, scale: 0.9 },
+  blueJelly: { file: "slime.png", tint: 0x8ab8ff, frame: 64, cols: 8, feet: 46, attack: [[3, 4, 5], [3, 4, 5, 6, 7], [3, 4, 5], [3, 4, 5, 6, 7]], w: 32, h: 30, scale: 1.1 },
+  cellarViper: { file: "snake.png", tint: 0x8a9a6a, frame: 64, cols: 7, feet: 47, attack: same([3, 4, 5, 6]), w: 28, h: 32 },
+  goblinThief: humanoid(
+    [
+      ...skin("olive"),
+      { category: "mob", id: "goblinHead", colors: { body: "olive" } },
+      { category: "bottom", id: "shorts", colors: { cloth: "charcoal" } },
+      { category: "top", id: "longsleeve", colors: { cloth: "black" } },
+      { category: "hat", id: "hood", colors: { cloth: "charcoal" } },
+      { category: "gear", id: "crossbow" },
+    ],
+    { scale: 0.85, h: 44, missile: "arrow", missileFrom: 60 },
+  ),
+  greatSlime: { file: "slime.png", tint: 0x9ae07a, frame: 64, cols: 8, feet: 46, attack: [[3, 4, 5], [3, 4, 5, 6, 7], [3, 4, 5], [3, 4, 5, 6, 7]], w: 44, h: 42, scale: 1.6 },
+  slimeKing: { file: "slime.png", tint: 0xffd84a, frame: 64, cols: 8, feet: 46, attack: [[3, 4, 5], [3, 4, 5, 6, 7], [3, 4, 5], [3, 4, 5, 6, 7]], w: 80, h: 76, scale: 3, missile: "seed", missileFrom: 70 },
+  // The Shadow Vault.
+  shadowBat: { file: "bat.png", tint: 0x7a5a9a, frame: 64, cols: 7, feet: 52, move: [1, 2, 3, 2], attack: same([4, 5, 6]), w: 30, h: 36, scale: 1.15 },
+  boneCrawler: { file: "big_worm.png", tint: 0xe8e0c8, frame: 64, cols: 6, feet: 54, attack: same([4, 5]), w: 32, h: 48, scale: 1.2 },
+  vaultKnight: humanoid(
+    [
+      { category: "mob", id: "skeletonBody" },
+      { category: "mob", id: "skullHead" },
+      { category: "gear", id: "capeTattered", colors: { cloth: "purple" } },
+      { category: "gear", id: "plate", colors: { metal: "steel" } },
+      { category: "gear", id: "plateArms", colors: { metal: "steel" } },
+      { category: "gear", id: "closeHelm", colors: { metal: "steel" } },
+      { category: "gear", id: "longswordAlt" },
+    ],
+    { scale: 1.1, w: 30, h: 54 },
+  ),
+  shadowPriest: humanoid(
+    [
+      ...skin("lavender"),
+      { category: "mob", id: "vampireHead", colors: { body: "lavender" } },
+      { category: "gear", id: "cape", colors: { cloth: "black" } },
+      { category: "gear", id: "tabardBlack" },
+      { category: "gear", id: "hood", colors: { cloth: "black" } },
+      { category: "gear", id: "crystalPurple" },
+    ],
+    { missile: "bolt", missileFrom: 60 },
+  ),
+  boneColossus: humanoid(
+    tinted(
+      [
+        { category: "mob", id: "skeletonBody" },
+        { category: "mob", id: "skullHead" },
+        { category: "mob", id: "hornsCurled" },
+        { category: "mob", id: "flail" },
+      ],
+      0xf0e8d0,
+    ),
+    { scale: 1.55, w: 42, h: 74 },
+  ),
+  shadowCount: humanoid(
+    [
+      ...skin("lavender"),
+      { category: "mob", id: "vampireHead", colors: { body: "lavender" } },
+      { category: "gear", id: "cape", colors: { cloth: "maroon" } },
+      { category: "gear", id: "plate", colors: { metal: "steel" } },
+      { category: "gear", id: "plateArms", colors: { metal: "gold" } },
+      { category: "gear", id: "greaves", colors: { metal: "steel" } },
+      { category: "gear", id: "ironBoots", colors: { metal: "steel" } },
+      { category: "gear", id: "crownGray" },
+      { category: "gear", id: "scythe" },
+    ],
+    { scale: 1.9, w: 52, h: 98, missile: "bolt", missileFrom: 70 },
+  ),
+  // The Blossom Grotto.
+  blossomWasp: { file: "bee.png", tint: 0xff9ac8, frame: 32, cols: 6, feet: 31, attack: same([3, 4, 5]), w: 30, h: 36, scale: 1.5 },
+  rootCrawler: { file: "big_worm.png", tint: 0xa8c07a, frame: 64, cols: 6, feet: 54, attack: same([4, 5]), w: 32, h: 48, scale: 1.2 },
+  foxGuard: humanoid(
+    [
+      ...skin("fur_copper"),
+      { category: "mob", id: "foxHead", colors: { body: "fur_copper" } },
+      { category: "mob", id: "foxTail", colors: { body: "fur_copper" } },
+      { category: "bottom", id: "pants", colors: { cloth: "maroon" } },
+      { category: "gear", id: "legion", colors: { metal: "brass" } },
+      { category: "gear", id: "plateArms", colors: { metal: "brass" } },
+      { category: "gear", id: "katana" },
+    ],
+    { scale: 1.1, w: 30, h: 54 },
+  ),
+  lanternGhost: { file: "ghost.png", tint: 0xffc06a, frame: 64, cols: 6, feet: 56, attack: same([4, 5]), w: 36, h: 50, scale: 1.15, alpha: 0.9, missile: "fire", missileFrom: 60 },
+  stoneOni: humanoid(
+    tinted(
+      [
+        { category: "mob", id: "zombieBody" },
+        { category: "mob", id: "trollHead" },
+        { category: "mob", id: "hornsBackwards" },
+        { category: "mob", id: "mace" },
+      ],
+      0xb8b8c4,
+    ),
+    { scale: 1.55, w: 42, h: 74 },
+  ),
+  jadeSerpent: humanoid(
+    tinted(
+      [
+        { category: "body", id: "body", colors: { body: "light" } },
+        { category: "mob", id: "lizardWings", colors: { body: "light" } },
+        { category: "mob", id: "lizardTail", colors: { body: "light" } },
+        { category: "mob", id: "lizardHead", colors: { body: "light" } },
+      ],
+      0x5ae0a0,
+    ),
+    { scale: 2.1, w: 56, h: 102, missile: "beam", missileFrom: 70 },
+  ),
+  // The Sunken Tomb.
+  tombScarab: { file: "bee.png", tint: 0x6aa0ff, frame: 32, cols: 6, feet: 31, attack: same([3, 4, 5]), w: 30, h: 34, scale: 1.4 },
+  sandWorm: { file: "big_worm.png", tint: 0xf0d090, frame: 64, cols: 6, feet: 54, attack: same([4, 5]), w: 34, h: 50, scale: 1.3 },
+  tombMummy: humanoid(
+    tinted(
+      [
+        { category: "mob", id: "zombieBody" },
+        { category: "mob", id: "zombieHead" },
+      ],
+      0xf0e4c8,
+    ),
+    { scale: 1.1, w: 30, h: 54 },
+  ),
+  jackalPriest: humanoid(
+    [
+      ...skin("fur_black"),
+      { category: "mob", id: "wolfHead", colors: { body: "fur_black" } },
+      { category: "gear", id: "cape", colors: { cloth: "yellow" } },
+      { category: "gear", id: "tabardWhite", colors: { cloth: "white" } },
+      { category: "gear", id: "plateArms", colors: { metal: "gold" } },
+      { category: "gear", id: "crystalYellow" },
+    ],
+    { missile: "bolt", missileFrom: 60 },
+  ),
+  sandstoneColossus: humanoid(
+    tinted(
+      [
+        { category: "mob", id: "zombieBody" },
+        { category: "mob", id: "frankHead", colors: { body: "zombie_green" } },
+        { category: "gear", id: "spartan", colors: { metal: "gold" } },
+        { category: "mob", id: "spear" },
+      ],
+      0xe8c890,
+    ),
+    { scale: 1.6, w: 44, h: 76 },
+  ),
+  tombPharaoh: humanoid(
+    [
+      ...tinted(
+        [
+          { category: "mob", id: "skeletonBody" },
+          { category: "mob", id: "skullHead" },
+        ],
+        0xf0e0b0,
+      ),
+      { category: "gear", id: "cape", colors: { cloth: "blue" } },
+      { category: "gear", id: "tabardWhite", colors: { cloth: "white" } },
+      { category: "gear", id: "plateArms", colors: { metal: "gold" } },
+      { category: "gear", id: "greaves", colors: { metal: "gold" } },
+      { category: "gear", id: "crown" },
+      { category: "gear", id: "diamondGold" },
+    ],
+    { scale: 1.9, w: 52, h: 98, missile: "fire", missileFrom: 70 },
+  ),
+  // The Void Rift.
+  riftBat: { file: "bat.png", tint: 0x9a7aff, frame: 64, cols: 7, feet: 52, move: [1, 2, 3, 2], attack: same([4, 5, 6]), w: 30, h: 36, scale: 1.2 },
+  voidWorm: { file: "big_worm.png", tint: 0x8a70c8, frame: 64, cols: 6, feet: 54, attack: same([4, 5]), w: 34, h: 50, scale: 1.3 },
+  riftKnight: humanoid(
+    tinted(
+      [
+        ...skin("light"),
+        { category: "gear", id: "cape", colors: { cloth: "purple" } },
+        { category: "gear", id: "plate", colors: { metal: "silver" } },
+        { category: "gear", id: "plateArms", colors: { metal: "silver" } },
+        { category: "gear", id: "greaves", colors: { metal: "silver" } },
+        { category: "gear", id: "ironBoots", colors: { metal: "silver" } },
+        { category: "gear", id: "celestialMoon" },
+        { category: "gear", id: "glowsword" },
+      ],
+      0xb8a0ff,
+    ),
+    { scale: 1.1, w: 30, h: 54 },
+  ),
+  voidEye: { file: "eyeball.png", tint: 0xb88aff, frame: 64, cols: 7, feet: 51, move: [0, 1, 2, 3], attack: same([4, 5]), w: 32, h: 42, scale: 1.2, missile: "beam" },
+  voidGolem: humanoid(
+    tinted(
+      [
+        { category: "mob", id: "zombieBody" },
+        { category: "mob", id: "frankHead", colors: { body: "zombie_green" } },
+        { category: "mob", id: "mace" },
+      ],
+      0x6a5a9a,
+    ),
+    { scale: 1.6, w: 44, h: 76 },
+  ),
+  voidWyrm: humanoid(
+    tinted(
+      [
+        { category: "body", id: "body", colors: { body: "light" } },
+        { category: "mob", id: "lizardWings", colors: { body: "light" } },
+        { category: "mob", id: "lizardTail", colors: { body: "light" } },
+        { category: "mob", id: "lizardHead", colors: { body: "light" } },
+        { category: "mob", id: "hornsCurled" },
+      ],
+      0x8a5aff,
+    ),
+    { scale: 2.3, w: 60, h: 110, missile: "bolt", missileFrom: 70 },
+  ),
   // The Orc Caves.
   caveBat: { file: "bat.png", tint: 0xa89a8e, frame: 64, cols: 7, feet: 52, move: [1, 2, 3, 2], attack: same([4, 5, 6]), w: 30, h: 36, scale: 1.15 },
   caveCrawler: { file: "big_worm.png", tint: 0xa898b8, frame: 64, cols: 6, feet: 54, attack: same([4, 5]), w: 32, h: 48, scale: 1.15 },
