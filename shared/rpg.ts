@@ -263,6 +263,18 @@ export type MonsterId =
   | "voidEye"
   | "voidGolem"
   | "voidWyrm"
+  | "goblinScout"
+  | "mudWorm"
+  | "goblinPikeman"
+  | "goblinFirecaller"
+  | "hobgoblin"
+  | "goblinKing"
+  | "denStalker"
+  | "denGnawer"
+  | "denRaider"
+  | "moonShaman"
+  | "caveTroll"
+  | "moonfang"
   | "caveBat"
   | "caveCrawler"
   | "orcMiner"
@@ -1073,6 +1085,98 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
     ],
   },
 
+  // ---------------------------------------------------------------- the Goblin Warren (Lv 22–28), a dungeon
+  // Quick goblins on lookout in the first tunnels. They dart at anyone who comes near.
+  goblinScout: {
+    id: "goblinScout", name: "Goblin Scout", level: 22, hp: 1_000, atk: 22, def: 10, exp: 1_050, gold: [28, 46], speed: 70, chase: 115, aggro: 45, range: 36, attackMs: 1300, radius: 10, respawnMs: 15_000, flee: 0.1,
+    drops: [
+      ["scoutWhistle", 0.55], ["orangePotion", 0.06], ["warrenCutlass", 0.004], ["warrenRing", 0.001], ["mithril", 0.05], ["starCrystal", 0.006], ["goblinScoutCard", 0.001],
+    ],
+  },
+  // Fat brown worms the goblins keep for digging. They only fight back, and their hides are thick.
+  mudWorm: {
+    id: "mudWorm", name: "Mud Worm", level: 23, hp: 1_600, atk: 36, def: 22, exp: 1_250, gold: [30, 48], speed: 30, chase: 70, aggro: 0, range: 40, attackMs: 1900, radius: 15, respawnMs: 16_000,
+    drops: [
+      ["mudClump", 0.55], ["orangePotion", 0.06], ["goblinPike", 0.004], ["mithril", 0.05], ["starCrystal", 0.006], ["mudWormCard", 0.001],
+    ],
+  },
+  // Goblins with long pikes, guarding the dig. They charge anyone who comes near.
+  goblinPikeman: {
+    id: "goblinPikeman", name: "Goblin Pikeman", level: 24, hp: 1_400, atk: 28, def: 18, exp: 1_300, gold: [32, 52], speed: 45, chase: 95, aggro: 45, range: 42, attackMs: 1600, radius: 12, respawnMs: 16_000,
+    drops: [
+      ["brokenPike", 0.55], ["orangePotion", 0.06], ["firecallerStaff", 0.004], ["mithril", 0.05], ["starCrystal", 0.006], ["goblinPikemanCard", 0.001],
+    ],
+  },
+  // Goblin shamans who throw fire from afar at anyone they see.
+  goblinFirecaller: {
+    id: "goblinFirecaller", name: "Goblin Firecaller", level: 26, hp: 1_250, atk: 32, def: 12, exp: 1_450, gold: [34, 56], speed: 40, chase: 85, aggro: 100, range: 160, attackMs: 2100, radius: 12, respawnMs: 17_000,
+    drops: [
+      ["goblinTinder", 0.55], ["orangePotion", 0.06], ["warrenBow", 0.004], ["warrenRing", 0.001], ["mithril", 0.05], ["starCrystal", 0.006], ["goblinFirecallerCard", 0.001],
+    ],
+  },
+  // Big goblins who guard the King's hall. Leave them alone and they leave you alone; they hit hard.
+  hobgoblin: {
+    id: "hobgoblin", name: "Hobgoblin", level: 27, hp: 2_400, atk: 52, def: 24, exp: 1_800, gold: [36, 60], speed: 30, chase: 70, aggro: 0, range: 44, attackMs: 2000, radius: 16, respawnMs: 18_000,
+    drops: [
+      ["hobgoblinTusk", 0.55], ["orangePotion", 0.06], ["warrenCutlass", 0.004], ["mithril", 0.05], ["starCrystal", 0.006], ["hobgoblinCard", 0.001],
+    ],
+  },
+  // The Goblin Warren's boss: a fat goblin on a throne of stolen junk, crown and all. Throws fire at anyone out of reach.
+  goblinKing: {
+    id: "goblinKing", name: "Goblin King", level: 30, hp: 30_000, atk: 80, def: 28, exp: 40_000, gold: [800, 1_500], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 26, respawnMs: 1_200_000,
+    boss: true, regen: 0.004,
+    slam: { radius: 95, power: 1.45, everyMs: 10_000 }, blast: { radius: 70, power: 1.25, everyMs: 12_000, reach: 390 },
+    drops: [
+      ["goblinCrown", 1], ["orangePotion", 0.8], ["warrenCutlass", 0.2], ["goblinPike", 0.2], ["firecallerStaff", 0.2], ["warrenBow", 0.2], ["mithril", 1], ["starCrystal", 1], ["kingsTooth", 0.06], ["warrenRing", 0.02], ["goblinKingCard", 0.02],
+    ],
+  },
+
+  // ---------------------------------------------------------------- the Moonfang Den (Lv 37–45), a dungeon
+  // Black werewolves that hunt in the first caves. They pounce on anyone who comes near.
+  denStalker: {
+    id: "denStalker", name: "Den Stalker", level: 37, hp: 2_500, atk: 40, def: 20, exp: 4_200, gold: [46, 76], speed: 70, chase: 120, aggro: 55, range: 36, attackMs: 1300, radius: 11, respawnMs: 18_000, flee: 0.1,
+    drops: [
+      ["greyPelt", 0.55], ["whitePotion", 0.06], ["moonCleaver", 0.004], ["fullMoonRing", 0.001], ["mithril", 0.06], ["starCrystal", 0.01], ["denStalkerCard", 0.001],
+    ],
+  },
+  // Grey worms that gnaw the bones the pack leaves. They only fight back, and they bite hard.
+  denGnawer: {
+    id: "denGnawer", name: "Den Gnawer", level: 38, hp: 3_200, atk: 60, def: 30, exp: 4_600, gold: [48, 80], speed: 30, chase: 70, aggro: 0, range: 42, attackMs: 1900, radius: 15, respawnMs: 20_000,
+    drops: [
+      ["gnawedBone", 0.55], ["whitePotion", 0.06], ["moonfangGlaive", 0.004], ["mithril", 0.06], ["starCrystal", 0.01], ["denGnawerCard", 0.001],
+    ],
+  },
+  // Werewolves in stolen armour, back from raiding the Wildlands. They charge anyone who comes near.
+  denRaider: {
+    id: "denRaider", name: "Den Raider", level: 40, hp: 3_000, atk: 50, def: 28, exp: 5_000, gold: [50, 84], speed: 45, chase: 95, aggro: 50, range: 42, attackMs: 1600, radius: 13, respawnMs: 20_000,
+    drops: [
+      ["raiderTotem", 0.55], ["whitePotion", 0.06], ["moonlitStaff", 0.004], ["mithril", 0.06], ["starCrystal", 0.01], ["denRaiderCard", 0.001],
+    ],
+  },
+  // White-furred werewolves who pray to the moon. They throw moonlight from afar at anyone they see.
+  moonShaman: {
+    id: "moonShaman", name: "Moon Shaman", level: 42, hp: 2_700, atk: 48, def: 20, exp: 5_600, gold: [52, 86], speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 20_000,
+    drops: [
+      ["moonShard", 0.55], ["whitePotion", 0.06], ["denBow", 0.004], ["fullMoonRing", 0.001], ["mithril", 0.06], ["starCrystal", 0.01], ["moonShamanCard", 0.001],
+    ],
+  },
+  // Grey trolls the pack keeps as guards. Leave them alone and they leave you alone; they hit very hard.
+  caveTroll: {
+    id: "caveTroll", name: "Cave Troll", level: 44, hp: 4_400, atk: 84, def: 32, exp: 6_600, gold: [56, 92], speed: 30, chase: 70, aggro: 0, range: 46, attackMs: 2100, radius: 18, respawnMs: 22_000,
+    drops: [
+      ["trollHide", 0.55], ["whitePotion", 0.06], ["moonCleaver", 0.004], ["mithril", 0.06], ["starCrystal", 0.01], ["caveTrollCard", 0.001],
+    ],
+  },
+  // The Moonfang Den's boss: the great white werewolf who leads the pack, in the deepest cave. Throws moonlight at anyone out of reach.
+  moonfang: {
+    id: "moonfang", name: "Moonfang Alpha", level: 47, hp: 55_000, atk: 135, def: 42, exp: 120_000, gold: [2_500, 4_500], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 28, respawnMs: 1_200_000,
+    boss: true, regen: 0.004,
+    slam: { radius: 100, power: 1.5, everyMs: 9_500 }, blast: { radius: 75, power: 1.3, everyMs: 11_500, reach: 400 },
+    drops: [
+      ["moonfangFang", 1], ["whitePotion", 0.8], ["moonCleaver", 0.2], ["moonfangGlaive", 0.2], ["moonlitStaff", 0.2], ["denBow", 0.2], ["mithril", 1], ["starCrystal", 1], ["moonfangCharm", 0.06], ["fullMoonRing", 0.02], ["moonfangCard", 0.02],
+    ],
+  },
+
   // ---------------------------------------------------------------- the Orc Caves (Lv 28–36), a dungeon under the Orc Woods
   // Big grey bats in the first cavern. They swoop at anyone who comes near, and they're quick to dodge.
   caveBat: {
@@ -1604,6 +1708,38 @@ export const FIELDS: Field[] = [
       { monster: "voidEye", rect: { x: 586, y: 592, w: 21, h: 16 }, count: 7 },
       { monster: "voidGolem", rect: { x: 572, y: 628, w: 30, h: 8 }, count: 7 },
       { monster: "voidWyrm", rect: { x: 621, y: 624, w: 6, h: 6 }, count: 1 },
+    ],
+  },
+  {
+    // A dungeon, through the portal in its land (see DUNGEONS in shared/town.ts).
+    id: "warren",
+    name: "Goblin Warren",
+    levels: "Lv 22–28",
+    area: { x: 0, y: 656, w: 80, h: 112 },
+    wild: true,
+    spawns: [
+      { monster: "goblinScout", rect: { x: 32, y: 688, w: 16, h: 18 }, count: 7 },
+      { monster: "mudWorm", rect: { x: 26, y: 663, w: 12, h: 11 }, count: 4 },
+      { monster: "goblinPikeman", rect: { x: 38, y: 663, w: 12, h: 11 }, count: 5 },
+      { monster: "goblinFirecaller", rect: { x: 32, y: 748, w: 20, h: 14 }, count: 7 },
+      { monster: "hobgoblin", rect: { x: 42, y: 724, w: 26, h: 10 }, count: 7 },
+      { monster: "goblinKing", rect: { x: 16, y: 726, w: 6, h: 6 }, count: 1 },
+    ],
+  },
+  {
+    // A dungeon, through the portal in its land (see DUNGEONS in shared/town.ts).
+    id: "den",
+    name: "Moonfang Den",
+    levels: "Lv 37–45",
+    area: { x: 80, y: 656, w: 80, h: 112 },
+    wild: true,
+    spawns: [
+      { monster: "denStalker", rect: { x: 110, y: 692, w: 18, h: 14 }, count: 7 },
+      { monster: "denGnawer", rect: { x: 96, y: 664, w: 12, h: 12 }, count: 4 },
+      { monster: "denRaider", rect: { x: 108, y: 664, w: 12, h: 12 }, count: 5 },
+      { monster: "moonShaman", rect: { x: 112, y: 748, w: 22, h: 14 }, count: 7 },
+      { monster: "caveTroll", rect: { x: 132, y: 720, w: 22, h: 12 }, count: 7 },
+      { monster: "moonfang", rect: { x: 102, y: 724, w: 6, h: 6 }, count: 1 },
     ],
   },
   {

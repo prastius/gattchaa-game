@@ -898,6 +898,124 @@ export const MONSTER_ART: Record<MonsterId, MonsterArt> = {
     ),
     { scale: 2.3, w: 60, h: 110, missile: "bolt", missileFrom: 70 },
   ),
+  // The Goblin Warren.
+  goblinScout: humanoid(
+    [
+      ...skin("olive"),
+      { category: "mob", id: "goblinHead", colors: { body: "olive" } },
+      { category: "bottom", id: "shorts", colors: { cloth: "forest" } },
+      { category: "gear", id: "leatherArmor" },
+      { category: "gear", id: "capLeather" },
+      { category: "gear", id: "dagger" },
+    ],
+    { scale: 0.8, h: 42 },
+  ),
+  mudWorm: { file: "big_worm.png", tint: 0xb08a6a, frame: 64, cols: 6, feet: 54, attack: same([4, 5]), w: 30, h: 46 },
+  goblinPikeman: humanoid(
+    [
+      ...skin("green"),
+      { category: "mob", id: "goblinHead", colors: { body: "green" } },
+      { category: "bottom", id: "pants", colors: { cloth: "brown" } },
+      { category: "gear", id: "legion", colors: { metal: "bronze" } },
+      { category: "gear", id: "kettle", colors: { metal: "bronze" } },
+      { category: "mob", id: "spear" },
+    ],
+    { scale: 0.9, h: 46 },
+  ),
+  goblinFirecaller: humanoid(
+    [
+      ...skin("green"),
+      { category: "mob", id: "goblinHead", colors: { body: "green" } },
+      { category: "bottom", id: "pants", colors: { cloth: "maroon" } },
+      { category: "gear", id: "tabardMaroon" },
+      { category: "gear", id: "hood", colors: { cloth: "red" } },
+      { category: "gear", id: "crystalRed" },
+    ],
+    { scale: 0.85, h: 44, missile: "fire", missileFrom: 60 },
+  ),
+  hobgoblin: humanoid(
+    [
+      ...skin("dark_green"),
+      { category: "mob", id: "goblinHead", colors: { body: "dark_green" } },
+      { category: "bottom", id: "pants", colors: { cloth: "walnut" } },
+      { category: "gear", id: "legion", colors: { metal: "iron" } },
+      { category: "gear", id: "nasal", colors: { metal: "iron" } },
+      { category: "mob", id: "mace" },
+    ],
+    { scale: 1.35, w: 34, h: 64 },
+  ),
+  goblinKing: humanoid(
+    [
+      ...skin("olive"),
+      { category: "mob", id: "goblinHead", colors: { body: "olive" } },
+      { category: "gear", id: "cape", colors: { cloth: "red" } },
+      { category: "gear", id: "plate", colors: { metal: "gold" } },
+      { category: "gear", id: "plateArms", colors: { metal: "gold" } },
+      { category: "gear", id: "greaves", colors: { metal: "brass" } },
+      { category: "gear", id: "crown" },
+      { category: "mob", id: "waraxe" },
+    ],
+    { scale: 1.75, w: 48, h: 88, missile: "fire", missileFrom: 70 },
+  ),
+  // The Moonfang Den.
+  denStalker: humanoid(
+    [
+      ...skin("fur_black"),
+      { category: "mob", id: "wolfTailFluffy" },
+      { category: "mob", id: "wolfHead", colors: { body: "fur_black" } },
+      { category: "bottom", id: "pants", colors: { cloth: "charcoal" } },
+    ],
+    { scale: 1.1, w: 30, h: 54 },
+  ),
+  denGnawer: { file: "big_worm.png", tint: 0xc0bab0, frame: 64, cols: 6, feet: 54, attack: same([4, 5]), w: 32, h: 48, scale: 1.15 },
+  denRaider: humanoid(
+    [
+      ...skin("fur_brown"),
+      { category: "mob", id: "wolfTail" },
+      { category: "mob", id: "wolfHead", colors: { body: "fur_brown" } },
+      { category: "bottom", id: "pants", colors: { cloth: "black" } },
+      { category: "gear", id: "legion", colors: { metal: "iron" } },
+      { category: "gear", id: "plateArms", colors: { metal: "iron" } },
+      { category: "mob", id: "waraxe" },
+    ],
+    { scale: 1.15, w: 30, h: 56 },
+  ),
+  moonShaman: humanoid(
+    [
+      ...skin("fur_white"),
+      { category: "mob", id: "wolfTailFluffy" },
+      { category: "mob", id: "wolfHead", colors: { body: "fur_white" } },
+      { category: "gear", id: "cape", colors: { cloth: "navy" } },
+      { category: "gear", id: "tabardLavender" },
+      { category: "gear", id: "crystal" },
+    ],
+    { scale: 1.05, missile: "bolt", missileFrom: 60 },
+  ),
+  caveTroll: humanoid(
+    tinted(
+      [
+        ...skin("pale_green"),
+        { category: "mob", id: "trollHead", colors: { body: "pale_green" } },
+        { category: "bottom", id: "shorts", colors: { cloth: "brown" } },
+        { category: "mob", id: "mace" },
+      ],
+      0xb8c0c8,
+    ),
+    { scale: 1.55, w: 42, h: 74 },
+  ),
+  moonfang: humanoid(
+    [
+      ...skin("fur_white"),
+      { category: "mob", id: "wolfTailFluffy" },
+      { category: "mob", id: "wolfHead", colors: { body: "fur_white" } },
+      { category: "gear", id: "capeTattered", colors: { cloth: "navy" } },
+      { category: "gear", id: "plate", colors: { metal: "silver" } },
+      { category: "gear", id: "plateArms", colors: { metal: "silver" } },
+      { category: "gear", id: "greaves", colors: { metal: "silver" } },
+      { category: "mob", id: "waraxe" },
+    ],
+    { scale: 1.9, w: 52, h: 98, missile: "bolt", missileFrom: 70 },
+  ),
   // The Orc Caves.
   caveBat: { file: "bat.png", tint: 0xa89a8e, frame: 64, cols: 7, feet: 52, move: [1, 2, 3, 2], attack: same([4, 5, 6]), w: 30, h: 36, scale: 1.15 },
   caveCrawler: { file: "big_worm.png", tint: 0xa898b8, frame: 64, cols: 6, feet: 54, attack: same([4, 5]), w: 32, h: 48, scale: 1.15 },

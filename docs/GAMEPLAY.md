@@ -99,6 +99,8 @@ The town is always safe: monsters never come in, and nobody can attack anyone in
 | Tilda | Dungeon Warden | In Dusk Hollow, by the portal down to the Hollow Burrows | Explains the Hollow Burrows |
 | Halvard | Dungeon Warden | In Frostfell, by the portal down to the Frozen Crypt | Explains the Frozen Crypt |
 | Ignis | Dungeon Warden | In Ashpeak, by the portal down to the Magma Depths | Explains the Magma Depths |
+| Nell | Dungeon Warden | In the Orc Woods, by the portal down to the Goblin Warren | Explains the Goblin Warren |
+| Garrick | Dungeon Warden | In the Wildlands, by the portal down to the Moonfang Den | Explains the Moonfang Den |
 | Pip | Dungeon Warden | In South Meadow, by the portal down to the Slime Cellar | Explains the Slime Cellar |
 | Morwen | Dungeon Warden | In Ravenmoor, by the portal down to the Shadow Vault | Explains the Shadow Vault |
 | Hana | Dungeon Warden | In Petalfall, by the portal down to the Blossom Grotto | Explains the Blossom Grotto |
@@ -182,6 +184,8 @@ Shops also show as orange dots on the minimap.
 | Hollow Burrows (dungeon) | 14–22 | The portal in Dusk Hollow, just south of the east road, between the Grubs and the Rock Worms | Tilda |
 | Frozen Crypt (dungeon) | 46–54 | The portal in Frostfell, down the path south of Frostfell's pier | Halvard |
 | Magma Depths (dungeon) | 76–84 | The portal in Ashpeak, north of the Cinder Colossus's crater | Ignis |
+| Goblin Warren (dungeon) | 22–28 | The portal in the Orc Woods, just north of the Goblins, west of the road up to the Wildlands | Nell |
+| Moonfang Den (dungeon) | 37–45 | The portal in the Wildlands, in the north-west woods, just north of the Werewolves | Garrick |
 | Slime Cellar (dungeon) | 6–12 | The portal in South Meadow, in the trees just west of the south road, north of the Snapper Flowers | Pip |
 | Shadow Vault (dungeon) | 56–64 | The portal in Ravenmoor, in the middle of the moor, south of the Wraiths' woods | Morwen |
 | Blossom Grotto (dungeon) | 66–74 | The portal in Petalfall, in the cherry woods, south of the Phantom Swordsmen | Hana |
@@ -462,13 +466,15 @@ A party that steps out of the circles takes far less damage than one that stands
 
 ### Dungeons
 
-Ragnarok style, every land but the Wildlands has a **dungeon** underneath: dark caves with their own monsters and a boss at the bottom, through a glowing **portal** in the land (each has a signpost and a Dungeon Warden next to it). Every dungeon has **two floors**: a red portal at the far end of the first is the **stairs** down, and a blue one takes you back up (another in the entrance hall takes you back to the surface). Nobody but the monsters can attack you underground. Fainting wakes you up in town as usual.
+Ragnarok style, every land has a **dungeon** underneath (the Orc Woods has two): dark caves with their own monsters and a boss at the bottom, through a glowing **portal** in the land (each has a signpost and a Dungeon Warden next to it). Every dungeon has **two floors**: a red portal at the far end of the first is the **stairs** down, and a blue one takes you back up (another in the entrance hall takes you back to the surface). Nobody but the monsters can attack you underground. Fainting wakes you up in town as usual.
 
 | Dungeon | Levels | Under | Boss |
 | --- | --- | --- | --- |
 | Slime Cellar | 6–12 | South Meadow | Slime King (Lv 14) |
 | Hollow Burrows | 14–22 | Dusk Hollow | Burrow Queen (Lv 24) |
+| Goblin Warren | 22–28 | The Orc Woods | Goblin King (Lv 30) |
 | Orc Caves | 28–36 | The Orc Woods | Orc Chieftain (Lv 38) |
+| Moonfang Den | 37–45 | The Wildlands | Moonfang Alpha (Lv 47) |
 | Frozen Crypt | 46–54 | Frostfell | Crypt Lord (Lv 57) |
 | Shadow Vault | 56–64 | Ravenmoor | Shadow Count (Lv 67) |
 | Blossom Grotto | 66–74 | Petalfall | Jade Serpent (Lv 77) |
@@ -597,6 +603,32 @@ Ragnarok style, every land but the Wildlands has a **dungeon** underneath: dark 
 | **Void Wyrm** (boss) | 106 | 340,000 | Second floor, the deepest chamber | Boss: slam and blast like a field boss (see "Field bosses"); back 35 minutes after it falls |
 
 **The Void Wyrm** always drops the Wyrm Heart, a Mithril Ingot and a Star Crystal, often good gear (Rift Blade, Void Scythe, Rift Staff, Rift Bow), rarely the **Wyrm's Eye** (6%), and very rarely the legendary **Ring of the Rift** (2%, anyone can wear it) or its own card (2%). Four level-100 players beat it in about five minutes.
+
+**The Goblin Warren** (level 22–28): where the goblins of the Orc Woods dig for their King. The portal is in the Orc Woods, just north of the Goblins, west of the road up to the Wildlands, with **Nell the Dungeon Warden** next to it.
+
+| Monster | Lv | HP | Where | Behaviour |
+| --- | --- | --- | --- | --- |
+| Goblin Scout | 22 | 1,000 | First floor, the big tunnel | Attacks anyone who comes close; plain attacks sometimes miss it |
+| Mud Worm | 23 | 1,600 | First floor, the dig | Only fights back |
+| Goblin Pikeman | 24 | 1,400 | First floor, the dig | Attacks anyone who comes close |
+| Goblin Firecaller | 26 | 1,250 | Second floor, the fire hall | Attacks from far away, on sight |
+| Hobgoblin | 27 | 2,400 | Second floor, the long hall | Only fights back |
+| **Goblin King** (boss) | 30 | 30,000 | Second floor, the King's hall | Boss: slam and blast like a field boss (see "Field bosses"); back 20 minutes after it falls |
+
+**The Goblin King** always drops the Goblin King's Crown, a Mithril Ingot and a Star Crystal, often good gear (Warren Cutlass, Goblin King's Pike, Firecaller Staff, Warren Shortbow), rarely the **Goblin King's Tooth** (6%), and very rarely the legendary **Warren Ring** (2%, anyone can wear it) or its own card (2%). Four players around level 28 beat it in a few minutes.
+
+**The Moonfang Den** (level 37–45): where the werewolves of the Wildlands sleep by day. The portal is in the Wildlands, in the north-west woods, just north of the Werewolves, with **Garrick the Dungeon Warden** next to it.
+
+| Monster | Lv | HP | Where | Behaviour |
+| --- | --- | --- | --- | --- |
+| Den Stalker | 37 | 2,500 | First floor, the big cave | Attacks anyone who comes close; plain attacks sometimes miss it |
+| Den Gnawer | 38 | 3,200 | First floor, the bone cave | Only fights back |
+| Den Raider | 40 | 3,000 | First floor, the bone cave | Attacks anyone who comes close |
+| Moon Shaman | 42 | 2,700 | Second floor, the moon cave | Attacks from far away, on sight |
+| Cave Troll | 44 | 4,400 | Second floor, the long cave | Only fights back |
+| **Moonfang Alpha** (boss) | 47 | 55,000 | Second floor, the Alpha's cave | Boss: slam and blast like a field boss (see "Field bosses"); back 20 minutes after it falls |
+
+**The Moonfang Alpha** always drops the Moonfang's Fang, a Mithril Ingot and a Star Crystal, often good gear (Moon Cleaver, Moonfang Glaive, Moonlit Staff, Den Hunter's Bow), rarely the **Moonfang Charm** (6%), and very rarely the legendary **Ring of the Full Moon** (2%, anyone can wear it) or its own card (2%). Four players around level 45 beat it in a few minutes.
 
 ## 6. Jobs and skills
 
@@ -835,9 +867,11 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Burrow Blade | 18 | ATK +26, Critical +3% | Novice, Knight | 2 | Tunnel Bat, Fungus Eye, Burrow Queen (Hollow Burrows) |
 | Moonblade (epic) | 20 | ATK +32, Critical +6% | Novice, Knight | 2 | Pumpking |
 | Scimitar | 22 | ATK +30, Critical +3% | Novice, Knight | 2 | Goblin, Orc Warrior |
+| Warren Cutlass | 25 | ATK +36, Critical +4% | Novice, Knight | 2 | Goblin Scout, Hobgoblin, Goblin King (Goblin Warren) |
 | Katana | 27 | ATK +40, Critical +6% | Novice, Knight | 2 | Orc Skeleton, Orc Warlord |
 | Flame Blade | 36 | ATK +54, Critical +6% | Novice, Knight | 2 | Troll, Vampire, Minotaur King |
 | Ice Sword | 42 | ATK +60, Critical +3% | Novice, Knight | 2 | Yeti |
+| Moon Cleaver | 42 | ATK +60, Critical +4% | Novice, Knight | 2 | Den Stalker, Cave Troll, Moonfang Alpha (Moonfang Den) |
 | Crypt Blade | 50 | ATK +68, Critical +4% | Novice, Knight | 2 | Ice Bat, Ice Golem, Crypt Lord (Frozen Crypt) |
 | Gilded Blade | 52 | ATK +70, Critical +4% | Novice, Knight | 2 | Gargoyle |
 | Vault Blade | 60 | ATK +80, Critical +5% | Novice, Knight | 2 | Shadow Bat, Bone Colossus, Shadow Count (Shadow Vault) |
@@ -850,10 +884,12 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Star Blade | 92 | ATK +120, Critical +6% | Novice, Knight | 2 | Void Bat, Crystal Golem |
 | Rift Blade | 98 | ATK +128, Critical +6% | Novice, Knight | 2 | Rift Bat, Void Golem, Void Wyrm (Void Rift) |
 | Halberd (spear, both hands) | 25 | ATK +50 | Knight | 2 | Orc Warrior, Orc Warlord |
+| Goblin King's Pike (spear, both hands) | 28 | ATK +58, Critical +3% | Knight | 2 | Mud Worm, Goblin King (Goblin Warren) |
 | Dragon Spear (legendary, spear, both hands) | 30 | ATK +66, Critical +8% | Knight | 2 | Orc Warlord |
 | Long Spear (spear, both hands) | 32 | ATK +62 | Knight | 2 | Boarman, Lizardman |
 | Chieftain's Glaive (spear, both hands) | 36 | ATK +82, Critical +4% | Knight | 2 | Orc Miner, Orc Guard, Orc Chieftain (Orc Caves) |
 | Trident (spear, both hands) | 37 | ATK +74, Critical +4% | Knight | 2 | Lizardman, Minotaur King |
+| Moonfang Glaive (spear, both hands) | 45 | ATK +92, Critical +4% | Knight | 2 | Den Gnawer, Moonfang Alpha (Moonfang Den) |
 | Glacier Lance (spear, both hands) | 46 | ATK +88, Critical +4% | Knight | 2 | Ramhorn, Frost Drake, Frost Giant |
 | Frost Scythe (legendary, spear, both hands) | 48 | ATK +102, Critical +8% | Knight | 2 | Frost Giant |
 | Frost Glaive (spear, both hands) | 54 | ATK +100, Critical +4% | Knight | 2 | Frozen Knight, Crypt Lord (Frozen Crypt) |
@@ -873,11 +909,13 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Great Bow | 16 | ATK +23, reach 210 | Archer | 2 | Gazer, Pumpking |
 | Tunnel Bow | 18 | ATK +25, reach 200 | Archer | 2 | Mole Goblin, Burrow Queen (Hollow Burrows) |
 | Composite Bow | 22 | ATK +30, reach 210 | Archer | 2 | Orc Archer |
+| Warren Shortbow | 26 | ATK +36, Critical +2%, reach 212 | Archer | 2 | Goblin Firecaller, Goblin King (Goblin Warren) |
 | Crossbow | 27 | ATK +40, Critical +4%, reach 220 | Archer | 2 | Orc Archer, Orc Warlord |
 | Longbow | 32 | ATK +46, reach 230 | Archer | 2 | Werewolf |
 | Cave Bow | 33 | ATK +48, reach 232 | Archer | 2 | Cave Bat, Orc Chieftain (Orc Caves) |
 | Sunfire Bow (legendary) | 38 | ATK +64, Critical +8%, reach 240 | Archer | 2 | Minotaur King |
 | Frost Bow | 42 | ATK +54, reach 235 | Archer | 2 | Ramhorn |
+| Den Hunter's Bow | 43 | ATK +60, Critical +3%, reach 240 | Archer | 2 | Moon Shaman, Moonfang Alpha (Moonfang Den) |
 | Glacier Bow | 46 | ATK +66, Critical +4%, reach 245 | Archer | 2 | Frost Wight, Frost Giant |
 | Blood Bow | 52 | ATK +62, reach 245 | Archer | 2 | Wraith |
 | Crypt Bow | 52 | ATK +70, Critical +3%, reach 248 | Archer | 2 | Ice Seer, Crypt Lord (Frozen Crypt) |
@@ -902,11 +940,13 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Ember Staff | 16 | ATK +23, MP +50, reach 180 | Mage | 2 | Gazer, Pumpking |
 | Fungus Staff | 18 | ATK +25, MP +50, reach 180 | Mage | 2 | Burrow Worm, Burrow Brute, Burrow Queen (Hollow Burrows) |
 | Ring Staff | 22 | ATK +30, MP +65, reach 190 | Mage | 2 | Goblin, Orc Archer |
+| Firecaller Staff | 26 | ATK +36, MP +85, reach 195 | Mage | 2 | Goblin Pikeman, Goblin King (Goblin Warren) |
 | Diamond Staff | 27 | ATK +40, MP +90, reach 200 | Mage | 2 | Orc Zombie, Orc Warlord |
 | Serpent Staff | 32 | ATK +46, MP +120, reach 210 | Mage | 2 | Lizardman |
 | Shaman's Staff | 33 | ATK +48, MP +130, reach 210 | Mage | 2 | Orc Shaman, Orc Chieftain (Orc Caves) |
 | Archmage Staff (legendary) | 38 | ATK +64, MP +200, reach 230 | Mage | 2 | Minotaur King |
 | Winter Staff | 42 | ATK +54, MP +160, reach 220 | Mage | 2 | Frost Shaman |
+| Moonlit Staff | 43 | ATK +58, MP +180, reach 228 | Mage | 2 | Den Raider, Moonfang Alpha (Moonfang Den) |
 | Aurora Staff | 46 | ATK +66, MP +220, reach 235 | Mage | 2 | Frost Drake, Frost Giant |
 | Bone Staff | 52 | ATK +62, MP +200, reach 230 | Mage | 2 | Lich |
 | Ice Seer's Staff | 52 | ATK +68, MP +220, reach 235 | Mage | 2 | Crypt Wraith, Crypt Lord (Frozen Crypt) |
@@ -1054,6 +1094,10 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Frozen Ring (legendary, anyone) | Ring | 54 | ATK +9, DEF +8, HP +220, Critical +3% | Ice Bat, Ice Seer, Crypt Lord (Frozen Crypt) |
 | Drake's Eye (epic) | Amulet | 86 | ATK +22, DEF +8, HP +370 | Molten Drake (Magma Depths) |
 | Ring of the Depths (legendary, anyone) | Ring | 84 | ATK +11, DEF +9, HP +280, Critical +4% | Lava Bat, Molten Knight, Molten Drake (Magma Depths) |
+| Warren Ring (legendary, anyone) | Ring | 26 | ATK +5, DEF +4, HP +90, Critical +2% | Goblin Scout, Goblin Firecaller, Goblin King (Goblin Warren) |
+| Goblin King's Tooth (epic) | Amulet | 28 | ATK +7, HP +110 | Goblin King (Goblin Warren) |
+| Ring of the Full Moon (legendary, anyone) | Ring | 45 | ATK +8, DEF +7, HP +180, Critical +3% | Den Stalker, Moon Shaman, Moonfang Alpha (Moonfang Den) |
+| Moonfang Charm (epic) | Amulet | 47 | ATK +13, DEF +4, HP +200 | Moonfang Alpha (Moonfang Den) |
 | Gladiator's Medal | Amulet | 30 | ATK +6, DEF +3, HP +100 | Magnus, for 40 Glory |
 | Champion's Ring | Ring | 60 | ATK +6, DEF +7, HP +160 | Magnus, for 80 Glory |
 | Conqueror's Crest (epic) | Amulet | 90 | ATK +20, DEF +8, HP +360 | Magnus, for 150 Glory |
@@ -1140,6 +1184,18 @@ Ragnarok style: every monster very rarely drops **its own card**. A card goes in
 | Molten Knight Card | Molten Knight | Shield | Molten | DEF +4, Reflects 18% of damage | 1 in 1,000 |
 | Obsidian Golem Card | Obsidian Golem | Weapon | Obsidian | ATK +8, Critical +6% | 1 in 1,000 |
 | Molten Drake Card (legendary) | Molten Drake | Weapon | Drake-fire | ATK +12, HP +220, Critical +6% | 1 in 50 kills |
+| Goblin Scout Card | Goblin Scout | Feet | Scouting | Evade +4% | 1 in 1,000 |
+| Mud Worm Card | Mud Worm | Armour | Muddy | DEF +2, HP +80 | 1 in 1,000 |
+| Goblin Pikeman Card | Goblin Pikeman | Weapon | Piercing | ATK +3, Critical +3% | 1 in 1,000 |
+| Goblin Firecaller Card | Goblin Firecaller | Head | Kindling | ATK +2, MP +50 | 1 in 1,000 |
+| Hobgoblin Card | Hobgoblin | Shield | Hulking | DEF +2, HP +70 | 1 in 1,000 |
+| Goblin King Card (legendary) | Goblin King | Legs | Goblin King's | ATK +4, DEF +3, HP +120 | 1 in 50 kills |
+| Den Stalker Card | Den Stalker | Feet | Pouncing | ATK +2, Evade +5% | 1 in 1,000 |
+| Den Gnawer Card | Den Gnawer | Armour | Gnawing | DEF +3, HP +140 | 1 in 1,000 |
+| Den Raider Card | Den Raider | Weapon | Raiding | ATK +5, Critical +3% | 1 in 1,000 |
+| Moon Shaman Card | Moon Shaman | Head | Moonlit | ATK +4, MP +80 | 1 in 1,000 |
+| Cave Troll Card | Cave Troll | Shield | Trollish | DEF +3, Reflects 12% of damage | 1 in 1,000 |
+| Moonfang Alpha Card (legendary) | Moonfang Alpha | Amulet | Moonfang's | ATK +7, DEF +3, HP +160 | 1 in 50 kills |
 | Cellar Bat Card | Cellar Bat | Feet | Flitting | Evade +3% | 1 in 1,000 |
 | Blue Jelly Card | Blue Jelly | Armour | Jellied | DEF +1, HP +40 | 1 in 1,000 |
 | Cellar Viper Card | Cellar Viper | Weapon | Venomous | ATK +2, Critical +2% | 1 in 1,000 |
@@ -1568,6 +1624,10 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 | Lord of Frost | Epic | Help defeat the Crypt Lord 10 times |
 | Depth Diver | Rare | Help defeat 300 Obsidian Golems in the Magma Depths |
 | Drakeslayer | Epic | Help defeat the Molten Drake 10 times |
+| Warren Raider | Rare | Help defeat 300 Hobgoblins in the Goblin Warren |
+| Goblin Bane | Epic | Help defeat the Goblin King 10 times |
+| Den Delver | Rare | Help defeat 300 Cave Trolls in the Moonfang Den |
+| Moonslayer | Epic | Help defeat the Moonfang Alpha 10 times |
 | Slime Sweeper | Rare | Help defeat 300 Great Slimes in the Slime Cellar |
 | Jelly Crusher | Epic | Help defeat the Slime King 10 times |
 | Vault Breaker | Rare | Help defeat 300 Bone Colossi in the Shadow Vault |
@@ -1593,7 +1653,7 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 | **Collecting** | | |
 | Card Finder | Rare | Find a monster card |
 | Card Collector | Epic | Find 5 different monster cards |
-| Card Master ✦ | Legendary | Find every kind of monster card (112 so far) |
+| Card Master ✦ | Legendary | Find every kind of monster card (124 so far) |
 | Lucky | Epic | Find a legendary item |
 | **The forge** | | |
 | Shiny | Rare | Upgrade any gear to +7 |
@@ -1679,6 +1739,18 @@ Pioneer places are counted per level cap: when the cap goes up, the first 10 pla
 | Molten Knight (Magma Depths) | 81 | 8,200 | 84 | 58 | 47,000 | 106–180 | Golden Potion, Magma Bow, Ring of the Depths, Mithril Ingot, Star Crystal |
 | Obsidian Golem (Magma Depths) | 83 | 10,800 | 140 | 62 | 54,000 | 110–186 | Golden Potion, Molten Blade, Mithril Ingot, Star Crystal |
 | Molten Drake (Magma Depths) | 87 | 280,000 | 250 | 78 | 800,000 | 14,000–24,000 | See "Dungeons" |
+| Goblin Scout (Goblin Warren) | 22 | 1,000 | 22 | 10 | 1,050 | 28–46 | Orange Potion, Warren Cutlass, Warren Ring, Mithril Ingot, Star Crystal |
+| Mud Worm (Goblin Warren) | 23 | 1,600 | 36 | 22 | 1,250 | 30–48 | Orange Potion, Goblin King's Pike, Mithril Ingot, Star Crystal |
+| Goblin Pikeman (Goblin Warren) | 24 | 1,400 | 28 | 18 | 1,300 | 32–52 | Orange Potion, Firecaller Staff, Mithril Ingot, Star Crystal |
+| Goblin Firecaller (Goblin Warren) | 26 | 1,250 | 32 | 12 | 1,450 | 34–56 | Orange Potion, Warren Shortbow, Warren Ring, Mithril Ingot, Star Crystal |
+| Hobgoblin (Goblin Warren) | 27 | 2,400 | 52 | 24 | 1,800 | 36–60 | Orange Potion, Warren Cutlass, Mithril Ingot, Star Crystal |
+| Goblin King (Goblin Warren) | 30 | 30,000 | 80 | 28 | 40,000 | 800–1,500 | See "Dungeons" |
+| Den Stalker (Moonfang Den) | 37 | 2,500 | 40 | 20 | 4,200 | 46–76 | White Potion, Moon Cleaver, Ring of the Full Moon, Mithril Ingot, Star Crystal |
+| Den Gnawer (Moonfang Den) | 38 | 3,200 | 60 | 30 | 4,600 | 48–80 | White Potion, Moonfang Glaive, Mithril Ingot, Star Crystal |
+| Den Raider (Moonfang Den) | 40 | 3,000 | 50 | 28 | 5,000 | 50–84 | White Potion, Moonlit Staff, Mithril Ingot, Star Crystal |
+| Moon Shaman (Moonfang Den) | 42 | 2,700 | 48 | 20 | 5,600 | 52–86 | White Potion, Den Hunter's Bow, Ring of the Full Moon, Mithril Ingot, Star Crystal |
+| Cave Troll (Moonfang Den) | 44 | 4,400 | 84 | 32 | 6,600 | 56–92 | White Potion, Moon Cleaver, Mithril Ingot, Star Crystal |
+| Moonfang Alpha (Moonfang Den) | 47 | 55,000 | 135 | 42 | 120,000 | 2,500–4,500 | See "Dungeons" |
 | Cellar Bat (Slime Cellar) | 6 | 110 | 8 | 2 | 55 | 4–8 | Red Potion, Cellar Cleaver, Jelly Ring, Iron Ingot, Star Crystal |
 | Blue Jelly (Slime Cellar) | 7 | 210 | 10 | 4 | 85 | 5–10 | Red Potion, Slime Staff, Iron Ingot, Star Crystal |
 | Cellar Viper (Slime Cellar) | 8 | 190 | 12 | 3 | 105 | 6–12 | Red Potion, Cellar Bow, Iron Ingot, Star Crystal |
@@ -1757,10 +1829,10 @@ Every monster also drops its own card (see Monster cards) and often potions.
 5. **Level 10–14:** Snapper Flowers by the lake, or Grubs and Night Bats out of the **east gate**.
 6. **Level 14–20:** Rock Worms, Gazers and Ghosts deeper in Dusk Hollow. Use skills on Ghosts, since plain attacks often miss them. Or go down into the **Hollow Burrows** (Lv 14–22), through the portal just south of Dusk Hollow's east road, with the **Burrow Queen** at the bottom.
 7. **Level 20:** Team up for the **Pumpking**. Save your Mithril and Star Crystals for **Hilda**, and aim for your first aura at +7. Ten Pumpking fights make you a **Kingslayer**.
-8. **Level 20–25:** Out of the **west gate** into the **Orc Woods**: Goblins in the grass north of the road, then Orc Warriors on the rocks south of it. Knights, try a **Halberd** from level 25.
+8. **Level 20–25:** Out of the **west gate** into the **Orc Woods**: Goblins in the grass north of the road, then Orc Warriors on the rocks south of it. Knights, try a **Halberd** from level 25. From 22, you can also go down into the **Goblin Warren** (Lv 22–28) through the portal just north of the Goblins, with the **Goblin King** at the bottom.
 9. **Level 25–30:** Orc Archers up north, Orc Skeletons west of the inlet, and Orc Zombies far to the south. At 30, gather a party for the **Orc Warlord**.
 10. **Level 30–35:** Take the path north from the west road, past **Rook**, into the **Wildlands**, or walk into the portal in the Orc Woods and down into the **Orc Caves** (level 28–36), with the **Orc Chieftain** at the bottom. Read her rules first: other players can attack you up there. Boarmen roam past the west path; Lizardmen past the east path only fight back. Bram's **White Potions** heal 250 HP.
-11. **Level 35–40:** Werewolves in the north-west woods, Trolls on the highlands, Vampires on the high ground to the north-east. From 40, bring a party for the **Minotaur King**, and watch your back.
+11. **Level 35–40:** Werewolves in the north-west woods, Trolls on the highlands, Vampires on the high ground to the north-east. From 40, bring a party for the **Minotaur King**, and watch your back. Or go down into the **Moonfang Den** (Lv 37–45) through the portal in the north-west woods, just north of the Werewolves, where the **Moonfang Alpha** leads the pack.
 12. **Level 40–45:** Take the path east off the south road to **Edda**'s pier and sail to **Frostfell** (500 gold). Yetis jump you in the woods west of the pier; Ramhorns to the east only fight back. Then the Frost Shamans on the west shore: close in fast, they throw ice.
 13. **Level 45–50:** Frost Wights on the icy highlands and Frost Drakes in the east. At 50, bring a party of four for the **Frost Giant** at the end of the path. **Bjorn** sails you home for free. If you'd rather nobody could attack you, go down into the **Frozen Crypt** (Lv 46–54) through the portal south of Frostfell's pier, with the **Crypt Lord** at the bottom.
 14. **Level 45–50:** Ask **Orin** about the **Trial of Mastery** at 45, and keep the Frostfell loot he asks for instead of selling it. At 50 he sends you to the **Isle of Trials**: beat your Shade (bring potions), then come back for your second job: **Lord Knight**, **Wizard** or **Hunter**. Spend your new points on the skills on keys 4–6.

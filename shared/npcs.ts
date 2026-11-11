@@ -512,6 +512,32 @@ export const NPCS: NpcDef[] = [
     chatter: ["The Void Rift is down there.", "No player can attack you underground.", "Step out of the red circles!", "Level 94–100. Down you go."],
   },
   {
+    // By the portal down to the Goblin Warren.
+    id: "warren-warden",
+    name: "Nell",
+    title: "Dungeon Warden",
+    kind: "local",
+    look: look({ body: "female", hair: "pigtails", hairColor: "ginger", skin: "light", top: "longsleeve", topColor: "tan", bottom: "pants", bottomColor: "charcoal", shoes: "boots", shoesColor: "black", hat: "bandana", hatColor: "tan" }),
+    ...at(108, 152.1),
+    dir: Dir.Right,
+    greeting:
+      "That hole goes down to the Goblin Warren (Lv 22–28), where the goblins of these woods dig for their King. Nobody but the monsters can hurt you down there. The first floor has Goblin Scouts, Mud Worms and Goblin Pikemen; the stairs at the far end go down to the Goblin Firecallers, the Hobgoblins, and the Goblin King (Lv 30) on his throne of junk. Take friends for him, and step out of the red circles. Walk into the portal to go down.",
+    chatter: ["The Goblin Warren is down there.", "No player can attack you underground.", "Step out of the red circles!", "Level 22–28. Down you go."],
+  },
+  {
+    // By the portal down to the Moonfang Den.
+    id: "den-warden",
+    name: "Garrick",
+    title: "Dungeon Warden",
+    kind: "local",
+    look: look({ body: "male", hair: "messy", hairColor: "dark_brown", beard: "trimmed", skin: "light", top: "longsleeve", topColor: "maroon", bottom: "pants", bottomColor: "charcoal", shoes: "boots", shoesColor: "black", hat: "bandana", hatColor: "maroon" }),
+    ...at(155, 50.1),
+    dir: Dir.Right,
+    greeting:
+      "Below us is the Moonfang Den (Lv 37–45), where the werewolves of the Wildlands sleep by day. Den Stalkers, Den Gnawers and Den Raiders fill the first caves; the stairs go down to the Moon Shamans, the Cave Trolls, and the Moonfang Alpha (Lv 47), the great white wolf who leads them. Take a party, and step out of the red circles. Walk into the portal to go down.",
+    chatter: ["The Moonfang Den is down there.", "No player can attack you underground.", "Step out of the red circles!", "Level 37–45. Down you go."],
+  },
+  {
     // In the Orc Woods clearing, by the portal down to the Orc Caves.
     id: "cave-warden",
     name: "Brok",

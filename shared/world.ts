@@ -57,8 +57,9 @@ import { FIELDS } from "./rpg";
 
 export const TILE_SIZE = 32;
 export const WORLD_TILES_W = 640;
-/** The overworld (OVERWORLD_H rows) and, below it, the underground band where dungeons live. */
-export const WORLD_TILES_H = OVERWORLD_H + 128;
+/** The overworld (OVERWORLD_H rows) and, below it, the underground band where dungeons live: two rows of
+ * 80 x 112 dungeon zones (at rows 528 and 656). */
+export const WORLD_TILES_H = OVERWORLD_H + 256;
 /** The main island is shaped round this tile (the world grew south and east for the islands; this stays put). */
 const MAIN_CX = 192;
 const MAIN_CY = 192;
