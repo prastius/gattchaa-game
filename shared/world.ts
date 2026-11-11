@@ -15,6 +15,9 @@ import {
   CASTLE_ISLE,
   FROST_LAIR,
   WARLORD_CAMP,
+  DUNGEON_ZONE,
+  CAVE_ROOMS,
+  isCaveRoom,
   CINDER_CRATER,
   SUN_TEMPLE,
   STAR_ALTAR,
@@ -236,6 +239,7 @@ export class World {
     };
     fill(TOWN_AREA, Terrain.Grass, 2);
     fill(INTERIOR_ZONE, Terrain.Grass, 2); // dry ground under the store interior
+    fill(DUNGEON_ZONE, Terrain.Dirt, 0); // earth under the Orc Caves
 
     // The park pond: deep in the middle, shallow at the edge, a dirt trail round it.
     const { cx, cy, rx, ry } = POND;
@@ -275,6 +279,7 @@ export class World {
         }
       }
     }
+    this.carveCaves();
     this.stampStructures();
     for (const p of PROPS) {
       const t: { w: number; h: number; walkable?: boolean } = PROP_TYPES[p.type];
@@ -319,6 +324,43 @@ export class World {
           }
           this.decor[i] = d;
         }
+      }
+    }
+  }
+
+  /**
+   * The Orc Caves: solid rock (the black void) everywhere in the dungeon's zone except the rooms
+   * and passages, whose walls are ragged in the big rooms, with loose stones on their floors.
+   */
+  private carveCaves() {
+    const { width, seed } = this;
+    const z = DUNGEON_ZONE;
+    for (let ty = z.y; ty < z.y + z.h; ty++) {
+      for (let tx = z.x; tx < z.x + z.w; tx++) {
+        const i = ty * width + tx;
+        this.decor[i] = Decor.none;
+        const room = CAVE_ROOMS.find((r) => inRect(r, tx, ty));
+        const edge = room && isCaveRoom(room) && (tx === room.x || ty === room.y || tx === room.x + room.w - 1 || ty === room.y + room.h - 1);
+        // Another room overlapping this edge (a passage coming in) keeps it open.
+        const joined = edge && CAVE_ROOMS.some((r) => r !== room && inRect(r, tx, ty));
+        const open = Boolean(room) && !(edge && !joined && hash2(tx, ty, seed + 77) < 0.45);
+        if (open) {
+          if (room && isCaveRoom(room) && !edge && hash2(tx, ty, seed + 78) < 0.06) this.decor[i] = Decor.stone;
+          continue;
+        }
+        this.floor[i] = Floor.Void;
+        this.solid[i] = 1;
+      }
+    }
+    // Boulders and rocks heaped against the big rooms' walls, so they look like rock, not a cut-out.
+    for (let ty = z.y + 1; ty < z.y + z.h - 1; ty++) {
+      for (let tx = z.x + 1; tx < z.x + z.w - 1; tx++) {
+        const i = ty * width + tx;
+        const room = CAVE_ROOMS.find((r) => inRect(r, tx, ty));
+        if (this.solid[i] || !room || !isCaveRoom(room) || CAVE_ROOMS.some((r) => r !== room && !isCaveRoom(r) && inRect({ x: r.x - 2, y: r.y - 2, w: r.w + 4, h: r.h + 4 }, tx, ty))) continue;
+        const byWall = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => this.solid[(ty + dy) * width + tx + dx] && this.floor[(ty + dy) * width + tx + dx] === Floor.Void);
+        const roll = hash2(tx, ty, seed + 79);
+        if (byWall && roll < 0.42) this.decor[i] = roll < 0.18 ? Decor.boulder : roll < 0.32 ? Decor.rock : Decor.stone;
       }
     }
   }
@@ -389,6 +431,7 @@ export class World {
     if (tx >= TRIAL_GROUND.x - 2 && ty >= TRIAL_GROUND.y - 3 && tx < TRIAL_GROUND.x + TRIAL_GROUND.w + 2 && ty < TRIAL_GROUND.y + TRIAL_GROUND.h + 2) return true;
     if (Object.values(PIERS).some((p) => tx >= p.x - 3 && ty >= p.y - 3 && tx < p.x + p.w + 3 && ty < p.y + p.h + 3)) return true;
     if (tx < INTERIOR_ZONE.x + INTERIOR_ZONE.w + 2 && ty < INTERIOR_ZONE.y + INTERIOR_ZONE.h + 2) return true;
+    if (inRect(DUNGEON_ZONE, tx, ty)) return true;
     return ROADS.some((r) => tx >= r.x - 2 && ty >= r.y - 2 && tx < r.x + r.w + 1 && ty < r.y + r.h + 1);
   }
 

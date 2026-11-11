@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import {
+  CAVES_MOUTH,
   DOORS,
   FACADES,
   MACHINES,
@@ -487,11 +488,32 @@ export class Town {
     this.boat((sunscar.x + 3) * 32, (sunscar.y + sunscar.h) * 32 + 30);
     this.boat((starfall.x + 3) * 32, (starfall.y + starfall.h) * 32 + 30);
     this.signpost(199.5 * 32, 283 * 32 - 2, "FERRY", "FROSTFELL →", "#bfe9ff");
+    this.signpost((CAVES_MOUTH.x - 3) * 32, (CAVES_MOUTH.y - 1) * 32, "ORC CAVES", "DUNGEON · LV 28–36", "#ffb35c");
+    for (const d of DOORS) if (d.portal !== undefined) this.portal(d.trigger.x + d.trigger.w / 2, d.trigger.y + d.trigger.h / 2, d.portal);
     this.signpost(329.5 * 32, 185 * 32 - 2, "FERRY", "RAVENMOOR →", "#d9b8ff");
     this.signpost(246.5 * 32, 282 * 32 - 2, "SHIPS", "PETALFALL & BEYOND →", "#ffc4da");
   }
 
   /** A little sailing boat on the water, rocking gently. */
+  /** A portal: a glowing ring on the ground, breathing, with motes of light rising out of it. */
+  private portal(x: number, y: number, tint: number) {
+    const glow = this.scene.add.ellipse(x, y, 104, 46, tint, 0.3).setBlendMode(Phaser.BlendModes.ADD).setDepth(2);
+    const ring = this.scene.add.ellipse(x, y, 88, 40).setStrokeStyle(4, tint, 0.95).setDepth(2);
+    const inner = this.scene.add.ellipse(x, y, 64, 28).setStrokeStyle(2, 0xffffff, 0.6).setDepth(2);
+    const core = this.scene.add.ellipse(x, y, 52, 22, 0xffffff, 0.4).setBlendMode(Phaser.BlendModes.ADD).setDepth(2);
+    this.scene.tweens.add({ targets: inner, scale: { from: 1.1, to: 0.7 }, alpha: { from: 0.7, to: 0 }, duration: 1300, repeat: -1 });
+    this.scene.tweens.add({ targets: [glow, core], alpha: { from: 0.15, to: 0.45 }, duration: 900, yoyo: true, repeat: -1, ease: "Sine.InOut" });
+    this.scene.tweens.add({ targets: ring, scale: { from: 0.92, to: 1.06 }, duration: 1200, yoyo: true, repeat: -1, ease: "Sine.InOut" });
+    for (let i = 0; i < 10; i++) {
+      const mote = this.scene.add.circle(x, y, 2.5, tint, 0.9).setBlendMode(Phaser.BlendModes.ADD).setDepth(y + 1);
+      const run = () => {
+        mote.setPosition(x + (Math.random() - 0.5) * 76, y + (Math.random() - 0.5) * 20).setAlpha(0.9);
+        this.scene.tweens.add({ targets: mote, y: mote.y - 40 - Math.random() * 30, alpha: 0, duration: 1400 + Math.random() * 900, onComplete: run });
+      };
+      this.scene.time.delayedCall(i * 350, run);
+    }
+  }
+
   private boat(x: number, y: number) {
     const g = this.scene.add.graphics().setPosition(x, y).setDepth(y + 12);
     g.fillStyle(0x10202b, 0.22).fillEllipse(0, 12, 96, 14);

@@ -545,6 +545,60 @@ export const MONSTER_ART: Record<MonsterId, MonsterArt> = {
     ],
     { scale: 2.1, w: 56, h: 108, missile: "fire", missileFrom: 70 },
   ),
+  // The Orc Caves.
+  caveBat: { file: "bat.png", tint: 0xa89a8e, frame: 64, cols: 7, feet: 52, move: [1, 2, 3, 2], attack: same([4, 5, 6]), w: 30, h: 36, scale: 1.15 },
+  caveCrawler: { file: "big_worm.png", tint: 0xa898b8, frame: 64, cols: 6, feet: 54, attack: same([4, 5]), w: 32, h: 48, scale: 1.15 },
+  orcMiner: humanoid(
+    [
+      ...skin("dark_green"),
+      { category: "mob", id: "orcHead", colors: { body: "dark_green" } },
+      { category: "bottom", id: "pants", colors: { cloth: "brown" } },
+      { category: "shoes", id: "boots", colors: { cloth: "brown" } },
+      { category: "gear", id: "leatherArmor" },
+      { category: "gear", id: "kettle", colors: { metal: "iron" } },
+      { category: "mob", id: "mace" },
+    ],
+    { scale: 1.05, w: 28, h: 52 },
+  ),
+  orcShaman: humanoid(
+    [
+      ...skin("green"),
+      { category: "mob", id: "orcHead", colors: { body: "green" } },
+      { category: "bottom", id: "pants", colors: { cloth: "maroon" } },
+      { category: "gear", id: "tabardMaroon" },
+      { category: "gear", id: "cape", colors: { cloth: "red" } },
+      { category: "gear", id: "gnarled" },
+    ],
+    { missile: "fire", missileFrom: 60 },
+  ),
+  orcGuard: humanoid(
+    [
+      ...skin("dark_green"),
+      { category: "mob", id: "orcHead", colors: { body: "dark_green" } },
+      { category: "gear", id: "cape", colors: { cloth: "black" } },
+      { category: "gear", id: "legion", colors: { metal: "iron" } },
+      { category: "gear", id: "plateArms", colors: { metal: "iron" } },
+      { category: "gear", id: "greaves", colors: { metal: "iron" } },
+      { category: "gear", id: "ironBoots", colors: { metal: "iron" } },
+      { category: "gear", id: "kiteRed" },
+      { category: "mob", id: "spear" },
+    ],
+    { scale: 1.15, w: 30, h: 56 },
+  ),
+  orcChieftain: humanoid(
+    [
+      ...skin("dark_green"),
+      { category: "mob", id: "orcHead", colors: { body: "dark_green" } },
+      { category: "gear", id: "cape", colors: { cloth: "black" } },
+      { category: "gear", id: "plate", colors: { metal: "iron" } },
+      { category: "gear", id: "plateArms", colors: { metal: "gold" } },
+      { category: "gear", id: "greaves", colors: { metal: "iron" } },
+      { category: "gear", id: "ironBoots", colors: { metal: "iron" } },
+      { category: "gear", id: "horned", colors: { metal: "gold" } },
+      { category: "mob", id: "waraxe" },
+    ],
+    { scale: 1.75, w: 48, h: 90 },
+  ),
   // Sunscar.
   duneStalker: humanoid(
     [

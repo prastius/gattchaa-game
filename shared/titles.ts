@@ -156,6 +156,8 @@ export const TITLES = def({
   duneConqueror: { name: "Dune Conqueror", tier: "epic", group: "Hunting", goal: { kind: "kills", n: 10, monster: "duneKing" }, how: "Help defeat the Dune King 10 times." },
   crystalbreaker: { name: "Crystalbreaker", tier: "rare", group: "Hunting", goal: { kind: "kills", n: 300, monster: "crystalGolem" }, how: "Help defeat 300 Crystal Golems." },
   starslayer: { name: "Starslayer", tier: "epic", group: "Hunting", goal: { kind: "kills", n: 10, monster: "starTyrant" }, how: "Help defeat the Star Tyrant 10 times." },
+  delver: { name: "Delver", tier: "rare", group: "Hunting", goal: { kind: "kills", n: 300, monster: "orcGuard" }, how: "Help defeat 300 Orc Guards in the Orc Caves." },
+  chieftainsBane: { name: "Chieftain's Bane", tier: "epic", group: "Hunting", goal: { kind: "kills", n: 10, monster: "orcChieftain" }, how: "Help defeat the Orc Chieftain 10 times." },
   usurper: { name: "Usurper", tier: "epic", group: "Hunting", goal: { kind: "kills", n: 10, monster: "fallenKing" }, how: "Help defeat the Fallen King 10 times." },
   giantslayer: { name: "Giantslayer", tier: "epic", group: "Hunting", goal: { kind: "kills", n: 10, monster: "frostGiant" }, aura: AURA_GIANTSLAYER, how: "Help defeat the Frost Giant 10 times." },
 

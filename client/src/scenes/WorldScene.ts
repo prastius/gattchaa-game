@@ -20,7 +20,7 @@ import { CLASSES, JOB_LEVEL, aClass, isClassId, isMonsterId, jobTier, type Class
 import { SKILLS, type SkillId } from "../../../shared/skills";
 import { ITEMS, PICKUP_RANGE, RARITY, appearanceKey, cleanUpgrade, isItemId, parseCards } from "../../../shared/items";
 import { NPCS, type NpcDef } from "../../../shared/npcs";
-import { CASTLE, DOORS, DUST, GLOOM, HAZE, INTERIOR_ZONE, NIGHT, PROPS, RUINS, TOWN_AREA, biomeAt, inCastle, inRect } from "../../../shared/town";
+import { CASTLE, DOORS, DUNGEON_ZONE, DUST, GLOOM, HAZE, INTERIOR_ZONE, NIGHT, PROPS, RUINS, TOWN_AREA, biomeAt, inCastle, inRect } from "../../../shared/town";
 import { CASTLE_NAME, CRYSTAL, isGuardian } from "../../../shared/siege";
 import { emblemOf } from "../../../shared/guild";
 import { CharacterTextures, PlayerSprite } from "../PlayerSprite";
@@ -290,6 +290,8 @@ export class WorldScene extends Phaser.Scene {
   private leaves!: Weather;
   /** Inside the Gattchaa store (the interior zone)? */
   private indoors = false;
+  /** The walled-off zone you're in (the palace's hall, or a dungeon), if any. */
+  private zone?: { x: number; y: number; w: number; h: number };
   private doorPendingUntil = 0;
 
   constructor() {
@@ -368,6 +370,7 @@ export class WorldScene extends Phaser.Scene {
     this.overlay("haze", HAZE, [78, 26, 10], 0.3);
     this.overlay("dust", DUST, [120, 90, 30], 0.16);
     this.overlay("night", NIGHT, [10, 14, 48], 0.5);
+    this.overlay("cave", DUNGEON_ZONE, [16, 10, 6], 0.42);
     createMonsterAnims(this);
     this.fx = new Fx(this, () => this.textRes);
 
@@ -767,7 +770,7 @@ export class WorldScene extends Phaser.Scene {
 
     this.updateIndoors();
     this.updateCastle();
-    this.daylight.update(time, this.indoors);
+    this.daylight.update(time, Boolean(this.zone));
     PlayerSprite.nightLight = this.daylight.lamps;
     this.critters.update(time, dt, this.cameras.main.worldView, this.daylight.night, this.indoors);
     const view = this.cameras.main.worldView;
@@ -909,11 +912,11 @@ export class WorldScene extends Phaser.Scene {
     self.moving = moving;
     self.animate();
 
-    // Walking into a doorway (in the door's direction) goes through it.
+    // Walking into a doorway (in the door's direction) or a portal (any way) goes through it.
     if (len > 0) {
       const wantDir = dy < 0 && Math.abs(dy) >= Math.abs(dx) ? Dir.Up : dy > 0 && Math.abs(dy) >= Math.abs(dx) ? Dir.Down : -1;
       for (const d of DOORS) {
-        if (d.dir === wantDir && inRect(d.trigger, self.x, self.y)) this.useDoor(d.id);
+        if ((d.dir < 0 || d.dir === wantDir) && inRect(d.trigger, self.x, self.y)) this.useDoor(d.id);
       }
     }
 
@@ -1805,22 +1808,26 @@ export class WorldScene extends Phaser.Scene {
   }
 
   /** Inside the store only the interior is drawn, on black; outside it's hidden. */
+  /**
+   * The palace's hall and the dungeons are walled-off zones of the map: while you're in one, the
+   * camera stays inside it, nothing outside is drawn, and the sky's light doesn't reach you.
+   */
   private updateIndoors() {
     const self = this.self;
     if (!self) return;
-    const inside = inRect(INTERIOR_ZONE, self.x / TILE_SIZE, self.y / TILE_SIZE);
-    if (inside === this.indoors) return;
-    this.indoors = inside;
+    const zone = [INTERIOR_ZONE, DUNGEON_ZONE].find((z) => inRect(z, self.x / TILE_SIZE, self.y / TILE_SIZE));
+    if (zone === this.zone) return;
+    this.zone = zone;
+    this.indoors = zone === INTERIOR_ZONE;
     const cam = this.cameras.main;
-    if (inside) {
-      const z = INTERIOR_ZONE;
-      cam.setBounds(z.x * TILE_SIZE, z.y * TILE_SIZE, z.w * TILE_SIZE, z.h * TILE_SIZE);
+    if (zone) {
+      cam.setBounds(zone.x * TILE_SIZE, zone.y * TILE_SIZE, zone.w * TILE_SIZE, zone.h * TILE_SIZE);
       cam.setBackgroundColor("#000000");
     } else {
       cam.setBounds(0, 0, WORLD_PX_W, WORLD_PX_H);
       cam.setBackgroundColor(OUTDOOR_BG);
     }
-    this.hud.setIndoors(inside);
+    this.hud.setIndoors(this.indoors);
     this.daylight.refresh();
     // Drop chunks from the other side; streamChunks loads the right ones.
     for (const [key, chunk] of this.chunks) {
@@ -1832,9 +1839,9 @@ export class WorldScene extends Phaser.Scene {
   }
 
   private chunkAllowed(cx: number, cy: number): boolean {
-    const z = INTERIOR_ZONE;
-    const inZone = cx * CHUNK_TILES >= z.x && cy * CHUNK_TILES >= z.y && (cx + 1) * CHUNK_TILES <= z.x + z.w && (cy + 1) * CHUNK_TILES <= z.y + z.h;
-    return this.indoors === inZone;
+    const within = (z: { x: number; y: number; w: number; h: number }) =>
+      cx * CHUNK_TILES >= z.x && cy * CHUNK_TILES >= z.y && (cx + 1) * CHUNK_TILES <= z.x + z.w && (cy + 1) * CHUNK_TILES <= z.y + z.h;
+    return this.zone ? within(this.zone) : !within(INTERIOR_ZONE) && !within(DUNGEON_ZONE);
   }
 
   private unloadChunk(chunk: Chunk) {

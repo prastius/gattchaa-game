@@ -135,7 +135,10 @@ export const NIGHT_LINE = 360;
 /** Which season the art shows at a tile: the islands have their own (the far eastern ones aren't seasons at all). */
 export type Biome = "summer" | "winter" | "autumn" | "spring" | "ash" | "desert" | "starlit";
 export const biomeAt = (tx: number, ty: number): Biome =>
-  tx >= ASH_LINE
+  // Underground it's the summer sheets' plain brown earth, whatever the sea round the caves would be.
+  inRect(DUNGEON_ZONE, tx, ty)
+    ? "summer"
+    : tx >= ASH_LINE
     ? ty < SAND_LINE
       ? "desert"
       : ty > NIGHT_LINE
@@ -378,6 +381,45 @@ export const HALL_RUNNER: Rect = { x: 30, y: 13, w: 4, h: 25 };
 export const HALL_DAIS: Rect = { x: 21, y: 10, w: 22, h: 3 };
 export const BATTLE_HALL: Rect = { x: 41, y: 15, w: 14, h: 20 };
 export const LOUNGE: Rect = { x: 10, y: 26, w: 12, h: 8 };
+// ---------------------------------------------------------------- dungeons
+//
+// The Orc Caves, two floors under the Orc Woods, live out in the south-western
+// sea where nobody can walk, like the palace's hall: portals take you down and
+// back up, and the client draws only the caves while you're in them. The zone
+// is chunk-aligned (16 tiles) for that. Inside it everything is solid rock
+// except the rooms and passages below (with ragged edges, see World).
+
+export const DUNGEON_ZONE: Rect = { x: 0, y: 336, w: 80, h: 112 };
+/** The first floor (top half of the zone) and the second (bottom half). */
+export const CAVE_FLOORS: Rect[] = [
+  { x: 0, y: 336, w: 80, h: 56 },
+  { x: 0, y: 392, w: 80, h: 56 },
+];
+/** Rooms and passages: the rest of the zone is rock. */
+export const CAVE_ROOMS: Rect[] = [
+  // Floor 1: the entrance hall, a big cavern, a passage down to the miners' cavern, the chamber with the stairs.
+  { x: 6, y: 344, w: 14, h: 12 },
+  { x: 19, y: 348, w: 12, h: 4 },
+  { x: 30, y: 340, w: 20, h: 22 },
+  { x: 38, y: 361, w: 4, h: 12 },
+  { x: 28, y: 372, w: 28, h: 15 },
+  { x: 55, y: 377, w: 10, h: 4 },
+  { x: 64, y: 370, w: 12, h: 16 },
+  // Floor 2: the landing, a passage west, the shamans' hall, a passage down, the guards' hall, the Chieftain's chamber.
+  { x: 62, y: 398, w: 14, h: 12 },
+  { x: 49, y: 402, w: 14, h: 4 },
+  { x: 26, y: 396, w: 24, h: 18 },
+  { x: 34, y: 413, w: 4, h: 12 },
+  { x: 10, y: 424, w: 30, h: 14 },
+  { x: 39, y: 430, w: 12, h: 4 },
+  { x: 50, y: 421, w: 22, h: 20 },
+];
+/** Rooms big enough for ragged walls and loose stones (passages stay clean, 4 tiles wide). */
+export const isCaveRoom = (r: Rect) => r.w >= 10 && r.h >= 10;
+export const inDungeon = (px: number, py: number) => inRect(DUNGEON_ZONE, px / TILE, py / TILE);
+/** The mouth of the Orc Caves: a portal in a clearing in the Orc Woods (tile). */
+export const CAVES_MOUTH = { x: 86, y: 216.5 };
+
 /** Where the in-palace shopper may wander. */
 export const STORE_WANDER: Rect = { x: 24, y: 15, w: 16, h: 20 };
 
@@ -513,10 +555,15 @@ export interface Door {
   id: string;
   label: string;
   trigger: Rect;
-  /** 0 = up, 2 = down (protocol Dir values). */
+  /** 0 = up, 2 = down (protocol Dir values); -1 = any way you walk into it (portals). */
   dir: number;
   to: { x: number; y: number };
+  /** A portal: drawn as a glowing ring of this colour. */
+  portal?: number;
 }
+
+/** A portal's trigger: a small box round its middle (tile). */
+const portalAt = (tx: number, ty: number): Rect => ({ x: tx * TILE - 22, y: ty * TILE - 14, w: 44, h: 28 });
 
 export const DOORS: Door[] = [
   {
@@ -533,6 +580,11 @@ export const DOORS: Door[] = [
     dir: 2,
     to: { x: PALACE_DOOR_X, y: PALACE_FACE_BOTTOM * 32 + 36 },
   },
+  // The Orc Caves: in from the Orc Woods, out from the entrance hall, and the stairs between the floors.
+  { id: "caves-in", label: "Into the Orc Caves", trigger: portalAt(CAVES_MOUTH.x, CAVES_MOUTH.y), dir: -1, to: { x: 13 * TILE, y: 351 * TILE }, portal: 0xff9a4a },
+  { id: "caves-out", label: "Back to the Orc Woods", trigger: portalAt(8, 346.5), dir: -1, to: { x: CAVES_MOUTH.x * TILE, y: (CAVES_MOUTH.y + 2.5) * TILE }, portal: 0x8fd0ff },
+  { id: "caves-down", label: "Down to the second floor", trigger: portalAt(73, 378), dir: -1, to: { x: 68 * TILE, y: 405 * TILE }, portal: 0xff6a3a },
+  { id: "caves-up", label: "Up to the first floor", trigger: portalAt(73, 401), dir: -1, to: { x: 69 * TILE, y: 378 * TILE }, portal: 0x8fd0ff },
 ];
 
 /**
@@ -777,6 +829,22 @@ const props: Prop[] = [
   { type: "barrels", x: CASTLE_CAMP.x + 6, y: CASTLE_CAMP.y + 1 },
   { type: "barrel", x: CASTLE_CAMP.x + 1, y: CASTLE_CAMP.y + 10 },
   { type: "crate", x: PIERS.castle.x - 3, y: PIERS.castle.y - 2 },
+
+  // ---- The Orc Caves: the miners' fires down the first floor, and braziers round the Chieftain's chamber.
+  { type: "campfire", x: 12, y: 352 },
+  { type: "campfire", x: 40, y: 345 },
+  { type: "campfire", x: 34, y: 380 },
+  { type: "campfire", x: 50, y: 378 },
+  { type: "crate", x: 30, y: 374, variant: 1 },
+  { type: "barrels", x: 52, y: 383 },
+  { type: "campfire", x: 30, y: 400 },
+  { type: "campfire", x: 44, y: 408 },
+  { type: "campfire", x: 14, y: 428 },
+  { type: "campfire", x: 52, y: 423 },
+  { type: "campfire", x: 69, y: 423 },
+  { type: "campfire", x: 52, y: 438 },
+  { type: "campfire", x: 69, y: 438 },
+  { type: "throne", x: 66, y: 430 },
 
   // ---- The Ogre Warlord's war camp: a ring of standing stones, his seat at the far end, fires and his plunder.
   ...[WARLORD_CAMP.x + 1, WARLORD_CAMP.x + 6, WARLORD_CAMP.x + 11, WARLORD_CAMP.x + WARLORD_CAMP.w - 2].flatMap((x) =>

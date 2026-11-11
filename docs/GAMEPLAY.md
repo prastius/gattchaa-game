@@ -95,6 +95,7 @@ The town is always safe: monsters never come in, and nobody can attack anyone in
 | Rowan | Gate Guard | Outside the south gate | Explains the South Meadow |
 | Mara | Ranger | Outside the east gate | Explains Dusk Hollow |
 | Gregor | Scout | Outside the west gate | Explains the Orc Woods |
+| Brok | Cave Warden | In the Orc Woods, by the portal down to the Orc Caves | Explains the Orc Caves |
 | Sable | Bounty Hunter | North of town, by the path up from the west road | Explains the Wildlands and their PVP rules, and keeps the board of who's wanted and the best hunters |
 | Edda | Ferry Captain | At the end of the pier on the meadow's south-east point | Sails you to Frostfell for 500 gold |
 | Bjorn | Ferryman | At the end of Frostfell's pier | Explains Frostfell, and sails you back for free |
@@ -167,6 +168,7 @@ Shops also show as orange dots on the minimap.
 | Dusk Hollow | 10–20 | Out of the east gate | Mara |
 | Orc Woods | 20–30 | Out of the west gate | Gregor |
 | Wildlands (open PVP) | 30–40 | Up the paths north along the town walls, from the west or east road | Sable |
+| Orc Caves (dungeon) | 28–36 | The portal in the clearing in the Orc Woods, east of the Orc Warlord's camp | Brok |
 | Frostfell | 40–50 | The ferry from the meadow's south-east point (500 gold; the way back is free) | Edda, Bjorn |
 | Ravenmoor | 50–60 | The boat at the end of the east road, past the Pumpking (800 gold; the way back is free) | Finn, Corvin |
 | Petalfall | 60–70 | The ship from the meadow's east shore (1,200 gold; the way back is free) | Marlow, Willow |
@@ -440,6 +442,26 @@ A party that steps out of the circles takes far less damage than one that stands
 - He's meant for a party of four at level 100: four level-100 players beat him in about six or seven minutes, with one of them taking the hits and drinking a lot of potions.
 - **He always drops** the Fallen Star (sells for 20,000 gold), a Mithril Ingot and a Star Crystal (often two), and usually a White Potion. He often drops good gear (Void Lance, Starlight Longbow, Astral Staff, Star Plate, Star Shield). Rarely he drops the **Tyrant's Star** (6%), and very rarely the legendary **Star Tyrant Card** (2%) or **Ring of the Fallen Star** (1.5%), a ring anyone can wear.
 
+### Dungeons: the Orc Caves
+
+Ragnarok style, some lands have a **dungeon** underneath: dark caves with their own monsters and a boss at the bottom. The first is the **Orc Caves**, under the Orc Woods (**level 28–36**), where the orcs of the woods dig for their Chieftain.
+
+- **Getting in:** walk into the glowing **portal** in the clearing in the Orc Woods, east of the Orc Warlord's camp (there's a signpost, and **Brok the Cave Warden** next to it). There's a portal back up in the entrance hall.
+- **Two floors.** The first floor's big cavern has Cave Bats; the miners' cavern below it has Cave Crawlers and Orc Miners. The red portal at the far end is the **stairs** down to the second floor (and a blue one there takes you back up). The second floor has Orc Shamans, Orc Guards, and the **Orc Chieftain** on his throne in the deepest chamber.
+- **No PVP down there:** only monsters can attack you, so it's the place to level between 28 and 36 if the Wildlands aren't for you. The EXP is about the same as up there.
+- Fainting underground wakes you up in town as usual. The camera stays inside the caves while you're in them.
+
+| Monster | Lv | HP | Where | Behaviour |
+| --- | --- | --- | --- | --- |
+| Cave Bat | 28 | 1,500 | First floor, the big cavern | Quick, attacks anyone who comes close; plain attacks sometimes miss it |
+| Cave Crawler | 30 | 2,100 | First floor, the miners' cavern | An armoured worm. Only fights back, and it's hard to hurt |
+| Orc Miner | 31 | 2,300 | First floor, the miners' cavern | Attacks anyone who comes close |
+| Orc Shaman | 33 | 2,000 | Second floor, the first hall | Throws fire from far away, attacks on sight |
+| Orc Guard | 35 | 3,200 | Second floor, the second hall | Tough, attacks anyone who comes close |
+| **Orc Chieftain** (boss) | 38 | 60,000 | Second floor, the deepest chamber | Like a field boss (slam and blast, see "Field bosses"); back 20 minutes after he falls |
+
+**The Orc Chieftain** always drops his **Chieftain's Tusk** (sells for 2,500 gold), a Mithril Ingot and a Star Crystal, and usually a White Potion. He often drops good gear (Chieftain's Glaive, Cave Blade, Shaman's Staff, Cave Bow, Orc Guard's Shield) and sometimes a Tusk Necklace. Rarely he drops the **Chieftain's Fang** (6%), and very rarely the legendary **Deepstone Ring** (2%, a ring anyone can wear) or the **Orc Chieftain Card** (2%). He's meant for a party of four around level 36: four players beat him in a couple of minutes.
+
 ## 6. Jobs and skills
 
 Everyone starts as a **Novice**. At **level 10**, visit **Orin the Job Master** just inside the south gate and choose a job. **A job is for life**: you can't change it later.
@@ -686,6 +708,7 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Halberd (spear, both hands) | 25 | ATK +50 | Knight | 2 | Orc Warrior, Orc Warlord |
 | Dragon Spear (legendary, spear, both hands) | 30 | ATK +66, Critical +8% | Knight | 2 | Orc Warlord |
 | Long Spear (spear, both hands) | 32 | ATK +62 | Knight | 2 | Boarman, Lizardman |
+| Chieftain's Glaive (spear, both hands) | 36 | ATK +82, Critical +4% | Knight | 2 | Orc Miner, Orc Guard, Orc Chieftain (Orc Caves) |
 | Trident (spear, both hands) | 37 | ATK +74, Critical +4% | Knight | 2 | Lizardman, Minotaur King |
 | Glacier Lance (spear, both hands) | 46 | ATK +88, Critical +4% | Knight | 2 | Ramhorn, Frost Drake, Frost Giant |
 | Frost Scythe (legendary, spear, both hands) | 48 | ATK +102, Critical +8% | Knight | 2 | Frost Giant |
@@ -700,6 +723,7 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Composite Bow | 22 | ATK +30, reach 210 | Archer | 2 | Orc Archer |
 | Crossbow | 27 | ATK +40, Critical +4%, reach 220 | Archer | 2 | Orc Archer, Orc Warlord |
 | Longbow | 32 | ATK +46, reach 230 | Archer | 2 | Werewolf |
+| Cave Bow | 33 | ATK +48, reach 232 | Archer | 2 | Cave Bat, Orc Chieftain (Orc Caves) |
 | Sunfire Bow (legendary) | 38 | ATK +64, Critical +8%, reach 240 | Archer | 2 | Minotaur King |
 | Frost Bow | 42 | ATK +54, reach 235 | Archer | 2 | Ramhorn |
 | Glacier Bow | 46 | ATK +66, Critical +4%, reach 245 | Archer | 2 | Frost Wight, Frost Giant |
@@ -720,6 +744,7 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Ring Staff | 22 | ATK +30, MP +65, reach 190 | Mage | 2 | Goblin, Orc Archer |
 | Diamond Staff | 27 | ATK +40, MP +90, reach 200 | Mage | 2 | Orc Zombie, Orc Warlord |
 | Serpent Staff | 32 | ATK +46, MP +120, reach 210 | Mage | 2 | Lizardman |
+| Shaman's Staff | 33 | ATK +48, MP +130, reach 210 | Mage | 2 | Orc Shaman, Orc Chieftain (Orc Caves) |
 | Archmage Staff (legendary) | 38 | ATK +64, MP +200, reach 230 | Mage | 2 | Minotaur King |
 | Winter Staff | 42 | ATK +54, MP +160, reach 220 | Mage | 2 | Frost Shaman |
 | Aurora Staff | 46 | ATK +66, MP +220, reach 235 | Mage | 2 | Frost Drake, Frost Giant |
@@ -747,6 +772,7 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Round Shield | 22 | DEF +8, HP +50 | Orc Warrior |
 | Spartan Shield | 27 | DEF +10, HP +90 | Orc Skeleton, Orc Warlord |
 | Tower Shield | 33 | DEF +12, HP +120 | Lizardman |
+| Orc Guard's Shield | 34 | DEF +10, HP +160 | Cave Crawler, Orc Guard, Orc Chieftain (Orc Caves) |
 | Engrailed Shield | 38 | DEF +14, HP +170 | Vampire, Minotaur King |
 | Frost Shield | 45 | DEF +16, HP +220 | Ramhorn |
 | Ruin Shield | 55 | DEF +18, HP +270 | Gargoyle, Dark Knight, Fallen King |
@@ -854,6 +880,8 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Warlord's Medal (epic) | Amulet | 30 | ATK +8, HP +120 | Orc Warlord |
 | Ring of the Wild | Ring | 36 | ATK +7, HP +60 | Troll |
 | Wolf Fang Necklace | Amulet | 34 | ATK +6, Critical +5% | Werewolf |
+| Deepstone Ring (legendary, anyone) | Ring | 34 | ATK +8, DEF +6, HP +150, Critical +3% | Cave Bat, Orc Shaman, Orc Chieftain (Orc Caves) |
+| Chieftain's Fang (epic) | Amulet | 36 | ATK +11, HP +160 | Orc Chieftain (Orc Caves) |
 | Minotaur Horn (epic) | Amulet | 40 | ATK +12, HP +180 | Minotaur King |
 | Snowflake Pendant | Amulet | 44 | ATK +7, MP +80, Critical +4% | Frost Shaman |
 | Frost Ring | Ring | 46 | ATK +3, DEF +5, HP +100 | Frost Wight |
@@ -903,6 +931,12 @@ Ragnarok style: every monster very rarely drops **its own card**. A card goes in
 | Troll Card | Troll | Armour | Trollish | HP +150 | 1 in 1,000 |
 | Vampire Card | Vampire | Ring | Bloodthirsty | 4% of the damage you deal heals you | 1 in 1,000 |
 | Minotaur King Card (legendary) | Minotaur King | Armour | Mighty | ATK +6, DEF +4, HP +200 | 1 in 50 kills |
+| Cave Bat Card | Cave Bat | Feet | Echoing | Evade +6% | 1 in 1,000 |
+| Cave Crawler Card | Cave Crawler | Armour | Burrowing | DEF +3, HP +120 | 1 in 1,000 |
+| Orc Miner Card | Orc Miner | Weapon | Digging | ATK +4, Critical +4% | 1 in 1,000 |
+| Orc Shaman Card | Orc Shaman | Head | Firecaller | ATK +3, MP +60 | 1 in 1,000 |
+| Orc Guard Card | Orc Guard | Shield | Guarding | DEF +3, 12% of every monster hit bounces back | 1 in 1,000 |
+| Orc Chieftain Card (legendary) | Orc Chieftain | Legs | Chieftain's | ATK +6, DEF +4, HP +180 | 1 in 50 kills |
 | Yeti Card | Yeti | Legs | Shaggy | DEF +2, HP +120 | 1 in 1,000 |
 | Ramhorn Card | Ramhorn | Feet | Nimble | ATK +3, Evade +6% | 1 in 1,000 |
 | Frost Shaman Card | Frost Shaman | Head | Wintry | ATK +4, MP +60 | 1 in 1,000 |
@@ -1283,6 +1317,8 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 | Warbreaker | Epic | Help defeat the Orc Warlord 10 times |
 | Wolfsbane | Rare | Help defeat 500 Werewolves |
 | Matador | Epic | Help defeat the Minotaur King 10 times |
+| Delver | Rare | Help defeat 300 Orc Guards in the Orc Caves |
+| Chieftain's Bane | Epic | Help defeat the Orc Chieftain 10 times |
 | Dragonslayer | Rare | Help defeat 300 Frost Drakes |
 | Giantslayer ✦ | Epic | Help defeat the Frost Giant 10 times |
 | Exorcist | Rare | Help defeat 500 Wraiths |
@@ -1298,7 +1334,7 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 | **Collecting** | | |
 | Card Finder | Rare | Find a monster card |
 | Card Collector | Epic | Find 5 different monster cards |
-| Card Master ✦ | Legendary | Find every kind of monster card (58 so far) |
+| Card Master ✦ | Legendary | Find every kind of monster card (64 so far) |
 | Lucky | Epic | Find a legendary item |
 | **The forge** | | |
 | Shiny | Rare | Upgrade any gear to +7 |
@@ -1360,6 +1396,12 @@ Pioneer places are counted per level cap: when the cap goes up, the first 10 pla
 | Troll | 37 | 3,100 | 76 | 24 | 4,300 | 46–76 | Close Helm, Golden Plate, Ring of the Wild, Flame Blade, Mithril Ingot, Star Crystal |
 | Vampire | 39 | 2,500 | 52 | 22 | 4,300 | 48–80 | Celestial Hat, Mystic Robe, Engrailed Shield, Flame Blade, Mithril Ingot, Star Crystal |
 | Minotaur King | 44 | 45,000 | 120 | 40 | 90,000 | 2,000–4,000 | See "Field bosses" |
+| Cave Bat (Orc Caves) | 28 | 1,500 | 34 | 14 | 2,300 | 34–56 | Cave Bow, Deepstone Ring, Orange Potion, Mithril Ingot, Star Crystal |
+| Cave Crawler (Orc Caves) | 30 | 2,100 | 50 | 30 | 2,800 | 36–60 | Orc Guard's Shield, Orange Potion, Mithril Ingot, Star Crystal |
+| Orc Miner (Orc Caves) | 31 | 2,300 | 44 | 24 | 3,000 | 40–66 | Cave Blade, Chieftain's Glaive, Iron Ingot, Mithril Ingot, Star Crystal |
+| Orc Shaman (Orc Caves) | 33 | 2,000 | 46 | 18 | 2,900 | 42–70 | Shaman's Staff, Deepstone Ring, White Potion, Mithril Ingot, Star Crystal |
+| Orc Guard (Orc Caves) | 35 | 3,200 | 48 | 32 | 3,900 | 46–76 | Orc Guard's Shield, Chieftain's Glaive, White Potion, Mithril Ingot, Star Crystal |
+| Orc Chieftain (Orc Caves) | 38 | 60,000 | 110 | 36 | 90,000 | 2,500–4,500 | See "Dungeons" |
 | Yeti | 41 | 2,900 | 50 | 26 | 5,200 | 52–86 | Snow Hood, Fur Cloak, Ice Sword, White Potion, Mithril Ingot, Star Crystal |
 | Ramhorn | 43 | 3,300 | 66 | 34 | 5,900 | 54–90 | Frost Shield, Frost Greaves, Frost Bow, Glacier Lance, Mithril Ingot, Star Crystal |
 | Frost Shaman | 45 | 2,600 | 52 | 24 | 6,200 | 56–94 | Moon Hat, Winter Robe, Winter Staff, Snowflake Pendant, Mithril Ingot, Star Crystal |
@@ -1410,7 +1452,7 @@ Every monster also drops its own card (see Monster cards) and often potions.
 7. **Level 20:** Team up for the **Pumpking**. Save your Mithril and Star Crystals for **Hilda**, and aim for your first aura at +7. Ten Pumpking fights make you a **Kingslayer**.
 8. **Level 20–25:** Out of the **west gate** into the **Orc Woods**: Goblins in the grass north of the road, then Orc Warriors on the rocks south of it. Knights, try a **Halberd** from level 25.
 9. **Level 25–30:** Orc Archers up north, Orc Skeletons west of the inlet, and Orc Zombies far to the south. At 30, gather a party for the **Orc Warlord**.
-10. **Level 30–35:** Take the path north from the west road, past **Sable**, into the **Wildlands**. Read her rules first: other players can attack you up there. Boarmen roam past the west path; Lizardmen past the east path only fight back. Bram's **White Potions** heal 250 HP.
+10. **Level 30–35:** Take the path north from the west road, past **Sable**, into the **Wildlands**, or, if you'd rather nobody could attack you, walk into the portal in the Orc Woods and down into the **Orc Caves** (level 28–36), with the **Orc Chieftain** at the bottom. Read her rules first: other players can attack you up there. Boarmen roam past the west path; Lizardmen past the east path only fight back. Bram's **White Potions** heal 250 HP.
 11. **Level 35–40:** Werewolves in the north-west woods, Trolls on the highlands, Vampires on the high ground to the north-east. From 40, bring a party for the **Minotaur King**, and watch your back.
 12. **Level 40–45:** Take the path east off the south road to **Edda**'s pier and sail to **Frostfell** (500 gold). Yetis jump you in the woods west of the pier; Ramhorns to the east only fight back. Then the Frost Shamans on the west shore: close in fast, they throw ice.
 13. **Level 45–50:** Frost Wights on the icy highlands and Frost Drakes in the east. At 50, bring a party of four for the **Frost Giant** at the end of the path. **Bjorn** sails you home for free.
@@ -1429,6 +1471,8 @@ Along the way, open your titles (T) now and then: you'll have earned a few. And 
 Sell your monster loot to Bram whenever your bag fills up, and sit down (X) to heal faster between fights. Spare gear, ingots and cards are worth more to other players: open a shop in the Market Square, or look in theirs for what you need.
 
 ## 18. Coming next
+
+- **More dungeons**, one under each land, all the way up to level 100.
 
 - **More castles** for the guild wars.
 

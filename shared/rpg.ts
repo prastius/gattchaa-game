@@ -215,6 +215,12 @@ export type MonsterId =
   | "cinderWraith"
   | "magmaGolem"
   | "cinderColossus"
+  | "caveBat"
+  | "caveCrawler"
+  | "orcMiner"
+  | "orcShaman"
+  | "orcGuard"
+  | "orcChieftain"
   | "duneStalker"
   | "dustDjinn"
   | "tombWarden"
@@ -651,6 +657,58 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
     ],
   },
 
+  // ---------------------------------------------------------------- the Orc Caves (Lv 28–36), a dungeon under the Orc Woods
+  // Big grey bats in the first cavern. They swoop at anyone who comes near, and they're quick to dodge.
+  caveBat: {
+    id: "caveBat", name: "Cave Bat", level: 28, hp: 1500, atk: 34, def: 14, exp: 2300, gold: [34, 56], speed: 70, chase: 115, aggro: 60, range: 36, attackMs: 1300, radius: 10, respawnMs: 16_000, flee: 0.1,
+    drops: [
+      ["batWing", 0.55], ["orangePotion", 0.06], ["caveBow", 0.004], ["deepRing", 0.001],
+      ["mithril", 0.05], ["starCrystal", 0.006], ["caveBatCard", 0.001],
+    ],
+  },
+  // Armoured worms that burrow through the first floor's rock. They only fight back, and their shells are hard.
+  caveCrawler: {
+    id: "caveCrawler", name: "Cave Crawler", level: 30, hp: 2100, atk: 50, def: 30, exp: 2800, gold: [36, 60], speed: 30, chase: 70, aggro: 0, range: 40, attackMs: 1900, radius: 15, respawnMs: 18_000,
+    drops: [
+      ["crawlerShell", 0.55], ["orangePotion", 0.06], ["orcGuardShield", 0.003],
+      ["mithril", 0.07], ["starCrystal", 0.007], ["caveCrawlerCard", 0.001],
+    ],
+  },
+  // Orcs digging for the Chieftain in the miners' cavern. They go for anyone who comes near.
+  orcMiner: {
+    id: "orcMiner", name: "Orc Miner", level: 31, hp: 2300, atk: 44, def: 24, exp: 3000, gold: [40, 66], speed: 45, chase: 95, aggro: 50, range: 40, attackMs: 1600, radius: 13, respawnMs: 18_000,
+    drops: [
+      ["minersLamp", 0.55], ["orangePotion", 0.06], ["caveBlade", 0.004], ["chieftainsGlaive", 0.001],
+      ["ironIngot", 0.08], ["mithril", 0.06], ["starCrystal", 0.007], ["orcMinerCard", 0.001],
+    ],
+  },
+  // The Chieftain's fire-priests in the second floor's first hall. They throw fire from afar at anyone they see.
+  orcShaman: {
+    id: "orcShaman", name: "Orc Shaman", level: 33, hp: 2000, atk: 46, def: 18, exp: 2900, gold: [42, 70], speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 20_000,
+    drops: [
+      ["shamanBeads", 0.55], ["whitePotion", 0.05], ["shamanStaff", 0.004], ["deepRing", 0.001],
+      ["mithril", 0.06], ["starCrystal", 0.008], ["orcShamanCard", 0.001],
+    ],
+  },
+  // The Chieftain's own guard, in iron, in the hall before his chamber. They charge anyone who comes near.
+  orcGuard: {
+    id: "orcGuard", name: "Orc Guard", level: 35, hp: 3200, atk: 48, def: 32, exp: 3900, gold: [46, 76], speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 14, respawnMs: 20_000,
+    drops: [
+      ["guardBadge", 0.55], ["whitePotion", 0.06], ["orcGuardShield", 0.004], ["chieftainsGlaive", 0.002],
+      ["mithril", 0.07], ["starCrystal", 0.009], ["orcGuardCard", 0.001],
+    ],
+  },
+  // The Orc Caves' boss, on his throne in the deepest chamber. Every orc in the woods answers to him.
+  orcChieftain: {
+    id: "orcChieftain", name: "Orc Chieftain", level: 38, hp: 60_000, atk: 110, def: 36, exp: 90_000, gold: [2500, 4500], speed: 35, chase: 85, aggro: 150, range: 48, attackMs: 1700, radius: 24, respawnMs: 1_200_000,
+    boss: true, regen: 0.004,
+    slam: { radius: 105, power: 1.5, everyMs: 9_000 }, blast: { radius: 75, power: 1.3, everyMs: 11_000, reach: 400 },
+    drops: [
+      ["chieftainsTusk", 1], ["whitePotion", 0.8], ["chieftainsGlaive", 0.2], ["caveBlade", 0.2], ["shamanStaff", 0.2], ["caveBow", 0.2], ["orcGuardShield", 0.2],
+      ["mithril", 1], ["starCrystal", 1], ["tuskNecklace", 0.15], ["chieftainsFang", 0.06], ["deepRing", 0.02], ["orcChieftainCard", 0.02],
+    ],
+  },
+
   // ---------------------------------------------------------------- Sunscar (Lv 80–90), the desert island north of Ashpeak
   // Sand-coloured lizards in the dunes south-west of the pier. They only fight back, but they're hard to hit with plain attacks.
   duneStalker: {
@@ -984,6 +1042,24 @@ export const FIELDS: Field[] = [
       { monster: "cinderWraith", rect: { x: 596, y: 222, w: 18, h: 44 }, count: 8 },
       { monster: "magmaGolem", rect: { x: 552, y: 270, w: 48, h: 18 }, count: 8 },
       { monster: "cinderColossus", rect: { x: 573, y: 247, w: 6, h: 5 }, count: 1 },
+    ],
+  },
+  {
+    // A dungeon under the Orc Woods, through the portal in the clearing east of the Orc Warlord's camp.
+    id: "orc-caves",
+    name: "Orc Caves",
+    levels: "Lv 28–36",
+    area: { x: 0, y: 336, w: 80, h: 112 },
+    wild: true,
+    spawns: [
+      // The first floor: Cave Bats in the big cavern, Cave Crawlers in its corners, Orc Miners in the miners' cavern.
+      { monster: "caveBat", rect: { x: 32, y: 342, w: 16, h: 18 }, count: 7 },
+      { monster: "caveCrawler", rect: { x: 30, y: 374, w: 10, h: 11 }, count: 4 },
+      { monster: "orcMiner", rect: { x: 40, y: 374, w: 14, h: 11 }, count: 5 },
+      // The second floor: Orc Shamans in the first hall, Orc Guards in the second; the Orc Chieftain in his chamber.
+      { monster: "orcShaman", rect: { x: 28, y: 398, w: 20, h: 14 }, count: 7 },
+      { monster: "orcGuard", rect: { x: 12, y: 426, w: 26, h: 10 }, count: 7 },
+      { monster: "orcChieftain", rect: { x: 58, y: 428, w: 6, h: 6 }, count: 1 },
     ],
   },
   {

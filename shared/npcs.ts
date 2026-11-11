@@ -410,6 +410,19 @@ export const NPCS: NpcDef[] = [
     ],
   },
   {
+    // In the Orc Woods clearing, by the portal down to the Orc Caves.
+    id: "cave-warden",
+    name: "Brok",
+    title: "Cave Warden",
+    kind: "local",
+    look: look({ body: "male", hair: "messy", hairColor: "gray", beard: "beard", skin: "olive", top: "longsleeve", topColor: "brown", bottom: "pants", bottomColor: "charcoal", shoes: "boots", shoesColor: "black", hat: "bandana", hatColor: "brown" }),
+    ...at(83.5, 218.6),
+    dir: Dir.Right,
+    greeting:
+      "That glow is the way down to the Orc Caves (Lv 28–36), where the orcs of these woods dig for their Chieftain. Nobody can attack you down there but the monsters, so it's the place to level if the Wildlands aren't for you. The first floor has Cave Bats, Cave Crawlers and Orc Miners; take the stairs at the far end down to the Orc Shamans and the Orc Guards, and the Orc Chieftain (Lv 38) on his throne in the deepest chamber. Bring a party for him, and step out of the red circles. Walk into the portal to go down; there's one back up in the entrance hall.",
+    chatter: ["The Orc Caves are down there. Mind your step.", "No player can attack you underground. Just the orcs.", "The Chieftain is in the deepest chamber.", "Step out of the red circles!", "Level 28 or more? Down you go."],
+  },
+  {
     // At the end of the pier on the meadow's east shore, where the ferry path ends.
     id: "ferry-east",
     name: "Marlow",
