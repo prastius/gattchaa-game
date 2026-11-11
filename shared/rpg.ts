@@ -266,7 +266,25 @@ export interface MonsterDef {
   regen?: number;
   /** Extra chance (0..1) that auto-attacks miss it (ghosts). Skills always land. */
   flee?: number;
+  /** Field bosses' special attacks (see BossAttack): a slam all round them, and a blast where the furthest attacker stands. */
+  slam?: BossAttack;
+  blast?: BossAttack & { reach: number };
 }
+
+/**
+ * A field boss's area attack. A red circle on the ground gives BOSS_WINDUP_MS of warning;
+ * then everyone inside it is hit for `power` times the boss's ATK. Step out and it misses you.
+ */
+export interface BossAttack {
+  radius: number;
+  power: number;
+  everyMs: number;
+}
+
+/** How long the warning circle shows before a boss's slam or blast lands. */
+export const BOSS_WINDUP_MS = 1300;
+/** A field boss's plain attack reaches at least this far (px), so nobody can hit one from where it can't hit back. */
+export const BOSS_REACH = 300;
 
 export const MONSTERS: Record<MonsterId, MonsterDef> = {
   slime: {
@@ -316,8 +334,9 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Dusk Hollow's boss, at the end of the east road. Breathes fire.
   pumpking: {
-    id: "pumpking", name: "Pumpking", level: 22, hp: 12_000, atk: 58, def: 20, exp: 16_000, gold: [400, 800], speed: 30, chase: 75, aggro: 150, range: 150, attackMs: 1800, radius: 24, respawnMs: 600_000,
+    id: "pumpking", name: "Pumpking", level: 22, hp: 12_000, atk: 58, def: 20, exp: 16_000, gold: [400, 800], speed: 30, chase: 75, aggro: 150, range: BOSS_REACH, attackMs: 1800, radius: 24, respawnMs: 600_000,
     boss: true, regen: 0.005,
+    slam: { radius: 90, power: 1.4, everyMs: 10_000 }, blast: { radius: 70, power: 1.2, everyMs: 12_000, reach: 380 },
     drops: [
       ["kingsCandy", 1], ["orangePotion", 0.8], ["crusaderShield", 0.2], ["greathelm", 0.2], ["greatBow", 0.15], ["emberStaff", 0.15], ["knightBlade", 0.15],
       ["mithril", 1], ["mithril", 0.5], ["starCrystal", 0.5], ["moonblade", 0.08], ["pumpkingCard", 0.02],
@@ -365,6 +384,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   orcWarlord: {
     id: "orcWarlord", name: "Orc Warlord", level: 33, hp: 24_000, atk: 90, def: 30, exp: 40_000, gold: [1000, 2000], speed: 35, chase: 80, aggro: 150, range: 48, attackMs: 1700, radius: 22, respawnMs: 900_000,
     boss: true, regen: 0.004,
+    slam: { radius: 100, power: 1.5, everyMs: 9_000 }, blast: { radius: 75, power: 1.3, everyMs: 11_000, reach: 400 },
     drops: [
       ["warlordBanner", 1], ["orangePotion", 0.8], ["halberd", 0.2], ["vikingHelm", 0.2], ["spartanShield", 0.2], ["crossbow", 0.15], ["diamondStaff", 0.15], ["katana", 0.15],
       ["mithril", 1], ["starCrystal", 1], ["starCrystal", 0.5], ["warlordMedal", 0.06], ["dragonSpear", 0.02], ["orcWarlordCard", 0.02],
@@ -416,6 +436,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   minotaurKing: {
     id: "minotaurKing", name: "Minotaur King", level: 44, hp: 45_000, atk: 120, def: 40, exp: 90_000, gold: [2000, 4000], speed: 35, chase: 85, aggro: 150, range: 52, attackMs: 1800, radius: 24, respawnMs: 1_200_000,
     boss: true, regen: 0.004,
+    slam: { radius: 105, power: 1.5, everyMs: 9_000 }, blast: { radius: 75, power: 1.3, everyMs: 11_000, reach: 400 },
     drops: [
       ["minotaurCrown", 1], ["whitePotion", 0.8], ["trident", 0.2], ["closeHelm", 0.2], ["engrailedShield", 0.2], ["goldPlate", 0.15], ["flameBlade", 0.15],
       ["mithril", 1], ["starCrystal", 1], ["starCrystal", 0.6], ["minotaurHorn", 0.06], ["sunfireBow", 0.015], ["archmageStaff", 0.015], ["minotaurKingCard", 0.02],
@@ -465,8 +486,9 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Frostfell's boss, in his ring of stones on the icy highlands. Throws ice at anyone out of reach.
   frostGiant: {
-    id: "frostGiant", name: "Frost Giant", level: 54, hp: 70_000, atk: 150, def: 48, exp: 150_000, gold: [3000, 6000], speed: 35, chase: 85, aggro: 150, range: 140, attackMs: 2000, radius: 26, respawnMs: 1_500_000,
+    id: "frostGiant", name: "Frost Giant", level: 54, hp: 70_000, atk: 150, def: 48, exp: 150_000, gold: [3000, 6000], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 26, respawnMs: 1_500_000,
     boss: true, regen: 0.004,
+    slam: { radius: 110, power: 1.6, everyMs: 9_000 }, blast: { radius: 80, power: 1.4, everyMs: 11_000, reach: 420 },
     drops: [
       ["winterHeart", 1], ["whitePotion", 0.8], ["glacierLance", 0.2], ["glacierBow", 0.2], ["auroraStaff", 0.2], ["valkyrieHelm", 0.15], ["frostPlate", 0.15],
       ["mithril", 1], ["starCrystal", 1], ["starCrystal", 0.7], ["giantsTooth", 0.06], ["frostScythe", 0.015], ["frostGiantCard", 0.02],
@@ -516,8 +538,9 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Ravenmoor's boss, on his throne in the ruined castle. Casts dark bolts at anyone out of reach.
   fallenKing: {
-    id: "fallenKing", name: "Fallen King", level: 64, hp: 110_000, atk: 180, def: 56, exp: 260_000, gold: [5000, 9000], speed: 35, chase: 85, aggro: 150, range: 150, attackMs: 2000, radius: 26, respawnMs: 1_800_000,
+    id: "fallenKing", name: "Fallen King", level: 64, hp: 110_000, atk: 180, def: 56, exp: 260_000, gold: [5000, 9000], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 26, respawnMs: 1_800_000,
     boss: true, regen: 0.004,
+    slam: { radius: 110, power: 1.6, everyMs: 9_000 }, blast: { radius: 80, power: 1.4, everyMs: 11_000, reach: 420 },
     drops: [
       ["royalKey", 1], ["whitePotion", 0.8], ["darkLance", 0.2], ["royalBow", 0.2], ["soulStaff", 0.2], ["dreadPlate", 0.15], ["ruinShield", 0.15],
       ["mithril", 1], ["starCrystal", 1], ["starCrystal", 0.8], ["kingsSeal", 0.06], ["fallenCrown", 0.015], ["fallenKingCard", 0.02],
@@ -567,8 +590,9 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Petalfall's boss, in his war camp on the high ground. Throws fire at anyone out of reach.
   ogreWarlord: {
-    id: "ogreWarlord", name: "Ogre Warlord", level: 74, hp: 170_000, atk: 205, def: 62, exp: 420_000, gold: [8000, 14000], speed: 35, chase: 85, aggro: 150, range: 150, attackMs: 2000, radius: 28, respawnMs: 1_800_000,
+    id: "ogreWarlord", name: "Ogre Warlord", level: 74, hp: 170_000, atk: 205, def: 62, exp: 420_000, gold: [8000, 14000], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 28, respawnMs: 1_800_000,
     boss: true, regen: 0.004,
+    slam: { radius: 115, power: 1.6, everyMs: 8_500 }, blast: { radius: 85, power: 1.4, everyMs: 10_500, reach: 420 },
     drops: [
       ["heartOfSpring", 1], ["whitePotion", 0.8], ["thunderGlaive", 0.2], ["boneBow", 0.2], ["stormStaff", 0.2], ["warlordPlate", 0.15], ["jadeShield", 0.15],
       ["mithril", 1], ["starCrystal", 1], ["starCrystal", 0.8], ["warlordFang", 0.06], ["warlordHelm", 0.015], ["ogreWarlordCard", 0.02],
@@ -618,8 +642,9 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Ashpeak's boss, in the crater at the top of the road. Throws fire at anyone out of reach.
   cinderColossus: {
-    id: "cinderColossus", name: "Cinder Colossus", level: 84, hp: 230_000, atk: 220, def: 68, exp: 600_000, gold: [12_000, 20_000], speed: 35, chase: 85, aggro: 150, range: 150, attackMs: 2000, radius: 30, respawnMs: 1_800_000,
+    id: "cinderColossus", name: "Cinder Colossus", level: 84, hp: 230_000, atk: 220, def: 68, exp: 600_000, gold: [12_000, 20_000], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 30, respawnMs: 1_800_000,
     boss: true, regen: 0.004,
+    slam: { radius: 120, power: 1.7, everyMs: 8_500 }, blast: { radius: 85, power: 1.5, everyMs: 10_500, reach: 440 },
     drops: [
       ["heartOfFlame", 1], ["whitePotion", 0.8], ["magmaLance", 0.2], ["obsidianBow", 0.2], ["magmaStaff", 0.2], ["obsidianPlate", 0.15], ["obsidianShield", 0.15],
       ["mithril", 1], ["starCrystal", 1], ["starCrystal", 0.8], ["colossusHeart", 0.06], ["colossusMantle", 0.015], ["cinderColossusCard", 0.02],
@@ -669,8 +694,9 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Sunscar's boss, on his throne in the sunken temple. Throws fire at anyone out of reach.
   duneKing: {
-    id: "duneKing", name: "Dune King", level: 94, hp: 330_000, atk: 245, def: 76, exp: 1_200_000, gold: [16_000, 26_000], speed: 35, chase: 85, aggro: 150, range: 150, attackMs: 2000, radius: 28, respawnMs: 1_800_000,
+    id: "duneKing", name: "Dune King", level: 94, hp: 330_000, atk: 245, def: 76, exp: 1_200_000, gold: [16_000, 26_000], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 28, respawnMs: 1_800_000,
     boss: true, regen: 0.004,
+    slam: { radius: 120, power: 1.7, everyMs: 8_000 }, blast: { radius: 90, power: 1.5, everyMs: 10_000, reach: 440 },
     drops: [
       ["sunDisk", 1], ["whitePotion", 0.8], ["sunSpear", 0.2], ["sunBow", 0.2], ["sunStaff", 0.2], ["wardenPlate", 0.15], ["sunShield", 0.15],
       ["mithril", 1], ["starCrystal", 1], ["starCrystal", 0.8], ["sunMedallion", 0.06], ["sunAegis", 0.015], ["duneKingCard", 0.02],
@@ -720,8 +746,9 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Starfall's boss, at the altar south of the lake. Casts starlight at anyone out of reach.
   starTyrant: {
-    id: "starTyrant", name: "Star Tyrant", level: 104, hp: 450_000, atk: 270, def: 84, exp: 1_800_000, gold: [22_000, 34_000], speed: 35, chase: 85, aggro: 150, range: 150, attackMs: 2000, radius: 30, respawnMs: 1_800_000,
+    id: "starTyrant", name: "Star Tyrant", level: 104, hp: 450_000, atk: 270, def: 84, exp: 1_800_000, gold: [22_000, 34_000], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 30, respawnMs: 1_800_000,
     boss: true, regen: 0.004,
+    slam: { radius: 125, power: 1.8, everyMs: 8_000 }, blast: { radius: 90, power: 1.6, everyMs: 10_000, reach: 460 },
     drops: [
       ["fallenStar", 1], ["whitePotion", 0.8], ["voidLance", 0.2], ["starBow", 0.2], ["astralStaff", 0.2], ["starPlate", 0.15], ["starShield", 0.15],
       ["mithril", 1], ["starCrystal", 1], ["starCrystal", 0.8], ["tyrantsStar", 0.06], ["fallenStarRing", 0.015], ["starTyrantCard", 0.02],

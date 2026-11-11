@@ -1064,6 +1064,8 @@ export class WorldScene extends Phaser.Scene {
       const fx = SKILLS[ev.skill].fx;
       return fx === "fire" ? "fire" : fx === "arrows" || fx === "sharp" || fx === "volley" ? "arrow" : undefined;
     }
+    // A boss's slam or blast lands where it lands: nothing flies there.
+    if (ev.k === "hit" && ev.aoe) return undefined;
     if (a.mob) {
       const art = a.mob.art;
       return art.missile && Math.hypot(t.x - a.x, t.y - a.y) > (art.missileFrom ?? 0) ? art.missile : undefined;
@@ -1469,6 +1471,14 @@ export class WorldScene extends Phaser.Scene {
           default:
             break;
         }
+        return;
+      }
+      case "warn": {
+        this.fx.warn(ev.x, ev.y, ev.r, ev.ms);
+        return;
+      }
+      case "boom": {
+        this.fx.boom(ev.x, ev.y, ev.r);
         return;
       }
       case "freeze": {

@@ -209,7 +209,11 @@ export type NpcSellMessage = { npc: string; slot: number; n: number } | { npc: s
  */
 export type FxEvent =
   /** thorn: damage reflected back by a card (no swing, no slash). skill: a skill's hit (drawn its way). */
-  | { k: "hit"; a: string; t: string; d: number; crit?: 1; thorn?: 1; skill?: SkillId }
+  | { k: "hit"; a: string; t: string; d: number; crit?: 1; thorn?: 1; skill?: SkillId; aoe?: 1 }
+  /** A field boss is about to slam (round itself) or blast (round a spot): get out of the circle within `ms`. */
+  | { k: "warn"; a: string; x: number; y: number; r: number; ms: number; kind: "slam" | "blast" }
+  /** …and there it lands. */
+  | { k: "boom"; a: string; x: number; y: number; r: number; kind: "slam" | "blast" }
   | { k: "miss"; a: string; t: string }
   /** A monster was defeated, or a player was knocked out. */
   | { k: "down"; t: string }

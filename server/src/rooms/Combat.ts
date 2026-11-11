@@ -15,6 +15,7 @@ import {
   MONSTERS,
   REGEN_RATE,
   SIT_REGEN,
+  BOSS_WINDUP_MS,
   TOWN_REGEN,
   expFactor,
   expToNext,
@@ -81,8 +82,9 @@ import type { Drops } from "./Drops";
 
 /** Spawn groups with a player this close (px) think; the rest sleep, so empty fields cost nothing. */
 const WAKE_PX = 1600;
-/** Monsters chase this far outside their home area, then give up and go home. */
+/** Monsters chase this far outside their home area, then give up and go home (field bosses further). */
 const LEASH_PX = 6 * TILE_SIZE;
+const BOSS_LEASH_PX = 14 * TILE_SIZE;
 /** …and drop a target that gets this far away. */
 const LOSE_PX = 12 * TILE_SIZE;
 /** The server sees players a moment late; give hits this much slack (the client stops short of reach). */
@@ -235,6 +237,10 @@ interface Mob {
   /** A Shade on the Isle of Trials: the one player it fights (and only they can strike it), and when the time runs out. */
   owner?: string;
   until?: number;
+  /** A field boss: when its next slam and blast may come, and the ones it's winding up. */
+  slamAt?: number;
+  blastAt?: number;
+  windups?: { kind: "slam" | "blast"; x: number; y: number; r: number; power: number; at: number }[];
 }
 
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
@@ -573,6 +579,8 @@ export class Combat {
   private provoke(mob: Mob, f: Fighter, now: number) {
     mob.lastHitAt = now;
     if (mob.target) return;
+    if (mob.def.slam && (mob.slamAt ?? 0) < now) mob.slamAt = now + 2500;
+    if (mob.def.blast && (mob.blastAt ?? 0) < now) mob.blastAt = now + 4000;
     mob.target = f.id;
     mob.returning = false;
     mob.nextAttackAt = Math.max(mob.nextAttackAt, now + FIRST_BITE_MS);
@@ -1813,9 +1821,10 @@ export class Combat {
 
   private think(mob: Mob, dtMs: number, now: number) {
     const def = mob.def;
-    // Frozen solid: no moving, no biting, until it thaws.
+    // Frozen solid: no moving, no biting, until it thaws (a slam or blast already wound up still lands).
     if (now < mob.frozenUntil) {
       this.halt(mob);
+      this.bossAttacks(mob, now);
       return;
     }
     let target = mob.target ? this.fighters.get(mob.target) : undefined;
@@ -1831,9 +1840,11 @@ export class Combat {
       }
     }
     if (target) {
+      this.bossAttacks(mob, now);
       this.hunt(mob, target, dtMs, now);
       return;
     }
+    this.bossAttacks(mob, now);
 
     // Left alone: heal up, then wander (or walk home first).
     if (mob.owner === undefined && mob.hp < def.hp && now - mob.lastHitAt > COMBAT_MS && now >= mob.regenAt) {
@@ -1860,7 +1871,7 @@ export class Combat {
   }
 
   private canChase(mob: Mob, f: Fighter): boolean {
-    if (f.player.dead || inSafeZone(f.pos.x, f.pos.y) || !this.atHome(mob, LEASH_PX)) return false;
+    if (f.player.dead || inSafeZone(f.pos.x, f.pos.y) || !this.atHome(mob, mob.def.boss ? BOSS_LEASH_PX : LEASH_PX)) return false;
     if (mob.post !== undefined && !this.guardianFoe(f)) return false;
     if (mob.owner !== undefined) return mob.owner === f.id;
     const giveUpAt = mob.def.speed > 0 ? LOSE_PX : Math.max(mob.def.aggro, mob.def.range) * 1.5;
@@ -1921,6 +1932,55 @@ export class Combat {
     }
     // Snapper Flower Cards bite back (always at least 1, so they matter against weak monsters too).
     if (f.stats.reflect > 0) this.hurt(mob, f, Math.max(1, Math.round(damage * f.stats.reflect)), { thorn: 1 });
+  }
+
+  /**
+   * A field boss's slam and blast (see BossAttack in rpg.ts): while it's fighting, it winds one up
+   * (everyone sees the circle) and it lands BOSS_WINDUP_MS later on whoever is still inside. The slam
+   * goes round the boss when someone is close; the blast goes where the furthest of its attackers
+   * stands, so fighting it from the edge of your reach isn't safe either. Windups land even after it
+   * stops fighting; a frozen boss starts no new ones.
+   */
+  private bossAttacks(mob: Mob, now: number) {
+    const def = mob.def;
+    if (!def.slam && !def.blast) return;
+    for (const w of [...(mob.windups ?? [])]) {
+      if (now < w.at) continue;
+      mob.windups!.splice(mob.windups!.indexOf(w), 1);
+      this.hooks.emit(w.x, w.y, { k: "boom", a: mob.id, x: Math.round(w.x), y: Math.round(w.y), r: w.r, kind: w.kind });
+      for (const f of [...this.fighters.values()]) {
+        if (f.player.dead || inSafeZone(f.pos.x, f.pos.y) || dist(f.pos, w) > w.r + PLAYER_RADIUS) continue;
+        const { damage, crit } = rollDamage(Math.round(def.atk * w.power), f.stats.def);
+        f.player.hp = Math.max(0, f.player.hp - damage);
+        f.lastCombatAt = now;
+        f.dirty = true;
+        this.hooks.emit(f.pos.x, f.pos.y, { k: "hit", a: mob.id, t: f.id, d: damage, aoe: 1, ...(crit && { crit: 1 as const }) });
+        if (f.player.hp <= 0) this.knockOut(f);
+      }
+    }
+    if (!mob.target || now < mob.frozenUntil) return;
+    mob.windups ??= [];
+    // Anyone who's hurt it lately and is still around counts as one of its attackers.
+    const foes = [...mob.damage.keys()].map((id) => this.fighters.get(id)).filter((f): f is Fighter => Boolean(f && !f.player.dead && !inSafeZone(f.pos.x, f.pos.y)));
+    if (def.slam && now >= (mob.slamAt ?? 0) && foes.some((f) => dist(f.pos, mob) <= def.slam!.radius + PLAYER_RADIUS)) {
+      mob.slamAt = now + def.slam.everyMs;
+      this.windUp(mob, "slam", mob.x, mob.y, def.slam.radius, def.slam.power, now);
+    }
+    if (def.blast && now >= (mob.blastAt ?? 0)) {
+      const far = foes
+        .map((f) => ({ f, d: dist(f.pos, mob) }))
+        .filter(({ d }) => d <= def.blast!.reach && d > (def.slam?.radius ?? 0))
+        .sort((a, b) => b.d - a.d)[0];
+      if (far) {
+        mob.blastAt = now + def.blast.everyMs;
+        this.windUp(mob, "blast", far.f.pos.x, far.f.pos.y, def.blast.radius, def.blast.power, now);
+      }
+    }
+  }
+
+  private windUp(mob: Mob, kind: "slam" | "blast", x: number, y: number, r: number, power: number, now: number) {
+    mob.windups!.push({ kind, x, y, r, power, at: now + BOSS_WINDUP_MS });
+    this.hooks.emit(x, y, { k: "warn", a: mob.id, x: Math.round(x), y: Math.round(y), r, ms: BOSS_WINDUP_MS, kind });
   }
 
   /** Inside its home area, plus `pad` pixels. */

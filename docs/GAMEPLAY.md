@@ -358,6 +358,24 @@ Fighting monsters of your own level, a level takes about 4 minutes at level 12, 
 
 ### Field bosses
 
+**How every field boss fights.** Besides its plain attacks, every field boss has two area attacks, and a **red circle** on the ground warns you about a second before each one lands:
+
+- **Slam:** a circle round the boss itself, when someone's close to it. Everyone still inside when it lands takes a heavy hit. Fighters up close: step out, then step back in.
+- **Blast:** a circle under whoever is fighting it from **furthest away**. Archers and mages: keep moving.
+- **Long reach:** a boss's plain attack reaches as far as the longest bow (the Orc Warlord and the Minotaur King still swing up close), so there's nowhere to stand and shoot it for free, and a boss you're shooting doesn't wander home and leave you be.
+
+| Boss | Slam (circle round it) | Blast (circle under the furthest attacker) |
+| --- | --- | --- |
+| Pumpking | 1.4× its ATK, every 10 s | 1.2× its ATK, every 12 s |
+| Orc Warlord, Minotaur King | 1.5×, every 9 s | 1.3×, every 11 s |
+| Frost Giant, Fallen King | 1.6×, every 9 s | 1.4×, every 11 s |
+| Ogre Warlord | 1.6×, every 8.5 s | 1.4×, every 10.5 s |
+| Cinder Colossus | 1.7×, every 8.5 s | 1.5×, every 10.5 s |
+| Dune King | 1.7×, every 8 s | 1.5×, every 10 s |
+| Star Tyrant | 1.8×, every 8 s | 1.6×, every 10 s |
+
+A party that steps out of the circles takes far less damage than one that stands still. Even a level-74 Hunter shooting the Ogre Warlord from the edge of its reach takes a beating now (and dodging the blasts cuts that by most of the area damage).
+
 **The Pumpking** lives where the east road ends in Dusk Hollow. It's a Ragnarok-style MVP:
 
 - There's only one. It has 12,000 HP, breathes fire from a distance, and heals slowly if left alone.

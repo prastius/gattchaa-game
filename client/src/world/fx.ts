@@ -231,6 +231,39 @@ export class Fx {
   }
 
   /** Frost Nova: a ring of ice racing outward, and shards. */
+  /** A boss winding up: a red circle on the ground that fills in until it lands (`ms`). */
+  warn(x: number, y: number, r: number, ms: number) {
+    const fill = this.scene.add.ellipse(x, y, r * 2, r, 0xff3a2a, 0.12).setDepth(2);
+    const edge = this.scene.add.ellipse(x, y, r * 2, r).setStrokeStyle(2, 0xff5a3a, 0.9).setDepth(2);
+    const core = this.scene.add.ellipse(x, y, r * 2, r, 0xff5a3a, 0.28).setDepth(2).setScale(0.05);
+    this.scene.tweens.add({ targets: core, scale: 1, duration: ms, ease: "Linear" });
+    this.scene.tweens.add({ targets: edge, alpha: { from: 0.9, to: 0.4 }, duration: 220, yoyo: true, repeat: -1 });
+    this.scene.time.delayedCall(ms, () => {
+      fill.destroy();
+      edge.destroy();
+      core.destroy();
+    });
+  }
+
+  /** …and there it lands: a burst of fire and dust the size of the circle. */
+  boom(x: number, y: number, r: number) {
+    const ring = this.scene.add.ellipse(x, y - 4, r * 2, r).setStrokeStyle(4, 0xffb35c, 1).setDepth(DEPTH).setScale(0.3);
+    const fill = this.scene.add.ellipse(x, y - 4, r * 2, r, 0xff6a3a, 0.35).setBlendMode(Phaser.BlendModes.ADD).setDepth(DEPTH).setScale(0.3);
+    this.scene.tweens.add({ targets: [ring, fill], scale: 1, duration: 200, ease: "Quad.Out" });
+    this.scene.tweens.add({
+      targets: [ring, fill],
+      alpha: 0,
+      delay: 160,
+      duration: 340,
+      onComplete: () => {
+        ring.destroy();
+        fill.destroy();
+      },
+    });
+    this.burst(x, y - 10, [0xffd27a, 0xff6a3a, 0x8a6a5a], 24);
+    this.scene.cameras.main.shake(140, 0.004);
+  }
+
   nova(x: number, y: number, r: number) {
     // Drawn full size and scaled up (a shape's width doesn't redraw it).
     const ring = this.scene.add.ellipse(x, y - 4, r * 2, r).setStrokeStyle(3, 0xbfe9ff, 1).setDepth(DEPTH).setScale(0.1);
