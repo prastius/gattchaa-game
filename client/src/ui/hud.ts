@@ -1,5 +1,5 @@
 import { DECOR, TILE_SIZE, Terrain, isWet, type World } from "../../../shared/world";
-import { Floor, biomeAt, inRect, type Biome } from "../../../shared/town";
+import { Floor, biomeAt, dungeonAt, inRect, type Biome } from "../../../shared/town";
 import { EMOTES, EMOTE_NAMES } from "../../../shared/protocol";
 import { FIELDS, fieldAt, inSafeZone } from "../../../shared/rpg";
 import { inPvpZone } from "../../../shared/pvp";
@@ -88,6 +88,8 @@ export class HUD {
         const st = world.structAt(tx, ty);
         const [r, g, b] = st.top || st.face
           ? [222, 214, 196] // stone walls and the palace
+          : floor === Floor.Void
+          ? [12, 10, 10] // a dungeon's rock (and the dark round the palace)
           : world.solidAt(tx, ty)
           ? [120, 52, 30]
           : floor
@@ -253,6 +255,17 @@ export class HUD {
     ctx.fillRect(0, 0, minimap.width, minimap.height);
     ctx.imageSmoothingEnabled = true; // ~1.3 px per tile: smoothing keeps streets even
     ctx.drawImage(this.terrain, left, top, MINIMAP_TILES, MINIMAP_TILES, 0, 0, minimap.width, minimap.height);
+    // Underground, only the dungeon you're in: the rest is rock.
+    const below = self && dungeonAt(self.x / TILE_SIZE, self.y / TILE_SIZE);
+    if (below) {
+      const z = below.zone;
+      const x0 = mx(z.x * TILE_SIZE), y0 = my(z.y * TILE_SIZE), x1 = mx((z.x + z.w) * TILE_SIZE), y1 = my((z.y + z.h) * TILE_SIZE);
+      ctx.fillStyle = "#0c0a0a";
+      ctx.fillRect(0, 0, minimap.width, Math.max(0, y0));
+      ctx.fillRect(0, y1, minimap.width, minimap.height - y1);
+      ctx.fillRect(0, 0, Math.max(0, x0), minimap.height);
+      ctx.fillRect(x1, 0, minimap.width - x1, minimap.height);
+    }
 
     // Player shops: little orange signs with a dark rim, so they read on paving and grass.
     for (const s of this.shops) {

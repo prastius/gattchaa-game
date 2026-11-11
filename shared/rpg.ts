@@ -215,6 +215,24 @@ export type MonsterId =
   | "cinderWraith"
   | "magmaGolem"
   | "cinderColossus"
+  | "tunnelBat"
+  | "burrowWorm"
+  | "moleGoblin"
+  | "fungusEye"
+  | "burrowBrute"
+  | "burrowQueen"
+  | "iceBat"
+  | "frozenKnight"
+  | "cryptWraith"
+  | "iceSeer"
+  | "iceGolem"
+  | "cryptLord"
+  | "lavaBat"
+  | "magmaCrawler"
+  | "flamePriest"
+  | "moltenKnight"
+  | "obsidianGolem"
+  | "moltenDrake"
   | "caveBat"
   | "caveCrawler"
   | "orcMiner"
@@ -657,6 +675,144 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
     ],
   },
 
+  // ---------------------------------------------------------------- the Hollow Burrows (Lv 14–22), a dungeon
+  // Purple bats in the first cavern. They swoop at anyone who comes near, and they're quick to dodge.
+  tunnelBat: {
+    id: "tunnelBat", name: "Tunnel Bat", level: 14, hp: 700, atk: 15, def: 8, exp: 560, gold: [16, 26], speed: 70, chase: 115, aggro: 45, range: 36, attackMs: 1300, radius: 10, respawnMs: 15_000, flee: 0.1,
+    drops: [
+      ["tunnelWing", 0.55], ["orangePotion", 0.06], ["burrowBlade", 0.004], ["burrowRing", 0.001], ["mithril", 0.04], ["starCrystal", 0.004], ["tunnelBatCard", 0.001],
+    ],
+  },
+  // Fat worms in the dug-out cavern below. They only fight back, and their hides are thick.
+  burrowWorm: {
+    id: "burrowWorm", name: "Burrow Worm", level: 16, hp: 1_250, atk: 24, def: 18, exp: 820, gold: [18, 30], speed: 30, chase: 70, aggro: 0, range: 40, attackMs: 1900, radius: 15, respawnMs: 16_000,
+    drops: [
+      ["wormHide", 0.55], ["orangePotion", 0.06], ["fungusStaff", 0.004], ["mithril", 0.04], ["starCrystal", 0.004], ["burrowWormCard", 0.001],
+    ],
+  },
+  // Goblins who dig for the Burrow Queen. They go for anyone who comes near.
+  moleGoblin: {
+    id: "moleGoblin", name: "Mole Goblin", level: 17, hp: 900, atk: 21, def: 12, exp: 860, gold: [20, 32], speed: 45, chase: 95, aggro: 40, range: 38, attackMs: 1500, radius: 11, respawnMs: 16_000,
+    drops: [
+      ["goblinShovel", 0.55], ["orangePotion", 0.06], ["tunnelBow", 0.004], ["mithril", 0.04], ["starCrystal", 0.004], ["moleGoblinCard", 0.001],
+    ],
+  },
+  // Eyes on stalks, grown out of the second floor's mould. They stare beams at anyone they see.
+  fungusEye: {
+    id: "fungusEye", name: "Fungus Eye", level: 19, hp: 900, atk: 22, def: 10, exp: 980, gold: [22, 36], speed: 40, chase: 80, aggro: 100, range: 160, attackMs: 2100, radius: 12, respawnMs: 18_000,
+    drops: [
+      ["fungusSpores", 0.55], ["orangePotion", 0.06], ["burrowBlade", 0.004], ["burrowRing", 0.001], ["mithril", 0.04], ["starCrystal", 0.004], ["fungusEyeCard", 0.001],
+    ],
+  },
+  // Big goblins in the Queen's hall. Tough, and they charge anyone who comes near.
+  burrowBrute: {
+    id: "burrowBrute", name: "Burrow Brute", level: 21, hp: 1_700, atk: 25, def: 20, exp: 1_250, gold: [26, 42], speed: 40, chase: 90, aggro: 40, range: 42, attackMs: 1700, radius: 14, respawnMs: 18_000,
+    drops: [
+      ["bruteTooth", 0.55], ["orangePotion", 0.06], ["fungusStaff", 0.004], ["mithril", 0.04], ["starCrystal", 0.004], ["burrowBruteCard", 0.001],
+    ],
+  },
+  // The Hollow Burrows' boss: a vast worm in the deepest hall, queen of everything that digs.
+  burrowQueen: {
+    id: "burrowQueen", name: "Burrow Queen", level: 24, hp: 16_000, atk: 64, def: 22, exp: 22_000, gold: [500, 900], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 32, respawnMs: 1_200_000,
+    boss: true, regen: 0.004,
+    slam: { radius: 90, power: 1.4, everyMs: 10_000 }, blast: { radius: 70, power: 1.2, everyMs: 12_000, reach: 380 },
+    drops: [
+      ["queenJelly", 1], ["orangePotion", 0.8], ["burrowBlade", 0.2], ["fungusStaff", 0.2], ["tunnelBow", 0.2], ["mithril", 1], ["starCrystal", 1], ["queenCharm", 0.06], ["burrowRing", 0.02], ["burrowQueenCard", 0.02],
+    ],
+  },
+
+  // ---------------------------------------------------------------- the Frozen Crypt (Lv 46–54), a dungeon
+  // Pale bats in the first hall, cold to the touch. They swoop at anyone who comes near.
+  iceBat: {
+    id: "iceBat", name: "Ice Bat", level: 46, hp: 3_000, atk: 42, def: 26, exp: 7_000, gold: [56, 92], speed: 70, chase: 120, aggro: 60, range: 36, attackMs: 1300, radius: 10, respawnMs: 20_000, flee: 0.1,
+    drops: [
+      ["frostWing", 0.55], ["whitePotion", 0.06], ["cryptBlade", 0.004], ["cryptRing", 0.001], ["mithril", 0.07], ["starCrystal", 0.013], ["iceBatCard", 0.001],
+    ],
+  },
+  // Knights frozen in their armour long ago, still on guard. They charge anyone who comes near.
+  frozenKnight: {
+    id: "frozenKnight", name: "Frozen Knight", level: 48, hp: 3_800, atk: 58, def: 34, exp: 7_800, gold: [58, 98], speed: 45, chase: 95, aggro: 50, range: 42, attackMs: 1600, radius: 13, respawnMs: 22_000,
+    drops: [
+      ["frozenCrest", 0.55], ["whitePotion", 0.06], ["frostGlaive", 0.004], ["mithril", 0.07], ["starCrystal", 0.013], ["frozenKnightCard", 0.001],
+    ],
+  },
+  // Cold spirits drifting through the second floor. Hard to hit with plain attacks.
+  cryptWraith: {
+    id: "cryptWraith", name: "Crypt Wraith", level: 50, hp: 3_900, atk: 50, def: 28, exp: 8_600, gold: [60, 102], speed: 55, chase: 105, aggro: 50, range: 36, attackMs: 1500, radius: 12, respawnMs: 22_000, flee: 0.15,
+    drops: [
+      ["wraithFrost", 0.55], ["whitePotion", 0.06], ["seerStaffIce", 0.004], ["mithril", 0.07], ["starCrystal", 0.013], ["cryptWraithCard", 0.001],
+    ],
+  },
+  // Robed skeletons that throw shards of ice from afar at anyone they see.
+  iceSeer: {
+    id: "iceSeer", name: "Ice Seer", level: 52, hp: 3_600, atk: 56, def: 26, exp: 9_400, gold: [62, 106], speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 22_000,
+    drops: [
+      ["seerShard", 0.55], ["whitePotion", 0.06], ["cryptBow", 0.004], ["cryptRing", 0.001], ["mithril", 0.07], ["starCrystal", 0.013], ["iceSeerCard", 0.001],
+    ],
+  },
+  // Walking blocks of ice. Leave them alone and they leave you alone; they hit very hard.
+  iceGolem: {
+    id: "iceGolem", name: "Ice Golem", level: 53, hp: 5_600, atk: 92, def: 40, exp: 10_400, gold: [66, 110], speed: 30, chase: 70, aggro: 0, range: 46, attackMs: 2100, radius: 18, respawnMs: 24_000,
+    drops: [
+      ["golemIce", 0.55], ["whitePotion", 0.06], ["cryptBlade", 0.004], ["mithril", 0.07], ["starCrystal", 0.013], ["iceGolemCard", 0.001],
+    ],
+  },
+  // The Frozen Crypt's boss: a frozen king of old, on his throne at the bottom. Throws ice at anyone out of reach.
+  cryptLord: {
+    id: "cryptLord", name: "Crypt Lord", level: 57, hp: 90_000, atk: 165, def: 50, exp: 200_000, gold: [4_000, 7_000], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 24, respawnMs: 1_500_000,
+    boss: true, regen: 0.004,
+    slam: { radius: 110, power: 1.6, everyMs: 9_000 }, blast: { radius: 80, power: 1.4, everyMs: 11_000, reach: 420 },
+    drops: [
+      ["cryptCrown", 1], ["whitePotion", 0.8], ["cryptBlade", 0.2], ["frostGlaive", 0.2], ["seerStaffIce", 0.2], ["cryptBow", 0.2], ["mithril", 1], ["starCrystal", 1], ["cryptAmulet", 0.06], ["cryptRing", 0.02], ["cryptLordCard", 0.02],
+    ],
+  },
+
+  // ---------------------------------------------------------------- the Magma Depths (Lv 76–84), a dungeon
+  // Red-hot bats in the first cavern. They swoop at anyone who comes near.
+  lavaBat: {
+    id: "lavaBat", name: "Lava Bat", level: 76, hp: 6_600, atk: 70, def: 46, exp: 37_000, gold: [100, 168], speed: 70, chase: 125, aggro: 50, range: 36, attackMs: 1300, radius: 11, respawnMs: 22_000, flee: 0.1,
+    drops: [
+      ["lavaWing", 0.55], ["goldenPotion", 0.06], ["moltenBlade", 0.004], ["depthsRing", 0.001], ["mithril", 0.09], ["starCrystal", 0.02], ["lavaBatCard", 0.001],
+    ],
+  },
+  // Armoured worms that swim through lava. They only fight back, and they hit hard.
+  magmaCrawler: {
+    id: "magmaCrawler", name: "Magma Crawler", level: 78, hp: 9_200, atk: 96, def: 56, exp: 41_000, gold: [102, 172], speed: 30, chase: 70, aggro: 0, range: 44, attackMs: 1900, radius: 16, respawnMs: 24_000,
+    drops: [
+      ["crawlerPlate", 0.55], ["goldenPotion", 0.06], ["drakeLance", 0.004], ["mithril", 0.09], ["starCrystal", 0.02], ["magmaCrawlerCard", 0.001],
+    ],
+  },
+  // Robed skeletons who worship the Molten Drake. They throw fire from afar at anyone they see.
+  flamePriest: {
+    id: "flamePriest", name: "Flame Priest", level: 80, hp: 6_800, atk: 72, def: 42, exp: 45_000, gold: [104, 176], speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 24_000,
+    drops: [
+      ["priestCinder", 0.55], ["goldenPotion", 0.06], ["flameStaff", 0.004], ["mithril", 0.09], ["starCrystal", 0.02], ["flamePriestCard", 0.001],
+    ],
+  },
+  // Knights in armour that never cooled. They charge anyone who comes near.
+  moltenKnight: {
+    id: "moltenKnight", name: "Molten Knight", level: 81, hp: 8_200, atk: 84, def: 58, exp: 47_000, gold: [106, 180], speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 13, respawnMs: 24_000,
+    drops: [
+      ["moltenCrest", 0.55], ["goldenPotion", 0.06], ["magmaBow", 0.004], ["depthsRing", 0.001], ["mithril", 0.09], ["starCrystal", 0.02], ["moltenKnightCard", 0.001],
+    ],
+  },
+  // Black glass giants in the deepest hall. Leave them alone and they leave you alone; they hit very hard.
+  obsidianGolem: {
+    id: "obsidianGolem", name: "Obsidian Golem", level: 83, hp: 10_800, atk: 140, def: 62, exp: 54_000, gold: [110, 186], speed: 30, chase: 70, aggro: 0, range: 48, attackMs: 2100, radius: 18, respawnMs: 26_000,
+    drops: [
+      ["obsidianCore", 0.55], ["goldenPotion", 0.06], ["moltenBlade", 0.004], ["mithril", 0.09], ["starCrystal", 0.02], ["obsidianGolemCard", 0.001],
+    ],
+  },
+  // The Magma Depths' boss: a drake of living fire, coiled in the deepest chamber. Breathes fire at anyone out of reach.
+  moltenDrake: {
+    id: "moltenDrake", name: "Molten Drake", level: 87, hp: 280_000, atk: 250, def: 78, exp: 800_000, gold: [14_000, 24_000], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 30, respawnMs: 1_800_000,
+    boss: true, regen: 0.004,
+    slam: { radius: 120, power: 1.7, everyMs: 8_500 }, blast: { radius: 90, power: 1.5, everyMs: 10_500, reach: 440 },
+    drops: [
+      ["drakeHeart", 1], ["goldenPotion", 0.8], ["moltenBlade", 0.2], ["drakeLance", 0.2], ["flameStaff", 0.2], ["magmaBow", 0.2], ["mithril", 1], ["starCrystal", 1], ["drakeAmulet", 0.06], ["depthsRing", 0.02], ["moltenDrakeCard", 0.02],
+    ],
+  },
+
   // ---------------------------------------------------------------- the Orc Caves (Lv 28–36), a dungeon under the Orc Woods
   // Big grey bats in the first cavern. They swoop at anyone who comes near, and they're quick to dodge.
   caveBat: {
@@ -1042,6 +1198,54 @@ export const FIELDS: Field[] = [
       { monster: "cinderWraith", rect: { x: 596, y: 222, w: 18, h: 44 }, count: 8 },
       { monster: "magmaGolem", rect: { x: 552, y: 270, w: 48, h: 18 }, count: 8 },
       { monster: "cinderColossus", rect: { x: 573, y: 247, w: 6, h: 5 }, count: 1 },
+    ],
+  },
+  {
+    // A dungeon, through the portal in its land (see DUNGEONS in shared/town.ts).
+    id: "burrows",
+    name: "Hollow Burrows",
+    levels: "Lv 14–22",
+    area: { x: 0, y: 528, w: 80, h: 112 },
+    wild: true,
+    spawns: [
+      { monster: "tunnelBat", rect: { x: 32, y: 534, w: 18, h: 14 }, count: 7 },
+      { monster: "burrowWorm", rect: { x: 40, y: 564, w: 12, h: 12 }, count: 4 },
+      { monster: "moleGoblin", rect: { x: 52, y: 564, w: 12, h: 12 }, count: 5 },
+      { monster: "fungusEye", rect: { x: 26, y: 590, w: 22, h: 14 }, count: 7 },
+      { monster: "burrowBrute", rect: { x: 6, y: 620, w: 22, h: 12 }, count: 5 },
+      { monster: "burrowQueen", rect: { x: 52, y: 622, w: 6, h: 6 }, count: 1 },
+    ],
+  },
+  {
+    // A dungeon, through the portal in its land (see DUNGEONS in shared/town.ts).
+    id: "crypt",
+    name: "Frozen Crypt",
+    levels: "Lv 46–54",
+    area: { x: 80, y: 528, w: 80, h: 112 },
+    wild: true,
+    spawns: [
+      { monster: "iceBat", rect: { x: 114, y: 564, w: 18, h: 16 }, count: 7 },
+      { monster: "frozenKnight", rect: { x: 110, y: 532, w: 11, h: 10 }, count: 4 },
+      { monster: "cryptWraith", rect: { x: 121, y: 532, w: 11, h: 10 }, count: 5 },
+      { monster: "iceSeer", rect: { x: 106, y: 616, w: 21, h: 16 }, count: 7 },
+      { monster: "iceGolem", rect: { x: 92, y: 588, w: 30, h: 8 }, count: 7 },
+      { monster: "cryptLord", rect: { x: 141, y: 594, w: 6, h: 6 }, count: 1 },
+    ],
+  },
+  {
+    // A dungeon, through the portal in its land (see DUNGEONS in shared/town.ts).
+    id: "depths",
+    name: "Magma Depths",
+    levels: "Lv 76–84",
+    area: { x: 160, y: 528, w: 80, h: 112 },
+    wild: true,
+    spawns: [
+      { monster: "lavaBat", rect: { x: 192, y: 534, w: 16, h: 18 }, count: 7 },
+      { monster: "magmaCrawler", rect: { x: 186, y: 566, w: 12, h: 11 }, count: 4 },
+      { monster: "flamePriest", rect: { x: 198, y: 566, w: 12, h: 11 }, count: 5 },
+      { monster: "moltenKnight", rect: { x: 192, y: 590, w: 20, h: 14 }, count: 7 },
+      { monster: "obsidianGolem", rect: { x: 202, y: 618, w: 26, h: 10 }, count: 7 },
+      { monster: "moltenDrake", rect: { x: 176, y: 620, w: 6, h: 6 }, count: 1 },
     ],
   },
   {

@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 import {
-  CAVES_MOUTH,
   DOORS,
+  DUNGEONS,
   FACADES,
   MACHINES,
   PALACE_DOOR_X,
@@ -488,7 +488,7 @@ export class Town {
     this.boat((sunscar.x + 3) * 32, (sunscar.y + sunscar.h) * 32 + 30);
     this.boat((starfall.x + 3) * 32, (starfall.y + starfall.h) * 32 + 30);
     this.signpost(199.5 * 32, 283 * 32 - 2, "FERRY", "FROSTFELL →", "#bfe9ff");
-    this.signpost((CAVES_MOUTH.x - 3) * 32, (CAVES_MOUTH.y - 1) * 32, "ORC CAVES", "DUNGEON · LV 28–36", "#ffb35c");
+    for (const d of DUNGEONS) this.signpost((d.mouth.x - 3) * 32, (d.mouth.y - 1) * 32, d.name.toUpperCase(), `DUNGEON · ${d.levels.toUpperCase()}`, d.sign);
     for (const d of DOORS) if (d.portal !== undefined) this.portal(d.trigger.x + d.trigger.w / 2, d.trigger.y + d.trigger.h / 2, d.portal);
     this.signpost(329.5 * 32, 185 * 32 - 2, "FERRY", "RAVENMOOR →", "#d9b8ff");
     this.signpost(246.5 * 32, 282 * 32 - 2, "SHIPS", "PETALFALL & BEYOND →", "#ffc4da");

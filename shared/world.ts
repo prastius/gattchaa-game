@@ -15,9 +15,10 @@ import {
   CASTLE_ISLE,
   FROST_LAIR,
   WARLORD_CAMP,
-  DUNGEON_ZONE,
-  CAVE_ROOMS,
+  DUNGEONS,
+  OVERWORLD_H,
   isCaveRoom,
+  type Dungeon,
   CINDER_CRATER,
   SUN_TEMPLE,
   STAR_ALTAR,
@@ -55,7 +56,8 @@ import { FIELDS } from "./rpg";
 
 export const TILE_SIZE = 32;
 export const WORLD_TILES_W = 640;
-export const WORLD_TILES_H = 512;
+/** The overworld (OVERWORLD_H rows) and, below it, the underground band where dungeons live. */
+export const WORLD_TILES_H = OVERWORLD_H + 128;
 /** The main island is shaped round this tile (the world grew south and east for the islands; this stays put). */
 const MAIN_CX = 192;
 const MAIN_CY = 192;
@@ -217,6 +219,11 @@ export class World {
     const { vw, vh, seed } = this;
     for (let vy = 0; vy < vh; vy++) {
       for (let vx = 0; vx < vw; vx++) {
+        // The underground band is open sea (the dungeons are filled in later): no hills to work out.
+        if (vy > OVERWORLD_H) {
+          this.verts[vy * vw + vx] = Terrain.Deep;
+          continue;
+        }
         const e = this.elevation(vx, vy);
         const rough = fbm(vx / 40, vy / 40, seed + 555, 3);
         let t: Terrain;
@@ -239,7 +246,7 @@ export class World {
     };
     fill(TOWN_AREA, Terrain.Grass, 2);
     fill(INTERIOR_ZONE, Terrain.Grass, 2); // dry ground under the store interior
-    fill(DUNGEON_ZONE, Terrain.Dirt, 0); // earth under the Orc Caves
+    for (const d of DUNGEONS) fill(d.zone, Terrain.Dirt, 0); // earth under every dungeon
 
     // The park pond: deep in the middle, shallow at the edge, a dirt trail round it.
     const { cx, cy, rx, ry } = POND;
@@ -279,7 +286,7 @@ export class World {
         }
       }
     }
-    this.carveCaves();
+    for (const d of DUNGEONS) this.carveCaves(d);
     this.stampStructures();
     for (const p of PROPS) {
       const t: { w: number; h: number; walkable?: boolean } = PROP_TYPES[p.type];
@@ -329,12 +336,13 @@ export class World {
   }
 
   /**
-   * The Orc Caves: solid rock (the black void) everywhere in the dungeon's zone except the rooms
+   * A dungeon: solid rock (the black void) everywhere in its zone except the rooms
    * and passages, whose walls are ragged in the big rooms, with loose stones on their floors.
    */
-  private carveCaves() {
+  private carveCaves(d: Dungeon) {
     const { width, seed } = this;
-    const z = DUNGEON_ZONE;
+    const z = d.zone;
+    const CAVE_ROOMS = d.rooms;
     for (let ty = z.y; ty < z.y + z.h; ty++) {
       for (let tx = z.x; tx < z.x + z.w; tx++) {
         const i = ty * width + tx;
@@ -431,7 +439,7 @@ export class World {
     if (tx >= TRIAL_GROUND.x - 2 && ty >= TRIAL_GROUND.y - 3 && tx < TRIAL_GROUND.x + TRIAL_GROUND.w + 2 && ty < TRIAL_GROUND.y + TRIAL_GROUND.h + 2) return true;
     if (Object.values(PIERS).some((p) => tx >= p.x - 3 && ty >= p.y - 3 && tx < p.x + p.w + 3 && ty < p.y + p.h + 3)) return true;
     if (tx < INTERIOR_ZONE.x + INTERIOR_ZONE.w + 2 && ty < INTERIOR_ZONE.y + INTERIOR_ZONE.h + 2) return true;
-    if (inRect(DUNGEON_ZONE, tx, ty)) return true;
+    if (DUNGEONS.some((d) => inRect(d.zone, tx, ty))) return true;
     return ROADS.some((r) => tx >= r.x - 2 && ty >= r.y - 2 && tx < r.x + r.w + 1 && ty < r.y + r.h + 1);
   }
 

@@ -135,10 +135,9 @@ export const NIGHT_LINE = 360;
 /** Which season the art shows at a tile: the islands have their own (the far eastern ones aren't seasons at all). */
 export type Biome = "summer" | "winter" | "autumn" | "spring" | "ash" | "desert" | "starlit";
 export const biomeAt = (tx: number, ty: number): Biome =>
-  // Underground it's the summer sheets' plain brown earth, whatever the sea round the caves would be.
-  inRect(DUNGEON_ZONE, tx, ty)
-    ? "summer"
-    : tx >= ASH_LINE
+  // Underground, each dungeon has its own look, whatever the sea round it would be.
+  dungeonAt(tx, ty)?.biome ??
+  (tx >= ASH_LINE
     ? ty < SAND_LINE
       ? "desert"
       : ty > NIGHT_LINE
@@ -150,7 +149,7 @@ export const biomeAt = (tx: number, ty: number): Biome =>
         ? "autumn"
         : ty >= SNOW_LINE
           ? "winter"
-          : "summer";
+          : "summer");
 export const isSnowy = (tx: number, ty: number) => biomeAt(tx, ty) === "winter";
 /** Ravenmoor's endless dusk hangs over this area (tiles). */
 export const GLOOM: Rect = { x: 376, y: 112, w: 136, h: 168 };
@@ -383,42 +382,189 @@ export const BATTLE_HALL: Rect = { x: 41, y: 15, w: 14, h: 20 };
 export const LOUNGE: Rect = { x: 10, y: 26, w: 12, h: 8 };
 // ---------------------------------------------------------------- dungeons
 //
-// The Orc Caves, two floors under the Orc Woods, live out in the south-western
-// sea where nobody can walk, like the palace's hall: portals take you down and
-// back up, and the client draws only the caves while you're in them. The zone
-// is chunk-aligned (16 tiles) for that. Inside it everything is solid rock
-// except the rooms and passages below (with ragged edges, see World).
+// Dungeons (Ragnarok style): two cave floors under a land, through a portal.
+// Each lives in its own zone where nobody can walk: the Orc Caves out in the
+// south-western sea, the rest in the underground band below the overworld
+// (rows OVERWORLD_H and down). Portals take you down and back up, and the
+// client draws only the dungeon while you're in it. Zones are chunk-aligned
+// (16 tiles) for that. Inside a zone everything is solid rock except the
+// rooms and passages (with ragged edges and boulders, see World.carveCaves).
 
-export const DUNGEON_ZONE: Rect = { x: 0, y: 336, w: 80, h: 112 };
-/** The first floor (top half of the zone) and the second (bottom half). */
-export const CAVE_FLOORS: Rect[] = [
-  { x: 0, y: 336, w: 80, h: 56 },
-  { x: 0, y: 392, w: 80, h: 56 },
+export interface Dungeon {
+  id: string;
+  name: string;
+  levels: string;
+  /** 80 x 112 tiles: floor 1 is the top half, floor 2 the bottom half. */
+  zone: Rect;
+  /** Rooms and passages (tiles); the rest of the zone is rock. */
+  rooms: Rect[];
+  /** The portal in the overworld, and inside: where you land, the portal back out, the stairs down, where they
+   * land you on floor 2, the stairs back up, and where those land you on floor 1 (tiles). */
+  mouth: { x: number; y: number };
+  inside: { x: number; y: number };
+  exit: { x: number; y: number };
+  down: { x: number; y: number };
+  landing: { x: number; y: number };
+  up: { x: number; y: number };
+  upLanding: { x: number; y: number };
+  /** How the ground looks underground, and the gloom over it. */
+  biome: Biome;
+  shade: [number, number, number];
+  strength: number;
+  weather?: "embers";
+  /** Colours of the signpost at the mouth and of the portals. */
+  sign: string;
+  portal: number;
+}
+
+/** The overworld is this many rows; the underground band below it holds dungeons. */
+export const OVERWORLD_H = 512;
+
+export const DUNGEONS: Dungeon[] = [
+  {
+    id: "caves",
+    name: "Orc Caves",
+    levels: "Lv 28–36",
+    zone: { x: 0, y: 336, w: 80, h: 112 },
+    rooms: [
+      { x: 6, y: 344, w: 14, h: 12 },
+      { x: 19, y: 348, w: 12, h: 4 },
+      { x: 30, y: 340, w: 20, h: 22 },
+      { x: 38, y: 361, w: 4, h: 12 },
+      { x: 28, y: 372, w: 28, h: 15 },
+      { x: 55, y: 377, w: 10, h: 4 },
+      { x: 64, y: 370, w: 12, h: 16 },
+      { x: 62, y: 398, w: 14, h: 12 },
+      { x: 49, y: 402, w: 14, h: 4 },
+      { x: 26, y: 396, w: 24, h: 18 },
+      { x: 34, y: 413, w: 4, h: 12 },
+      { x: 10, y: 424, w: 30, h: 14 },
+      { x: 39, y: 430, w: 12, h: 4 },
+      { x: 50, y: 421, w: 22, h: 20 },
+    ],
+    mouth: { x: 86, y: 216.5 },
+    inside: { x: 13, y: 351 },
+    exit: { x: 8, y: 346.5 },
+    down: { x: 73, y: 378 },
+    landing: { x: 68, y: 405 },
+    up: { x: 73, y: 401 },
+    upLanding: { x: 69, y: 378 },
+    biome: "summer",
+    shade: [16, 10, 6],
+    strength: 0.42,
+    sign: "#ffb35c",
+    portal: 0xff9a4a,
+  },
+  {
+    id: "burrows",
+    name: "Hollow Burrows",
+    levels: "Lv 14–22",
+    zone: { x: 0, y: 528, w: 80, h: 112 },
+    rooms: [
+      { x: 4, y: 534, w: 14, h: 12 },
+      { x: 17, y: 538, w: 14, h: 4 },
+      { x: 30, y: 532, w: 22, h: 18 },
+      { x: 46, y: 549, w: 4, h: 14 },
+      { x: 38, y: 562, w: 28, h: 16 },
+      { x: 65, y: 567, w: 4, h: 4 },
+      { x: 66, y: 556, w: 12, h: 20 },
+      { x: 64, y: 590, w: 14, h: 12 },
+      { x: 50, y: 594, w: 15, h: 4 },
+      { x: 24, y: 588, w: 26, h: 18 },
+      { x: 26, y: 605, w: 4, h: 14 },
+      { x: 4, y: 618, w: 26, h: 16 },
+      { x: 29, y: 624, w: 12, h: 4 },
+      { x: 40, y: 614, w: 30, h: 22 },
+    ],
+    mouth: { x: 306, y: 195 },
+    inside: { x: 11, y: 541 },
+    exit: { x: 6.5, y: 536.5 },
+    down: { x: 74, y: 566 },
+    landing: { x: 69, y: 598 },
+    up: { x: 75, y: 593 },
+    upLanding: { x: 70, y: 566 },
+    biome: "summer",
+    shade: [20, 14, 22],
+    strength: 0.4,
+    sign: "#c9a2ff",
+    portal: 0xb98cff,
+  },
+  {
+    id: "crypt",
+    name: "Frozen Crypt",
+    levels: "Lv 46–54",
+    zone: { x: 80, y: 528, w: 80, h: 112 },
+    rooms: [
+      { x: 86, y: 568, w: 14, h: 12 },
+      { x: 99, y: 572, w: 14, h: 4 },
+      { x: 112, y: 562, w: 22, h: 20 },
+      { x: 122, y: 541, w: 4, h: 22 },
+      { x: 108, y: 530, w: 26, h: 14 },
+      { x: 133, y: 535, w: 10, h: 4 },
+      { x: 142, y: 530, w: 14, h: 16 },
+      { x: 142, y: 620, w: 14, h: 14 },
+      { x: 128, y: 624, w: 15, h: 4 },
+      { x: 104, y: 614, w: 25, h: 20 },
+      { x: 114, y: 596, w: 4, h: 19 },
+      { x: 90, y: 586, w: 34, h: 12 },
+      { x: 123, y: 590, w: 10, h: 4 },
+      { x: 132, y: 586, w: 24, h: 22 },
+    ],
+    mouth: { x: 189.5, y: 421 },
+    inside: { x: 93, y: 575 },
+    exit: { x: 88.5, y: 570.5 },
+    down: { x: 152, y: 538 },
+    landing: { x: 148, y: 628 },
+    up: { x: 154, y: 623 },
+    upLanding: { x: 148, y: 538 },
+    biome: "winter",
+    shade: [10, 20, 40],
+    strength: 0.42,
+    sign: "#bfe9ff",
+    portal: 0x8fd0ff,
+  },
+  {
+    id: "depths",
+    name: "Magma Depths",
+    levels: "Lv 76–84",
+    zone: { x: 160, y: 528, w: 80, h: 112 },
+    rooms: [
+      { x: 220, y: 536, w: 14, h: 12 },
+      { x: 209, y: 540, w: 12, h: 4 },
+      { x: 190, y: 532, w: 20, h: 22 },
+      { x: 198, y: 553, w: 4, h: 12 },
+      { x: 184, y: 564, w: 28, h: 15 },
+      { x: 175, y: 569, w: 10, h: 4 },
+      { x: 164, y: 562, w: 12, h: 16 },
+      { x: 164, y: 590, w: 14, h: 12 },
+      { x: 177, y: 594, w: 14, h: 4 },
+      { x: 190, y: 588, w: 24, h: 18 },
+      { x: 202, y: 605, w: 4, h: 12 },
+      { x: 200, y: 616, w: 30, h: 14 },
+      { x: 189, y: 622, w: 12, h: 4 },
+      { x: 168, y: 613, w: 22, h: 20 },
+    ],
+    mouth: { x: 579.5, y: 231 },
+    inside: { x: 227, y: 543 },
+    exit: { x: 232, y: 538.5 },
+    down: { x: 167, y: 570 },
+    landing: { x: 172, y: 597 },
+    up: { x: 167, y: 593 },
+    upLanding: { x: 171, y: 570 },
+    biome: "ash",
+    shade: [60, 14, 4],
+    strength: 0.36,
+    weather: "embers",
+    sign: "#ff8a5c",
+    portal: 0xff6a3a,
+  },
 ];
-/** Rooms and passages: the rest of the zone is rock. */
-export const CAVE_ROOMS: Rect[] = [
-  // Floor 1: the entrance hall, a big cavern, a passage down to the miners' cavern, the chamber with the stairs.
-  { x: 6, y: 344, w: 14, h: 12 },
-  { x: 19, y: 348, w: 12, h: 4 },
-  { x: 30, y: 340, w: 20, h: 22 },
-  { x: 38, y: 361, w: 4, h: 12 },
-  { x: 28, y: 372, w: 28, h: 15 },
-  { x: 55, y: 377, w: 10, h: 4 },
-  { x: 64, y: 370, w: 12, h: 16 },
-  // Floor 2: the landing, a passage west, the shamans' hall, a passage down, the guards' hall, the Chieftain's chamber.
-  { x: 62, y: 398, w: 14, h: 12 },
-  { x: 49, y: 402, w: 14, h: 4 },
-  { x: 26, y: 396, w: 24, h: 18 },
-  { x: 34, y: 413, w: 4, h: 12 },
-  { x: 10, y: 424, w: 30, h: 14 },
-  { x: 39, y: 430, w: 12, h: 4 },
-  { x: 50, y: 421, w: 22, h: 20 },
-];
+
 /** Rooms big enough for ragged walls and loose stones (passages stay clean, 4 tiles wide). */
 export const isCaveRoom = (r: Rect) => r.w >= 10 && r.h >= 10;
-export const inDungeon = (px: number, py: number) => inRect(DUNGEON_ZONE, px / TILE, py / TILE);
-/** The mouth of the Orc Caves: a portal in a clearing in the Orc Woods (tile). */
-export const CAVES_MOUTH = { x: 86, y: 216.5 };
+/** The dungeon at a tile, if any. */
+export const dungeonAt = (tx: number, ty: number): Dungeon | undefined => DUNGEONS.find((d) => inRect(d.zone, tx, ty));
+export const inDungeon = (px: number, py: number) => Boolean(dungeonAt(px / TILE, py / TILE));
 
 /** Where the in-palace shopper may wander. */
 export const STORE_WANDER: Rect = { x: 24, y: 15, w: 16, h: 20 };
@@ -580,11 +726,13 @@ export const DOORS: Door[] = [
     dir: 2,
     to: { x: PALACE_DOOR_X, y: PALACE_FACE_BOTTOM * 32 + 36 },
   },
-  // The Orc Caves: in from the Orc Woods, out from the entrance hall, and the stairs between the floors.
-  { id: "caves-in", label: "Into the Orc Caves", trigger: portalAt(CAVES_MOUTH.x, CAVES_MOUTH.y), dir: -1, to: { x: 13 * TILE, y: 351 * TILE }, portal: 0xff9a4a },
-  { id: "caves-out", label: "Back to the Orc Woods", trigger: portalAt(8, 346.5), dir: -1, to: { x: CAVES_MOUTH.x * TILE, y: (CAVES_MOUTH.y + 2.5) * TILE }, portal: 0x8fd0ff },
-  { id: "caves-down", label: "Down to the second floor", trigger: portalAt(73, 378), dir: -1, to: { x: 68 * TILE, y: 405 * TILE }, portal: 0xff6a3a },
-  { id: "caves-up", label: "Up to the first floor", trigger: portalAt(73, 401), dir: -1, to: { x: 69 * TILE, y: 378 * TILE }, portal: 0x8fd0ff },
+  // Every dungeon: in from its land, out from its entrance hall, and the stairs between its floors.
+  ...DUNGEONS.flatMap((d): Door[] => [
+    { id: `${d.id}-in`, label: `Into the ${d.name}`, trigger: portalAt(d.mouth.x, d.mouth.y), dir: -1, to: { x: d.inside.x * TILE, y: d.inside.y * TILE }, portal: d.portal },
+    { id: `${d.id}-out`, label: "Back up to the surface", trigger: portalAt(d.exit.x, d.exit.y), dir: -1, to: { x: d.mouth.x * TILE, y: (d.mouth.y + 2.5) * TILE }, portal: 0x8fd0ff },
+    { id: `${d.id}-down`, label: "Down to the second floor", trigger: portalAt(d.down.x, d.down.y), dir: -1, to: { x: d.landing.x * TILE, y: d.landing.y * TILE }, portal: 0xff6a3a },
+    { id: `${d.id}-up`, label: "Up to the first floor", trigger: portalAt(d.up.x, d.up.y), dir: -1, to: { x: d.upLanding.x * TILE, y: d.upLanding.y * TILE }, portal: 0x8fd0ff },
+  ]),
 ];
 
 /**
@@ -845,6 +993,40 @@ const props: Prop[] = [
   { type: "campfire", x: 52, y: 438 },
   { type: "campfire", x: 69, y: 438 },
   { type: "throne", x: 66, y: 430 },
+
+  // ---- The Hollow Burrows: fires in its rooms, and braziers round its boss.
+  { type: "campfire", x: 33, y: 535 },
+  { type: "campfire", x: 41, y: 565 },
+  { type: "campfire", x: 69, y: 559 },
+  { type: "campfire", x: 27, y: 591 },
+  { type: "campfire", x: 7, y: 621 },
+  { type: "campfire", x: 43, y: 617 },
+  { type: "campfire", x: 49, y: 619 },
+  { type: "campfire", x: 60, y: 619 },
+  { type: "campfire", x: 49, y: 630 },
+  { type: "campfire", x: 60, y: 630 },
+  // ---- The Frozen Crypt: fires in its rooms, and braziers round its boss.
+  { type: "campfire", x: 115, y: 565 },
+  { type: "campfire", x: 111, y: 533 },
+  { type: "campfire", x: 145, y: 533 },
+  { type: "campfire", x: 107, y: 617 },
+  { type: "campfire", x: 93, y: 589 },
+  { type: "campfire", x: 135, y: 589 },
+  { type: "campfire", x: 138, y: 591 },
+  { type: "campfire", x: 149, y: 591 },
+  { type: "campfire", x: 138, y: 602 },
+  { type: "campfire", x: 149, y: 602 },
+  // ---- The Magma Depths: fires in its rooms, and braziers round its boss.
+  { type: "campfire", x: 193, y: 535 },
+  { type: "campfire", x: 187, y: 567 },
+  { type: "campfire", x: 167, y: 565 },
+  { type: "campfire", x: 193, y: 591 },
+  { type: "campfire", x: 203, y: 619 },
+  { type: "campfire", x: 171, y: 616 },
+  { type: "campfire", x: 173, y: 617 },
+  { type: "campfire", x: 184, y: 617 },
+  { type: "campfire", x: 173, y: 628 },
+  { type: "campfire", x: 184, y: 628 },
 
   // ---- The Ogre Warlord's war camp: a ring of standing stones, his seat at the far end, fires and his plunder.
   ...[WARLORD_CAMP.x + 1, WARLORD_CAMP.x + 6, WARLORD_CAMP.x + 11, WARLORD_CAMP.x + WARLORD_CAMP.w - 2].flatMap((x) =>

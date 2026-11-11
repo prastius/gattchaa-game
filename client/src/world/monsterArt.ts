@@ -545,6 +545,152 @@ export const MONSTER_ART: Record<MonsterId, MonsterArt> = {
     ],
     { scale: 2.1, w: 56, h: 108, missile: "fire", missileFrom: 70 },
   ),
+  // The Hollow Burrows.
+  tunnelBat: { file: "bat.png", tint: 0xb89ae0, frame: 64, cols: 7, feet: 52, move: [1, 2, 3, 2], attack: same([4, 5, 6]), w: 28, h: 34 },
+  burrowWorm: { file: "big_worm.png", tint: 0xe0c0a0, frame: 64, cols: 6, feet: 54, attack: same([4, 5]), w: 30, h: 46 },
+  moleGoblin: humanoid(
+    [
+      ...skin("olive"),
+      { category: "mob", id: "goblinHead", colors: { body: "olive" } },
+      { category: "bottom", id: "shorts", colors: { cloth: "brown" } },
+      { category: "gear", id: "leatherArmor" },
+      { category: "gear", id: "kettle", colors: { metal: "bronze" } },
+      { category: "gear", id: "dagger" },
+    ],
+    { scale: 0.85, h: 44 },
+  ),
+  fungusEye: { file: "eyeball.png", tint: 0xa8e08a, frame: 64, cols: 7, feet: 51, move: [0, 1, 2, 3], attack: same([4, 5]), w: 28, h: 38, missile: "beam" },
+  burrowBrute: humanoid(
+    [
+      ...skin("olive"),
+      { category: "mob", id: "goblinHead", colors: { body: "olive" } },
+      { category: "bottom", id: "pants", colors: { cloth: "brown" } },
+      { category: "gear", id: "legion", colors: { metal: "bronze" } },
+      { category: "mob", id: "mace" },
+    ],
+    { scale: 1.25, w: 32, h: 60 },
+  ),
+  burrowQueen: { file: "big_worm.png", tint: 0xe8a0c0, frame: 64, cols: 6, feet: 54, attack: same([4, 5]), w: 64, h: 92, scale: 2.1 },
+  // The Frozen Crypt.
+  iceBat: { file: "bat.png", tint: 0xb8e0ff, frame: 64, cols: 7, feet: 52, move: [1, 2, 3, 2], attack: same([4, 5, 6]), w: 30, h: 36, scale: 1.1 },
+  frozenKnight: humanoid(
+    tinted(
+      [
+        { category: "mob", id: "skeletonBody" },
+        { category: "mob", id: "skullHead" },
+        { category: "gear", id: "cape", colors: { cloth: "white" } },
+        { category: "gear", id: "plate", colors: { metal: "silver" } },
+        { category: "gear", id: "plateArms", colors: { metal: "silver" } },
+        { category: "gear", id: "greathelm", colors: { metal: "silver" } },
+        { category: "gear", id: "kiteBlue" },
+        { category: "gear", id: "longsword" },
+      ],
+      0xbfe4ff,
+    ),
+    { scale: 1.1, w: 30, h: 54 },
+  ),
+  cryptWraith: { file: "ghost.png", tint: 0x9ab8ff, frame: 64, cols: 6, feet: 56, attack: same([4, 5]), w: 36, h: 50, scale: 1.15, alpha: 0.85 },
+  iceSeer: humanoid(
+    tinted(
+      [
+        { category: "mob", id: "skeletonBody" },
+        { category: "mob", id: "skullHead" },
+        { category: "gear", id: "cape", colors: { cloth: "white" } },
+        { category: "gear", id: "tabardWhite", colors: { cloth: "white" } },
+        { category: "gear", id: "hood", colors: { cloth: "white" } },
+        { category: "gear", id: "gnarledSilver" },
+      ],
+      0xa8d8ff,
+    ),
+    { missile: "ice", missileFrom: 60 },
+  ),
+  iceGolem: humanoid(
+    tinted(
+      [
+        { category: "mob", id: "zombieBody" },
+        { category: "mob", id: "frankHead", colors: { body: "zombie_green" } },
+        { category: "mob", id: "mace" },
+      ],
+      0xc8f0ff,
+    ),
+    { scale: 1.5, w: 40, h: 72 },
+  ),
+  cryptLord: humanoid(
+    [
+      ...tinted(
+        [
+          { category: "mob", id: "skeletonBody" },
+          { category: "mob", id: "skullHead" },
+        ],
+        0xd8f0ff,
+      ),
+      { category: "gear", id: "cape", colors: { cloth: "sky" } },
+      { category: "gear", id: "plate", colors: { metal: "silver" } },
+      { category: "gear", id: "plateArms", colors: { metal: "silver" } },
+      { category: "gear", id: "greaves", colors: { metal: "silver" } },
+      { category: "gear", id: "crownGray" },
+      { category: "gear", id: "scythe" },
+    ],
+    { scale: 1.9, w: 52, h: 98, missile: "ice", missileFrom: 70 },
+  ),
+  // The Magma Depths.
+  lavaBat: { file: "bat.png", tint: 0xff7a4a, frame: 64, cols: 7, feet: 52, move: [1, 2, 3, 2], attack: same([4, 5, 6]), w: 30, h: 36, scale: 1.15 },
+  magmaCrawler: { file: "big_worm.png", tint: 0xff8a4a, frame: 64, cols: 6, feet: 54, attack: same([4, 5]), w: 32, h: 48, scale: 1.2 },
+  flamePriest: humanoid(
+    [
+      ...tinted(
+        [
+          { category: "mob", id: "skeletonBody" },
+          { category: "mob", id: "skullHead" },
+        ],
+        0xffb08a,
+      ),
+      { category: "gear", id: "cape", colors: { cloth: "red" } },
+      { category: "gear", id: "tabardMaroon" },
+      { category: "gear", id: "hood", colors: { cloth: "red" } },
+      { category: "gear", id: "crystalOrange" },
+    ],
+    { missile: "fire", missileFrom: 60 },
+  ),
+  moltenKnight: humanoid(
+    tinted(
+      [
+        ...skin("light"),
+        { category: "gear", id: "cape", colors: { cloth: "black" } },
+        { category: "gear", id: "plate", colors: { metal: "copper" } },
+        { category: "gear", id: "plateArms", colors: { metal: "copper" } },
+        { category: "gear", id: "greaves", colors: { metal: "copper" } },
+        { category: "gear", id: "ironBoots", colors: { metal: "copper" } },
+        { category: "gear", id: "armet", colors: { metal: "copper" } },
+        { category: "gear", id: "glowswordRed" },
+      ],
+      0xff9a6a,
+    ),
+    { scale: 1.1, w: 30, h: 54 },
+  ),
+  obsidianGolem: humanoid(
+    tinted(
+      [
+        { category: "mob", id: "zombieBody" },
+        { category: "mob", id: "frankHead", colors: { body: "zombie_green" } },
+        { category: "mob", id: "mace" },
+      ],
+      0x6a5056,
+    ),
+    { scale: 1.55, w: 42, h: 74 },
+  ),
+  moltenDrake: humanoid(
+    tinted(
+      [
+        { category: "body", id: "body", colors: { body: "light" } },
+        { category: "mob", id: "lizardWings", colors: { body: "light" } },
+        { category: "mob", id: "lizardTail", colors: { body: "light" } },
+        { category: "mob", id: "lizardHead", colors: { body: "light" } },
+      ],
+      0xff6a3a,
+    ),
+    { scale: 2.1, w: 56, h: 102, missile: "fire", missileFrom: 70 },
+  ),
   // The Orc Caves.
   caveBat: { file: "bat.png", tint: 0xa89a8e, frame: 64, cols: 7, feet: 52, move: [1, 2, 3, 2], attack: same([4, 5, 6]), w: 30, h: 36, scale: 1.15 },
   caveCrawler: { file: "big_worm.png", tint: 0xa898b8, frame: 64, cols: 6, feet: 54, attack: same([4, 5]), w: 32, h: 48, scale: 1.15 },

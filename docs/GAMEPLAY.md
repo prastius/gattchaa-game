@@ -96,6 +96,9 @@ The town is always safe: monsters never come in, and nobody can attack anyone in
 | Mara | Ranger | Outside the east gate | Explains Dusk Hollow |
 | Gregor | Scout | Outside the west gate | Explains the Orc Woods |
 | Brok | Cave Warden | In the Orc Woods, by the portal down to the Orc Caves | Explains the Orc Caves |
+| Tilda | Dungeon Warden | In Dusk Hollow, by the portal down to the Hollow Burrows | Explains the Hollow Burrows |
+| Halvard | Dungeon Warden | In Frostfell, by the portal down to the Frozen Crypt | Explains the Frozen Crypt |
+| Ignis | Dungeon Warden | In Ashpeak, by the portal down to the Magma Depths | Explains the Magma Depths |
 | Sable | Bounty Hunter | North of town, by the path up from the west road | Explains the Wildlands and their PVP rules, and keeps the board of who's wanted and the best hunters |
 | Edda | Ferry Captain | At the end of the pier on the meadow's south-east point | Sails you to Frostfell for 500 gold |
 | Bjorn | Ferryman | At the end of Frostfell's pier | Explains Frostfell, and sails you back for free |
@@ -169,6 +172,9 @@ Shops also show as orange dots on the minimap.
 | Orc Woods | 20–30 | Out of the west gate | Gregor |
 | Wildlands (open PVP) | 30–40 | Up the paths north along the town walls, from the west or east road | Sable |
 | Orc Caves (dungeon) | 28–36 | The portal in the clearing in the Orc Woods, east of the Orc Warlord's camp | Brok |
+| Hollow Burrows (dungeon) | 14–22 | The portal in Dusk Hollow, just south of the east road, between the Grubs and the Rock Worms | Tilda |
+| Frozen Crypt (dungeon) | 46–54 | The portal in Frostfell, down the path south of Frostfell's pier | Halvard |
+| Magma Depths (dungeon) | 76–84 | The portal in Ashpeak, north of the Cinder Colossus's crater | Ignis |
 | Frostfell | 40–50 | The ferry from the meadow's south-east point (500 gold; the way back is free) | Edda, Bjorn |
 | Ravenmoor | 50–60 | The boat at the end of the east road, past the Pumpking (800 gold; the way back is free) | Finn, Corvin |
 | Petalfall | 60–70 | The ship from the meadow's east shore (1,200 gold; the way back is free) | Marlow, Willow |
@@ -442,9 +448,18 @@ A party that steps out of the circles takes far less damage than one that stands
 - He's meant for a party of four at level 100: four level-100 players beat him in about six or seven minutes, with one of them taking the hits and drinking a lot of potions.
 - **He always drops** the Fallen Star (sells for 20,000 gold), a Mithril Ingot and a Star Crystal (often two), and usually a White Potion. He often drops good gear (Void Lance, Starlight Longbow, Astral Staff, Star Plate, Star Shield). Rarely he drops the **Tyrant's Star** (6%), and very rarely the legendary **Star Tyrant Card** (2%) or **Ring of the Fallen Star** (1.5%), a ring anyone can wear.
 
-### Dungeons: the Orc Caves
+### Dungeons
 
-Ragnarok style, some lands have a **dungeon** underneath: dark caves with their own monsters and a boss at the bottom. The first is the **Orc Caves**, under the Orc Woods (**level 28–36**), where the orcs of the woods dig for their Chieftain.
+Ragnarok style, some lands have a **dungeon** underneath: dark caves with their own monsters and a boss at the bottom, through a glowing **portal** in the land (each has a signpost and a Dungeon Warden next to it). Every dungeon has **two floors**: a red portal at the far end of the first is the **stairs** down, and a blue one takes you back up (another in the entrance hall takes you back to the surface). Nobody but the monsters can attack you underground. Fainting wakes you up in town as usual.
+
+| Dungeon | Levels | Under | Boss |
+| --- | --- | --- | --- |
+| Hollow Burrows | 14–22 | Dusk Hollow | Burrow Queen (Lv 24) |
+| Orc Caves | 28–36 | The Orc Woods | Orc Chieftain (Lv 38) |
+| Frozen Crypt | 46–54 | Frostfell | Crypt Lord (Lv 57) |
+| Magma Depths | 76–84 | Ashpeak | Molten Drake (Lv 87) |
+
+**The Orc Caves** (level 28–36), under the Orc Woods, where the orcs of the woods dig for their Chieftain.
 
 - **Getting in:** walk into the glowing **portal** in the clearing in the Orc Woods, east of the Orc Warlord's camp (there's a signpost, and **Brok the Cave Warden** next to it). There's a portal back up in the entrance hall.
 - **Two floors.** The first floor's big cavern has Cave Bats; the miners' cavern below it has Cave Crawlers and Orc Miners. The red portal at the far end is the **stairs** down to the second floor (and a blue one there takes you back up). The second floor has Orc Shamans, Orc Guards, and the **Orc Chieftain** on his throne in the deepest chamber.
@@ -461,6 +476,45 @@ Ragnarok style, some lands have a **dungeon** underneath: dark caves with their 
 | **Orc Chieftain** (boss) | 38 | 60,000 | Second floor, the deepest chamber | Like a field boss (slam and blast, see "Field bosses"); back 20 minutes after he falls |
 
 **The Orc Chieftain** always drops his **Chieftain's Tusk** (sells for 2,500 gold), a Mithril Ingot and a Star Crystal, and usually a White Potion. He often drops good gear (Chieftain's Glaive, Cave Blade, Shaman's Staff, Cave Bow, Orc Guard's Shield) and sometimes a Tusk Necklace. Rarely he drops the **Chieftain's Fang** (6%), and very rarely the legendary **Deepstone Ring** (2%, a ring anyone can wear) or the **Orc Chieftain Card** (2%). He's meant for a party of four around level 36: four players beat him in a couple of minutes.
+
+**The Hollow Burrows** (level 14–22): Dusk Hollow's mould and worm tunnels, dug by goblins for their Burrow Queen. The portal is in Dusk Hollow, just south of the east road, between the Grubs and the Rock Worms, with **Tilda the Dungeon Warden** next to it.
+
+| Monster | Lv | HP | Where | Behaviour |
+| --- | --- | --- | --- | --- |
+| Tunnel Bat | 14 | 700 | First floor, the big cavern | Attacks anyone who comes close; plain attacks sometimes miss it |
+| Burrow Worm | 16 | 1,250 | First floor, the dug-out cavern | Only fights back |
+| Mole Goblin | 17 | 900 | First floor, the dug-out cavern | Attacks anyone who comes close |
+| Fungus Eye | 19 | 900 | Second floor, the mould hall | Attacks from far away, on sight |
+| Burrow Brute | 21 | 1,700 | Second floor, the Queen's hall | Attacks anyone who comes close |
+| **Burrow Queen** (boss) | 24 | 16,000 | Second floor, the deepest hall | Boss: slam and blast like a field boss (see "Field bosses"); back 20–30 minutes after it falls |
+
+**The Burrow Queen** always drops the Queen's Jelly, a Mithril Ingot and a Star Crystal, often good gear (Burrow Blade, Fungus Staff, Tunnel Bow), rarely the **Queen's Charm** (6%), and very rarely the legendary **Burrow Ring** (2%, anyone can wear it) or its own card (2%). Four players beat it in a few minutes.
+
+**The Frozen Crypt** (level 46–54): the tombs of Frostfell's old kings, frozen solid. The portal is in Frostfell, down the path south of Frostfell's pier, with **Halvard the Dungeon Warden** next to it.
+
+| Monster | Lv | HP | Where | Behaviour |
+| --- | --- | --- | --- | --- |
+| Ice Bat | 46 | 3,000 | First floor, the first hall | Attacks anyone who comes close; plain attacks sometimes miss it |
+| Frozen Knight | 48 | 3,800 | First floor, the north hall | Attacks anyone who comes close |
+| Crypt Wraith | 50 | 3,900 | First floor, the north hall | Attacks anyone who comes close; plain attacks often miss it |
+| Ice Seer | 52 | 3,600 | Second floor, the long hall | Attacks from far away, on sight |
+| Ice Golem | 53 | 5,600 | Second floor, the upper hall | Only fights back |
+| **Crypt Lord** (boss) | 57 | 90,000 | Second floor, the throne room | Boss: slam and blast like a field boss (see "Field bosses"); back 20–30 minutes after it falls |
+
+**The Crypt Lord** always drops the Frozen Crown Shard, a Mithril Ingot and a Star Crystal, often good gear (Crypt Blade, Frost Glaive, Ice Seer's Staff, Crypt Bow), rarely the **Crypt Lord's Seal** (6%), and very rarely the legendary **Frozen Ring** (2%, anyone can wear it) or its own card (2%). Four players beat it in a few minutes.
+
+**The Magma Depths** (level 76–84): the burning heart of Ashpeak, with lava all round. The portal is in Ashpeak, north of the Cinder Colossus's crater, with **Ignis the Dungeon Warden** next to it.
+
+| Monster | Lv | HP | Where | Behaviour |
+| --- | --- | --- | --- | --- |
+| Lava Bat | 76 | 6,600 | First floor, the big cavern | Attacks anyone who comes close; plain attacks sometimes miss it |
+| Magma Crawler | 78 | 9,200 | First floor, the lava cavern | Only fights back |
+| Flame Priest | 80 | 6,800 | First floor, the lava cavern | Attacks from far away, on sight |
+| Molten Knight | 81 | 8,200 | Second floor, the first hall | Attacks anyone who comes close |
+| Obsidian Golem | 83 | 10,800 | Second floor, the deepest hall | Only fights back |
+| **Molten Drake** (boss) | 87 | 280,000 | Second floor, the deepest chamber | Boss: slam and blast like a field boss (see "Field bosses"); back 20–30 minutes after it falls |
+
+**The Molten Drake** always drops the Molten Heart, a Mithril Ingot and a Star Crystal, often good gear (Molten Blade, Drake Lance, Flame Priest's Staff, Magma Bow), rarely the **Drake's Eye** (6%), and very rarely the legendary **Ring of the Depths** (2%, anyone can wear it) or its own card (2%). Four players beat it in a few minutes.
 
 ## 6. Jobs and skills
 
@@ -695,14 +749,17 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Squire's Longsword | 10 | ATK +12 | Knight | 1 | Orin (job gift), Bram |
 | Rapier | 13 | ATK +17, Critical +3% | Novice, Knight | 2 | Grub, Night Bat |
 | Knight's Blade | 17 | ATK +25 | Knight | 2 | Ghost, Pumpking |
+| Burrow Blade | 18 | ATK +26, Critical +3% | Novice, Knight | 2 | Tunnel Bat, Fungus Eye, Burrow Queen (Hollow Burrows) |
 | Moonblade (epic) | 20 | ATK +32, Critical +6% | Novice, Knight | 2 | Pumpking |
 | Scimitar | 22 | ATK +30, Critical +3% | Novice, Knight | 2 | Goblin, Orc Warrior |
 | Katana | 27 | ATK +40, Critical +6% | Novice, Knight | 2 | Orc Skeleton, Orc Warlord |
 | Flame Blade | 36 | ATK +54, Critical +6% | Novice, Knight | 2 | Troll, Vampire, Minotaur King |
 | Ice Sword | 42 | ATK +60, Critical +3% | Novice, Knight | 2 | Yeti |
+| Crypt Blade | 50 | ATK +68, Critical +4% | Novice, Knight | 2 | Ice Bat, Ice Golem, Crypt Lord (Frozen Crypt) |
 | Gilded Blade | 52 | ATK +70, Critical +4% | Novice, Knight | 2 | Gargoyle |
 | Blossom Blade | 62 | ATK +84, Critical +5% | Novice, Knight | 2 | Moon Hare, Crow Blade |
 | Cinder Blade | 72 | ATK +96, Critical +5% | Novice, Knight | 2 | Ember Imp, Magma Golem |
+| Molten Blade | 80 | ATK +104, Critical +5% | Novice, Knight | 2 | Lava Bat, Obsidian Golem, Molten Drake (Magma Depths) |
 | Sun Blade | 82 | ATK +108, Critical +5% | Novice, Knight | 2 | Dune Stalker, Sand Golem |
 | Star Blade | 92 | ATK +120, Critical +6% | Novice, Knight | 2 | Void Bat, Crystal Golem |
 | Halberd (spear, both hands) | 25 | ATK +50 | Knight | 2 | Orc Warrior, Orc Warlord |
@@ -712,14 +769,17 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Trident (spear, both hands) | 37 | ATK +74, Critical +4% | Knight | 2 | Lizardman, Minotaur King |
 | Glacier Lance (spear, both hands) | 46 | ATK +88, Critical +4% | Knight | 2 | Ramhorn, Frost Drake, Frost Giant |
 | Frost Scythe (legendary, spear, both hands) | 48 | ATK +102, Critical +8% | Knight | 2 | Frost Giant |
+| Frost Glaive (spear, both hands) | 54 | ATK +100, Critical +4% | Knight | 2 | Frozen Knight, Crypt Lord (Frozen Crypt) |
 | Dark Lance (spear, both hands) | 56 | ATK +104, Critical +4% | Knight | 2 | Dark Knight, Flesh Golem, Fallen King |
 | Thunder Glaive (spear, both hands) | 66 | ATK +124, Critical +4% | Knight | 2 | Phantom Swordsman, Red Ogre, Ogre Warlord |
 | Magma Lance (spear, both hands) | 76 | ATK +140, Critical +4% | Knight | 2 | Obsidian Knight, Magma Golem, Cinder Colossus |
+| Drake Lance (spear, both hands) | 84 | ATK +152, Critical +4% | Knight | 2 | Magma Crawler, Molten Drake (Magma Depths) |
 | Sun Spear (spear, both hands) | 86 | ATK +158, Critical +4% | Knight | 2 | Tomb Warden, Sand Golem, Dune King |
 | Void Lance (spear, both hands) | 96 | ATK +176, Critical +4% | Knight | 2 | Star Knight, Crystal Golem, Star Tyrant |
 | Hunting Bow | 10 | ATK +9, reach 170 | Archer | 1 | Orin (job gift), Bram |
 | Recurve Bow | 12 | ATK +14, reach 190 | Archer | 2 | Snapper Flower |
 | Great Bow | 16 | ATK +23, reach 210 | Archer | 2 | Gazer, Pumpking |
+| Tunnel Bow | 18 | ATK +25 | Archer | 2 | Mole Goblin, Burrow Queen (Hollow Burrows) |
 | Composite Bow | 22 | ATK +30, reach 210 | Archer | 2 | Orc Archer |
 | Crossbow | 27 | ATK +40, Critical +4%, reach 220 | Archer | 2 | Orc Archer, Orc Warlord |
 | Longbow | 32 | ATK +46, reach 230 | Archer | 2 | Werewolf |
@@ -728,11 +788,13 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Frost Bow | 42 | ATK +54, reach 235 | Archer | 2 | Ramhorn |
 | Glacier Bow | 46 | ATK +66, Critical +4%, reach 245 | Archer | 2 | Frost Wight, Frost Giant |
 | Blood Bow | 52 | ATK +62, reach 245 | Archer | 2 | Wraith |
+| Crypt Bow | 52 | ATK +70, Critical +3% | Archer | 2 | Ice Seer, Crypt Lord (Frozen Crypt) |
 | Royal Bow | 56 | ATK +76, Critical +4%, reach 250 | Archer | 2 | Flesh Golem, Fallen King |
 | Petal Bow | 62 | ATK +74, reach 250 | Archer | 2 | Moon Hare |
 | Ogre-Bone Longbow | 66 | ATK +90, Critical +4%, reach 255 | Archer | 2 | Crow Blade, Red Ogre, Ogre Warlord |
 | Ember Bow | 72 | ATK +84, reach 255 | Archer | 2 | Ember Imp |
 | Obsidian Longbow | 76 | ATK +102, Critical +4%, reach 260 | Archer | 2 | Cinder Wraith, Magma Golem, Cinder Colossus |
+| Magma Bow | 82 | ATK +102, Critical +4% | Archer | 2 | Molten Knight, Molten Drake (Magma Depths) |
 | Sand Bow | 82 | ATK +94, reach 260 | Archer | 2 | Dune Stalker |
 | Sunbeam Longbow | 86 | ATK +114, Critical +4%, reach 265 | Archer | 2 | Desert Raider, Sand Golem, Dune King |
 | Moon Bow | 92 | ATK +104, reach 265 | Archer | 2 | Void Bat |
@@ -741,6 +803,7 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Gnarled Staff | 12 | ATK +14, MP +25, reach 160 | Mage | 2 | Snapper Flower |
 | Crystal Staff | 15 | ATK +19, MP +40, reach 170 | Mage | 2 | Snapper Flower |
 | Ember Staff | 16 | ATK +23, MP +50, reach 180 | Mage | 2 | Gazer, Pumpking |
+| Fungus Staff | 18 | ATK +25, MP +50 | Mage | 2 | Burrow Worm, Burrow Brute, Burrow Queen (Hollow Burrows) |
 | Ring Staff | 22 | ATK +30, MP +65, reach 190 | Mage | 2 | Goblin, Orc Archer |
 | Diamond Staff | 27 | ATK +40, MP +90, reach 200 | Mage | 2 | Orc Zombie, Orc Warlord |
 | Serpent Staff | 32 | ATK +46, MP +120, reach 210 | Mage | 2 | Lizardman |
@@ -749,11 +812,13 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Winter Staff | 42 | ATK +54, MP +160, reach 220 | Mage | 2 | Frost Shaman |
 | Aurora Staff | 46 | ATK +66, MP +220, reach 235 | Mage | 2 | Frost Drake, Frost Giant |
 | Bone Staff | 52 | ATK +62, MP +200, reach 230 | Mage | 2 | Lich |
+| Ice Seer's Staff | 52 | ATK +68, MP +220 | Mage | 2 | Crypt Wraith, Crypt Lord (Frozen Crypt) |
 | Soul Staff | 56 | ATK +76, MP +260, reach 240 | Mage | 2 | Lich, Flesh Golem, Fallen King |
 | Foxfire Staff | 62 | ATK +74, MP +240, reach 240 | Mage | 2 | Fox Spirit |
 | Storm Staff | 66 | ATK +90, MP +300, reach 245 | Mage | 2 | Fox Spirit, Red Ogre, Ogre Warlord |
 | Cinder Staff | 72 | ATK +84, MP +280, reach 245 | Mage | 2 | Salamander |
 | Magma Staff | 76 | ATK +102, MP +340, reach 250 | Mage | 2 | Salamander, Magma Golem, Cinder Colossus |
+| Flame Priest's Staff | 82 | ATK +100, MP +330 | Mage | 2 | Flame Priest, Molten Drake (Magma Depths) |
 | Djinn Staff | 82 | ATK +94, MP +320, reach 250 | Mage | 2 | Dust Djinn |
 | Sun Staff | 86 | ATK +114, MP +380, reach 255 | Mage | 2 | Dust Djinn, Sand Golem, Dune King |
 | Seer's Staff | 92 | ATK +104, MP +360, reach 255 | Mage | 2 | Astral Seer |
@@ -882,6 +947,12 @@ Second jobs wear their first job's gear: "Knight" below includes Lord Knights, "
 | Wolf Fang Necklace | Amulet | 34 | ATK +6, Critical +5% | Werewolf |
 | Deepstone Ring (legendary, anyone) | Ring | 34 | ATK +8, DEF +6, HP +150, Critical +3% | Cave Bat, Orc Shaman, Orc Chieftain (Orc Caves) |
 | Chieftain's Fang (epic) | Amulet | 36 | ATK +11, HP +160 | Orc Chieftain (Orc Caves) |
+| Queen's Charm (epic) | Amulet | 22 | ATK +6, HP +80 | Burrow Queen (Hollow Burrows) |
+| Burrow Ring (legendary, anyone) | Ring | 20 | ATK +4, DEF +3, HP +60, Critical +2% | Tunnel Bat, Fungus Eye, Burrow Queen (Hollow Burrows) |
+| Crypt Lord's Seal (epic) | Amulet | 56 | ATK +15, DEF +5, HP +240 | Crypt Lord (Frozen Crypt) |
+| Frozen Ring (legendary, anyone) | Ring | 54 | ATK +9, DEF +8, HP +220, Critical +3% | Ice Bat, Ice Seer, Crypt Lord (Frozen Crypt) |
+| Drake's Eye (epic) | Amulet | 86 | ATK +22, DEF +8, HP +370 | Molten Drake (Magma Depths) |
+| Ring of the Depths (legendary, anyone) | Ring | 84 | ATK +11, DEF +9, HP +280, Critical +4% | Lava Bat, Molten Knight, Molten Drake (Magma Depths) |
 | Minotaur Horn (epic) | Amulet | 40 | ATK +12, HP +180 | Minotaur King |
 | Snowflake Pendant | Amulet | 44 | ATK +7, MP +80, Critical +4% | Frost Shaman |
 | Frost Ring | Ring | 46 | ATK +3, DEF +5, HP +100 | Frost Wight |
@@ -937,6 +1008,24 @@ Ragnarok style: every monster very rarely drops **its own card**. A card goes in
 | Orc Shaman Card | Orc Shaman | Head | Firecaller | ATK +3, MP +60 | 1 in 1,000 |
 | Orc Guard Card | Orc Guard | Shield | Guarding | DEF +3, 12% of every monster hit bounces back | 1 in 1,000 |
 | Orc Chieftain Card (legendary) | Orc Chieftain | Legs | Chieftain's | ATK +6, DEF +4, HP +180 | 1 in 50 kills |
+| Tunnel Bat Card | Tunnel Bat | Feet | Fluttering | Evade +4% | 1 in 1,000 |
+| Burrow Worm Card | Burrow Worm | Armour | Thick-skinned | DEF +2, HP +60 | 1 in 1,000 |
+| Mole Goblin Card | Mole Goblin | Weapon | Digging | ATK +2, Critical +3% | 1 in 1,000 |
+| Fungus Eye Card | Fungus Eye | Head | Spore | ATK +2, MP +40 | 1 in 1,000 |
+| Burrow Brute Card | Burrow Brute | Shield | Brutish | DEF +2, HP +50 | 1 in 1,000 |
+| Burrow Queen Card (legendary) | Burrow Queen | Legs | Royal | ATK +3, DEF +2, HP +80 | 1 in 50 kills |
+| Ice Bat Card | Ice Bat | Feet | Frostwing | ATK +3, Evade +6% | 1 in 1,000 |
+| Frozen Knight Card | Frozen Knight | Shield | Frozen | DEF +3, Reflects 15% of damage | 1 in 1,000 |
+| Crypt Wraith Card | Crypt Wraith | Ring | Chilling | ATK +4, Evade +5% | 1 in 1,000 |
+| Ice Seer Card | Ice Seer | Head | Icebound | ATK +5, MP +90 | 1 in 1,000 |
+| Ice Golem Card | Ice Golem | Armour | Glacial | DEF +3, HP +230 | 1 in 1,000 |
+| Crypt Lord Card (legendary) | Crypt Lord | Legs | Crypt-born | ATK +8, DEF +5, HP +250 | 1 in 50 kills |
+| Lava Bat Card | Lava Bat | Feet | Scorched | ATK +5, Evade +6% | 1 in 1,000 |
+| Magma Crawler Card | Magma Crawler | Armour | Lava-shell | DEF +4, HP +300 | 1 in 1,000 |
+| Flame Priest Card | Flame Priest | Amulet | Fireborn | ATK +7, MP +120, Critical +4% | 1 in 1,000 |
+| Molten Knight Card | Molten Knight | Shield | Molten | DEF +4, Reflects 18% of damage | 1 in 1,000 |
+| Obsidian Golem Card | Obsidian Golem | Weapon | Obsidian | ATK +8, Critical +6% | 1 in 1,000 |
+| Molten Drake Card (legendary) | Molten Drake | Weapon | Drake-fire | ATK +12, HP +220, Critical +6% | 1 in 50 kills |
 | Yeti Card | Yeti | Legs | Shaggy | DEF +2, HP +120 | 1 in 1,000 |
 | Ramhorn Card | Ramhorn | Feet | Nimble | ATK +3, Evade +6% | 1 in 1,000 |
 | Frost Shaman Card | Frost Shaman | Head | Wintry | ATK +4, MP +60 | 1 in 1,000 |
@@ -1319,6 +1408,12 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 | Matador | Epic | Help defeat the Minotaur King 10 times |
 | Delver | Rare | Help defeat 300 Orc Guards in the Orc Caves |
 | Chieftain's Bane | Epic | Help defeat the Orc Chieftain 10 times |
+| Burrower | Rare | Help defeat 300 Burrow Brutes in the Hollow Burrows |
+| Queenslayer | Epic | Help defeat the Burrow Queen 10 times |
+| Cryptwalker | Rare | Help defeat 300 Ice Golems in the Frozen Crypt |
+| Lord of Frost | Epic | Help defeat the Crypt Lord 10 times |
+| Depth Diver | Rare | Help defeat 300 Obsidian Golems in the Magma Depths |
+| Drakeslayer | Epic | Help defeat the Molten Drake 10 times |
 | Dragonslayer | Rare | Help defeat 300 Frost Drakes |
 | Giantslayer ✦ | Epic | Help defeat the Frost Giant 10 times |
 | Exorcist | Rare | Help defeat 500 Wraiths |
@@ -1334,7 +1429,7 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 | **Collecting** | | |
 | Card Finder | Rare | Find a monster card |
 | Card Collector | Epic | Find 5 different monster cards |
-| Card Master ✦ | Legendary | Find every kind of monster card (64 so far) |
+| Card Master ✦ | Legendary | Find every kind of monster card (82 so far) |
 | Lucky | Epic | Find a legendary item |
 | **The forge** | | |
 | Shiny | Rare | Upgrade any gear to +7 |
@@ -1402,6 +1497,24 @@ Pioneer places are counted per level cap: when the cap goes up, the first 10 pla
 | Orc Shaman (Orc Caves) | 33 | 2,000 | 46 | 18 | 2,900 | 42–70 | Shaman's Staff, Deepstone Ring, White Potion, Mithril Ingot, Star Crystal |
 | Orc Guard (Orc Caves) | 35 | 3,200 | 48 | 32 | 3,900 | 46–76 | Orc Guard's Shield, Chieftain's Glaive, White Potion, Mithril Ingot, Star Crystal |
 | Orc Chieftain (Orc Caves) | 38 | 60,000 | 110 | 36 | 90,000 | 2,500–4,500 | See "Dungeons" |
+| Tunnel Bat (Hollow Burrows) | 14 | 700 | 15 | 8 | 560 | 16–26 | Orange Potion, Burrow Blade, Burrow Ring, Mithril Ingot, Star Crystal |
+| Burrow Worm (Hollow Burrows) | 16 | 1,250 | 24 | 18 | 820 | 18–30 | Orange Potion, Fungus Staff, Mithril Ingot, Star Crystal |
+| Mole Goblin (Hollow Burrows) | 17 | 900 | 21 | 12 | 860 | 20–32 | Orange Potion, Tunnel Bow, Mithril Ingot, Star Crystal |
+| Fungus Eye (Hollow Burrows) | 19 | 900 | 22 | 10 | 980 | 22–36 | Orange Potion, Burrow Blade, Burrow Ring, Mithril Ingot, Star Crystal |
+| Burrow Brute (Hollow Burrows) | 21 | 1,700 | 25 | 20 | 1,250 | 26–42 | Orange Potion, Fungus Staff, Mithril Ingot, Star Crystal |
+| Burrow Queen (Hollow Burrows) | 24 | 16,000 | 64 | 22 | 22,000 | 500–900 | See "Dungeons" |
+| Ice Bat (Frozen Crypt) | 46 | 3,000 | 42 | 26 | 7,000 | 56–92 | White Potion, Crypt Blade, Frozen Ring, Mithril Ingot, Star Crystal |
+| Frozen Knight (Frozen Crypt) | 48 | 3,800 | 58 | 34 | 7,800 | 58–98 | White Potion, Frost Glaive, Mithril Ingot, Star Crystal |
+| Crypt Wraith (Frozen Crypt) | 50 | 3,900 | 50 | 28 | 8,600 | 60–102 | White Potion, Ice Seer's Staff, Mithril Ingot, Star Crystal |
+| Ice Seer (Frozen Crypt) | 52 | 3,600 | 56 | 26 | 9,400 | 62–106 | White Potion, Crypt Bow, Frozen Ring, Mithril Ingot, Star Crystal |
+| Ice Golem (Frozen Crypt) | 53 | 5,600 | 92 | 40 | 10,400 | 66–110 | White Potion, Crypt Blade, Mithril Ingot, Star Crystal |
+| Crypt Lord (Frozen Crypt) | 57 | 90,000 | 165 | 50 | 200,000 | 4,000–7,000 | See "Dungeons" |
+| Lava Bat (Magma Depths) | 76 | 6,600 | 70 | 46 | 37,000 | 100–168 | Golden Potion, Molten Blade, Ring of the Depths, Mithril Ingot, Star Crystal |
+| Magma Crawler (Magma Depths) | 78 | 9,200 | 96 | 56 | 41,000 | 102–172 | Golden Potion, Drake Lance, Mithril Ingot, Star Crystal |
+| Flame Priest (Magma Depths) | 80 | 6,800 | 72 | 42 | 45,000 | 104–176 | Golden Potion, Flame Priest's Staff, Mithril Ingot, Star Crystal |
+| Molten Knight (Magma Depths) | 81 | 8,200 | 84 | 58 | 47,000 | 106–180 | Golden Potion, Magma Bow, Ring of the Depths, Mithril Ingot, Star Crystal |
+| Obsidian Golem (Magma Depths) | 83 | 10,800 | 140 | 62 | 54,000 | 110–186 | Golden Potion, Molten Blade, Mithril Ingot, Star Crystal |
+| Molten Drake (Magma Depths) | 87 | 280,000 | 250 | 78 | 800,000 | 14,000–24,000 | See "Dungeons" |
 | Yeti | 41 | 2,900 | 50 | 26 | 5,200 | 52–86 | Snow Hood, Fur Cloak, Ice Sword, White Potion, Mithril Ingot, Star Crystal |
 | Ramhorn | 43 | 3,300 | 66 | 34 | 5,900 | 54–90 | Frost Shield, Frost Greaves, Frost Bow, Glacier Lance, Mithril Ingot, Star Crystal |
 | Frost Shaman | 45 | 2,600 | 52 | 24 | 6,200 | 56–94 | Moon Hat, Winter Robe, Winter Staff, Snowflake Pendant, Mithril Ingot, Star Crystal |
@@ -1448,21 +1561,21 @@ Every monster also drops its own card (see Monster cards) and often potions.
 3. **Level 7–10:** Hornets in the east field. They attack on sight, so keep potions ready (Q).
 4. **Level 10:** Visit **Orin** just inside the south gate and choose your job. Spend your first skill point (K).
 5. **Level 10–14:** Snapper Flowers by the lake, or Grubs and Night Bats out of the **east gate**.
-6. **Level 14–20:** Rock Worms, Gazers and Ghosts deeper in Dusk Hollow. Use skills on Ghosts, since plain attacks often miss them.
+6. **Level 14–20:** Rock Worms, Gazers and Ghosts deeper in Dusk Hollow. Use skills on Ghosts, since plain attacks often miss them. Or go down into the **Hollow Burrows** (Lv 14–22), through the portal just south of Dusk Hollow's east road, with the **Burrow Queen** at the bottom.
 7. **Level 20:** Team up for the **Pumpking**. Save your Mithril and Star Crystals for **Hilda**, and aim for your first aura at +7. Ten Pumpking fights make you a **Kingslayer**.
 8. **Level 20–25:** Out of the **west gate** into the **Orc Woods**: Goblins in the grass north of the road, then Orc Warriors on the rocks south of it. Knights, try a **Halberd** from level 25.
 9. **Level 25–30:** Orc Archers up north, Orc Skeletons west of the inlet, and Orc Zombies far to the south. At 30, gather a party for the **Orc Warlord**.
 10. **Level 30–35:** Take the path north from the west road, past **Sable**, into the **Wildlands**, or, if you'd rather nobody could attack you, walk into the portal in the Orc Woods and down into the **Orc Caves** (level 28–36), with the **Orc Chieftain** at the bottom. Read her rules first: other players can attack you up there. Boarmen roam past the west path; Lizardmen past the east path only fight back. Bram's **White Potions** heal 250 HP.
 11. **Level 35–40:** Werewolves in the north-west woods, Trolls on the highlands, Vampires on the high ground to the north-east. From 40, bring a party for the **Minotaur King**, and watch your back.
 12. **Level 40–45:** Take the path east off the south road to **Edda**'s pier and sail to **Frostfell** (500 gold). Yetis jump you in the woods west of the pier; Ramhorns to the east only fight back. Then the Frost Shamans on the west shore: close in fast, they throw ice.
-13. **Level 45–50:** Frost Wights on the icy highlands and Frost Drakes in the east. At 50, bring a party of four for the **Frost Giant** at the end of the path. **Bjorn** sails you home for free.
+13. **Level 45–50:** Frost Wights on the icy highlands and Frost Drakes in the east. At 50, bring a party of four for the **Frost Giant** at the end of the path. **Bjorn** sails you home for free. If you'd rather nobody could attack you, go down into the **Frozen Crypt** (Lv 46–54) through the portal south of Frostfell's pier, with the **Crypt Lord** at the bottom.
 14. **Level 45–50:** Ask **Orin** about the **Trial of Mastery** at 45, and keep the Frostfell loot he asks for instead of selling it. At 50 he sends you to the **Isle of Trials**: beat your Shade (bring potions), then come back for your second job: **Lord Knight**, **Wizard** or **Hunter**. Spend your new points on the skills on keys 4–6.
 15. **Level 50–55:** Down the east road past the Pumpking to **Finn**'s boat, and over to **Ravenmoor** (800 gold). Wraiths in the woods by the pier dodge plain attacks: use your skills. Then the Gargoyles either side of the castle.
 16. **Level 55–60:** Dark Knights below the castle gate, Liches in the east, Flesh Golems in the south. At 60, bring a party of four into the castle for the **Fallen King**. **Corvin** rows you home for free.
 17. **Level 60–65:** Take the path east off the south road, straight on past Edda's pier, to **Marlow**'s ship on the meadow's east shore, and sail to **Petalfall** (1,200 gold). Moon Hares by the pier only fight back but dodge plain attacks: use your skills. Then the Fox Spirits in the north-west woods (close in fast, they throw fire) and the Crow Blades in the middle.
 18. **Level 65–70:** Phantom Swordsmen in the north-east, Red Ogres in the south (they only fight back, but they hit very hard). At 70, bring a party of four up the road to the **Ogre Warlord**'s camp. **Willow** sails you home for free.
 19. **Level 70–75:** Back to the meadow's east shore, where **Dorian** sails from Marlow's pier to **Ashpeak** (1,500 gold). Ember Imps swarm the rock north of the pier; Salamanders spit fire from the south-west slopes (close in fast). Then the Obsidian Knights along the north.
-20. **Level 75–80:** Cinder Wraiths in the east dodge plain attacks: use your skills. Magma Golems in the south only fight back, but they hit hardest of all. At 80, bring a party of four up the road to the **Cinder Colossus**'s crater. **Cassia** sails you home for free. At 75, ask **Orin** about your **third job** and keep the Ashpeak loot he asks for; at 80, beat your Shade on the Isle of Trials and become a **Paladin**, **Archmage** or **Ranger**.
+20. **Level 75–80:** Cinder Wraiths in the east dodge plain attacks: use your skills. Magma Golems in the south only fight back, but they hit hardest of all. At 80, bring a party of four up the road to the **Cinder Colossus**'s crater. **Cassia** sails you home for free. At 75, ask **Orin** about your **third job** and keep the Ashpeak loot he asks for; at 80, beat your Shade on the Isle of Trials and become a **Paladin**, **Archmage** or **Ranger**. Or go down into the **Magma Depths** (Lv 76–84), through the portal north of the crater, where the **Molten Drake** waits.
 21. **Level 80–90:** Switch to Bram's **Golden Potions** (from level 70). **Soren** sails from the same pier to **Sunscar** (1,800 gold). Dune Stalkers in the dunes dodge plain attacks; Dust Djinn throw hot wind from the north-west; then the Tomb Wardens and the Desert Raiders' camp in the east. At 90, bring a party for the **Dune King** in his temple.
 22. **Level 90–100:** **Lyra** sails to **Starfall** (2,200 gold), where it's always night. Void Bats swarm the south-west, Astral Seers cast from the north-west, Star Knights guard the north, Night Wisps drift along the east shore, and Crystal Golems in the south-east hit hardest of all. At 100, the **Star Tyrant** waits at his altar south of the lake: take your strongest party.
 
@@ -1472,7 +1585,7 @@ Sell your monster loot to Bram whenever your bag fills up, and sit down (X) to h
 
 ## 18. Coming next
 
-- **More dungeons**, one under each land, all the way up to level 100.
+- **More dungeons**, under the lands that don't have one yet.
 
 - **More castles** for the guild wars.
 

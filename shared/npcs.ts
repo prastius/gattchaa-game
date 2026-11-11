@@ -410,6 +410,45 @@ export const NPCS: NpcDef[] = [
     ],
   },
   {
+    // By the portal down to the Hollow Burrows.
+    id: "burrow-warden",
+    name: "Tilda",
+    title: "Dungeon Warden",
+    kind: "local",
+    look: look({ body: "female", hair: "braid", hairColor: "chestnut", skin: "light", top: "longsleeve", topColor: "green", bottom: "pants", bottomColor: "charcoal", shoes: "boots", shoesColor: "black", hat: "bandana", hatColor: "green" }),
+    ...at(303.5, 197.1),
+    dir: Dir.Right,
+    greeting:
+      "Down there are the Hollow Burrows (Lv 14–22), dug by goblins for their Burrow Queen. Nobody but the monsters can hurt you below. The first floor has Tunnel Bats, Burrow Worms and Mole Goblins; the stairs at the far end go down to the Fungus Eyes and the Burrow Brutes, and the Burrow Queen (Lv 24) in the deepest hall. Take friends for her, and step out of the red circles. Walk into the portal to go down.",
+    chatter: ["The Hollow Burrows are down there.", "No player can attack you underground.", "Step out of the red circles!", "Level 14–22. Down you go."],
+  },
+  {
+    // By the portal down to the Frozen Crypt.
+    id: "crypt-warden",
+    name: "Halvard",
+    title: "Dungeon Warden",
+    kind: "local",
+    look: look({ body: "male", hair: "long", hairColor: "white", beard: "trimmed", skin: "light", top: "longsleeve", topColor: "navy", bottom: "pants", bottomColor: "charcoal", shoes: "boots", shoesColor: "black", hat: "bandana", hatColor: "navy" }),
+    ...at(187, 423.1),
+    dir: Dir.Right,
+    greeting:
+      "Below us is the Frozen Crypt (Lv 46–54), where the old kings of Frostfell sleep, and not all of them quietly. The first floor has Ice Bats, Frozen Knights and Crypt Wraiths; the stairs go down to the Ice Seers, the Ice Golems, and the Crypt Lord (Lv 57) on his frozen throne. Take a party, and step out of the red circles. Walk into the portal to go down.",
+    chatter: ["The Frozen Crypt are down there.", "No player can attack you underground.", "Step out of the red circles!", "Level 46–54. Down you go."],
+  },
+  {
+    // By the portal down to the Magma Depths.
+    id: "depths-warden",
+    name: "Ignis",
+    title: "Dungeon Warden",
+    kind: "local",
+    look: look({ body: "male", hair: "messy", hairColor: "red", beard: "trimmed", skin: "bronze", top: "longsleeve", topColor: "black", bottom: "pants", bottomColor: "charcoal", shoes: "boots", shoesColor: "black", hat: "bandana", hatColor: "black" }),
+    ...at(577, 233.1),
+    dir: Dir.Right,
+    greeting:
+      "The portal leads down into the Magma Depths (Lv 76–84), the burning heart of Ashpeak. Lava Bats, Magma Crawlers and Flame Priests wait on the first floor; the stairs go down to the Molten Knights, the Obsidian Golems, and the Molten Drake (Lv 87) in the deepest chamber. Bring Golden Potions and a strong party, and step out of the red circles.",
+    chatter: ["The Magma Depths are down there.", "No player can attack you underground.", "Step out of the red circles!", "Level 76–84. Down you go."],
+  },
+  {
     // In the Orc Woods clearing, by the portal down to the Orc Caves.
     id: "cave-warden",
     name: "Brok",

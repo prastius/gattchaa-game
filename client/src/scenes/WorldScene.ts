@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { Callbacks, type Room } from "@colyseus/sdk";
-import { CHUNK_TILES, PLAYER_SPEED, TILE_SIZE, WORLD_PX_H, WORLD_PX_W, hash2, isWet, type World } from "../../../shared/world";
+import { CHUNK_TILES, PLAYER_SPEED, TILE_SIZE, WORLD_PX_W, hash2, isWet, type World } from "../../../shared/world";
 import {
   Dir,
   EMOTES,
@@ -20,7 +20,7 @@ import { CLASSES, JOB_LEVEL, aClass, isClassId, isMonsterId, jobTier, type Class
 import { SKILLS, type SkillId } from "../../../shared/skills";
 import { ITEMS, PICKUP_RANGE, RARITY, appearanceKey, cleanUpgrade, isItemId, parseCards } from "../../../shared/items";
 import { NPCS, type NpcDef } from "../../../shared/npcs";
-import { CASTLE, DOORS, DUNGEON_ZONE, DUST, GLOOM, HAZE, INTERIOR_ZONE, NIGHT, PROPS, RUINS, TOWN_AREA, biomeAt, inCastle, inRect } from "../../../shared/town";
+import { CASTLE, DOORS, DUNGEONS, DUST, OVERWORLD_H, GLOOM, HAZE, INTERIOR_ZONE, NIGHT, PROPS, RUINS, TOWN_AREA, biomeAt, inCastle, inRect } from "../../../shared/town";
 import { CASTLE_NAME, CRYSTAL, isGuardian } from "../../../shared/siege";
 import { emblemOf } from "../../../shared/guild";
 import { CharacterTextures, PlayerSprite } from "../PlayerSprite";
@@ -370,12 +370,12 @@ export class WorldScene extends Phaser.Scene {
     this.overlay("haze", HAZE, [78, 26, 10], 0.3);
     this.overlay("dust", DUST, [120, 90, 30], 0.16);
     this.overlay("night", NIGHT, [10, 14, 48], 0.5);
-    this.overlay("cave", DUNGEON_ZONE, [16, 10, 6], 0.42);
+    for (const d of DUNGEONS) this.overlay(`dungeon:${d.id}`, d.zone, d.shade, d.strength);
     createMonsterAnims(this);
     this.fx = new Fx(this, () => this.textRes);
 
     const cam = this.cameras.main;
-    cam.setBounds(0, 0, WORLD_PX_W, WORLD_PX_H);
+    cam.setBounds(0, 0, WORLD_PX_W, OVERWORLD_H * TILE_SIZE);
     cam.setBackgroundColor(OUTDOOR_BG);
     this.applyZoom();
     this.scale.on(Phaser.Scale.Events.RESIZE, () => this.applyZoom());
@@ -774,7 +774,9 @@ export class WorldScene extends Phaser.Scene {
     PlayerSprite.nightLight = this.daylight.lamps;
     this.critters.update(time, dt, this.cameras.main.worldView, this.daylight.night, this.indoors);
     const view = this.cameras.main.worldView;
-    const season = this.indoors ? "summer" : biomeAt(view.centerX / TILE_SIZE, view.centerY / TILE_SIZE);
+    // Underground there's no weather, except a dungeon's own (embers in the Magma Depths).
+    const below = DUNGEONS.find((d) => this.zone === d.zone);
+    const season = this.indoors ? "summer" : below ? (below.weather === "embers" ? "ash" : "summer") : biomeAt(view.centerX / TILE_SIZE, view.centerY / TILE_SIZE);
     this.snow.update(view, season === "winter");
     this.leaves.update(view, season === "autumn");
     this.petals.update(view, season === "spring");
@@ -1815,7 +1817,7 @@ export class WorldScene extends Phaser.Scene {
   private updateIndoors() {
     const self = this.self;
     if (!self) return;
-    const zone = [INTERIOR_ZONE, DUNGEON_ZONE].find((z) => inRect(z, self.x / TILE_SIZE, self.y / TILE_SIZE));
+    const zone = [INTERIOR_ZONE, ...DUNGEONS.map((d) => d.zone)].find((z) => inRect(z, self.x / TILE_SIZE, self.y / TILE_SIZE));
     if (zone === this.zone) return;
     this.zone = zone;
     this.indoors = zone === INTERIOR_ZONE;
@@ -1824,7 +1826,7 @@ export class WorldScene extends Phaser.Scene {
       cam.setBounds(zone.x * TILE_SIZE, zone.y * TILE_SIZE, zone.w * TILE_SIZE, zone.h * TILE_SIZE);
       cam.setBackgroundColor("#000000");
     } else {
-      cam.setBounds(0, 0, WORLD_PX_W, WORLD_PX_H);
+      cam.setBounds(0, 0, WORLD_PX_W, OVERWORLD_H * TILE_SIZE);
       cam.setBackgroundColor(OUTDOOR_BG);
     }
     this.hud.setIndoors(this.indoors);
@@ -1841,7 +1843,7 @@ export class WorldScene extends Phaser.Scene {
   private chunkAllowed(cx: number, cy: number): boolean {
     const within = (z: { x: number; y: number; w: number; h: number }) =>
       cx * CHUNK_TILES >= z.x && cy * CHUNK_TILES >= z.y && (cx + 1) * CHUNK_TILES <= z.x + z.w && (cy + 1) * CHUNK_TILES <= z.y + z.h;
-    return this.zone ? within(this.zone) : !within(INTERIOR_ZONE) && !within(DUNGEON_ZONE);
+    return this.zone ? within(this.zone) : !within(INTERIOR_ZONE) && !DUNGEONS.some((d) => within(d.zone));
   }
 
   private unloadChunk(chunk: Chunk) {
