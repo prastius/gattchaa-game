@@ -13,6 +13,12 @@ import { DEFAULT_SITE, type Announcement, type MarketListing, type ShopProduct, 
 //
 // Without GATTCHAA_API_URL the feed stays off and makes no requests at all;
 // the town still works, the shop dialogs just show menu links.
+//
+// API only, never scraping: this file is the only place the game server talks
+// to Gattchaa, and every request goes to the Town API (GATTCHAA_API_URL, which
+// must end in /api/town/v1) with the API key. No web page of gattchaaoripa.com
+// is ever fetched or parsed, in development or in production. Players' browsers
+// only open links to the site and show the images the API names.
 
 // Read at start-up (after Colyseus has loaded server/.env.<NODE_ENV>), not at import time.
 let API = "";
@@ -20,8 +26,24 @@ let API_KEY = "";
 let WEBHOOK_SECRET = "";
 let SITE = DEFAULT_SITE;
 let SIGNIN_URL = "";
+/** Whether a URL is the Town API (…/api/town/v1), and in production over HTTPS: anything else is refused. */
+export function isTownApi(url: string, production = process.env.NODE_ENV === "production"): boolean {
+  try {
+    const u = new URL(url);
+    if (production && u.protocol !== "https:") return false;
+    return (u.protocol === "https:" || u.protocol === "http:") && /\/api\/town\/v1$/.test(u.pathname.replace(/\/+$/, ""));
+  } catch {
+    return false;
+  }
+}
+
 function loadConfig() {
   API = (process.env.GATTCHAA_API_URL ?? "").replace(/\/+$/, "");
+  if (API && !isTownApi(API)) {
+    // Never pointed at a website page: the game reads the Town API and nothing else.
+    console.error(`[gattchaa] GATTCHAA_API_URL must be the Town API (https://…/api/town/v1), not "${API}". The Gattchaa link stays off.`);
+    API = "";
+  }
   API_KEY = process.env.GATTCHAA_API_KEY ?? "";
   WEBHOOK_SECRET = process.env.GATTCHAA_WEBHOOK_SECRET ?? "";
   SITE = (process.env.GATTCHAA_SITE_URL || DEFAULT_SITE).replace(/\/+$/, "");

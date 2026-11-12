@@ -461,9 +461,15 @@ Ragnarok's War of Emperium for one castle, **Crownhold**. The rules are in `shar
 
 ## Gattchaa shop data
 
-The stalls, machines, Rooms tables, big-pull announcements, signing in and player shops use the **Gattchaa Town API**, which the gattchaaoripa.com project provides. The blueprint for building it is in [docs/gattchaa-town-api.md](docs/gattchaa-town-api.md). The game server never scrapes the website.
+The stalls, machines, Rooms tables, big-pull announcements, signing in, Gattchaa Points and player shops use the **Gattchaa Town API**, which the gattchaaoripa.com project provides. The blueprint for building it is in [docs/gattchaa-town-api.md](docs/gattchaa-town-api.md).
 
-- Configure it in `server/.env.production` (see `server/.env.example`). Without `GATTCHAA_API_URL` the town still runs, but the shop panels only show links, and signing in and player shops are off.
+**API only, never scraping.** This is a rule for production and for development alike:
+
+- The game server talks to Gattchaa in one place, `server/src/gattchaa.ts`, and only to the Town API: `GATTCHAA_API_URL` must end in `/api/town/v1` (and be HTTPS in production), or the server refuses it at start-up (`isTownApi`) and leaves the link off. Every request carries the API key. No page of gattchaaoripa.com is ever downloaded or parsed for data, and new features that need Gattchaa's data get a new endpoint in the blueprint, not a scraper.
+- Gattchaa talks back only through signed webhooks (`POST /hooks/gattchaa`).
+- Players' browsers only talk to the game server, open links to gattchaaoripa.com in a new tab, and show the images the API names.
+
+- Configure it in `server/.env.production` (see `server/.env.example`). Without `GATTCHAA_API_URL` (or the Points endpoints) nobody can sign in or buy anything, so the town isn't open to players; it only runs for testing.
 - For local work without Laravel, run `npm run mock:gattchaa` next to `npm run dev`, with this `server/.env.development`:
 
   ```dotenv
