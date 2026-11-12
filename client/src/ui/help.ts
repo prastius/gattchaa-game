@@ -1,8 +1,8 @@
 import { audio } from "../audio";
 
 // The Help window (H, or the ? button): the Guide, the Town Rules, the Terms and
-// the Privacy Policy. They're plain pages in client/public/info/ (so they have
-// their own addresses too, linked from the start screen), shown here in a frame.
+// the Privacy Policy. They're plain pages in client/public/info/, at their own
+// addresses too (/guide, /rules, /terms, /privacy), shown here in a frame.
 
 export type HelpTab = "guide" | "rules" | "terms" | "privacy";
 export const HELP_TABS: [HelpTab, string][] = [
@@ -11,7 +11,7 @@ export const HELP_TABS: [HelpTab, string][] = [
   ["terms", "Terms"],
   ["privacy", "Privacy"],
 ];
-export const helpUrl = (tab: HelpTab, embed = false) => `/info/${tab}.html${embed ? "?embed=1" : ""}`;
+export const helpUrl = (tab: HelpTab, embed = false) => `/${tab}${embed ? "?embed=1" : ""}`;
 
 const $ = (id: string) => document.getElementById(id)!;
 

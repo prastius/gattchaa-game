@@ -33,9 +33,26 @@ function compressedFiles(dir: string): Set<string> {
   return found;
 }
 
+/** The info pages' plain addresses (/guide, /rules, /terms, /privacy) and their files (client/public/info). */
+const INFO = /^\/(guide|rules|terms|privacy)\/?$/;
+const INFO_FILE = /^\/info\/(guide|rules|terms|privacy)\.html$/;
+
 export function serveClient(app: Application, dist: string) {
   const root = path.resolve(dist);
   const compressed = compressedFiles(root);
+
+  // /guide shows info/guide.html; the old /info/guide.html address sends you to /guide.
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const query = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
+    const page = req.path.match(INFO);
+    if (page) {
+      req.url = `/info/${page[1]}.html${query}`;
+      return next();
+    }
+    const file = req.path.match(INFO_FILE);
+    if (file) return res.redirect(301, `/${file[1]}${query}`);
+    next();
+  });
 
   app.use((req: Request, res: Response, next: NextFunction) => {
     if ((req.method !== "GET" && req.method !== "HEAD") || req.headers.range) return next();

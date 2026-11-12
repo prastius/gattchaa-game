@@ -12,10 +12,10 @@ A browser-based multiplayer open world with customizable characters and live cha
 
 ```bash
 npm install
-npm run dev        # server on :2567, client on http://localhost:5173
+npm run dev:all    # server on :2567, client on http://localhost:5174, and the mock Gattchaa on :8787
 ```
 
-Open the page in two browser windows to see multiplayer and chat.
+Playing needs a Gattchaa account, so locally the **mock Gattchaa** stands in for the website (`server/.env.development` points at it; see "Gattchaa shop data"). Open http://localhost:5174, press **Sign in with Gattchaa**, pick a pretend user on the mock's page (Rina 25,000 Points, Budi 8,000, Sari 500; balances reset when the mock restarts), and you're back on the start screen, signed in: press **Enter town**. Use two browsers (or a private window) signed in as two users to see multiplayer, chat and player shops. `npm run dev` starts just the server and client (then run `npm run mock:gattchaa` yourself). Test commands like `/level 50` work outside production; `/points` only works when the server isn't linked to Gattchaa.
 
 | Control | Action |
 | --- | --- |
@@ -28,7 +28,7 @@ Open the page in two browser windows to see multiplayer and chat.
 | Click / tap loot on the ground | Walk over and pick it up |
 | I / bag button | Bag: wear gear, drink potions, put monster cards into gear, see your ATK and DEF |
 | Q / potion button | Drink a potion (the smallest one that heals you fully) |
-| 1–6 / skill buttons | Use your skills (once you're a Knight, Mage or Archer); aimed skills pick your target, or the nearest monster |
+| 1–9 / skill buttons | Use your skills (once you're a Knight, Mage or Archer); aimed skills pick your target, or the nearest monster |
 | K / lightning button | Skills: learn and level them with skill points |
 | X / chair button | Sit down where you stand; walking gets you up |
 | V / Open shop | Open your shop where you stand in the Market Square (signed-in players); while it's open: see it, or close it |
@@ -36,6 +36,7 @@ Open the page in two browser windows to see multiplayer and chat.
 | Enter | Open chat, then Enter again to send. Esc cancels. |
 | Wardrobe | Change your outfit at any time; everyone sees it |
 | Scroll / + − | Zoom |
+| H / ? button | Help: the Guide, the Town Rules, the Terms and the Privacy Policy (also at /guide, /rules, /terms, /privacy) |
 
 ## Production
 
@@ -463,7 +464,7 @@ Ragnarok's War of Emperium for one castle, **Crownhold**. The rules are in `shar
 
 The stalls, machines, Rooms tables, big-pull announcements, signing in, Gattchaa Points and player shops use the **Gattchaa Town API**, which the gattchaaoripa.com project provides. The blueprint for building it is in [docs/gattchaa-town-api.md](docs/gattchaa-town-api.md).
 
-**Help pages.** The Guide, the Town Rules, the Terms and the Privacy Policy are plain pages in `client/public/info/` (served at `/info/*.html`, sharing `info.css`). The start screen links to them, and the in-game Help window (`client/src/ui/help.ts`, **H** or the **?** button) shows them in a frame with `?embed=1`, which hides their own header (`embed.js`). The Terms and the Privacy Policy are marked as drafts: the highlighted parts (company name, contact, minimum age, governing law, hosting) must be filled in and checked by Gattchaa's legal team before launch. Keep the Privacy Policy in step with what the game really stores (section "Saved data").
+**Help pages.** The Guide, the Town Rules, the Terms and the Privacy Policy are plain pages in `client/public/info/` (sharing `info.css`), at plain addresses: `/guide`, `/rules`, `/terms` and `/privacy` (the Vite plugin in `client/vite.config.ts` and `server/src/static.ts` map them to the files, and send the old `/info/*.html` addresses there). The start screen links to them, and the in-game Help window (`client/src/ui/help.ts`, **H** or the **?** button) shows them in a frame with `?embed=1`, which hides their own header (`embed.js`). The Terms and the Privacy Policy are marked as drafts: the highlighted parts (company name, contact, minimum age, governing law, hosting) must be filled in and checked by Gattchaa's legal team before launch. Keep the Privacy Policy in step with what the game really stores (section "Saved data").
 
 **API only, never scraping.** This is a rule for production and for development alike:
 

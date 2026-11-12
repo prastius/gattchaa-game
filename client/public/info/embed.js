@@ -3,9 +3,11 @@
 (function () {
   if (!new URLSearchParams(location.search).has("embed")) return;
   document.body.classList.add("embedded");
-  for (const a of document.querySelectorAll("a[href^='/info/']")) {
-    a.href = a.getAttribute("href") + (a.getAttribute("href").includes("?") ? "&" : "?") + "embed=1";
+  const info = /^\/(guide|rules|terms|privacy)$/;
+  for (const a of document.querySelectorAll("a[href]")) {
+    const href = a.getAttribute("href");
+    if (info.test(href)) a.href = href + "?embed=1";
+    // Anything else (the art credits, the site) opens outside the game.
+    else a.target = "_blank";
   }
-  // Anything else (the art credits, the site) opens outside the game.
-  for (const a of document.querySelectorAll("a:not([href^='/info/'])")) a.target = "_blank";
 })();

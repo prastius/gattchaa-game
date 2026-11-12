@@ -16,7 +16,7 @@ The game has three parts:
 
 - **Sign in with Gattchaa** using your gattchaaoripa.com account: you need one to play (there are no guests, since everything in town is paid with your Gattchaa Points). The sign-in happens on the Gattchaa site, so the game never sees your password.
 - **Your character** (level, bag, gear and skills) is saved to your account, on any device.
-- **The rules.** Signing in means you agree to the **Terms** and the **Town Rules**; the **Privacy Policy** says what the game keeps. All three, and a short **Guide**, are in the game's Help window (**H**, or the **?** button) and linked from the start screen (`/info/guide.html`, `rules.html`, `terms.html`, `privacy.html`). The Terms and the Privacy Policy are drafts until Gattchaa's legal team has checked them. Only one window per account is allowed: opening a second one takes over from the first.
+- **The rules.** Signing in means you agree to the **Terms** and the **Town Rules**; the **Privacy Policy** says what the game keeps. All three, and a short **Guide**, are in the game's Help window (**H**, or the **?** button) and linked from the start screen (at `/guide`, `/rules`, `/terms` and `/privacy`). The Terms and the Privacy Policy are drafts until Gattchaa's legal team has checked them. Only one window per account is allowed: opening a second one takes over from the first.
 - **Your look.** Choose a body, hair, clothes and colours when you join. You can change them any time with the **Wardrobe** button. Gear you wear (helmets, armour, weapons…) shows on top of your look.
 - New players appear on the main avenue, between the fountain plaza and the Market Square.
 
