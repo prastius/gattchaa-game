@@ -3,6 +3,7 @@ import { Floor, biomeAt, caveAt, inRect, type Biome } from "../../../shared/town
 import { EMOTES, EMOTE_NAMES } from "../../../shared/protocol";
 import { FIELDS, fieldAt, inSafeZone } from "../../../shared/rpg";
 import { inPvpZone } from "../../../shared/pvp";
+import { inShopZone } from "../../../shared/vending";
 
 export interface Dot {
   x: number;
@@ -193,8 +194,13 @@ export class HUD {
     this.emoteBtn.setAttribute("aria-expanded", String(open));
   }
 
+  /** While you have a shop open. */
+  private vending = false;
+
   /** While you mind a shop the button opens it ("My shop"), and there's no Sit (you're already seated). */
   setVending(on: boolean) {
+    this.vending = on;
+    this.shopBtn.hidden = !on && this.shopBtn.hidden;
     this.shopLabel.textContent = on ? "My shop" : "Open shop";
     this.shopBtn.title = on ? "Your shop (V)" : "Open a shop in the Market Square (V)";
     this.sitBtn.hidden = on;
@@ -241,6 +247,8 @@ export class HUD {
       this.coords.textContent = `${Math.floor(self.x / TILE_SIZE)}, ${Math.floor(self.y / TILE_SIZE)}`;
       this.inField = !this.indoors && !inSafeZone(self.x, self.y);
       this.attackBtn.hidden = !this.inField;
+      // "Open shop" only where shops open (the Market Square), or to get back to yours.
+      this.shopBtn.hidden = !this.vending && (this.indoors || !inShopZone(self.x, self.y));
     }
     if (this.indoors) return;
 

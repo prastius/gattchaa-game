@@ -49,6 +49,8 @@ The game has three parts:
 | Help: the Guide, the Town Rules, the Terms and the Privacy Policy | **H**, or the **?** button | The **?** button |
 | Connection info | **F3** | |
 
+**The screen.** Top left: your character (HP, MP, EXP and your Gattchaa Points) and the monster you're fighting. Top right: where you are, the minimap, and a strip for music, sound, zoom and help. Under that, the **menu**: the attack and potion buttons when you're out among monsters, then your bag, skills, titles, guild, wardrobe, emotes and sit. It runs down the right edge on a big screen, and across, in two short rows, on a phone or a short screen. **Open shop** shows up only in the Market Square (or while your shop is open). Bottom left: the chat; bottom: your skill bar.
+
 Emotes are Ragnarok style and pop up over your head: Wave, Happy, LOL, Love, Wow, Sad, Angry, Nice, "!" and "?".
 
 ## 3. The town

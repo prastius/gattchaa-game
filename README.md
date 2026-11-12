@@ -130,7 +130,7 @@ client/       Phaser game
   src/world/monsterArt.ts  Monster sprite sheets and their animations; humanoid monsters' parts
   src/world/fx.ts          Damage numbers, slashes, level-up light, arrows and magic bolts, skill effects
   src/scenes/WorldScene.ts   Chunk streaming, water glints, input, camera, interpolation
-  src/ui/                  Creator, chat, HUD + minimap + emote picker, status panel (HP/MP/EXP), bag, skills (bar and window), NPC and shop panels, duels, the party panel, the guild window
+  src/ui/                  Creator, chat, HUD (minimap, the settings strip, the menu dock; `.dock` runs down the right edge, or across on phones and short screens) + emote picker, Help window, status panel (HP/MP/EXP), bag, skills (bar and window), NPC and shop panels, duels, the party panel, the guild window
   public/assets/           Downloaded art + manifest (committed)
 scripts/
   fetch-assets.mjs   Re-downloads the art from pinned commits and regenerates catalog + credits

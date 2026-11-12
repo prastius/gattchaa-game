@@ -161,12 +161,110 @@ button {
   stroke-linejoin: round;
 }
 
-.hud-row {
+/* Settings and help: a strip of small buttons under the minimap, in one panel like the menu. */
+.hud-sys {
+  pointer-events: auto;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 6px;
-  max-width: calc(100vw - 24px);
+  gap: 2px;
+  padding: 3px;
+  border-radius: 11px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+
+.hud-small {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border-color: transparent;
+  background: transparent;
+}
+
+.hud-small svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* The menu: one panel down the right edge, under the minimap. */
+.dock {
+  pointer-events: auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 5px;
+  border-radius: 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.dock .hud-button {
+  width: 40px;
+  height: 40px;
+  border-color: transparent;
+  background: transparent;
+}
+
+.dock .hud-button:hover {
+  background: var(--panel-raised);
+}
+
+/* Fighting buttons (outside town): coloured, and set off from the menu below. */
+.dock .dock-act {
+  background: rgba(235, 130, 36, 0.16);
+  border-color: rgba(235, 130, 36, 0.45);
+  color: #ffc58a;
+}
+
+.dock .dock-act:hover {
+  background: rgba(235, 130, 36, 0.28);
+}
+
+/* The emote picker opens to the left of the menu. */
+.dock .emote-picker {
+  position: absolute;
+  right: calc(100% + 8px);
+  bottom: 0;
+}
+
+/* Short screens (a laptop at 720 px, a phone on its side): the menu runs across instead of down. */
+@media (max-height: 760px) {
+  .dock {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: calc(100vw - 24px);
+  }
+  .dock .emote-picker {
+    right: 0;
+    bottom: auto;
+    top: calc(100% + 8px);
+  }
+}
+
+/* Phones: the menu is a block of two rows (five, then four) under the settings, clear of the skill bar and the chat. */
+@media (max-width: 600px) {
+  .dock {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    width: calc(5 * 38px + 4 * 4px + 2 * 5px + 2px);
+    max-width: none;
+  }
+  .dock .emote-picker {
+    right: 0;
+    bottom: auto;
+    top: calc(100% + 8px);
+  }
+}
+
+/* A phone on its side: a smaller map (and see the end of this file for the skill bar and chat). */
+@media (max-height: 520px) {
+  #minimap {
+    width: 112px;
+    height: 112px;
+  }
 }
 
 .hud-icon {
@@ -1915,13 +2013,9 @@ button {
     width: 112px;
     height: 112px;
   }
-  /* Phones: the wardrobe button is just its shirt icon, so the buttons fit on fewer rows. */
-  #wardrobe-btn {
+  .dock .hud-button {
     width: 38px;
-    padding: 0;
-  }
-  #wardrobe-btn span {
-    display: none;
+    height: 38px;
   }
   .emote-picker {
     grid-template-columns: repeat(5, 38px);
@@ -3459,5 +3553,17 @@ button.dialog-link:disabled {
     flex-wrap: wrap;
     justify-content: flex-end;
     width: calc(5 * 46px + 4 * 4px + 2 * 4px + 2px);
+  }
+}
+
+/* A phone on its side: a smaller skill bar and chat, so both fit across the bottom.
+   (Last in the file, so it wins over the usual sizes above.) */
+@media (max-height: 520px) {
+  .skill-slot {
+    width: 38px;
+    height: 38px;
+  }
+  #chat {
+    width: min(330px, calc(100vw - 24px));
   }
 }

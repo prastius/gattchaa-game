@@ -43,24 +43,29 @@
         <span id="coords" class="hud-place">0, 0</span>
       </div>
       <canvas id="minimap" width="168" height="168"></canvas>
-      <div class="hud-row">
-        <button id="music-btn" class="hud-button hud-icon" type="button" aria-label="Music" title="Music"><svg><use href="#i-music" /></svg></button>
-        <button id="sound-btn" class="hud-button hud-icon" type="button" aria-label="Sound effects" title="Sound effects"><svg><use href="#i-sound" /></svg></button>
-        <button id="zoom-out-btn" class="hud-button hud-icon" type="button" aria-label="Zoom out" title="Zoom out (-)"><svg><use href="#i-zoom-out" /></svg></button>
-        <button id="zoom-in-btn" class="hud-button hud-icon" type="button" aria-label="Zoom in" title="Zoom in (+)"><svg><use href="#i-zoom-in" /></svg></button>
-        <button id="attack-btn" class="hud-button hud-icon" type="button" aria-label="Attack the nearest monster" title="Attack the nearest monster (Space)" hidden><svg><use href="#i-sword" /></svg></button>
-        <button id="potion-btn" class="hud-button hud-icon hud-counted" type="button" aria-label="Drink a potion" title="Drink a potion (Q)" hidden><svg><use href="#i-potion" /></svg><span id="potion-count" class="hud-count">0</span></button>
+      <!-- Settings and help: a small strip under the minimap. -->
+      <div class="hud-sys" role="toolbar" aria-label="Settings">
+        <button id="music-btn" class="hud-button hud-icon hud-small" type="button" aria-label="Music" title="Music"><svg><use href="#i-music" /></svg></button>
+        <button id="sound-btn" class="hud-button hud-icon hud-small" type="button" aria-label="Sound effects" title="Sound effects"><svg><use href="#i-sound" /></svg></button>
+        <button id="zoom-out-btn" class="hud-button hud-icon hud-small" type="button" aria-label="Zoom out" title="Zoom out (-)"><svg><use href="#i-zoom-out" /></svg></button>
+        <button id="zoom-in-btn" class="hud-button hud-icon hud-small" type="button" aria-label="Zoom in" title="Zoom in (+)"><svg><use href="#i-zoom-in" /></svg></button>
+        <button id="help-btn" class="hud-button hud-icon hud-small" type="button" aria-label="Help, rules and terms" title="Help, rules and terms (H)"><svg><use href="#i-help" /></svg></button>
+      </div>
+      <!-- Only in the Market Square (or while you have a shop open). -->
+      <button id="shop-btn" class="hud-button hud-accent" type="button" title="Open a shop in the Market Square (V)" hidden><svg><use href="#i-shop" /></svg><span id="shop-label">Open shop</span></button>
+      <!-- The menu: a column down the right edge. Fighting buttons first, when they apply. -->
+      <nav id="dock" class="dock" aria-label="Menu">
+        <button id="attack-btn" class="hud-button hud-icon dock-act" type="button" aria-label="Attack the nearest monster" title="Attack the nearest monster (Space)" hidden><svg><use href="#i-sword" /></svg></button>
+        <button id="potion-btn" class="hud-button hud-icon hud-counted dock-act" type="button" aria-label="Drink a potion" title="Drink a potion (Q)" hidden><svg><use href="#i-potion" /></svg><span id="potion-count" class="hud-count">0</span></button>
         <button id="bag-btn" class="hud-button hud-icon" type="button" aria-label="Bag" title="Bag (I)"><svg><use href="#i-bag" /></svg></button>
         <button id="skills-btn" class="hud-button hud-icon hud-counted" type="button" aria-label="Skills" title="Skills (K)"><svg><use href="#i-skills" /></svg><span id="skills-count" class="hud-count" hidden>0</span></button>
         <button id="titles-btn" class="hud-button hud-icon hud-counted" type="button" aria-label="Titles" title="Titles (T)"><svg><use href="#i-medal" /></svg><span id="titles-new" class="hud-count" hidden>0</span></button>
         <button id="guild-btn" class="hud-button hud-icon" type="button" aria-label="Guild" title="Guild (G)"><svg><use href="#i-shield" /></svg></button>
-        <button id="sit-btn" class="hud-button hud-icon" type="button" aria-label="Sit down or stand up" title="Sit (X)"><svg><use href="#i-sit" /></svg></button>
-        <button id="help-btn" class="hud-button hud-icon" type="button" aria-label="Help, rules and terms" title="Help, rules and terms (H)"><svg><use href="#i-help" /></svg></button>
+        <button id="wardrobe-btn" class="hud-button hud-icon" type="button" aria-label="Wardrobe" title="Wardrobe: change your look" hidden><svg><use href="#i-shirt" /></svg></button>
         <button id="emote-btn" class="hud-button hud-icon" type="button" aria-label="Emotes" aria-expanded="false" title="Emotes"><svg><use href="#i-smile" /></svg></button>
-        <button id="shop-btn" class="hud-button hud-accent" type="button" title="Open a shop in the Market Square (V)"><svg><use href="#i-shop" /></svg><span id="shop-label">Open shop</span></button>
-        <button id="wardrobe-btn" class="hud-button" type="button" hidden><svg><use href="#i-shirt" /></svg><span>Wardrobe</span></button>
-      </div>
-      <div id="emotes" class="emote-picker" hidden></div>
+        <button id="sit-btn" class="hud-button hud-icon" type="button" aria-label="Sit down or stand up" title="Sit (X)"><svg><use href="#i-sit" /></svg></button>
+        <div id="emotes" class="emote-picker" hidden></div>
+      </nav>
       <pre id="diag" hidden></pre>
     </div>
 
