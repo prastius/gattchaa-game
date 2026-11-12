@@ -463,6 +463,8 @@ Ragnarok's War of Emperium for one castle, **Crownhold**. The rules are in `shar
 
 The stalls, machines, Rooms tables, big-pull announcements, signing in, Gattchaa Points and player shops use the **Gattchaa Town API**, which the gattchaaoripa.com project provides. The blueprint for building it is in [docs/gattchaa-town-api.md](docs/gattchaa-town-api.md).
 
+**Help pages.** The Guide, the Town Rules, the Terms and the Privacy Policy are plain pages in `client/public/info/` (served at `/info/*.html`, sharing `info.css`). The start screen links to them, and the in-game Help window (`client/src/ui/help.ts`, **H** or the **?** button) shows them in a frame with `?embed=1`, which hides their own header (`embed.js`). The Terms and the Privacy Policy are marked as drafts: the highlighted parts (company name, contact, minimum age, governing law, hosting) must be filled in and checked by Gattchaa's legal team before launch. Keep the Privacy Policy in step with what the game really stores (section "Saved data").
+
 **API only, never scraping.** This is a rule for production and for development alike:
 
 - The game server talks to Gattchaa in one place, `server/src/gattchaa.ts`, and only to the Town API: `GATTCHAA_API_URL` must end in `/api/town/v1` (and be HTTPS in production), or the server refuses it at start-up (`isTownApi`) and leaves the link off. Every request carries the API key. No page of gattchaaoripa.com is ever downloaded or parsed for data, and new features that need Gattchaa's data get a new endpoint in the blueprint, not a scraper.

@@ -14,6 +14,7 @@ import { StatusPanel } from "./ui/status";
 import { BagPanel } from "./ui/bag";
 import { SkillsUI } from "./ui/skills";
 import { TitlesUI } from "./ui/titles";
+import { HelpUI } from "./ui/help";
 import { DuelUI } from "./ui/duel";
 import { PartyUI } from "./ui/party";
 import { GuildUI } from "./ui/guild";
@@ -181,6 +182,14 @@ function start(room: Awaited<ReturnType<typeof joinWorld>>, name: string) {
   const bag = new BagPanel(net);
   const skills = new SkillsUI(net);
   const titles = new TitlesUI(net);
+  // Help (H, or the ? button): the Guide, the Rules, the Terms and the Privacy Policy.
+  const help = new HelpUI();
+  $("help-btn").addEventListener("click", () => help.toggle());
+  window.addEventListener("keydown", (e) => {
+    const t = e.target as HTMLElement | null;
+    const typing = t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement || Boolean(t?.isContentEditable);
+    if ((e.key === "h" || e.key === "H") && !e.repeat && !typing) help.toggle();
+  });
   const duel = new DuelUI(net, chat);
   const party = new PartyUI(net);
   const guild = new GuildUI(net);

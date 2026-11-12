@@ -1,0 +1,206 @@
+/* Gattchaa Town's info pages: the Guide, the Rules, the Terms and the Privacy Policy.
+   Plain pages, served at /info/*.html and shown in the game's Help window. */
+
+:root {
+  --bg: #15110e;
+  --panel: #1f1914;
+  --ink: #f3ece4;
+  --ink-dim: #b9ab9c;
+  --accent: #f08a24;
+  --line: rgba(255, 255, 255, 0.09);
+  --note: rgba(240, 138, 36, 0.12);
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Inside the game's Help window there's no page header: the window has its own tabs. */
+body.embedded header.site {
+  display: none;
+}
+
+header.site {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+}
+
+header.site a.brand {
+  color: var(--ink);
+  font-weight: 800;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+header.site nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+
+header.site nav a {
+  color: var(--ink-dim);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+header.site nav a[aria-current="page"] {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 22px 20px 48px;
+}
+
+body.embedded main {
+  padding: 4px 16px 32px;
+}
+
+h1 {
+  margin: 0 0 4px;
+  font-size: 26px;
+  line-height: 1.25;
+}
+
+.updated {
+  margin: 0 0 18px;
+  color: var(--ink-dim);
+  font-size: 13px;
+}
+
+h2 {
+  margin: 28px 0 8px;
+  font-size: 19px;
+  color: var(--accent);
+}
+
+h3 {
+  margin: 18px 0 6px;
+  font-size: 16px;
+}
+
+p,
+ul,
+ol {
+  margin: 0 0 12px;
+}
+
+ul,
+ol {
+  padding-left: 22px;
+}
+
+li {
+  margin: 3px 0;
+}
+
+a {
+  color: #ffb36b;
+}
+
+strong {
+  color: #fff;
+}
+
+kbd {
+  display: inline-block;
+  min-width: 1.6em;
+  padding: 0 5px;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: #2a221b;
+  font: 12px/1.6 ui-monospace, monospace;
+  text-align: center;
+}
+
+table {
+  width: 100%;
+  margin: 0 0 14px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th,
+td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  color: var(--ink-dim);
+  font-weight: 600;
+}
+
+/* Tables scroll sideways on a phone instead of squashing. */
+.table {
+  overflow-x: auto;
+}
+
+.note {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  background: var(--note);
+}
+
+/* Draft legal text: what Gattchaa's legal team must fill in or confirm before launch. */
+.draft {
+  margin: 0 0 18px;
+  padding: 10px 14px;
+  border: 1px dashed #e0b04a;
+  border-radius: 8px;
+  background: rgba(224, 176, 74, 0.1);
+  color: #f2d590;
+  font-size: 14px;
+}
+
+mark {
+  padding: 0 3px;
+  border-radius: 3px;
+  background: rgba(224, 176, 74, 0.25);
+  color: #ffe2a0;
+}
+
+footer.site {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 20px 32px;
+  color: var(--ink-dim);
+  font-size: 13px;
+}
+
+body.embedded footer.site {
+  display: none;
+}
+
+@media (max-width: 520px) {
+  body {
+    font-size: 14.5px;
+  }
+  h1 {
+    font-size: 22px;
+  }
+  main {
+    padding: 16px 16px 40px;
+  }
+}

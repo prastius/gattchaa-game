@@ -15,7 +15,8 @@ The game has three parts:
 ## 1. Getting started
 
 - **Sign in with Gattchaa** using your gattchaaoripa.com account: you need one to play (there are no guests, since everything in town is paid with your Gattchaa Points). The sign-in happens on the Gattchaa site, so the game never sees your password.
-- **Your character** (level, bag, gear and skills) is saved to your account, on any device. Only one window per account is allowed: opening a second one takes over from the first.
+- **Your character** (level, bag, gear and skills) is saved to your account, on any device.
+- **The rules.** Signing in means you agree to the **Terms** and the **Town Rules**; the **Privacy Policy** says what the game keeps. All three, and a short **Guide**, are in the game's Help window (**H**, or the **?** button) and linked from the start screen (`/info/guide.html`, `rules.html`, `terms.html`, `privacy.html`). The Terms and the Privacy Policy are drafts until Gattchaa's legal team has checked them. Only one window per account is allowed: opening a second one takes over from the first.
 - **Your look.** Choose a body, hair, clothes and colours when you join. You can change them any time with the **Wardrobe** button. Gear you wear (helmets, armour, weapons…) shows on top of your look.
 - New players appear on the main avenue, between the fountain plaza and the Market Square.
 
@@ -33,7 +34,7 @@ The game has three parts:
 | Talk to your guild only | Type **/g** and your message in the chat | The same |
 | Attack your duel opponent | Click them, or **Space** | Tap them, or the sword button |
 | Attack a player in the Battle Pit | Click them | Tap them |
-| Use a skill | Keys **1** to **6**, or the skill buttons | The skill buttons (above the chat) |
+| Use a skill | Keys **1** to **9**, or the skill buttons | The skill buttons (above the chat) |
 | Drink a potion | **Q** | The potion button |
 | Bag and equipment | **I** | The bag button |
 | Skills window | **K** | The skills button |
@@ -45,6 +46,7 @@ The game has three parts:
 | Chat | **Enter**, type, Enter again | Tap the chat box |
 | Zoom | **+** and **−**, or the mouse wheel | The zoom buttons |
 | Close a window, or stop attacking | **Esc** | The × button |
+| Help: the Guide, the Town Rules, the Terms and the Privacy Policy | **H**, or the **?** button | The **?** button |
 | Connection info | **F3** | |
 
 Emotes are Ragnarok style and pop up over your head: Wave, Happy, LOL, Love, Wow, Sad, Angry, Nice, "!" and "?".
