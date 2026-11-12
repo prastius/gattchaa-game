@@ -53,7 +53,7 @@ export const PlayerShop = schema(
     owner: t.string(),
     /** How many cards are listed on the Gattchaa marketplace (shown on the sign). */
     cards: t.uint16(),
-    /** How many different things from the bag are still for sale, for gold (shown on the sign too). */
+    /** How many different things from the bag are still for sale, for Points (shown on the sign too). */
     items: t.uint8().default(0),
     /** Bumped when the listings or the stock change, so open shop panels reload. */
     rev: t.uint16(),

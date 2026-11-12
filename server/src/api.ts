@@ -9,8 +9,8 @@ import { feed } from "./gattchaa";
 //                               sends the player back to the game with ?ticket=…
 //   POST /api/auth/ticket    -> swaps that one-time ticket for a game session token
 //   POST /api/auth/logout    -> ends the session
-//   GET  /api/shops/:id      -> a player shop's things for gold and Gattchaa cards, for the shop panel
-//   GET  /api/market         -> everything for gold in every shop (the Market Keeper's search)
+//   GET  /api/shops/:id      -> a player shop's things for Points and Gattchaa cards, for the shop panel
+//   GET  /api/market         -> everything for Points in every shop (the Market Keeper's search)
 
 const TICKET_RE = /^[A-Za-z0-9_-]{16,128}$/;
 const SIGNIN_ATTEMPTS_PER_MIN = 10;

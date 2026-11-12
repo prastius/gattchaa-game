@@ -90,6 +90,9 @@ interface ApiEvent {
 }
 
 /** A Gattchaa user, from a redeemed sign-in ticket. */
+/** How a Points move went: done (with the payer's balance after it, when Gattchaa says), not enough Points, or Gattchaa unreachable. */
+export type PointsResult = { ok: true; points?: number } | { ok: false; why: "short" | "offline"; points?: number };
+
 export interface GattchaaUser {
   id: string;
   displayName: string;
@@ -260,6 +263,44 @@ export class GattchaaFeed {
     const body = (await res.json()) as { data?: { user_id?: unknown; display_name?: unknown } } | null;
     const id = text(body?.data?.user_id, 40);
     return id ? { id, displayName: text(body?.data?.display_name, 40) || "Collector" } : null;
+  }
+
+  // ---------------------------------------------------------------- Points (see shared/points.ts)
+
+  /** A user's Points balance. Undefined when Gattchaa can't be reached. */
+  async points(userId: string): Promise<number | undefined> {
+    const res = await this.fetchJson(`/users/${encodeURIComponent(userId)}/points`);
+    const n = res && res !== "not-modified" ? (res.body as { data?: { points?: unknown } } | null)?.data?.points : undefined;
+    return typeof n === "number" && Number.isFinite(n) ? Math.max(0, Math.floor(n)) : undefined;
+  }
+
+  /**
+   * Moves Points: `charge` takes them from a user (a purchase), `refund` gives back what a
+   * charge took (it couldn't be delivered), `transfer` pays one user from another (a player
+   * shop). Every call has a unique `ref`, so a retry never moves Points twice.
+   */
+  async movePoints(
+    kind: "charge" | "refund" | "transfer",
+    body: { user_id?: string; from_user_id?: string; to_user_id?: string; amount: number; reason: string; ref: string; charge_ref?: string },
+  ): Promise<PointsResult> {
+    if (!this.enabled) return { ok: false, why: "offline" };
+    try {
+      const res = await fetch(`${API}/points/${kind}`, {
+        method: "POST",
+        headers: { Accept: "application/json", "Content-Type": "application/json", Authorization: `Bearer ${API_KEY}` },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      });
+      const json = (await res.json().catch(() => null)) as { data?: { points?: unknown; from_points?: unknown } } | null;
+      const left = json?.data?.points ?? json?.data?.from_points;
+      const points = typeof left === "number" ? left : undefined;
+      if (res.status === 409) return { ok: false, why: "short", points };
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return { ok: true, points };
+    } catch (err) {
+      console.warn(`[gattchaa] POST /points/${kind} failed: ${(err as Error).message}`);
+      return { ok: false, why: "offline" };
+    }
   }
 
   /**

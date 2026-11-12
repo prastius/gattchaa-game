@@ -117,7 +117,8 @@ export interface StatsMessage {
   exp: number;
   mp: number;
   mmp: number;
-  gold: number;
+  /** Your Gattchaa Points, as Gattchaa last said (missing: not known right now). See shared/points.ts. */
+  balance?: number;
   /** Attack and defence, equipment and buffs included. */
   atk: number;
   def: number;
@@ -217,7 +218,7 @@ export type FxEvent =
   | { k: "down"; t: string }
   | { k: "lvup"; t: string; lv: number }
   /** Only to the player who earned it. */
-  | { k: "gain"; exp: number; gold: number }
+  | { k: "gain"; exp: number }
   /** Only to the player who picked it up (or bought it). */
   | { k: "loot"; item: string; n: number }
   /** A potion (or anything else) healed someone. */

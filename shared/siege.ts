@@ -45,13 +45,12 @@ export const SIEGE_WHEN = "every Wednesday and Saturday, 8 to 9 pm Batam time";
 /** The day a tribute counts for: one a day per member, from midnight Batam time. */
 export const tributeDay = (ms: number) => Math.floor((ms + BATAM_MS) / DAY_MS);
 
-/** What the castle pays each member of its guild once a day. */
+/** What the castle gives each member of its guild once a day: things, never Points (the game never makes Points). */
 export const TRIBUTE = {
-  gold: [3_000, 6_000] as [number, number],
   items: [
-    ["mithril", 2],
+    ["mithril", 3],
     ["starCrystal", 1],
-    ["whitePotion", 10],
+    ["whitePotion", 15],
   ] as [string, number][],
   /** A second Star Crystal now and then. */
   extraCrystal: 0.25,
@@ -59,8 +58,6 @@ export const TRIBUTE = {
   card: 0.03,
   /** Free bag slots needed to take it. */
   slots: 4,
-  /** Gold the castle also pays into its guild's purse each time a member collects. */
-  purse: 2_000,
 };
 
 /** Where players wake up after being beaten in the siege, and where everyone else is put when the castle changes hands. */
@@ -90,7 +87,7 @@ export const GUARDIAN_POSTS: readonly GuardianPost[] = [
   { kind: "castleKnight", x: 401, y: 74, dir: Dir.Down, where: "Crystal" },
   { kind: "castleArcher", x: 393, y: 78, dir: Dir.Right, where: "Crystal" },
 ];
-/** What one costs to hire, out of the guild's purse. */
+/** What one costs to hire, in the hiring officer's Gattchaa Points. */
 export const GUARDIAN_COST: Record<GuardianKind, number> = { castleKnight: 5_000, castleArcher: 4_000 };
 export const isGuardian = (kind: string): kind is GuardianKind => kind === "castleKnight" || kind === "castleArcher";
 
@@ -100,8 +97,6 @@ export interface CastleGuards {
   posts: number[];
   /** Why you can't hire one right now ("" = you can). */
   why: string;
-  /** Gold in the guild's purse (0 unless it's your guild that holds the castle). */
-  purse: number;
 }
 
 /** server -> client: the Herald's answer to collecting the tribute. */

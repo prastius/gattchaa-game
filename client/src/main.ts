@@ -69,7 +69,11 @@ preloadCharacterArt();
 // Shop data (products, rooms) starts loading right away so the town is stocked on arrival.
 const shop = new Shop();
 
-// ---------------------------------------------------------------- Gattchaa account (optional)
+// ---------------------------------------------------------------- Gattchaa account (required)
+//
+// The town is played with a Gattchaa Oripa account: its money is the player's
+// Gattchaa Points (shared/points.ts), so there are no guests. A dev build keeps
+// a guest button for test servers started with ALLOW_GUESTS=1.
 
 const auth = new Auth();
 const accountEl = $("account");
@@ -80,15 +84,21 @@ const signOutBtn = $<HTMLButtonElement>("signout-btn");
 let canSignIn = false;
 
 function renderAccount() {
-  accountEl.hidden = !auth.signedIn && !canSignIn;
+  accountEl.hidden = false;
   signInBtn.hidden = auth.signedIn;
+  signInBtn.disabled = !canSignIn;
   signOutBtn.hidden = !auth.signedIn;
+  // No account, no town: only a dev build may walk in as a guest (on a test server that allows it).
+  joinBtn.hidden = !auth.signedIn && !import.meta.env.DEV;
+  if (!joinBtn.disabled) joinBtn.textContent = auth.signedIn ? "Enter town" : "Enter as guest (test server)";
   if (auth.signedIn) {
     const who = document.createElement("strong");
     who.textContent = auth.displayName || "your Gattchaa account";
-    accountStatus.replaceChildren("Signed in as ", who, ". Your level is saved, and you can open a shop in the Market Square that stays open while you're away.");
+    accountStatus.replaceChildren("Signed in as ", who, ". Your level and items are saved to your account, and you pay with your Gattchaa Points.");
+  } else if (canSignIn) {
+    accountStatus.textContent = "Gattchaa Town is played with your Gattchaa Oripa account: sign in to enter. Your level and items are saved to it, and everything in town is paid for with your Gattchaa Points.";
   } else {
-    accountStatus.textContent = "Playing as a guest. Sign in with your Gattchaa account to keep your level and open your own shop in town.";
+    accountStatus.textContent = "Signing in with Gattchaa isn't available right now. Please try again in a little while.";
   }
 }
 signInBtn.addEventListener("click", () => (location.href = auth.signInUrl));
@@ -138,9 +148,14 @@ $("login-form").addEventListener("submit", async (e) => {
     start(room, name);
   } catch (err) {
     console.error(err);
-    errorEl.textContent = "Could not reach the game server. Is it running?";
+    const why = String((err as Error)?.message ?? "");
+    if (why.includes("SIGN_IN_EXPIRED")) {
+      auth.forget();
+      errorEl.textContent = "Your Gattchaa sign-in has expired. Please sign in again.";
+    } else if (why.includes("SIGN_IN_REQUIRED")) errorEl.textContent = "Please sign in with your Gattchaa Oripa account to enter the town.";
+    else errorEl.textContent = "Could not reach the game server. Please try again in a moment.";
     joinBtn.disabled = false;
-    joinBtn.textContent = "Enter town";
+    renderAccount();
   }
 });
 
@@ -159,7 +174,7 @@ function start(room: Awaited<ReturnType<typeof joinWorld>>, name: string) {
   room.onMessage("auth", (info: AuthInfo) => {
     if (!info.expired) return;
     auth.forget();
-    chat.addSystem("Your Gattchaa sign-in has expired. Sign in again on the start screen to open a shop.");
+    chat.addSystem("Your Gattchaa sign-in has expired. Sign in again on the start screen.");
   });
   const vending = new Vending(room, auth);
   const dialog = new TownDialog(shop, vending, net);

@@ -82,6 +82,16 @@ const USERS = [
   { id: "1003", name: "Sari", note: "nothing listed yet" },
 ];
 
+/** Gattchaa Points balances (on the real site they live in Gattchaa's own database). */
+const balances = new Map<string, number>([
+  ["1001", 25_000],
+  ["1002", 8_000],
+  ["1003", 500],
+]);
+/** Points moves already made, by `ref`: a retry gets the same answer and moves nothing twice. */
+const moves = new Map<string, { status: number; body: unknown; amount: number; user: string }>();
+const validAmount = (n: unknown): n is number => Number.isInteger(n) && (n as number) > 0 && (n as number) <= 10_000_000;
+
 const CARDS: [title: string, category: string, price: number, condition: string, grade: string | null][] = [
   ["Charizard ex SAR 201/165", "Pokemon JP", 2_450_000, "Near Mint", null],
   ["Pikachu Illustration Rare", "Pokemon JP", 850_000, "Near Mint", "PSA 10"],
@@ -186,6 +196,53 @@ http
       }
       res.writeHead(200, { "Content-Type": "application/json" }).end(JSON.stringify({ data: { user_id: user.id, display_name: user.name } }));
       return;
+    }
+    // Gattchaa Points: the balance, and charge / refund / transfer (docs/gattchaa-town-api.md, section 8).
+    const wallet = url.pathname.match(/^\/api\/town\/v1\/users\/([^/]+)\/points$/);
+    if (wallet) {
+      const id = decodeURIComponent(wallet[1]);
+      if (!balances.has(id)) return void res.writeHead(404, { "Content-Type": "application/json" }).end(JSON.stringify({ message: "Unknown user." }));
+      return void res.writeHead(200, { "Content-Type": "application/json" }).end(JSON.stringify({ data: { points: balances.get(id) } }));
+    }
+    const move = url.pathname.match(/^\/api\/town\/v1\/points\/(charge|refund|transfer)$/);
+    if (move && req.method === "POST") {
+      const b = (await readJson(req)) as Record<string, unknown>;
+      const reply = (status: number, body: unknown) => res.writeHead(status, { "Content-Type": "application/json" }).end(JSON.stringify(body));
+      const ref = String(b.ref ?? "");
+      const done = moves.get(ref);
+      if (done) return void reply(done.status, done.body);
+      if (!ref || !validAmount(b.amount)) return void reply(422, { message: "A ref and a whole, positive amount are needed." });
+      const amount = b.amount;
+      const remember = (status: number, body: unknown, user: string) => {
+        moves.set(ref, { status, body, amount, user });
+        reply(status, body);
+      };
+      if (move[1] === "charge") {
+        const user = String(b.user_id ?? "");
+        const have = balances.get(user);
+        if (have === undefined) return void reply(404, { message: "Unknown user." });
+        if (have < amount) return void remember(409, { message: "Not enough Points.", data: { points: have } }, user);
+        balances.set(user, have - amount);
+        console.log(`points: ${user} paid ${amount} (${b.reason})`);
+        return void remember(200, { data: { points: have - amount } }, user);
+      }
+      if (move[1] === "refund") {
+        const charge = moves.get(String(b.charge_ref ?? ""));
+        const user = String(b.user_id ?? "");
+        if (!charge || charge.status !== 200 || charge.user !== user || amount > charge.amount) return void reply(422, { message: "No such charge to refund." });
+        balances.set(user, (balances.get(user) ?? 0) + amount);
+        console.log(`points: ${user} refunded ${amount} (${b.reason})`);
+        return void remember(200, { data: { points: balances.get(user) } }, user);
+      }
+      const from = String(b.from_user_id ?? "");
+      const to = String(b.to_user_id ?? "");
+      const have = balances.get(from);
+      if (have === undefined || !balances.has(to) || from === to) return void reply(404, { message: "Unknown user." });
+      if (have < amount) return void remember(409, { message: "Not enough Points.", data: { from_points: have } }, from);
+      balances.set(from, have - amount);
+      balances.set(to, (balances.get(to) ?? 0) + amount);
+      console.log(`points: ${from} paid ${to} ${amount} (${b.reason})`);
+      return void remember(200, { data: { from_points: have - amount, to_points: balances.get(to) } }, from);
     }
     const seller = url.pathname.match(/^\/api\/town\/v1\/users\/([^/]+)\/listings$/);
     if (seller) return send(res, req, { data: listings[decodeURIComponent(seller[1])] ?? [] });

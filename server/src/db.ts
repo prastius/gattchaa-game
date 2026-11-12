@@ -4,15 +4,15 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { DatabaseSync } from "node:sqlite";
 import { RATING_START, ratingChange, type ArenaRow } from "../../shared/duels";
-import { cleanStack, itemName, type ItemStack } from "../../shared/items";
-import { cleanWares, stackText, type ShopWare } from "../../shared/vending";
+import { cleanStack, type ItemStack } from "../../shared/items";
+import { cleanWares, type ShopWare } from "../../shared/vending";
 import type { PitBoard, PitRow } from "../../shared/pvp";
 import { GUILD_LOG_MAX, type GuildBoard, type GuildBoardRow, type GuildLogLine, type GuildRank } from "../../shared/guild";
 
 // Saved game data, in one SQLite file: no database server to run, and a backup
 // is a copy of the file. Holds Gattchaa-linked accounts, their sign-in
 // sessions, their characters' progress, the player shops open in town (and
-// what they sell), mail: gold and items waiting for their owner, and guilds.
+// what they sell), mail: news of sales and items waiting for their owner, and guilds.
 //
 // Default file: server/data/town.db (same relative path from src/ and build/).
 // DB_PATH overrides it. Live backup: sqlite3 server/data/town.db ".backup town-backup.db"
@@ -39,24 +39,26 @@ export interface ShopRow {
   openedAt: number;
   /** When the shop closes because its owner is away; null while they're in town. */
   expiresAt: number | null;
-  /** Things from the bag for gold, as JSON (null = cards only). */
+  /** Things from the bag for Gattchaa Points, as JSON (null = cards only). */
   wares: string | null;
 }
 
-/** Gold or an item waiting for an account: a sale while they were away, or their shop's leftovers. */
+/** News of a sale, or an item, waiting for an account: a sale while they were away, their shop's leftovers, or something they bought that didn't fit. */
 export interface Mail {
   id: number;
-  gold: number;
+  /** A sale's Points, for the news only: Gattchaa already paid them to the seller (the column is still called gold). */
+  points: number;
   item: ItemStack | null;
   /** A sale: "Mira bought Iron Ingot ×5" ("" for leftovers). */
   note: string;
 }
 
-/** What buying from a shop did: the buyer gets `item`, the seller (an account) `gold`. */
+/** What buying from a shop took out of it: the buyer gets `item`, for `points`, from the seller (an account). */
 export interface Sale {
   item: ItemStack;
-  gold: number;
+  points: number;
   seller: number;
+  sellerGattchaaId: string;
   /** What's left in the shop afterwards. */
   wares: ShopWare[];
 }
@@ -90,7 +92,6 @@ export interface Progress {
   /** null = full (a fresh character, or saved at full health). */
   hp: number | null;
   mp: number | null;
-  gold: number;
   /** The bag and worn equipment as JSON (null = nothing yet). Checked item by item when loaded. */
   bag: string | null;
   gear: string | null;
@@ -259,10 +260,15 @@ const MIGRATIONS = [
    CREATE INDEX pit_wins ON pit (wins DESC);
    CREATE INDEX pit_week ON pit (week, week_wins DESC);
    ALTER TABLE accounts ADD COLUMN glory INTEGER NOT NULL DEFAULT 0;`,
+  // v16: gold is gone; the game's money is the player's Gattchaa Points (shared/points.ts). A test
+  // wallet for servers not linked to Gattchaa (never used in production), and the gold that old
+  // sales left waiting in the mail is worth nothing now. (characters.gold and guilds.purse stay, unused.)
+  `ALTER TABLE accounts ADD COLUMN dev_points INTEGER NOT NULL DEFAULT 0;
+   DELETE FROM mail WHERE item IS NULL;`,
 ];
 
 const ACCOUNT_COLS = "id, gattchaa_id AS gattchaaId, display_name AS displayName, name, look";
-const PROGRESS_COLS = "class AS cls, level AS lv, exp, hp, mp, gold, bag, gear, skills, deeds, titles, trial";
+const PROGRESS_COLS = "class AS cls, level AS lv, exp, hp, mp, bag, gear, skills, deeds, titles, trial";
 const SHOP_COLS = "account_id AS accountId, id, x, y, title, opened_at AS openedAt, expires_at AS expiresAt, wares";
 const GUILD_COLS = "g.id, g.name, g.emblem, g.notice, g.purse, g.sieges, g.crystals";
 
@@ -365,12 +371,12 @@ export class Db {
   saveProgress(accountId: number, p: Progress) {
     this.db
       .prepare(
-        `INSERT INTO characters (account_id, class, level, exp, hp, mp, gold, bag, gear, skills, deeds, titles, trial, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `INSERT INTO characters (account_id, class, level, exp, hp, mp, bag, gear, skills, deeds, titles, trial, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT(account_id) DO UPDATE SET class = excluded.class, level = excluded.level, exp = excluded.exp,
-           hp = excluded.hp, mp = excluded.mp, gold = excluded.gold, bag = excluded.bag, gear = excluded.gear,
+           hp = excluded.hp, mp = excluded.mp, bag = excluded.bag, gear = excluded.gear,
            skills = excluded.skills, deeds = excluded.deeds, titles = excluded.titles, trial = excluded.trial, updated_at = excluded.updated_at`,
       )
-      .run(accountId, p.cls, p.lv, p.exp, p.hp, p.mp, p.gold, p.bag, p.gear, p.skills, p.deeds, p.titles, p.trial, Date.now());
+      .run(accountId, p.cls, p.lv, p.exp, p.hp, p.mp, p.bag, p.gear, p.skills, p.deeds, p.titles, p.trial, Date.now());
   }
 
   // ------------------------------------------------------------ the arena
@@ -463,6 +469,15 @@ export class Db {
       me.week = { name: mineWeek.name, wins: mineWeek.wins, rank: above + 1 };
     }
     return { week: weekly, all, me };
+  }
+
+  /** The test wallet (servers not linked to Gattchaa; see server/src/points.ts). */
+  devPoints(accountId: number): number {
+    return (this.db.prepare("SELECT dev_points AS p FROM accounts WHERE id = ?").get(accountId) as { p: number } | undefined)?.p ?? 0;
+  }
+
+  setDevPoints(accountId: number, points: number) {
+    this.db.prepare("UPDATE accounts SET dev_points = ? WHERE id = ?").run(Math.max(0, Math.floor(points)), accountId);
   }
 
   /** An account's Glory. */
@@ -567,39 +582,17 @@ export class Db {
     this.db.prepare("UPDATE guilds SET notice = ? WHERE id = ?").run(notice, guildId);
   }
 
-  /** A member gives gold to their guild's purse. */
-  giveToPurse(guildId: number, accountId: number, who: string, gold: number) {
-    this.transaction(() => {
-      this.db.prepare("UPDATE guilds SET purse = purse + ? WHERE id = ?").run(gold, guildId);
-      this.db.prepare("UPDATE guild_members SET given = given + ? WHERE account_id = ?").run(gold, accountId);
-      this.logPurse(guildId, who, "gave gold", gold);
-    });
-  }
-
-  /** Gold from nobody in particular (a castle's tribute): not worth a line in the history. */
-  addToPurse(guildId: number, gold: number) {
-    this.db.prepare("UPDATE guilds SET purse = purse + ? WHERE id = ?").run(gold, guildId);
-  }
-
-  /** Pays out of the purse. False, with nothing paid, when it doesn't hold that much. */
-  spendPurse(guildId: number, who: string, what: string, gold: number): boolean {
-    return this.transaction(() => {
-      if (!this.db.prepare("UPDATE guilds SET purse = purse - ? WHERE id = ? AND purse >= ?").run(gold, guildId, gold).changes) return false;
-      this.logPurse(guildId, who, what, -gold);
-      return true;
-    });
-  }
-
-  private logPurse(guildId: number, who: string, what: string, gold: number) {
-    this.db.prepare("INSERT INTO guild_log (guild_id, at, who, what, gold) VALUES (?, ?, ?, ?, ?)").run(guildId, Date.now(), who, what, gold);
+  /** A line in the guild's history (a guardian hired, and the Points the member paid for it). */
+  logGuild(guildId: number, who: string, what: string, points: number) {
+    this.db.prepare("INSERT INTO guild_log (guild_id, at, who, what, gold) VALUES (?, ?, ?, ?, ?)").run(guildId, Date.now(), who, what, points);
     this.db
       .prepare("DELETE FROM guild_log WHERE guild_id = ? AND id NOT IN (SELECT id FROM guild_log WHERE guild_id = ? ORDER BY id DESC LIMIT ?)")
       .run(guildId, guildId, GUILD_LOG_MAX);
   }
 
-  /** The purse's history, newest first. */
-  purseLog(guildId: number): GuildLogLine[] {
-    return this.db.prepare("SELECT at, who, what, gold FROM guild_log WHERE guild_id = ? ORDER BY id DESC").all(guildId) as unknown as GuildLogLine[];
+  /** The guild's history, newest first. */
+  guildLog(guildId: number): GuildLogLine[] {
+    return this.db.prepare("SELECT at, who, what, gold AS points FROM guild_log WHERE guild_id = ? ORDER BY id DESC").all(guildId) as unknown as GuildLogLine[];
   }
 
   /** A guild held its castle as a siege ended. Returns how many it has won now. */
@@ -695,11 +688,10 @@ export class Db {
   }
 
   /**
-   * Buys up to `n` of ware number `ware` from a shop, if it's still there at
-   * the price the buyer saw. The seller's gold goes to their mail. Check the
-   * buyer can pay and carry it first, then hand it over.
+   * Takes `n` of a ware out of a shop for a buyer, if it's still there at the price they saw.
+   * The Points move afterwards (through Gattchaa); if they can't, `restock` puts it back.
    */
-  buyWare(shopId: string, ware: number, n: number, seen: { item: string; price: number }, buyer: string): Sale | string {
+  takeWare(shopId: string, ware: number, n: number, seen: { item: string; price: number }): Sale | string {
     return this.transaction(() => {
       const row = this.shop(shopId);
       if (!row) return "This shop has just closed.";
@@ -708,14 +700,38 @@ export class Db {
       if (!w || w.item.id !== seen.item || w.price !== seen.price) return "That's no longer for sale. Have another look.";
       if (w.item.n <= 0) return "Sold out!";
       const k = Math.min(Math.max(1, Math.floor(n)), w.item.n);
-      const gold = w.price * k;
       const item = { ...w.item, n: k };
       w.item.n -= k;
       w.sold += k;
       this.db.prepare("UPDATE shops SET wares = ? WHERE account_id = ?").run(JSON.stringify(wares), row.accountId);
-      this.addMail(row.accountId, { gold, note: `${buyer} bought ${stackText(itemName(item), k)}` });
-      return { item, gold, seller: row.accountId, wares };
+      const seller = this.db.prepare("SELECT gattchaa_id AS g FROM accounts WHERE id = ?").get(row.accountId) as { g: string };
+      return { item, points: w.price * k, seller: row.accountId, sellerGattchaaId: seller.g, wares };
     });
+  }
+
+  /** Puts a taken ware back (the buyer's Points didn't move). Returns what the shop has now, or undefined if it closed meanwhile. */
+  restock(shopId: string, ware: number, n: number): ShopWare[] | undefined {
+    return this.transaction(() => {
+      const row = this.shop(shopId);
+      if (!row) return undefined;
+      const wares = parseWares(row.wares);
+      const w = wares[ware];
+      if (!w) return undefined;
+      w.item.n += n;
+      w.sold = Math.max(0, w.sold - n);
+      this.db.prepare("UPDATE shops SET wares = ? WHERE account_id = ?").run(JSON.stringify(wares), row.accountId);
+      return wares;
+    });
+  }
+
+  /** Tells a seller about a sale when they're next in town (the Points are already theirs). */
+  saleNews(accountId: number, points: number, note: string) {
+    this.addMail(accountId, { gold: points, note });
+  }
+
+  /** Something bought that didn't fit in the buyer's bag waits in their mail. */
+  mailItem(accountId: number, item: ItemStack) {
+    this.addMail(accountId, { item });
   }
 
   // ------------------------------------------------------------ mail
@@ -748,9 +764,9 @@ export class Db {
       const del = this.db.prepare("DELETE FROM mail WHERE id = ?");
       for (const r of rows) {
         const item = r.item ? cleanStack(parse(r.item)) : null;
-        const m: Mail = { id: r.id, gold: Math.max(0, r.gold), item, note: r.note };
+        const m: Mail = { id: r.id, points: Math.max(0, r.gold), item, note: r.note };
         // An item that no longer exists in the game is dropped rather than kept forever.
-        if (r.item && !item && m.gold === 0) {
+        if (r.item && !item && m.points === 0) {
           del.run(r.id);
           continue;
         }

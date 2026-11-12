@@ -1,3 +1,4 @@
+import { pointsText } from "../../../shared/points";
 import {
   BAG_SIZE,
   ITEMS,
@@ -9,7 +10,6 @@ import {
   cardFits,
   gearBonus,
   itemName,
-  sellPrice,
   upgradeText,
   type ItemDef,
   type ItemStack,
@@ -44,7 +44,7 @@ const cardsFor = (it: ItemDef) => Object.values(ITEMS).filter((c) => cardFits(c,
 
 export class BagPanel {
   private root = $("bag");
-  private gold = $("bag-gold");
+  private points = $("bag-points");
   private stats = $("bag-stats");
   private detail = $("bag-detail");
   private portrait = $("bag-portrait") as HTMLCanvasElement;
@@ -268,7 +268,7 @@ export class BagPanel {
   private renderTotals() {
     const st = this.net.stats;
     const h = this.health?.();
-    this.gold.textContent = (st?.gold ?? 0).toLocaleString("en-US");
+    this.points.textContent = st?.balance === undefined ? "–" : pointsText(st.balance);
     const parts = [`ATK ${st?.atk ?? "–"}`, `DEF ${st?.def ?? "–"}`];
     if (h) parts.push(`HP ${h.hp}/${h.mhp}`);
     if (st) parts.push(`MP ${st.mp}/${st.mmp}`);
@@ -343,10 +343,6 @@ export class BagPanel {
     if (upgrade) lines.push(this.p("bag-bonus bag-upgrade", `Upgraded ${upgrade}`));
     if (it.slots) lines.push(this.cardList(s, it));
     lines.push(this.p("bag-desc", it.desc));
-    const price = sellPrice(it);
-    if (s.cards) lines.push(this.p("bag-price", "Merchants won't buy it: the cards would be lost."));
-    else if (s.up) lines.push(this.p("bag-price", "Merchants won't buy upgraded gear."));
-    else if (price > 0) lines.push(this.p("bag-price", `Merchants pay ${price} gold${s.n > 1 ? " each" : ""}.`));
 
     const buttons = document.createElement("div");
     buttons.className = "bag-actions";

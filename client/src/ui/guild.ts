@@ -1,9 +1,8 @@
 import { CLASSES, isClassId } from "../../../shared/rpg";
 import { CASTLE_NAME } from "../../../shared/siege";
 import {
-  GUILD_FOUND_GOLD,
+  GUILD_FOUND_POINTS,
   GUILD_FOUND_LV,
-  GUILD_GIFT_MIN,
   GUILD_MAX,
   GUILD_NOTICE_MAX,
   GuildRank,
@@ -31,7 +30,7 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, className = "", text?
   return e;
 }
 
-const gold = (n: number) => n.toLocaleString("en-US");
+import { pointsLabel, pointsText } from "../../../shared/points";
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
 
 /** "5 min ago", "3 h ago", "2 days ago". */
@@ -58,8 +57,6 @@ export class GuildUI {
   /** Editing the notice right now (so a refresh doesn't throw away what you're typing). */
   private editing = false;
   /** What you've typed as a gift to the purse, and the box you type it in. */
-  private gift = "";
-  private giftBox?: HTMLInputElement;
   /** A button waiting for its second click ("Sure?"), and when that runs out. */
   private confirm?: { key: string; until: number };
 
@@ -71,7 +68,7 @@ export class GuildUI {
     net.onGuild.add((g) => {
       this.guild = g;
       if (!g) this.editing = false;
-      if (this.isOpen && !this.editing && document.activeElement !== this.giftBox) this.render();
+      if (this.isOpen && !this.editing) this.render();
     });
     net.onGuildAsk.add((ev) => this.showAsk(ev));
   }
@@ -102,7 +99,6 @@ export class GuildUI {
     this.root.hidden = true;
     this.editing = false;
     this.confirm = undefined;
-    this.gift = "";
   }
 
   /**
@@ -129,7 +125,7 @@ export class GuildUI {
         el(
           "p",
           "skills-hint",
-          `Ask a guild's leader or an officer to invite you, or found your own: Leopold, the Guild Registrar on the main street just east of the fountain plaza, founds one for ${GUILD_FOUND_GOLD.toLocaleString("en-US")} gold from level ${GUILD_FOUND_LV}.`,
+          `Ask a guild's leader or an officer to invite you, or found your own: Leopold, the Guild Registrar on the main street just east of the fountain plaza, founds one for ${pointsLabel(GUILD_FOUND_POINTS)} from level ${GUILD_FOUND_LV}.`,
         ),
         el("p", "skills-hint", "Guild mates wear their guild's name and emblem over their heads, talk on their own chat (/g), and never fight each other in the Battle Pit."),
       );
@@ -154,7 +150,7 @@ export class GuildUI {
     this.list.append(banner);
 
     this.list.append(this.noticeBox(g));
-    this.list.append(this.purseBox(g));
+    if (g.log.length) this.list.append(this.historyBox(g));
 
     this.list.append(el("p", "titles-group", "Members"));
     for (const m of g.members) this.list.append(this.memberRow(g, m));
@@ -165,7 +161,6 @@ export class GuildUI {
       foot.append(el("p", "skills-hint", "You lead the guild. To leave, make another member the leader first."));
     } else {
       foot.append(this.confirmButton(alone ? "close" : "leave", alone ? "Close the guild" : "Leave the guild", "guild-leave", () => this.net.leaveGuild()));
-      if (alone && g.purse > 0) foot.append(el("p", "skills-hint", `Closing the guild loses the ${gold(g.purse)} gold in its purse.`));
     }
     foot.append(el("p", "skills-hint", "Type /g and a message to talk to everyone in your guild who's online."));
     this.list.append(foot);
@@ -214,46 +209,20 @@ export class GuildUI {
     return box;
   }
 
-  /** The purse: what's in it, the box to give gold, and where the gold went. */
-  private purseBox(g: GuildMessage): HTMLElement {
+  /** The guild's history: the guardians its leader and officers hired, and what they paid. */
+  private historyBox(g: GuildMessage): HTMLElement {
     const box = el("div", "guild-purse");
     const head = el("div", "guild-purse-head");
-    head.append(el("span", "", "Guild purse"), el("b", "", `${gold(g.purse)} gold`));
-    const input = el("input", "guild-give-input");
-    input.inputMode = "numeric";
-    input.autocomplete = "off";
-    input.placeholder = `Gold to give (${GUILD_GIFT_MIN}+)`;
-    input.value = this.gift;
-    this.giftBox = input;
-    const give = this.confirmButton("give", "Give", "title-hide", () => {
-      this.net.giveGuild(Number(this.gift));
-      this.gift = "";
-      this.render();
-    }, "A gift to the purse is the guild's for good: nobody can take it back out");
-    const check = () => {
-      const n = Number(this.gift);
-      give.disabled = n < GUILD_GIFT_MIN || n > (this.net.stats?.gold ?? 0);
-    };
-    input.addEventListener("input", () => {
-      input.value = input.value.replace(/\D/g, "").slice(0, 12);
-      this.gift = input.value;
-      check();
-    });
-    check();
-    const row = el("div", "guild-give");
-    row.append(input, give);
-    box.append(head, row, el("p", "skills-hint", "The purse pays for castle guardians, and nobody can take gold back out of it."));
-    if (g.log.length) {
-      const log = el("ul", "guild-log");
-      for (const l of g.log) {
-        const line = el("li");
-        const what = el("span", "", `${l.who} ${l.what}`);
-        what.title = agoText(l.at);
-        line.append(what, el("b", l.gold > 0 ? "in" : "", `${l.gold > 0 ? "+" : "−"}${gold(Math.abs(l.gold))}`));
-        log.append(line);
-      }
-      box.append(log);
+    head.append(el("span", "", "Guild history"));
+    const log = el("ul", "guild-log");
+    for (const l of g.log) {
+      const line = el("li");
+      const what = el("span", "", `${l.who} ${l.what}`);
+      what.title = agoText(l.at);
+      line.append(what, el("b", "", `${pointsText(l.points)} P`));
+      log.append(line);
     }
+    box.append(head, log);
     return box;
   }
 
@@ -263,7 +232,7 @@ export class GuildUI {
     const line = el("div", "guild-name");
     line.append(el("i", "guild-dot"), el("span", "", `${m.rank === GuildRank.Leader ? "♛ " : m.rank === GuildRank.Officer ? "✦ " : ""}${m.name}`));
     const cls = isClassId(m.cls) ? CLASSES[m.cls].name : "";
-    who.append(line, el("small", "", `Lv ${m.lv}${cls ? ` ${cls}` : ""} · ${RANK_NAMES[m.rank]} · ${seenText(m)}${m.given ? ` · gave ${gold(m.given)}` : ""}`));
+    who.append(line, el("small", "", `Lv ${m.lv}${cls ? ` ${cls}` : ""} · ${RANK_NAMES[m.rank]} · ${seenText(m)}`));
     row.append(who);
     if (m.id === g.me) return row;
     const acts = el("div", "guild-acts");

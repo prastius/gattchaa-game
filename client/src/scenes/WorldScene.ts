@@ -1535,7 +1535,6 @@ export class WorldScene extends Phaser.Scene {
         if (!self) return;
         // Above the name tag, one line each.
         if (ev.exp) this.fx.float(self.x, self.y - 84, `+${ev.exp} EXP`, "#ffe2a0", 250);
-        if (ev.gold) this.fx.float(self.x, self.y - 70, `+${ev.gold} gold`, "#ffd27a", 450);
         return;
       }
       case "loot": {

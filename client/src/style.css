@@ -362,20 +362,31 @@ button {
   margin-top: 1px;
 }
 
-.gold {
+/* Gattchaa Points: the game's only money (shared/points.ts), shown with a little "P" coin in Gattchaa orange. */
+.points {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   font-weight: 700;
-  color: #ffd27a;
+  color: #ffc27a;
 }
 
-.coin {
-  width: 10px;
-  height: 10px;
+.pcoin {
+  display: inline-grid;
+  place-items: center;
+  width: 13px;
+  height: 13px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #fff2b0, #f2c14e 45%, #b9791c);
+  background: radial-gradient(circle at 35% 35%, #ffd7a8, #f08a24 50%, #b5560e);
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.pcoin::after {
+  content: "P";
+  color: #fff;
+  font-size: 8.5px;
+  font-weight: 800;
+  line-height: 1;
 }
 
 .status-note {
@@ -482,7 +493,7 @@ button {
   font-size: 17px;
 }
 
-.bag-head .gold {
+.bag-head .points {
   margin-left: auto;
   font-size: 14px;
 }

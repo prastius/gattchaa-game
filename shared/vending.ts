@@ -1,16 +1,17 @@
 // Player shops ("vending", Ragnarok style): a signed-in player sits down in
 // the Market Square, names their shop, and sells two kinds of things:
 //
-//  - things from their bag (gear, monster cards, ingots…), for in-game gold.
-//    The game hands over the item and the gold, even while the seller is away.
+//  - things from their bag (gear, monster cards, ingots…), for Gattchaa Points.
+//    The Points go straight from the buyer's Gattchaa account to the seller's
+//    (shared/points.ts), and the game hands over the item, even while the seller is away.
 //  - the real cards they've listed on the Gattchaa marketplace. Those are only
-//    ever bought on gattchaaoripa.com: in-game gold never buys a real card.
+//    ever bought on gattchaaoripa.com, never in the game.
 //
 // A rug appears under the seller and a sign over their head. Rules here are
 // shared by client and server.
 
 import type { MarketListing } from "./gattchaa";
-import { ITEMS, cleanStack, sellPrice, type ItemStack } from "./items";
+import { cleanStack, type ItemStack } from "./items";
 import { NPCS } from "./npcs";
 import { DOORS, MARKET, PROPS, TILE, inRect, propAnchor } from "./town";
 
@@ -63,11 +64,6 @@ export const waresLeft = (wares: readonly ShopWare[]) => wares.filter((w) => w.i
 /** "Iron Ingot ×5", or "+7 Saber". */
 export const stackText = (name: string, n: number) => (n > 1 ? `${name} ×${n}` : name);
 
-/** Gold, the way the game writes it: "12,500". */
-export const goldText = (n: number) => Math.floor(n).toLocaleString("en-US");
-
-/** What Bram the Outfitter would pay for one (0: he won't buy it), so sellers don't ask less by mistake. */
-export const merchantPays = (s: ItemStack) => (s.cards || s.up ? 0 : sellPrice(ITEMS[s.id]));
 
 export function sanitizeShopTitle(raw: unknown): string {
   return String(raw ?? "")
@@ -121,7 +117,7 @@ export interface WarePick {
   slot: number;
   /** How many of that slot. */
   n: number;
-  /** Gold each. */
+  /** Gattchaa Points each. */
   price: number;
 }
 
@@ -172,7 +168,7 @@ export interface PlayerShopDetails {
   id: string;
   name: string;
   title: string;
-  /** Things from the seller's bag, for gold (numbered as in ShopBuyMessage.ware). */
+  /** Things from the seller's bag, for Gattchaa Points (numbered as in ShopBuyMessage.ware). */
   wares: ShopWare[];
   listings: MarketListing[];
   /** False when Gattchaa couldn't be reached and these are the last known listings. */
@@ -189,7 +185,7 @@ export interface MarketWare extends ShopWare {
   y: number;
 }
 
-/** GET /api/market: everything for sale in every shop, for gold. */
+/** GET /api/market: everything for sale in every shop, for Gattchaa Points. */
 export interface MarketList {
   wares: MarketWare[];
 }

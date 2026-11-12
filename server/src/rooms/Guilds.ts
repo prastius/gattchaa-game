@@ -2,9 +2,8 @@ import type { MapSchema } from "@colyseus/schema";
 import type { Player } from "./WorldState";
 import { db } from "../db";
 import {
-  GUILD_FOUND_GOLD,
+  GUILD_FOUND_POINTS,
   GUILD_FOUND_LV,
-  GUILD_GIFT_MIN,
   GUILD_INVITE_MS,
   GUILD_MAX,
   GuildRank,
@@ -17,8 +16,8 @@ import {
   type GuildMessage,
 } from "../../../shared/guild";
 
-// Guilds: founding one, invites, ranks, leaving and removing, the notice, gifts
-// to the purse, and who's online. The database holds every guild and its
+// Guilds: founding one (for Gattchaa Points), invites, ranks, leaving and
+// removing, the notice, and who's online. The database holds every guild and its
 // members (accounts); this keeps track of the members who are here right now,
 // puts the guild's name and emblem on their synced Player (for the names over
 // heads, and so guild mates never fight in the Battle Pit), and sends each of
@@ -33,10 +32,8 @@ export interface GuildHooks {
   sessionOf(accountId: number): string | undefined;
   /** The account a session belongs to (guests have none). */
   accountOf(id: string): number | undefined;
-  /** Takes gold for `what`; false (having said why) if they can't pay. */
-  pay(id: string, gold: number, what: string): boolean;
-  /** Someone gave gold to their guild's purse. */
-  gave(id: string, gold: number): void;
+  /** Charges `points` of the player's Gattchaa Points, then `deliver`s (refunded if that fails). */
+  pay(id: string, points: number, reason: string, deliver: () => boolean): Promise<boolean>;
 }
 
 export class Guilds {
@@ -104,15 +101,22 @@ export class Guilds {
     if (!name) return this.hooks.notice(id, "That can't be a guild name: 3 to 16 letters, digits, spaces, ' or -, not only digits.");
     if (!isEmblem(emblem)) return;
     if (db.guildNameTaken(name)) return this.hooks.notice(id, `There's already a guild called ${name}.`);
-    if (!this.hooks.pay(id, GUILD_FOUND_GOLD, "Founding a guild")) return;
-    const g = db.createGuild(name, emblem, account);
-    if (g === undefined) return this.hooks.notice(id, `There's already a guild called ${name}.`);
-    this.here.set(id, g);
-    p.guild = name;
-    p.emblem = emblem;
-    this.hooks.notice(id, `You founded ${name}! Click other players to invite them, open your guild with G, and type /g to talk to it.`);
-    this.hooks.news(`🛡 ${p.name} founded the guild ${emblemOf(emblem).symbol} ${name}!`);
-    this.sendAll(g);
+    void this.hooks.pay(id, GUILD_FOUND_POINTS, `Founded the guild ${name}`, () => {
+      // Someone may have taken the name, or they joined a guild, while Gattchaa was asked.
+      if (this.here.has(id) || !this.players.has(id)) return false;
+      const g = db.createGuild(name, emblem, account);
+      if (g === undefined) {
+        this.hooks.notice(id, `There's already a guild called ${name}.`);
+        return false;
+      }
+      this.here.set(id, g);
+      p.guild = name;
+      p.emblem = emblem;
+      this.hooks.notice(id, `You founded ${name}! Click other players to invite them, open your guild with G, and type /g to talk to it.`);
+      this.hooks.news(`🛡 ${p.name} founded the guild ${emblemOf(emblem).symbol} ${name}!`);
+      this.sendAll(g);
+      return true;
+    });
   }
 
   /** `from` (the leader or an officer) invites `to`. */
@@ -237,21 +241,6 @@ export class Guilds {
     this.sendAll(g);
   }
 
-  /** A member gives gold to the purse. It's the guild's now: gold never comes back out, except to pay for what the guild needs. */
-  give(id: string, gold: unknown) {
-    const g = this.here.get(id);
-    const account = this.hooks.accountOf(id);
-    const p = this.players.get(id);
-    if (g === undefined || account === undefined || !p) return this.hooks.notice(id, "You're not in a guild.");
-    if (!Number.isSafeInteger(gold) || (gold as number) < GUILD_GIFT_MIN) return this.hooks.notice(id, `The smallest gift is ${GUILD_GIFT_MIN} gold.`);
-    const amount = gold as number;
-    if (!this.hooks.pay(id, amount, "That gift")) return;
-    db.giveToPurse(g, account, p.name, amount);
-    this.hooks.gave(id, amount);
-    for (const m of this.online(g)) this.hooks.notice(m, `🛡 ${p.name} gave ${amount.toLocaleString("en-US")} gold to the guild's purse.`);
-    this.sendAll(g);
-  }
-
   /** The guild window was opened: fresh contents (levels change all the time). */
   refresh(id: string) {
     const g = this.here.get(id);
@@ -292,7 +281,7 @@ export class Guilds {
     const members = db.guildMembers(g).map((m) => {
       const s = this.hooks.sessionOf(m.accountId);
       const p = s && this.here.get(s) === g ? this.players.get(s) : undefined;
-      return { id: m.accountId, name: p?.name ?? m.name, cls: p?.cls ?? m.cls, lv: p?.lv ?? m.lv, rank: m.rank, online: Boolean(p), seen: p ? 0 : m.seen, given: m.given };
+      return { id: m.accountId, name: p?.name ?? m.name, cls: p?.cls ?? m.cls, lv: p?.lv ?? m.lv, rank: m.rank, online: Boolean(p), seen: p ? 0 : m.seen };
     });
     const me = members.find((m) => m.id === account);
     return {
@@ -302,8 +291,7 @@ export class Guilds {
       notice: row.notice,
       me: account,
       rank: me?.rank ?? GuildRank.Member,
-      purse: row.purse,
-      log: db.purseLog(g),
+      log: db.guildLog(g),
       sieges: row.sieges,
       crystals: row.crystals,
       members: sortMembers(members),

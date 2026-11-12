@@ -22,7 +22,7 @@ export interface Deeds {
   upFails: number;
   /** Opened a shop in the Market Square. */
   shop: boolean;
-  /** Gold earned selling things in their shop. */
+  /** Gattchaa Points earned from sales in their shop. */
   sold: number;
   /** Duels fought (any result), won, and won in the Arena's ring (ranked). */
   duels: number;
@@ -30,12 +30,10 @@ export interface Deeds {
   arenaWins: number;
   /** Players beaten in the Battle Pit (once in a while per player, see PVP_RECOUNT_MS). */
   pvpWins: number;
-  /** Gold given to their guild's purse. */
-  given: number;
 }
 
 export const noDeeds = (): Deeds => ({
-  kills: {}, cards: [], legendary: 0, bestUp: 0, upFails: 0, shop: false, sold: 0, duels: 0, duelWins: 0, arenaWins: 0, pvpWins: 0, given: 0,
+  kills: {}, cards: [], legendary: 0, bestUp: 0, upFails: 0, shop: false, sold: 0, duels: 0, duelWins: 0, arenaWins: 0, pvpWins: 0,
 });
 
 const count = (raw: unknown) => (Number.isFinite(Number(raw)) ? Math.max(0, Math.floor(Number(raw))) : 0);
@@ -58,7 +56,6 @@ export function cleanDeeds(raw: unknown): Deeds {
   d.duelWins = count(r.duelWins);
   d.arenaWins = count(r.arenaWins);
   d.pvpWins = count(r.pvpWins);
-  d.given = count(r.given);
   return d;
 }
 
@@ -73,14 +70,12 @@ export type TitleGoal =
   | { kind: "upgrade"; n: number }
   | { kind: "upFails"; n: number }
   | { kind: "shop" }
-  /** Earn `n` gold selling things in your shop. */
+  /** Earn `n` Gattchaa Points selling things in your shop. */
   | { kind: "sold"; n: number }
   /** Fight `n` duels, win `n` duels, or win `n` ranked duels in the Arena. */
   | { kind: "duels"; n: number; won?: "any" | "ranked" }
   /** Beat `n` players in the Battle Pit. */
   | { kind: "pvp"; n: number }
-  /** Give `n` gold to your guild's purse. */
-  | { kind: "given"; n: number }
   /** One of the first PIONEERS players to reach the level cap. */
   | { kind: "pioneer" }
   /** In the guild holding Crownhold when a siege ends (handed out by the siege, like Pioneer). */
@@ -206,14 +201,12 @@ export const TITLES = def({
     name: "Castle Lord", tier: "epic", group: "Guild wars", goal: { kind: "castle" }, aura: AURA_CASTLE_LORD,
     how: "Be in the guild holding Crownhold when a siege ends (and in town at the time).",
   },
-  patron: { name: "Patron", tier: "rare", group: "Guild wars", goal: { kind: "given", n: 100_000 }, how: "Give 100,000 gold to your guild's purse." },
-  benefactor: { name: "Benefactor", tier: "epic", group: "Guild wars", goal: { kind: "given", n: 1_000_000 }, how: "Give 1,000,000 gold to your guild's purse." },
   reaper: { name: "Reaper", tier: "epic", group: "The Battle Pit", goal: { kind: "pvp", n: 250 }, how: "Beat 250 players in the Battle Pit." },
 
   // ------------------------------------------------------------ town
   shopkeeper: { name: "Shopkeeper", tier: "uncommon", group: "Town", goal: { kind: "shop" }, how: "Open your own shop in the Market Square." },
-  merchant: { name: "Merchant", tier: "rare", group: "Town", goal: { kind: "sold", n: 100_000 }, how: "Earn 100,000 gold selling things in your shop." },
-  tycoon: { name: "Tycoon", tier: "epic", group: "Town", goal: { kind: "sold", n: 1_000_000 }, how: "Earn 1,000,000 gold selling things in your shop." },
+  merchant: { name: "Merchant", tier: "rare", group: "Town", goal: { kind: "sold", n: 100_000 }, how: "Earn 100,000 Points selling things in your shop." },
+  tycoon: { name: "Tycoon", tier: "epic", group: "Town", goal: { kind: "sold", n: 1_000_000 }, how: "Earn 1,000,000 Points selling things in your shop." },
 });
 
 export type TitleId = keyof typeof TITLES;
@@ -250,8 +243,6 @@ export function titleProgress(t: TitleDef, d: Deeds, level: number): [number, nu
       const n = d.pvpWins;
       return [Math.min(n, g.n), g.n];
     }
-    case "given":
-      return [Math.min(d.given, g.n), g.n];
     case "pioneer":
     case "castle":
       return [0, 1];

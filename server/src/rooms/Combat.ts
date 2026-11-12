@@ -43,7 +43,6 @@ import {
   canWear,
   cardFits,
   itemName,
-  sellPrice,
   upgradeCost,
   wearersText,
   withArticle,
@@ -53,7 +52,8 @@ import {
   type ItemStack,
   type Slot,
 } from "../../../shared/items";
-import { MAX_PRICE, SHOP_WARES, goldText, isPrice, type ShopWare, type WarePick } from "../../../shared/vending";
+import { MAX_PRICE, SHOP_WARES, isPrice, type ShopWare, type WarePick } from "../../../shared/vending";
+import { pointsText } from "../../../shared/points";
 import { GLOBAL_COOLDOWN_MS, SKILLS, SKILL_MAX, cleanSkills, hasSkill, pointsLeft, type SkillDef, type SkillId, type SkillLevels } from "../../../shared/skills";
 import { TITLES, type TitleDef, type TitleId, type TitlesMessage } from "../../../shared/titles";
 import {
@@ -171,7 +171,8 @@ interface Fighter {
   cls: ClassId;
   exp: number;
   mp: number;
-  gold: number;
+  /** Their Gattchaa Points as last known (undefined: not known yet, or a guest). They live at Gattchaa, see shared/points.ts. */
+  balance?: number;
   inv: Inventory;
   /** Class, level and equipment together; recomputed whenever one changes. */
   stats: Stats;
@@ -242,7 +243,6 @@ interface Mob {
 }
 
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
-const randInt = ([a, b]: [number, number]) => a + Math.floor(Math.random() * (b - a + 1));
 const dist = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.hypot(a.x - b.x, a.y - b.y);
 /** A bow's or staff's reach, if one is in hand. */
 const weaponRange = (inv: Inventory) => (inv.gear.weapon ? ITEMS[inv.gear.weapon.id].range : undefined);
@@ -312,7 +312,6 @@ export class Combat {
       cls,
       exp: lv >= LEVEL_CAP ? 0 : Math.max(0, Math.floor(progress?.exp ?? 0)),
       mp: Math.min(s.maxMp, progress?.mp ?? s.maxMp),
-      gold: Math.max(0, Math.floor(progress?.gold ?? 0)),
       inv,
       stats: s,
       potionAt: 0,
@@ -417,7 +416,7 @@ export class Combat {
     this.setLevel(f, Math.min(LEVEL_CAP, Math.max(1, Math.floor(lv))), true);
   }
 
-  /** Testing only: conjure items and gold. */
+  /** Testing only: conjure items. */
   cheatItem(id: string, item: ItemId, n: number, up?: number) {
     const f = this.fighters.get(id);
     if (!f) return;
@@ -451,11 +450,12 @@ export class Combat {
     if (f) this.setTrial(f, trial);
   }
 
-  cheatGold(id: string, gold: number) {
+  /** Their Gattchaa Points, as the wallet last said (shown on their sheet). */
+  setBalance(id: string, points: number | undefined) {
     const f = this.fighters.get(id);
-    if (!f) return;
-    f.gold = Math.max(0, Math.floor(gold));
-    f.dirty = f.sheetDirty = true;
+    if (!f || f.balance === points) return;
+    f.balance = points;
+    f.sheetDirty = true;
   }
 
   // ---------------------------------------------------------------- the loop
@@ -651,7 +651,7 @@ export class Combat {
   }
 
   /** The castle's daily tribute for a member of its guild. False (having said why) if their bag is too full. */
-  giveTribute(id: string, gold: number, items: [ItemId, number][], slots: number): boolean {
+  giveTribute(id: string, items: [ItemId, number][], slots: number): boolean {
     const f = this.fighters.get(id);
     if (!f) return false;
     if (f.inv.bag.filter((s) => !s).length < slots) {
@@ -659,7 +659,6 @@ export class Combat {
       return false;
     }
     for (const [item, n] of items) f.inv.add(item, n);
-    f.gold += gold;
     this.changed(f);
     this.traded(f);
     return true;
@@ -684,7 +683,7 @@ export class Combat {
     for (const f of this.fighters.values()) if (f.target === mob.id) f.target = undefined;
   }
 
-  /** EXP goes to everyone who hurt it, by how much; the gold to whoever did the most (returned). */
+  /** EXP goes to everyone who hurt it, by how much; returns whoever did the most (first pick of the loot). Monsters never drop money. */
   private reward(mob: Mob): string | undefined {
     let total = 0;
     for (const d of mob.damage.values()) total += d;
@@ -719,12 +718,7 @@ export class Combat {
       kills[mob.def.id] = (kills[mob.def.id] ?? 0) + 1;
       this.deed(f);
       const exp = this.gainExp(f, Math.floor(share * expFactor(f.player.lv, mob.def.level)));
-      const gold = f === top?.f ? randInt(mob.def.gold) : 0;
-      if (gold) {
-        f.gold += gold;
-        f.dirty = f.sheetDirty = true;
-      }
-      if (exp || gold) this.hooks.tell(f.id, { k: "gain", exp, gold });
+      if (exp) this.hooks.tell(f.id, { k: "gain", exp });
     }
     return top?.f.id;
   }
@@ -819,7 +813,7 @@ export class Combat {
       exp: f.exp,
       mp: f.mp,
       mmp: s.maxMp,
-      gold: f.gold,
+      ...(f.balance !== undefined && { balance: f.balance }),
       atk: s.atk,
       def: s.def,
       range: s.range,
@@ -866,7 +860,6 @@ export class Combat {
       exp: f.exp,
       hp: p.hp >= s.maxHp ? null : p.hp,
       mp: f.mp >= s.maxMp ? null : f.mp,
-      gold: f.gold,
       ...f.inv.save(),
       skills: Object.keys(f.skills).length ? JSON.stringify(f.skills) : null,
       ...f.book.save(),
@@ -977,86 +970,38 @@ export class Combat {
     return true;
   }
 
-  /** Buys from a merchant (the room checked you're at their counter and they sell it). */
-  buy(id: string, item: ItemId, n: number) {
+  /** Whether they can take `n` of `item` now (alive, room in the bag). If not, they're told why. */
+  canTake(id: string, item: ItemId, n: number): boolean {
     const f = this.fighters.get(id);
-    const price = ITEMS[item].price ?? 0;
-    const count = Math.min(MAX_STACK, Math.max(1, Math.floor(n) || 1));
-    if (!f || f.player.dead || price <= 0) return;
-    if (f.gold < price * count) return this.hooks.notice(id, "You don't have enough gold.");
-    if (f.inv.room(item, count) < count) return this.hooks.notice(id, "Your bag is full.");
-    f.gold -= price * count;
-    f.inv.add(item, count);
-    this.hooks.tell(id, { k: "loot", item, n: count });
-    this.traded(f);
+    if (!f || f.player.dead) return false;
+    if (f.inv.room(item, n) >= n) return true;
+    this.hooks.notice(id, "Your bag is full. Make room first.");
+    return false;
   }
 
-  /** Sells some of one bag slot, or (slot -1) every piece of monster loot. Returns the gold earned. */
-  sell(id: string, slot: number, n: number): number {
+  /** Hands over `n` of `item`, paid for already (an NPC's shop). False if it doesn't fit after all (the room refunds). */
+  give(id: string, item: ItemId, n: number): boolean {
     const f = this.fighters.get(id);
-    if (!f || f.player.dead) return 0;
-    const one = slot >= 0 ? f.inv.bag[slot] : undefined;
-    if (one?.cards) {
-      this.hooks.notice(id, `The cards in your ${itemName(one)} would be lost, so the Outfitter won't buy it.`);
-      return 0;
-    }
-    if (one?.up) {
-      this.hooks.notice(id, `The Outfitter won't buy upgraded gear: your ${itemName(one)} is worth far more than he could pay.`);
-      return 0;
-    }
-    let gold = 0;
-    const slots = slot < 0 ? f.inv.bag.flatMap((s, i) => (s && ITEMS[s.id].kind === "loot" ? [i] : [])) : [slot];
-    for (const i of slots) {
-      const s = f.inv.bag[i];
-      const price = s ? sellPrice(ITEMS[s.id]) : 0;
-      if (!s || price <= 0) continue;
-      const taken = f.inv.take(i, slot < 0 ? s.n : n);
-      if (taken) gold += price * taken.n;
-    }
-    if (gold <= 0) {
-      this.hooks.notice(id, slot < 0 ? "You have no monster loot to sell." : one && ITEMS[one.id].kind === "card" ? "Keep your cards: other adventurers will pay far more for them." : "The Outfitter won't buy that.");
-      return 0;
-    }
-    f.gold += gold;
-    this.hooks.tell(id, { k: "gain", exp: 0, gold });
+    if (!f || f.inv.room(item, n) < n) return false;
+    f.inv.add(item, n);
+    this.hooks.tell(id, { k: "loot", item, n });
     this.traded(f);
-    return gold;
+    return true;
   }
 
-  /** Pays the ferry fare (the room checked you're with the captain). False if you can't sail now. */
-  payFare(id: string, fare: number): boolean {
+  /** Whether they can sail now (the room checked you're with the captain). If not, they're told why. */
+  canSail(id: string): boolean {
     const f = this.fighters.get(id);
     if (!f || f.player.dead) return false;
     if (this.duels.has(id)) {
       this.fail(f, "Finish your duel first.");
       return false;
     }
-    if (f.gold < fare) {
-      this.hooks.notice(id, `The crossing costs ${goldText(fare)} gold: you have ${goldText(f.gold)}.`);
-      return false;
-    }
     f.target = undefined;
-    if (fare > 0) {
-      f.gold -= fare;
-      this.traded(f);
-    }
     return true;
   }
 
-  /** Pays for something the room takes gold for (founding a guild, a gift to its purse). False, having said why, if they can't. */
-  spend(id: string, gold: number, what: string): boolean {
-    const f = this.fighters.get(id);
-    if (!f) return false;
-    if (f.gold < gold) {
-      this.hooks.notice(id, `${what} costs ${goldText(gold)} gold: you have ${goldText(f.gold)}.`);
-      return false;
-    }
-    f.gold -= gold;
-    this.traded(f);
-    return true;
-  }
-
-  /** Gold changed hands: show it and save now. */
+  /** Things changed hands: show it and save now. */
   private traded(f: Fighter) {
     this.changed(f);
     f.sheetDirty = true;
@@ -1085,18 +1030,32 @@ export class Combat {
    * the forge): one ingot and a fee per try. From +5 a try can fail, and then
    * the gear drops one level. It never breaks.
    */
-  upgrade(id: string, at: GearAt, roll = Math.random()) {
+  /**
+   * What upgrading this piece one step costs (the Points, and the ore it must have), or
+   * undefined, having said why, when it can't be upgraded now.
+   */
+  upgradeQuote(id: string, at: GearAt): { points: number; to: number } | undefined {
     const f = this.fighters.get(id);
     const s = f?.inv.gearAt(at);
-    if (!f || !s || f.player.dead) return;
+    if (!f || !s || f.player.dead) return undefined;
     const it = ITEMS[s.id];
-    if (!canUpgrade(it)) return this.hooks.notice(id, "Rings and amulets are too small to upgrade.");
+    if (!canUpgrade(it)) return void this.hooks.notice(id, "Rings and amulets are too small to upgrade.");
     const from = s.up ?? 0;
-    if (from >= MAX_UPGRADE) return this.hooks.notice(id, `Your ${itemName(s)} can't go any higher.`);
+    if (from >= MAX_UPGRADE) return void this.hooks.notice(id, `Your ${itemName(s)} can't go any higher.`);
     const cost = upgradeCost(from + 1);
-    if (f.gold < cost.gold) return this.hooks.notice(id, `Upgrading to +${from + 1} costs ${cost.gold} gold.`);
-    if (!f.inv.spend(cost.ore)) return this.hooks.notice(id, `Upgrading to +${from + 1} needs ${withArticle(ITEMS[cost.ore].name)}.`);
-    f.gold -= cost.gold;
+    if (!f.inv.count(cost.ore)) return void this.hooks.notice(id, `Upgrading to +${from + 1} needs ${withArticle(ITEMS[cost.ore].name)}.`);
+    return { points: cost.points, to: from + 1 };
+  }
+
+  /** The upgrade itself, paid for already: false (the room refunds) if the piece or the ore went meanwhile. */
+  upgrade(id: string, at: GearAt, to: number, roll = Math.random()): boolean {
+    const f = this.fighters.get(id);
+    const s = f?.inv.gearAt(at);
+    if (!f || !s || (s.up ?? 0) !== to - 1) return false;
+    const it = ITEMS[s.id];
+    const from = to - 1;
+    const cost = upgradeCost(to);
+    if (!f.inv.spend(cost.ore)) return false;
     const ok = roll < cost.chance;
     const up = ok ? from + 1 : from - 1;
     if (up > 0) s.up = up;
@@ -1109,6 +1068,7 @@ export class Combat {
     if (ok && up >= 9) this.hooks.upgraded(id, it.name, up);
     this.deed(f);
     this.traded(f);
+    return true;
   }
 
   // ---------------------------------------------------------------- duels
@@ -1354,14 +1314,6 @@ export class Combat {
     this.save(f);
   }
 
-  /** Gave gold to their guild's purse. */
-  gaveToGuild(id: string, gold: number) {
-    const f = this.fighters.get(id);
-    if (!f) return;
-    f.book.deeds.given += gold;
-    this.deed(f);
-  }
-
   /** Opened a shop in the Market Square. */
   shopOpened(id: string) {
     const f = this.fighters.get(id);
@@ -1385,7 +1337,7 @@ export class Combat {
       const s = f.inv.bag[p.slot];
       if (!s || seen.has(p.slot)) return "Something you picked isn't in your bag any more. Please pick again.";
       if (!(Number.isInteger(p.n) && p.n >= 1 && p.n <= s.n)) return `You only have ${s.n} ${ITEMS[s.id].name}.`;
-      if (!isPrice(p.price)) return `Prices go from 1 to ${goldText(MAX_PRICE)} gold.`;
+      if (!isPrice(p.price)) return `Prices go from 1 to ${pointsText(MAX_PRICE)} Points.`;
       seen.add(p.slot);
     }
     const wares = picks.map((p) => ({ item: f.inv.take(p.slot, p.n)!, price: p.price, sold: 0 }));
@@ -1401,44 +1353,42 @@ export class Combat {
     this.traded(f);
   }
 
-  /** Whether someone can pay for something from a player's shop and carry it. If not, they're told why. */
-  canBuy(id: string, item: ItemStack, gold: number): boolean {
+  /** Whether someone can carry something from a player's shop. If not, they're told why. */
+  canBuy(id: string, item: ItemStack): boolean {
     const f = this.fighters.get(id);
     if (!f || f.player.dead) return false;
-    if (f.gold < gold) this.hooks.notice(id, `That costs ${goldText(gold)} gold: you have ${goldText(f.gold)}.`);
-    else if (f.inv.room(item.id, item.n) < item.n) this.hooks.notice(id, "Your bag is full. Make room first.");
-    else return true;
+    if (f.inv.room(item.id, item.n) >= item.n) return true;
+    this.hooks.notice(id, "Your bag is full. Make room first.");
     return false;
   }
 
-  /** Bought from a player's shop (the room settled it with the shop): the gold out, the item in. */
-  bought(id: string, item: ItemStack, gold: number) {
+  /** Bought from a player's shop (paid through Gattchaa): the item in. False if it doesn't fit after all (it goes to their mail). */
+  bought(id: string, item: ItemStack): boolean {
     const f = this.fighters.get(id);
-    if (!f) return;
-    f.gold -= gold;
+    if (!f || f.inv.room(item.id, item.n) < item.n) return false;
     f.inv.add(item.id, item.n, item);
     this.hooks.tell(id, { k: "loot", item: item.id, n: item.n });
     this.traded(f);
+    return true;
+  }
+
+  /** A sale in their shop (the Points went straight to their Gattchaa account): counts for the merchant titles. */
+  sold(id: string, points: number) {
+    const f = this.fighters.get(id);
+    if (!f) return;
+    f.book.deeds.sold += points;
+    this.deed(f);
   }
 
   /**
-   * Mail: gold from a sale in your shop, or something it didn't sell. False
-   * when the item doesn't fit in the bag (it waits). Save with flush() after.
+   * Mail: something their shop didn't sell, or a purchase that didn't fit. False
+   * when it doesn't fit in the bag (it waits). Save with flush() after.
    */
-  receive(id: string, m: { gold: number; item: ItemStack | null }): boolean {
+  receive(id: string, item: ItemStack): boolean {
     const f = this.fighters.get(id);
-    if (!f) return false;
-    if (m.item && f.inv.room(m.item.id, m.item.n) < m.item.n) return false;
-    if (m.item) {
-      f.inv.add(m.item.id, m.item.n, m.item);
-      this.hooks.tell(id, { k: "loot", item: m.item.id, n: m.item.n });
-    }
-    if (m.gold > 0) {
-      f.gold += m.gold;
-      f.book.deeds.sold += m.gold;
-      this.hooks.tell(id, { k: "gain", exp: 0, gold: m.gold });
-      this.deed(f);
-    }
+    if (!f || f.inv.room(item.id, item.n) < item.n) return false;
+    f.inv.add(item.id, item.n, item);
+    this.hooks.tell(id, { k: "loot", item: item.id, n: item.n });
     this.changed(f);
     f.sheetDirty = true;
     return true;

@@ -8,15 +8,14 @@ The game has three parts:
 2. **Adventure.** Outside the walls, monsters wait in fields sorted by level. Level up, choose a job, find gear and monster cards, and upgrade your equipment.
 3. **Player vs player.** Challenge anyone to a duel, climb the ranking in the Arena, fight anyone (and be fought) in the Battle Pit by the Arena, earning Glory for every win, or fight with your guild for Crownhold, the guild castle, twice a week.
 
-> **One rule about money.** Real cards are bought and paid for only on gattchaaoripa.com. In-game gold buys in-game things (potions, gear, upgrades, other players' loot) and never real cards.
+> **Money is Gattchaa Points.** The town has no currency of its own. You play with your **Gattchaa Oripa account**, and everything in town (Bram's potions, the Blacksmith's fees, the ferries, founding a guild, guardians, other players' shops) is paid with the **Gattchaa Points** in that account. Points are bought and earned on gattchaaoripa.com only: monsters drop items and cards, never money, and no merchant buys anything back. Real cards are still bought on gattchaaoripa.com, never in the game.
 
 ---
 
 ## 1. Getting started
 
-- **Play as a guest** with just a name, or **Sign in with Gattchaa** using your gattchaaoripa.com account. The sign-in happens on the Gattchaa site, so the game never sees your password.
-- **Guests** can do everything except open a shop (they can still buy from one), but they start over on their next visit.
-- **Signed-in players** keep their character, level, bag, gear and skills on any device. Only one window per account is allowed: opening a second one takes over from the first.
+- **Sign in with Gattchaa** using your gattchaaoripa.com account: you need one to play (there are no guests, since everything in town is paid with your Gattchaa Points). The sign-in happens on the Gattchaa site, so the game never sees your password.
+- **Your character** (level, bag, gear and skills) is saved to your account, on any device. Only one window per account is allowed: opening a second one takes over from the first.
 - **Your look.** Choose a body, hair, clothes and colours when you join. You can change them any time with the **Wardrobe** button. Gear you wear (helmets, armour, weapons…) shows on top of your look.
 - New players appear on the main avenue, between the fountain plaza and the Market Square.
 
@@ -108,21 +107,21 @@ The town is always safe: monsters never come in, and nobody can attack anyone in
 | Selene | Dungeon Warden | In Starfall, by the portal down to the Void Rift | Explains the Void Rift |
 | Rook | Scout | North of town, by the path up from the west road | Explains the Wildlands |
 | Sable | Pit Keeper | In the Battle Pit's gate hall | Explains the Battle Pit's rules, and keeps the board of its best fighters |
-| Edda | Ferry Captain | At the end of the pier on the meadow's south-east point | Sails you to Frostfell for 500 gold |
+| Edda | Ferry Captain | At the end of the pier on the meadow's south-east point | Sails you to Frostfell for 500 Points |
 | Bjorn | Ferryman | At the end of Frostfell's pier | Explains Frostfell, and sails you back for free |
-| Finn | Boatman | At the end of the pier where the east road meets the sea | Rows you to Ravenmoor for 800 gold |
+| Finn | Boatman | At the end of the pier where the east road meets the sea | Rows you to Ravenmoor for 800 Points |
 | Corvin | Ferryman | At the end of Ravenmoor's pier | Explains Ravenmoor, and rows you back for free |
-| Marlow | Ship Captain | At the end of the pier on the meadow's east shore | Sails you to Petalfall for 1,200 gold |
+| Marlow | Ship Captain | At the end of the pier on the meadow's east shore | Sails you to Petalfall for 1,200 Points |
 | Willow | Ferry Captain | At the end of Petalfall's pier | Explains Petalfall, and sails you back for free |
-| Dorian | Ship Captain | On the same pier as Marlow, on the meadow's east shore | Sails you to Ashpeak for 1,500 gold |
+| Dorian | Ship Captain | On the same pier as Marlow, on the meadow's east shore | Sails you to Ashpeak for 1,500 Points |
 | Cassia | Ferry Captain | At the end of Ashpeak's pier | Explains Ashpeak, and sails you back for free |
-| Soren | Ship Captain | On the same pier as Marlow | Sails you to Sunscar for 1,800 gold |
+| Soren | Ship Captain | On the same pier as Marlow | Sails you to Sunscar for 1,800 Points |
 | Nadia | Ferry Captain | At the end of Sunscar's pier | Explains Sunscar, and sails you back for free |
-| Lyra | Ship Captain | At the start of the same pier | Sails you to Starfall for 2,200 gold |
+| Lyra | Ship Captain | At the start of the same pier | Sails you to Starfall for 2,200 Points |
 | Celeste | Ferry Captain | At the end of Starfall's pier | Explains Starfall, and sails you back for free |
 | Orin | Job Master | Just inside the south gate | Makes you a Knight, Mage or Archer at level 10, sets the Trial of Mastery from level 45 (and again from 75), and gives you your second job (and third) once you pass it |
 | Vesna | Trial Keeper | On the Isle of Trials (Orin sends you there) | Raises the Shade you fight in the Trial of Mastery, and sends you home |
-| Bram | Outfitter | Outside the south gate, east of the road | Sells potions and starter gear, buys loot |
+| Bram | Outfitter | Outside the south gate, east of the road | Sells potions and starter gear for Points |
 | Hilda | Blacksmith | Outside the south gate, west of Rowan | Upgrades gear from +0 to +10 |
 | Magnus | Arena Master | By the Arena, east of the Market Square | Explains duels, keeps the arena ranking, and trades Glory for potions, ingots and Glory gear |
 | Leopold | Guild Registrar | On the main street just east of the fountain plaza, by the GUILDS signpost | Founds guilds, and keeps the ranking of the top guilds |
@@ -132,31 +131,31 @@ The town is always safe: monsters never come in, and nobody can attack anyone in
 
 Ragnarok-style vending. Signed-in players sit down in the Market Square and sell two kinds of things:
 
-- **Things from their bag, for in-game gold:** gear (upgrades and cards stay in it), monster cards, ingots, potions, loot.
-- **Their real cards,** the ones they've listed on the Gattchaa marketplace. These are only ever bought on gattchaaoripa.com, never with gold.
+- **Things from their bag, for Gattchaa Points:** gear (upgrades and cards stay in it), monster cards, ingots, potions, loot. The Points go straight from the buyer's Gattchaa account to the seller's.
+- **Their real cards,** the ones they've listed on the Gattchaa marketplace. These are only ever bought on gattchaaoripa.com, never in the game.
 
 ### Opening your shop
 
 1. Walk into the **Market Square** and press **Open shop** (V).
 2. Give your shop a name (or leave it empty for "your name's shop").
-3. Under **Sell from your bag**, tap **Sell** next to up to **12** things. Set a price in gold for each, and for stacks how many to sell. If you ask less than Bram the Outfitter would pay, the form warns you.
+3. Under **Sell from your bag**, tap **Sell** next to up to **12** things. Set a price in Points for each, and for stacks how many to sell.
 4. The form tells you if your spot is good: not in front of staff, and not so close to another shop that the signs overlap.
-5. Press **Open shop here**. Your character sits down on a rug with a sign over your head. The sign shows a coin when you sell only for gold, a card when you also have Gattchaa cards, and how many things are for sale.
+5. Press **Open shop here**. Your character sits down on a rug with a sign over your head. The sign shows a coin when you sell only things from your bag, a card when you also have Gattchaa cards, and how many things are for sale.
 
 You need at least one thing from your bag or one card listed on Gattchaa. Gear you're wearing isn't offered: take it off first.
 
 ### While it's open
 
 - What you put in the shop **leaves your bag** until it sells.
-- When something sells, **the gold goes straight into your purse** and the chat tells you who bought what. This works **even while you're away**: when you leave the game, a look-alike minds your shop for **24 hours**, and the next time you come back, the chat tells you what sold.
+- When something sells, **the Points go straight into your Gattchaa account** and the chat tells you who bought what. This works **even while you're away**: when you leave the game, a look-alike minds your shop for **24 hours**, and the next time you come back, the chat tells you what sold.
 - To change prices or what's for sale, close the shop and open it again.
 - **Closing:** press **Close shop**. Whatever didn't sell comes back to your bag. If your bag is full, it waits for you and arrives as soon as you make room.
 - **Sold out:** when everything has sold (and you have no Gattchaa cards to show), the shop closes by itself.
 
 ### Buying
 
-- Click a shop's sign (or browse it from Tina's list) to see what it sells, with prices in gold.
-- Press **Buy** for one, or **All** for the whole stack. You must be in the Market Square, have the gold and have room in your bag.
+- Click a shop's sign (or browse it from Tina's list) to see what it sells, with prices in Points.
+- Press **Buy** for one, or **All** for the whole stack. You must be in the Market Square, have the Points and have room in your bag. If your bag fills up before the item arrives, it waits for you like the shop's leftovers do.
 - Upgraded gear and gear with cards keep them when you buy them.
 - Real cards in the shop link to their listing on gattchaaoripa.com, where you buy and pay as usual.
 
@@ -165,7 +164,7 @@ You need at least one thing from your bag or one card listed on Gattchaa. Gear y
 Ask **Tina** in the Market Square:
 
 - **Shops** lists every open shop, who runs it, whether they're in town, and what it sells. Tap one to browse it.
-- **Find an item** lists everything for sale for gold in every shop, cheapest first. Type a name ("mithril", "saber", "slime card") to narrow it down, then **Visit** the shop.
+- **Find an item** lists everything for sale in every shop, cheapest first. Type a name ("mithril", "saber", "slime card") to narrow it down, then **Visit** the shop.
 
 Shops also show as orange dots on the minimap.
 
@@ -191,22 +190,22 @@ Shops also show as orange dots on the minimap.
 | Blossom Grotto (dungeon) | 66–74 | The portal in Petalfall, in the cherry woods, south of the Phantom Swordsmen | Hana |
 | Sunken Tomb (dungeon) | 86–94 | The portal in Sunscar, in the scrub on the island's west side, between the Dust Djinns and the Dune Stalkers | Kesh |
 | Void Rift (dungeon) | 94–100 | The portal in Starfall, at the island's north end, above the Star Knights | Selene |
-| Frostfell | 40–50 | The ferry from the meadow's south-east point (500 gold; the way back is free) | Edda, Bjorn |
-| Ravenmoor | 50–60 | The boat at the end of the east road, past the Pumpking (800 gold; the way back is free) | Finn, Corvin |
-| Petalfall | 60–70 | The ship from the meadow's east shore (1,200 gold; the way back is free) | Marlow, Willow |
-| Ashpeak | 70–80 | Another ship from the same pier (1,500 gold; the way back is free) | Dorian, Cassia |
-| Sunscar | 80–90 | Another ship from the same pier (1,800 gold; the way back is free) | Soren, Nadia |
-| Starfall | 90–100 | Another ship from the same pier (2,200 gold; the way back is free) | Lyra, Celeste |
+| Frostfell | 40–50 | The ferry from the meadow's south-east point (500 Points; the way back is free) | Edda, Bjorn |
+| Ravenmoor | 50–60 | The boat at the end of the east road, past the Pumpking (800 Points; the way back is free) | Finn, Corvin |
+| Petalfall | 60–70 | The ship from the meadow's east shore (1,200 Points; the way back is free) | Marlow, Willow |
+| Ashpeak | 70–80 | Another ship from the same pier (1,500 Points; the way back is free) | Dorian, Cassia |
+| Sunscar | 80–90 | Another ship from the same pier (1,800 Points; the way back is free) | Soren, Nadia |
+| Starfall | 90–100 | Another ship from the same pier (2,200 Points; the way back is free) | Lyra, Celeste |
 
-**The ferry.** Frostfell is an island across the sea, south of the South Meadow. Follow the south road out of the gate and take the path east (there's a signpost), past the Hornets, down to the pier on the meadow's south-east point. **Edda the Ferry Captain** waits at the end of it: talk to her and press **Sail to Frostfell** (500 gold). You step off at the end of Frostfell's pier, by **Bjorn the Ferryman**, who sails you back for free whenever you like. Fainting on Frostfell wakes you up in town as usual.
+**The ferry.** Frostfell is an island across the sea, south of the South Meadow. Follow the south road out of the gate and take the path east (there's a signpost), past the Hornets, down to the pier on the meadow's south-east point. **Edda the Ferry Captain** waits at the end of it: talk to her and press **Sail to Frostfell** (500 Points). You step off at the end of Frostfell's pier, by **Bjorn the Ferryman**, who sails you back for free whenever you like. Fainting on Frostfell wakes you up in town as usual.
 
-**The boat to Ravenmoor.** Ravenmoor is an island across the strait east of Dusk Hollow. Follow the east road out of the gate, all the way past the Pumpking (there's a signpost), to the pier where the road meets the sea. **Finn the Boatman** rows you over for 800 gold; **Corvin the Ferryman** rows you back for free.
+**The boat to Ravenmoor.** Ravenmoor is an island across the strait east of Dusk Hollow. Follow the east road out of the gate, all the way past the Pumpking (there's a signpost), to the pier where the road meets the sea. **Finn the Boatman** rows you over for 800 Points; **Corvin the Ferryman** rows you back for free.
 
-**The ship to Petalfall.** Petalfall is an island far out in the sea south-east of the meadow, where it's always spring. Take the same path east off the south road as for Frostfell, but go straight on past the path down to Edda (there's a signpost), all the way to the pier on the meadow's east shore. **Marlow the Ship Captain** sails you over for 1,200 gold (level 60 and up); **Willow the Ferry Captain** sails you back for free.
+**The ship to Petalfall.** Petalfall is an island far out in the sea south-east of the meadow, where it's always spring. Take the same path east off the south road as for Frostfell, but go straight on past the path down to Edda (there's a signpost), all the way to the pier on the meadow's east shore. **Marlow the Ship Captain** sails you over for 1,200 Points (level 60 and up); **Willow the Ferry Captain** sails you back for free.
 
-**The ship to Ashpeak.** Ashpeak is a volcanic island far out in the eastern sea, past Ravenmoor and Petalfall: bare black rock, charred pines, ash in the air and embers rising from the ground. Its ship leaves from the same pier as Marlow's, on the meadow's east shore: **Dorian the Ship Captain** sails you over for 1,500 gold (level 70 and up), and **Cassia the Ferry Captain** sails you back for free.
+**The ship to Ashpeak.** Ashpeak is a volcanic island far out in the eastern sea, past Ravenmoor and Petalfall: bare black rock, charred pines, ash in the air and embers rising from the ground. Its ship leaves from the same pier as Marlow's, on the meadow's east shore: **Dorian the Ship Captain** sails you over for 1,500 Points (level 70 and up), and **Cassia the Ferry Captain** sails you back for free.
 
-**The ships to Sunscar and Starfall.** Two more islands lie in the far eastern sea, either side of Ashpeak, and their ships leave from the same pier on the meadow's east shore. **Sunscar**, to the north, is an island of sand, dry scrub and old stone under a fierce sun: **Soren the Ship Captain** sails you there for 1,800 gold (level 80 and up), and **Nadia** sails you back. **Starfall**, to the south, is an island where the night never ends, with violet grass under the stars and a lake in the middle: **Lyra the Ship Captain**, at the start of the pier, sails you there for 2,200 gold (level 90 and up), and **Celeste** sails you back.
+**The ships to Sunscar and Starfall.** Two more islands lie in the far eastern sea, either side of Ashpeak, and their ships leave from the same pier on the meadow's east shore. **Sunscar**, to the north, is an island of sand, dry scrub and old stone under a fierce sun: **Soren the Ship Captain** sails you there for 1,800 Points (level 80 and up), and **Nadia** sails you back. **Starfall**, to the south, is an island where the night never ends, with violet grass under the stars and a lake in the middle: **Lyra the Ship Captain**, at the start of the pier, sails you there for 2,200 Points (level 90 and up), and **Celeste** sails you back.
 
 **South Meadow**
 
@@ -329,7 +328,7 @@ Goblins, orcs, the undead and the beastmen of the Wildlands, Frostfell, Ravenmoo
 ### Rewards
 
 - **EXP** is shared by everyone who hurt the monster, by how much damage each person did. **In a party**, what the party earned is shared evenly by every member close by, with a bonus (see "Parties").
-- **Gold** goes to whoever did the most damage.
+- **No money.** Monsters drop items and cards (see "Loot"), never Points.
 - **Easy monsters give less.** A monster more than 5 levels below you gives 15% less EXP for each extra level, down to 10%.
 - **Level-ups** heal you fully. Every 10th level is announced in chat.
 - The level cap is **100**.
@@ -406,63 +405,63 @@ A party that steps out of the circles takes far less damage than one that stands
 - It's drawn big, with its name and health bar always showing.
 - When it falls, the whole town hears who brought it down. It comes back **10 minutes** later, and the town hears that too.
 - A level 20 Knight can just about beat it alone with plenty of potions. A party of three takes about 80 seconds.
-- **It always drops** King's Candy (sells for 600 gold), a Mithril Ingot and usually an Orange Potion. It often drops good gear (Crusader Shield, Greathelm, Great Bow, Ember Staff, Knight's Blade), and half the time a Star Crystal. Rarely it drops the **Moonblade** (8%) or the legendary **Pumpking Card** (2%).
+- **It always drops** King's Candy, a Mithril Ingot and usually an Orange Potion. It often drops good gear (Crusader Shield, Greathelm, Great Bow, Ember Staff, Knight's Blade), and half the time a Star Crystal. Rarely it drops the **Moonblade** (8%) or the legendary **Pumpking Card** (2%).
 
 **The Orc Warlord** keeps his camp where the west road ends in the Orc Woods, among barrels, crates and a campfire:
 
 - He has 24,000 HP, swings a halberd that hits very hard, and heals slowly if left alone. He's drawn big, in gold plate and a red cape.
 - When he falls, the whole town hears who brought him down. He comes back **15 minutes** later.
 - He's meant for a party: three or four players around level 28–30.
-- **He always drops** the Warlord's Banner (sells for 1,500 gold), a Mithril Ingot and a Star Crystal (often two). He often drops good gear (Halberd, Viking Helm, Spartan Shield, Crossbow, Diamond Staff, Katana). Rarely he drops the **Warlord's Medal** (6%), and very rarely the legendary **Dragon Spear** or **Orc Warlord Card** (2% each).
+- **He always drops** the Warlord's Banner, a Mithril Ingot and a Star Crystal (often two). He often drops good gear (Halberd, Viking Helm, Spartan Shield, Crossbow, Diamond Staff, Katana). Rarely he drops the **Warlord's Medal** (6%), and very rarely the legendary **Dragon Spear** or **Orc Warlord Card** (2% each).
 
 **The Minotaur King** rules the Wildlands from his lair on the highest ground: four old stones round a fire.
 
 - He has 45,000 HP, swings a huge war axe, and heals slowly if left alone. He's drawn very big, horned, in gold plate and a dark red cape.
 - When he falls, the whole town hears who brought him down. He comes back **20 minutes** later.
 - He's meant for a party of four around level 40: four level-42 players beat him in under two minutes, with one of them taking the hits and drinking potions.
-- **He always drops** the Minotaur's Crown (sells for 3,000 gold), a Mithril Ingot and a Star Crystal (often two), and usually a White Potion. He often drops good gear (Trident, Close Helm, Engrailed Shield, Golden Plate, Flame Blade). Rarely he drops the **Minotaur Horn** (6%), and very rarely the legendary **Minotaur King Card** (2%), **Sunfire Bow** or **Archmage Staff** (1.5% each).
+- **He always drops** the Minotaur's Crown, a Mithril Ingot and a Star Crystal (often two), and usually a White Potion. He often drops good gear (Trident, Close Helm, Engrailed Shield, Golden Plate, Flame Blade). Rarely he drops the **Minotaur Horn** (6%), and very rarely the legendary **Minotaur King Card** (2%), **Sunfire Bow** or **Archmage Staff** (1.5% each).
 
 **The Frost Giant** keeps a ring of six old stones on Frostfell's icy highlands, where the path from the pier ends.
 
 - He has 70,000 HP, swings a huge war axe, throws ice at anyone out of his reach, and heals slowly if left alone. He's drawn bigger than any other boss: blue-skinned, in silver plate, a horned helmet and a white cape.
 - When he falls, the whole town hears who brought him down. He comes back **25 minutes** later.
 - He's meant for a party of four around level 50: four level-50 players beat him in a few minutes, with one of them taking the hits and drinking potions.
-- **He always drops** the Heart of Winter (sells for 4,500 gold), a Mithril Ingot and a Star Crystal (often two), and usually a White Potion. He often drops good gear (Glacier Lance, Glacier Bow, Aurora Staff, Valkyrie Helm, Frost Plate). Rarely he drops the **Frost Giant's Tooth** (6%), and very rarely the legendary **Frost Giant Card** (2%) or **Frost Scythe** (1.5%).
+- **He always drops** the Heart of Winter, a Mithril Ingot and a Star Crystal (often two), and usually a White Potion. He often drops good gear (Glacier Lance, Glacier Bow, Aurora Staff, Valkyrie Helm, Frost Plate). Rarely he drops the **Frost Giant's Tooth** (6%), and very rarely the legendary **Frost Giant Card** (2%) or **Frost Scythe** (1.5%).
 
 **The Fallen King** sits on his throne in the ruined castle on Ravenmoor's high ground, among broken walls and two rows of old pillars. Dark Knights still keep watch below his gate.
 
 - He has 110,000 HP, swings a halberd, casts dark bolts at anyone out of his reach, and heals slowly if left alone. He's drawn very big: a crowned skeleton in gold plate and a purple cape.
 - When he falls, the whole town hears who brought him down. He comes back **30 minutes** later.
 - He's meant for a party of four at level 60: four level-60 players beat him in a few minutes, with one of them taking the hits and drinking potions.
-- **He always drops** the Royal Key (sells for 6,000 gold), a Mithril Ingot and a Star Crystal (often two), and usually a White Potion. He often drops good gear (Dark Lance, Royal Bow, Soul Staff, Dread Plate, Ruin Shield). Rarely he drops the **King's Seal** (6%), and very rarely the legendary **Fallen King Card** (2%) or **Fallen Crown** (1.5%), a crown anyone can wear.
+- **He always drops** the Royal Key, a Mithril Ingot and a Star Crystal (often two), and usually a White Potion. He often drops good gear (Dark Lance, Royal Bow, Soul Staff, Dread Plate, Ruin Shield). Rarely he drops the **King's Seal** (6%), and very rarely the legendary **Fallen King Card** (2%) or **Fallen Crown** (1.5%), a crown anyone can wear.
 
 **The Ogre Warlord** holds a war camp on Petalfall's bare high ground, at the end of the road from the pier: a ring of eight standing stones round a flagstone yard, with campfires, his plunder and his seat at the far end.
 
 - He has 170,000 HP, swings a huge war axe, throws fire at anyone out of his reach, and heals slowly if left alone. He's the biggest boss yet: red-skinned and horned, in gold armour and a black cape.
 - When he falls, the whole town hears who brought him down. He comes back **30 minutes** later.
 - He's meant for a party of four at level 70: four level-70 players beat him in a few minutes, with one of them taking the hits and drinking potions.
-- **He always drops** the Heart of Spring (sells for 9,000 gold), a Mithril Ingot and a Star Crystal (often two), and usually a White Potion. He often drops good gear (Thunder Glaive, Ogre-Bone Longbow, Storm Staff, Warlord Plate, Jade Shield). Rarely he drops the **Warlord's Fang** (6%), and very rarely the legendary **Ogre Warlord Card** (2%) or **Warlord's Helm** (1.5%), a helmet anyone can wear.
+- **He always drops** the Heart of Spring, a Mithril Ingot and a Star Crystal (often two), and usually a White Potion. He often drops good gear (Thunder Glaive, Ogre-Bone Longbow, Storm Staff, Warlord Plate, Jade Shield). Rarely he drops the **Warlord's Fang** (6%), and very rarely the legendary **Ogre Warlord Card** (2%) or **Warlord's Helm** (1.5%), a helmet anyone can wear.
 
 **The Cinder Colossus** sits in the crater in the middle of Ashpeak, at the end of the road from the pier: a ring of eight standing stones round dark flagstones, with four fires that never go out.
 
 - He has 230,000 HP, swings a huge war axe, throws fire at anyone out of his reach, and heals slowly if left alone. He's the biggest boss yet: red-skinned and horned, in black iron.
 - When he falls, the whole town hears who brought him down. He comes back **30 minutes** later.
 - He's meant for a party of four at level 80: four level-80 players beat him in about five minutes, with one of them taking the hits and drinking a lot of potions.
-- **He always drops** the Heart of Flame (sells for 12,000 gold), a Mithril Ingot and a Star Crystal (often two), and usually a White Potion. He often drops good gear (Magma Lance, Obsidian Longbow, Magma Staff, Obsidian Plate, Obsidian Shield). Rarely he drops the **Colossus Heart** (6%), and very rarely the legendary **Cinder Colossus Card** (2%) or **Colossus Mantle** (1.5%), armour anyone can wear.
+- **He always drops** the Heart of Flame, a Mithril Ingot and a Star Crystal (often two), and usually a White Potion. He often drops good gear (Magma Lance, Obsidian Longbow, Magma Staff, Obsidian Plate, Obsidian Shield). Rarely he drops the **Colossus Heart** (6%), and very rarely the legendary **Cinder Colossus Card** (2%) or **Colossus Mantle** (1.5%), armour anyone can wear.
 
 **The Dune King** sits on his throne in the sunken temple in the middle of Sunscar, at the end of the road from the pier: two rows of pillars, fires at the door.
 
 - He has 330,000 HP, swings a curved sword, throws fire at anyone out of his reach, and heals slowly if left alone. He's a crowned skeleton in gold armour.
 - When he falls, the whole town hears who brought him down. He comes back **30 minutes** later.
 - He's meant for a party of four at level 90: four level-90 players beat him in about six or seven minutes, with one of them taking the hits and drinking a lot of potions.
-- **He always drops** the Sun Disk (sells for 15,000 gold), a Mithril Ingot and a Star Crystal (often two), and usually a White Potion. He often drops good gear (Sun Spear, Sunbeam Longbow, Sun Staff, Warden Plate, Sun Shield). Rarely he drops the **Sun Medallion** (6%), and very rarely the legendary **Dune King Card** (2%) or **Sun Aegis** (1.5%), a shield anyone with a free hand can carry.
+- **He always drops** the Sun Disk, a Mithril Ingot and a Star Crystal (often two), and usually a White Potion. He often drops good gear (Sun Spear, Sunbeam Longbow, Sun Staff, Warden Plate, Sun Shield). Rarely he drops the **Sun Medallion** (6%), and very rarely the legendary **Dune King Card** (2%) or **Sun Aegis** (1.5%), a shield anyone with a free hand can carry.
 
 **The Star Tyrant** stands at his altar south of Starfall's lake, at the end of the road from the pier: a wide ring of standing stones and lamps under the stars.
 
 - He has 450,000 HP, swings a huge war axe, casts starlight at anyone out of his reach, and heals slowly if left alone. He's the biggest boss of all: a violet giant in silver armour.
 - When he falls, the whole town hears who brought him down. He comes back **30 minutes** later.
 - He's meant for a party of four at level 100: four level-100 players beat him in about six or seven minutes, with one of them taking the hits and drinking a lot of potions.
-- **He always drops** the Fallen Star (sells for 20,000 gold), a Mithril Ingot and a Star Crystal (often two), and usually a White Potion. He often drops good gear (Void Lance, Starlight Longbow, Astral Staff, Star Plate, Star Shield). Rarely he drops the **Tyrant's Star** (6%), and very rarely the legendary **Star Tyrant Card** (2%) or **Ring of the Fallen Star** (1.5%), a ring anyone can wear.
+- **He always drops** the Fallen Star, a Mithril Ingot and a Star Crystal (often two), and usually a White Potion. He often drops good gear (Void Lance, Starlight Longbow, Astral Staff, Star Plate, Star Shield). Rarely he drops the **Tyrant's Star** (6%), and very rarely the legendary **Star Tyrant Card** (2%) or **Ring of the Fallen Star** (1.5%), a ring anyone can wear.
 
 ### Dungeons
 
@@ -498,7 +497,7 @@ Ragnarok style, every land has a **dungeon** underneath (the Orc Woods has two):
 | Orc Guard | 35 | 3,200 | Second floor, the second hall | Tough, attacks anyone who comes close |
 | **Orc Chieftain** (boss) | 38 | 60,000 | Second floor, the deepest chamber | Like a field boss (slam and blast, see "Field bosses"); back 20 minutes after he falls |
 
-**The Orc Chieftain** always drops his **Chieftain's Tusk** (sells for 2,500 gold), a Mithril Ingot and a Star Crystal, and usually a White Potion. He often drops good gear (Chieftain's Glaive, Cave Blade, Shaman's Staff, Cave Bow, Orc Guard's Shield) and sometimes a Tusk Necklace. Rarely he drops the **Chieftain's Fang** (6%), and very rarely the legendary **Deepstone Ring** (2%, a ring anyone can wear) or the **Orc Chieftain Card** (2%). He's meant for a party of four around level 36: four players beat him in a couple of minutes.
+**The Orc Chieftain** always drops his **Chieftain's Tusk**, a Mithril Ingot and a Star Crystal, and usually a White Potion. He often drops good gear (Chieftain's Glaive, Cave Blade, Shaman's Staff, Cave Bow, Orc Guard's Shield) and sometimes a Tusk Necklace. Rarely he drops the **Chieftain's Fang** (6%), and very rarely the legendary **Deepstone Ring** (2%, a ring anyone can wear) or the **Orc Chieftain Card** (2%). He's meant for a party of four around level 36: four players beat him in a couple of minutes.
 
 **The Hollow Burrows** (level 14–22): Dusk Hollow's mould and worm tunnels, dug by goblins for their Burrow Queen. The portal is in Dusk Hollow, just south of the east road, between the Grubs and the Rock Worms, with **Tilda the Dungeon Warden** next to it.
 
@@ -846,7 +845,7 @@ Bram stands outside the south gate. He sells:
 | Copper Ring | 120 |
 | Clover Charm | 120 |
 
-He also **buys** almost anything, and has a one-click "sell all monster loot" button. He won't buy monster cards (other players will pay far more), gear with cards in it, or upgraded gear, so you can't sell those by accident: sell them to other players in your own shop instead. Better gear only comes from monsters, or from other players' shops.
+Prices are in **Gattchaa Points**. Bram **doesn't buy anything back**, and neither does anyone else in town: sell spare loot, gear, ingots and cards to other players in your own shop in the Market Square. Better gear only comes from monsters, or from other players' shops.
 
 ### Gear list
 
@@ -1275,12 +1274,12 @@ Ragnarok style: every monster very rarely drops **its own card**. A card goes in
 
 ### How upgrading works
 
-- Every try costs **gold** and **one ingot**.
+- Every try costs **Gattchaa Points** and **one ingot**.
 - **+1 to +4 always work.** After that, a try can fail.
 - **A failed try drops the gear one level** (+6 fails and becomes +4). **It never breaks**, and you never lose the item.
 - Upgrading works on weapons, shields, helmets, armour, legs and boots. **Rings and amulets can't be upgraded.**
 
-| Upgrade to | Chance | Fee (gold) | Ingot used |
+| Upgrade to | Chance | Fee (Points) | Ingot used |
 | --- | --- | --- | --- |
 | +1 | 100% | 100 | Iron Ingot |
 | +2 | 100% | 200 | Iron Ingot |
@@ -1302,7 +1301,7 @@ Ragnarok style: every monster very rarely drops **its own card**. A card goes in
 
 | Ingot | Used for | Where to get it |
 | --- | --- | --- |
-| Iron Ingot | +1 to +5 | Hilda sells them (100 gold). Hornets, Snapper Flowers, Grubs, Night Bats and Rock Worms drop them |
+| Iron Ingot | +1 to +5 | Hilda sells them (100 Points). Hornets, Snapper Flowers, Grubs, Night Bats and Rock Worms drop them |
 | Mithril Ingot | +6 to +8 | Dusk Hollow, Orc Woods, Wildlands, Frostfell, Ravenmoor and Petalfall monsters (Trolls, Orc Zombies and Rock Worms most often), rarely Snapper Flowers. Every boss always drops one |
 | Star Crystal | +9 and +10 | Gazers and Ghosts (about 1 in 200 to 250), Orc Skeletons and Orc Zombies (about 1 in 125 to 170), Lizardmen, Werewolves, Trolls and Vampires (about 1 in 100 to 170), Frostfell's monsters (about 1 in 70 to 125: Frost Drakes most often), Ravenmoor's (about 1 in 60 to 85), Petalfall's (about 1 in 55 to 65), the Pumpking (one kill in two), and the Orc Warlord, Minotaur King, Frost Giant, Fallen King and Ogre Warlord (always, often two) |
 
@@ -1310,7 +1309,7 @@ Ragnarok style: every monster very rarely drops **its own card**. A card goes in
 
 Because failures drop the gear back down, high upgrades take many tries. On average:
 
-| Goal | Tries | Gold | Mithril Ingots | Star Crystals |
+| Goal | Tries | Points | Mithril Ingots | Star Crystals |
 | --- | --- | --- | --- | --- |
 | +7 | about 10 | about 6,000 | about 4 | 0 |
 | +9 | about 29 | about 32,000 | about 19 | about 3 |
@@ -1333,7 +1332,7 @@ Upgraded gear shows its level in its name ("+7 Double Stinging Saber") and in th
 
 ## 10. Duels and the Arena
 
-Fight other players, just for fun or for the ranking. **Nobody ever loses EXP, gold or items in a duel**, and both players are healed when it ends.
+Fight other players, just for fun or for the ranking. **Nobody ever loses EXP, Points or items in a duel**, and both players are healed when it ends.
 
 ### How a duel works
 
@@ -1365,7 +1364,6 @@ The Arena is the ring of sand behind the café. **A duel counts for the ranking 
 - Every ranked win is announced to the whole town, with the winner's new rating.
 - **Magnus the Arena Master** explains the rules and shows your place, rating and wins and losses, plus the ten best players.
 - A ranked win also earns **3 Glory** (see "The Battle Pit and Glory").
-- Guests can duel anywhere, but only signed-in players are ranked.
 
 ## 11. The Battle Pit and Glory
 
@@ -1384,7 +1382,7 @@ The Battle Pit is a big cave arena through the **red portal by the Arena**, betw
 | Skills | Aimed skills hit the player you aim at. Area skills only catch the player you're fighting, never bystanders. Freezes and snares don't work on players |
 | Duelists | Two players in a duel only fight each other; nobody else can join in |
 | Parties and guilds | Members of the same party, or the same guild, can't attack each other (a duel between them is still fine) |
-| Beaten | **You lose nothing**: no EXP, no gold, no items. You wake up by the Arena, beside the portal |
+| Beaten | **You lose nothing**: no EXP, no Points, no items. You wake up by the Arena, beside the portal |
 | Leaving mid-fight | Leaving the game within 10 seconds of another player's attack counts as being beaten by them |
 | Crownhold | During a siege, inside the castle's walls, guild members fight every other guild's, at any level (see "Guild wars") |
 
@@ -1442,19 +1440,18 @@ When a monster falls, the EXP your party earned from it (everyone's damage added
 ### Loot and fighting
 
 - Loot from a monster your party fought is yours to pick up for the first 15 seconds, whoever in the party did the most damage.
-- Gold still goes to whoever did the most damage.
 - In the Battle Pit, members of the same party **can't attack each other**.
 
 ## 13. Guilds
 
-A party is for one hunt; a **guild** is for good. Ragnarok style, it has a name and an emblem that every member wears over their head, a leader and officers, a notice for everyone, a purse, and its own chat. It stays when you leave the game, and it's still there tomorrow.
+A party is for one hunt; a **guild** is for good. Ragnarok style, it has a name and an emblem that every member wears over their head, a leader and officers, a notice for everyone, and its own chat. It stays when you leave the game, and it's still there tomorrow.
 
-- **Guilds are for signed-in players.** A guild belongs to its members' accounts, so guests can't found or join one.
+- A guild belongs to its members' accounts, so it's still there tomorrow.
 - **Up to 30** members.
 
 ### Founding one
 
-Talk to **Leopold the Guild Registrar**, on the main street just east of the fountain plaza (there's a GUILDS signpost). You need **level 20** and **10,000 gold**.
+Talk to **Leopold the Guild Registrar**, on the main street just east of the fountain plaza (there's a GUILDS signpost). You need **level 20** and **10,000 Points**.
 
 - **Pick a name:** 3 to 16 letters or digits (spaces, ' and - are fine too, but not only digits). Every guild's name is its own: nobody else can take it, whatever the capitals.
 - **Pick an emblem:** one of 12 symbols (★ ✦ ♛ ♞ ♠ ♣ ♥ ♦ ✿ ☾ ❖ ✠) in one of 9 colours. The form shows how it will look.
@@ -1466,11 +1463,11 @@ Talk to **Leopold the Guild Registrar**, on the main street just east of the fou
 | --- | --- |
 | Leader (♛) | Everything: invite, remove anyone, make members officers (or members again), change the notice, and hand the guild to someone else |
 | Officer (✦) | Invite players, remove members (not other officers or the leader), and change the notice |
-| Member | Talk on the guild chat, give gold to the purse, and leave whenever they like |
+| Member | Talk on the guild chat, and leave whenever they like |
 
 ### Inviting
 
-**Click (or tap) a player** and press **Invite to guild** (leaders and officers only). They get a pop-up and have 30 seconds to press **Join**. Players in another guild, and guests, can't be invited.
+**Click (or tap) a player** and press **Invite to guild** (leaders and officers only). They get a pop-up and have 30 seconds to press **Join**. Players in another guild can't be invited.
 
 ### The guild window (G)
 
@@ -1478,24 +1475,13 @@ Press **G** (or the shield button) to open it:
 
 - Your guild's emblem and name, your rank, and its record in the guild wars: whether it holds Crownhold, sieges won and crystals broken.
 - **The notice:** a short message for every member (when you meet, who to ask, what's next). The leader and officers write it; members see it in the window, and in the chat each time they come into town.
-- **The purse:** the guild's gold, a box to give some, and the last 10 gifts and hires (see "The guild's purse").
-- **Every member:** a green dot when they're online, their level and job, their rank, when they were last seen, and how much gold they've given. The leader and officers have buttons by each name: **Officer** / **Member** (the leader), **Leader** (the leader hands over the guild, and becomes an officer), and **×** to remove someone. Buttons that are hard to undo ask "Sure?" first: click again within 3 seconds.
+- **The history:** the last 10 guardians hired, who hired them and what they paid.
+- **Every member:** a green dot when they're online, their level and job, their rank, and when they were last seen. The leader and officers have buttons by each name: **Officer** / **Member** (the leader), **Leader** (the leader hands over the guild, and becomes an officer), and **×** to remove someone. Buttons that are hard to undo ask "Sure?" first: click again within 3 seconds.
 - **Leave the guild** at the bottom. The leader can't leave while others are in it: make someone else the leader first. The last one out closes the guild, and its name is free again.
-
-### The guild's purse
-
-Every guild has a purse: shared gold that belongs to the guild, not to anyone in it.
-
-- **Any member can give gold**, from anywhere: open the guild window (G), type an amount (**100 gold or more**) and press **Give**, then **Sure?**. Everyone online hears who gave what.
-- **It pays for castle guardians.** That's the only thing it buys so far (see "Guardians"). The leader and officers do the hiring, at Aldric.
-- **Gold never comes back out.** Nobody can take it out of the purse, not even the leader, so nobody can run off with it. A gift stays in the purse if you leave the guild.
-- **Closing the guild loses what's in the purse.** The window warns you first.
-- **Holding Crownhold fills it.** Each time a member collects the daily tribute, the castle pays **2,000 gold** more into the purse.
-- **The history** shows the last 10 gifts and hires, so everyone can see where the gold went (the castle's payments aren't listed). Hover over a line to see when it happened.
 
 ### The top guilds
 
-**Leopold** keeps the ranking of every guild; anyone can read the top ten at his desk, guests too. If your guild isn't in the top ten, its own place is shown underneath.
+**Leopold** keeps the ranking of every guild; anyone can read the top ten at his desk. If your guild isn't in the top ten, its own place is shown underneath.
 
 | Ranked by | |
 | --- | --- |
@@ -1539,7 +1525,7 @@ Every **Wednesday and Saturday, 8 to 9 pm** Batam time. The whole town hears whe
 | Who goes in | Only **guild members** may go inside the walls. Anyone else inside when a siege begins is put outside the gate, and can't walk back in until it's over |
 | Fighting | Inside the walls, every guild fights every other: click a member of another guild to attack them. **Any level**. Party mates and guild mates never fight each other |
 | Guardians | The holding guild's hired guards attack any other guild's members inside the walls (see "Guardians") |
-| Falling | Costs **nothing**, whether a player or a guardian beat you: no EXP, no gold. Get up, and you're at the camp outside the gate, ready to walk back in |
+| Falling | Costs **nothing**, whether a player or a guardian beat you: no EXP, no Points. Get up, and you're at the camp outside the gate, ready to walk back in |
 | The crystal | Only members of a guild that **doesn't** hold the castle can strike it, and only during a siege |
 | Breaking it | The guild of whoever lands the **last hit** takes the castle at once, and the whole town hears. Everyone inside who isn't in that guild is thrown out to the camp. The crystal is whole again **10 seconds** later: now the new holders must defend it |
 | The end | Whoever holds Crownhold when the hour is up **keeps it** until the next siege. Their members who are in town at that moment become **Castle Lords** |
@@ -1548,12 +1534,12 @@ Three level-70 Lord Knights break the crystal in a little over a minute when nob
 
 ### Guardians
 
-The **leader and officers** of the guild holding Crownhold can hire guardians from **Aldric**, paid from the **guild's purse** (see "The guild's purse"). There are **eight posts**, each for one guardian: he shows what's in the purse and lists them, with **Hire** buttons by the empty ones.
+The **leader and officers** of the guild holding Crownhold can hire guardians from **Aldric**, paid with **the hiring player's own Gattchaa Points**. There are **eight posts**, each for one guardian: he lists them, with **Hire** buttons by the empty ones.
 
 | Guardian | Cost | HP | ATK | DEF | Fights |
 | --- | --- | --- | --- | --- | --- |
-| Castle Knight | 5,000 gold | 20,000 | 215 | 80 | Up close |
-| Castle Archer | 4,000 gold | 12,000 | 165 | 50 | Shoots arrows from far away |
+| Castle Knight | 5,000 Points | 20,000 | 215 | 80 | Up close |
+| Castle Archer | 4,000 Points | 12,000 | 165 | 50 | Shoots arrows from far away |
 
 | Post | Guardians |
 | --- | --- |
@@ -1561,21 +1547,21 @@ The **leader and officers** of the guild holding Crownhold can hire guardians fr
 | Keep gate | 2 Knights and an Archer |
 | Crystal | A Knight and an Archer |
 
-All eight cost 37,000 gold.
+All eight cost 37,000 Points.
 
 - **Hire them before the siege:** nobody can hire during one.
 - **Between sieges** they stand at their posts in plain view. They ignore everyone, and nobody can strike them.
 - **During a siege** they attack any other guild's members inside the walls, and chase them a little way from their posts. They never touch their own guild, or anyone outside the walls. Their own guild can't strike them, and area skills pass them by.
 - **They give no EXP and no loot.** They're just in the way.
 - **A guardian that falls is gone** until someone hires another. Those still standing when the siege ends are healed and stay hired for the next one, even if the server restarts.
-- **If the castle changes hands, all of them leave,** and the gold paid for them doesn't come back. The new holders hire their own, once the siege is over.
+- **If the castle changes hands, all of them leave,** and the Points paid for them don't come back. The new holders hire their own, once the siege is over.
 
 Guardians won't hold the castle alone, but they buy time. Four level-70 Lord Knights who needed about 80 seconds to reach and break an undefended crystal took about three and a half minutes against all eight, and had to cut down every one. Add a few defenders, and that's a very different fight.
 
 ### Holding the castle
 
-- **The tribute.** Every member of the holding guild can collect a tribute from **Aldric** once a day (from midnight Batam time): **3,000 to 6,000 gold, 2 Mithril Ingots, a Star Crystal and 10 White Potions**, sometimes a second Star Crystal (1 in 4), and very rarely a monster card (3%). Keep **4 bag slots** free for it. Each collection also pays **2,000 gold** into your guild's purse.
-- **Guardians.** The leader and officers can hire them from Aldric with the purse (see "Guardians"). Seven members collecting every day pay for a full garrison between one siege and the next.
+- **The tribute.** Every member of the holding guild can collect a tribute from **Aldric** once a day (from midnight Batam time): **3 Mithril Ingots, a Star Crystal and 15 White Potions**, sometimes a second Star Crystal (1 in 4), and very rarely a monster card (3%). Never Points: the game never makes Points. Keep **4 bag slots** free for it.
+- **Guardians.** The leader and officers can hire them from Aldric with their own Points (see "Guardians").
 - **The title.** Castle Lord ✦ (epic), with its own aura: a violet ring with a column of light and gold and violet sparks.
 - **The banners.** Your guild's emblem over every tower, for everyone crossing the bridge to see.
 
@@ -1670,12 +1656,10 @@ Titles are earned by doing things in the game. Open your titles with **T** (or t
 | **Guild wars** | | |
 | Siegebreaker | Rare | Help break Crownhold's crystal 5 times |
 | Castle Lord ✦ | Epic | Be in the guild holding Crownhold when a siege ends (and in town at the time) |
-| Patron | Rare | Give 100,000 gold to your guild's purse |
-| Benefactor | Epic | Give 1,000,000 gold to your guild's purse |
 | **Town** | | |
 | Shopkeeper | Uncommon | Open your own shop in the Market Square |
-| Merchant | Rare | Earn 100,000 gold selling things in your shop |
-| Tycoon | Epic | Earn 1,000,000 gold selling things in your shop |
+| Merchant | Rare | Earn 100,000 Points selling things in your shop |
+| Tycoon | Epic | Earn 1,000,000 Points selling things in your shop |
 
 ✦ **Titles with an aura.** While you show one of these, its aura replaces your gear's aura:
 
@@ -1691,132 +1675,132 @@ Pioneer places are counted per level cap: when the cap goes up, the first 10 pla
 
 ## 16. Monster reference
 
-| Monster | Lv | HP | ATK | DEF | EXP | Gold | Notable drops |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Slime | 1 | 30 | 4 | 0 | 8 | 1–3 | Leather Cap, Pants, Boots, Copper Ring, Clover Charm |
-| Grass Snake | 4 | 85 | 9 | 2 | 32 | 3–7 | Leather Armour, Wooden Shield, Guard Shield, Ring of Vigor |
-| Hornet | 7 | 130 | 12 | 4 | 80 | 6–12 | Kettle Helm, Legion Armour, Bronze Sword, Iron Greaves, Iron Boots, Stinger Pendant, Iron Ingot |
-| Snapper Flower | 10 | 280 | 17 | 5 | 240 | 18–30 | Saber, Bronze Helm, Plate Armour, Recurve Bow, Gnarled Staff, Crystal Staff, Meadow Crown, Iron and Mithril Ingots |
-| Grub | 11 | 380 | 20 | 6 | 300 | 8–14 | Ranger Hood, Wizard Hat, Rapier, Iron and Mithril Ingots |
-| Night Bat | 12 | 400 | 23 | 7 | 330 | 10–18 | Ranger Hood, Ring of Vigor, Rapier, Iron and Mithril Ingots |
-| Rock Worm | 14 | 950 | 30 | 16 | 720 | 14–24 | Iron Greaves, Kite Shield, Horned Helm, Guard Tabard, Iron and Mithril Ingots |
-| Gazer | 16 | 800 | 34 | 10 | 760 | 18–30 | Sage Tabard, Wizard Hat, Ember Staff, Great Bow, Mithril Ingot, Star Crystal |
-| Ghost | 18 | 1,150 | 34 | 12 | 1,100 | 24–40 | Knight's Blade, Greathelm, Crusader Shield, Sage Tabard, Mithril Ingot, Star Crystal |
-| Pumpking | 22 | 12,000 | 58 | 20 | 16,000 | 400–800 | See "Field bosses" |
-| Goblin | 20 | 1,000 | 30 | 10 | 850 | 20–34 | Scimitar, Ring Staff, Scout Armour, Tusk Necklace, Mithril Ingot |
-| Orc Warrior | 23 | 1,400 | 42 | 20 | 1,300 | 30–50 | Barbarian Helm, Round Shield, Steel Greaves, Scimitar, Halberd, Iron and Mithril Ingots |
-| Orc Archer | 25 | 1,300 | 40 | 14 | 1,500 | 32–52 | Composite Bow, Crossbow, Ring Staff, Steel Sabatons, Ring of Might, Mithril Ingot |
-| Orc Skeleton | 27 | 1,700 | 48 | 24 | 1,800 | 34–56 | Katana, Spartan Shield, Dark Plate, Guardian Ring, Mithril Ingot, Star Crystal |
-| Orc Zombie | 29 | 2,100 | 52 | 20 | 2,200 | 36–60 | Starry Cloak, Diamond Staff, Viking Helm, Dark Plate, Mithril Ingot, Star Crystal |
-| Orc Warlord | 33 | 24,000 | 90 | 30 | 40,000 | 1,000–2,000 | See "Field bosses" |
-| Boarman | 31 | 2,100 | 46 | 22 | 2,500 | 38–62 | Armet, Wolfskin Vest, Long Spear, White Potion, Mithril Ingot |
-| Lizardman | 33 | 2,500 | 58 | 30 | 2,900 | 40–66 | Tower Shield, Long Spear, Serpent Staff, Golden Greaves, Trident, Mithril Ingot, Star Crystal |
-| Werewolf | 35 | 2,400 | 50 | 20 | 3,200 | 42–70 | Longbow, Wolfskin Vest, Golden Sabatons, Wolf Fang Necklace, Mithril Ingot, Star Crystal |
-| Troll | 37 | 3,100 | 76 | 24 | 4,300 | 46–76 | Close Helm, Golden Plate, Ring of the Wild, Flame Blade, Mithril Ingot, Star Crystal |
-| Vampire | 39 | 2,500 | 52 | 22 | 4,300 | 48–80 | Celestial Hat, Mystic Robe, Engrailed Shield, Flame Blade, Mithril Ingot, Star Crystal |
-| Minotaur King | 44 | 45,000 | 120 | 40 | 90,000 | 2,000–4,000 | See "Field bosses" |
-| Cave Bat (Orc Caves) | 28 | 1,500 | 34 | 14 | 2,300 | 34–56 | Cave Bow, Deepstone Ring, Orange Potion, Mithril Ingot, Star Crystal |
-| Cave Crawler (Orc Caves) | 30 | 2,100 | 50 | 30 | 2,800 | 36–60 | Orc Guard's Shield, Orange Potion, Mithril Ingot, Star Crystal |
-| Orc Miner (Orc Caves) | 31 | 2,300 | 44 | 24 | 3,000 | 40–66 | Cave Blade, Chieftain's Glaive, Iron Ingot, Mithril Ingot, Star Crystal |
-| Orc Shaman (Orc Caves) | 33 | 2,000 | 46 | 18 | 2,900 | 42–70 | Shaman's Staff, Deepstone Ring, White Potion, Mithril Ingot, Star Crystal |
-| Orc Guard (Orc Caves) | 35 | 3,200 | 48 | 32 | 3,900 | 46–76 | Orc Guard's Shield, Chieftain's Glaive, White Potion, Mithril Ingot, Star Crystal |
-| Orc Chieftain (Orc Caves) | 38 | 60,000 | 110 | 36 | 90,000 | 2,500–4,500 | See "Dungeons" |
-| Tunnel Bat (Hollow Burrows) | 14 | 700 | 15 | 8 | 560 | 16–26 | Orange Potion, Burrow Blade, Burrow Ring, Mithril Ingot, Star Crystal |
-| Burrow Worm (Hollow Burrows) | 16 | 1,250 | 24 | 18 | 820 | 18–30 | Orange Potion, Fungus Staff, Mithril Ingot, Star Crystal |
-| Mole Goblin (Hollow Burrows) | 17 | 900 | 21 | 12 | 860 | 20–32 | Orange Potion, Tunnel Bow, Mithril Ingot, Star Crystal |
-| Fungus Eye (Hollow Burrows) | 19 | 900 | 22 | 10 | 980 | 22–36 | Orange Potion, Burrow Blade, Burrow Ring, Mithril Ingot, Star Crystal |
-| Burrow Brute (Hollow Burrows) | 21 | 1,700 | 25 | 20 | 1,250 | 26–42 | Orange Potion, Fungus Staff, Mithril Ingot, Star Crystal |
-| Burrow Queen (Hollow Burrows) | 24 | 16,000 | 64 | 22 | 22,000 | 500–900 | See "Dungeons" |
-| Ice Bat (Frozen Crypt) | 46 | 3,000 | 42 | 26 | 7,000 | 56–92 | White Potion, Crypt Blade, Frozen Ring, Mithril Ingot, Star Crystal |
-| Frozen Knight (Frozen Crypt) | 48 | 3,800 | 58 | 34 | 7,800 | 58–98 | White Potion, Frost Glaive, Mithril Ingot, Star Crystal |
-| Crypt Wraith (Frozen Crypt) | 50 | 3,900 | 50 | 28 | 8,600 | 60–102 | White Potion, Ice Seer's Staff, Mithril Ingot, Star Crystal |
-| Ice Seer (Frozen Crypt) | 52 | 3,600 | 56 | 26 | 9,400 | 62–106 | White Potion, Crypt Bow, Frozen Ring, Mithril Ingot, Star Crystal |
-| Ice Golem (Frozen Crypt) | 53 | 5,600 | 92 | 40 | 10,400 | 66–110 | White Potion, Crypt Blade, Mithril Ingot, Star Crystal |
-| Crypt Lord (Frozen Crypt) | 57 | 90,000 | 165 | 50 | 200,000 | 4,000–7,000 | See "Dungeons" |
-| Lava Bat (Magma Depths) | 76 | 6,600 | 70 | 46 | 37,000 | 100–168 | Golden Potion, Molten Blade, Ring of the Depths, Mithril Ingot, Star Crystal |
-| Magma Crawler (Magma Depths) | 78 | 9,200 | 96 | 56 | 41,000 | 102–172 | Golden Potion, Drake Lance, Mithril Ingot, Star Crystal |
-| Flame Priest (Magma Depths) | 80 | 6,800 | 72 | 42 | 45,000 | 104–176 | Golden Potion, Flame Priest's Staff, Mithril Ingot, Star Crystal |
-| Molten Knight (Magma Depths) | 81 | 8,200 | 84 | 58 | 47,000 | 106–180 | Golden Potion, Magma Bow, Ring of the Depths, Mithril Ingot, Star Crystal |
-| Obsidian Golem (Magma Depths) | 83 | 10,800 | 140 | 62 | 54,000 | 110–186 | Golden Potion, Molten Blade, Mithril Ingot, Star Crystal |
-| Molten Drake (Magma Depths) | 87 | 280,000 | 250 | 78 | 800,000 | 14,000–24,000 | See "Dungeons" |
-| Goblin Scout (Goblin Warren) | 22 | 1,000 | 22 | 10 | 1,050 | 28–46 | Orange Potion, Warren Cutlass, Warren Ring, Mithril Ingot, Star Crystal |
-| Mud Worm (Goblin Warren) | 23 | 1,600 | 36 | 22 | 1,250 | 30–48 | Orange Potion, Goblin King's Pike, Mithril Ingot, Star Crystal |
-| Goblin Pikeman (Goblin Warren) | 24 | 1,400 | 28 | 18 | 1,300 | 32–52 | Orange Potion, Firecaller Staff, Mithril Ingot, Star Crystal |
-| Goblin Firecaller (Goblin Warren) | 26 | 1,250 | 32 | 12 | 1,450 | 34–56 | Orange Potion, Warren Shortbow, Warren Ring, Mithril Ingot, Star Crystal |
-| Hobgoblin (Goblin Warren) | 27 | 2,400 | 52 | 24 | 1,800 | 36–60 | Orange Potion, Warren Cutlass, Mithril Ingot, Star Crystal |
-| Goblin King (Goblin Warren) | 30 | 30,000 | 80 | 28 | 40,000 | 800–1,500 | See "Dungeons" |
-| Den Stalker (Moonfang Den) | 37 | 2,500 | 40 | 20 | 4,200 | 46–76 | White Potion, Moon Cleaver, Ring of the Full Moon, Mithril Ingot, Star Crystal |
-| Den Gnawer (Moonfang Den) | 38 | 3,200 | 60 | 30 | 4,600 | 48–80 | White Potion, Moonfang Glaive, Mithril Ingot, Star Crystal |
-| Den Raider (Moonfang Den) | 40 | 3,000 | 50 | 28 | 5,000 | 50–84 | White Potion, Moonlit Staff, Mithril Ingot, Star Crystal |
-| Moon Shaman (Moonfang Den) | 42 | 2,700 | 48 | 20 | 5,600 | 52–86 | White Potion, Den Hunter's Bow, Ring of the Full Moon, Mithril Ingot, Star Crystal |
-| Cave Troll (Moonfang Den) | 44 | 4,400 | 84 | 32 | 6,600 | 56–92 | White Potion, Moon Cleaver, Mithril Ingot, Star Crystal |
-| Moonfang Alpha (Moonfang Den) | 47 | 55,000 | 135 | 42 | 120,000 | 2,500–4,500 | See "Dungeons" |
-| Cellar Bat (Slime Cellar) | 6 | 110 | 8 | 2 | 55 | 4–8 | Red Potion, Cellar Cleaver, Jelly Ring, Iron Ingot, Star Crystal |
-| Blue Jelly (Slime Cellar) | 7 | 210 | 10 | 4 | 85 | 5–10 | Red Potion, Slime Staff, Iron Ingot, Star Crystal |
-| Cellar Viper (Slime Cellar) | 8 | 190 | 12 | 3 | 105 | 6–12 | Red Potion, Cellar Bow, Iron Ingot, Star Crystal |
-| Goblin Thief (Slime Cellar) | 10 | 240 | 13 | 4 | 170 | 8–15 | Red Potion, Cellar Cleaver, Jelly Ring, Iron Ingot, Star Crystal |
-| Great Slime (Slime Cellar) | 11 | 460 | 18 | 7 | 270 | 10–18 | Red Potion, Slime Staff, Iron Ingot, Star Crystal |
-| Slime King (Slime Cellar) | 14 | 5,000 | 34 | 10 | 5,000 | 120–240 | See "Dungeons" |
-| Shadow Bat (Shadow Vault) | 56 | 4,100 | 54 | 34 | 12,500 | 68–114 | White Potion, Vault Blade, Shadow Ring, Mithril Ingot, Star Crystal |
-| Bone Crawler (Shadow Vault) | 58 | 5,600 | 82 | 46 | 14,000 | 70–118 | White Potion, Shadow Scythe, Mithril Ingot, Star Crystal |
-| Vault Knight (Shadow Vault) | 59 | 5,200 | 66 | 44 | 15,000 | 72–120 | White Potion, Shadow Staff, Mithril Ingot, Star Crystal |
-| Shadow Priest (Shadow Vault) | 61 | 4,500 | 60 | 32 | 16,500 | 74–124 | White Potion, Vault Bow, Shadow Ring, Mithril Ingot, Star Crystal |
-| Bone Colossus (Shadow Vault) | 63 | 7,000 | 110 | 48 | 19,000 | 78–130 | White Potion, Vault Blade, Mithril Ingot, Star Crystal |
-| Shadow Count (Shadow Vault) | 67 | 130,000 | 190 | 58 | 300,000 | 5,500–9,500 | See "Dungeons" |
-| Blossom Wasp (Blossom Grotto) | 66 | 5,000 | 62 | 36 | 22,000 | 86–144 | White Potion, Jade Katana, Lotus Ring, Mithril Ingot, Star Crystal |
-| Root Crawler (Blossom Grotto) | 68 | 7,400 | 92 | 50 | 25,000 | 88–148 | White Potion, Jade Glaive, Mithril Ingot, Star Crystal |
-| Fox Guard (Blossom Grotto) | 69 | 6,400 | 74 | 48 | 26,500 | 90–150 | White Potion, Lantern Staff, Mithril Ingot, Star Crystal |
-| Lantern Ghost (Blossom Grotto) | 71 | 5,600 | 66 | 38 | 29,000 | 92–154 | White Potion, Blossom Longbow, Lotus Ring, Mithril Ingot, Star Crystal |
-| Stone Oni (Blossom Grotto) | 73 | 8,600 | 124 | 54 | 33,000 | 96–160 | White Potion, Jade Katana, Mithril Ingot, Star Crystal |
-| Jade Serpent (Blossom Grotto) | 77 | 200,000 | 205 | 66 | 500,000 | 9,000–16,000 | See "Dungeons" |
-| Tomb Scarab (Sunken Tomb) | 86 | 7,000 | 74 | 50 | 58,000 | 110–190 | Golden Potion, Pharaoh's Khopesh, Ring of the Sands, Mithril Ingot, Star Crystal |
-| Sand Worm (Sunken Tomb) | 88 | 10,000 | 104 | 60 | 63,000 | 112–194 | Golden Potion, Tomb Spear, Mithril Ingot, Star Crystal |
-| Tomb Mummy (Sunken Tomb) | 89 | 8,600 | 86 | 58 | 66,000 | 114–196 | Golden Potion, Jackal Staff, Mithril Ingot, Star Crystal |
-| Jackal Priest (Sunken Tomb) | 91 | 7,400 | 78 | 46 | 71,000 | 116–200 | Golden Potion, Tomb Bow, Ring of the Sands, Mithril Ingot, Star Crystal |
-| Sandstone Colossus (Sunken Tomb) | 93 | 11,400 | 148 | 64 | 78,000 | 120–206 | Golden Potion, Pharaoh's Khopesh, Mithril Ingot, Star Crystal |
-| Tomb Pharaoh (Sunken Tomb) | 97 | 320,000 | 260 | 80 | 1,400,000 | 18,000–30,000 | See "Dungeons" |
-| Rift Bat (Void Rift) | 94 | 7,800 | 78 | 56 | 80,000 | 122–210 | Golden Potion, Rift Blade, Ring of the Rift, Mithril Ingot, Star Crystal |
-| Void Worm (Void Rift) | 95 | 11,000 | 112 | 64 | 84,000 | 124–212 | Golden Potion, Void Scythe, Mithril Ingot, Star Crystal |
-| Rift Knight (Void Rift) | 97 | 9,000 | 90 | 66 | 90,000 | 126–216 | Golden Potion, Rift Staff, Mithril Ingot, Star Crystal |
-| Void Eye (Void Rift) | 98 | 8,000 | 82 | 52 | 93,000 | 128–218 | Golden Potion, Rift Bow, Ring of the Rift, Mithril Ingot, Star Crystal |
-| Void Golem (Void Rift) | 99 | 12,000 | 158 | 68 | 99,000 | 130–222 | Golden Potion, Rift Blade, Mithril Ingot, Star Crystal |
-| Void Wyrm (Void Rift) | 106 | 340,000 | 285 | 86 | 2,200,000 | 26,000–40,000 | See "Dungeons" |
-| Yeti | 41 | 2,900 | 50 | 26 | 5,200 | 52–86 | Snow Hood, Fur Cloak, Ice Sword, White Potion, Mithril Ingot, Star Crystal |
-| Ramhorn | 43 | 3,300 | 66 | 34 | 5,900 | 54–90 | Frost Shield, Frost Greaves, Frost Bow, Glacier Lance, Mithril Ingot, Star Crystal |
-| Frost Shaman | 45 | 2,600 | 52 | 24 | 6,200 | 56–94 | Moon Hat, Winter Robe, Winter Staff, Snowflake Pendant, Mithril Ingot, Star Crystal |
-| Frost Wight | 47 | 3,500 | 60 | 32 | 7,200 | 58–98 | Valkyrie Helm, Frost Plate, Frost Sabatons, Glacier Bow, Frost Ring, Mithril Ingot, Star Crystal |
-| Frost Drake | 49 | 4,200 | 84 | 30 | 8,600 | 62–104 | Glacier Lance, Aurora Staff, Frost Plate, Valkyrie Helm, Mithril Ingot, Star Crystal |
-| Frost Giant | 54 | 70,000 | 150 | 48 | 150,000 | 3,000–6,000 | See "Field bosses" |
-| Wraith | 51 | 4,300 | 58 | 28 | 9,900 | 64–108 | Shadow Hood, Shadow Cloak, Blood Bow, White Potion, Mithril Ingot, Star Crystal |
-| Gargoyle | 53 | 4,600 | 62 | 38 | 10,600 | 66–112 | Bascinet, Gilded Blade, Bone Charm, Ruin Shield, Mithril Ingot, Star Crystal |
-| Dark Knight | 55 | 5,400 | 72 | 44 | 12,700 | 70–118 | Dread Plate, Dark Lance, Ruin Shield, Ring of Souls, Mithril Ingot, Star Crystal |
-| Lich | 57 | 4,400 | 62 | 30 | 14,300 | 72–122 | Night Hat, Lich Robe, Bone Staff, Soul Staff, Mithril Ingot, Star Crystal |
-| Flesh Golem | 59 | 6,200 | 102 | 40 | 17,000 | 76–128 | Dread Plate, Royal Bow, Soul Staff, Dark Lance, Mithril Ingot, Star Crystal |
-| Fallen King | 64 | 110,000 | 180 | 56 | 260,000 | 5,000–9,000 | See "Field bosses" |
-| Moon Hare | 61 | 4,700 | 66 | 34 | 17,500 | 80–134 | Blossom Blade, Petal Bow, Moonstone Ring, White Potion, Mithril Ingot, Star Crystal |
-| Fox Spirit | 63 | 5,200 | 66 | 30 | 19,800 | 82–138 | Foxfire Staff, Blossom Hat, Foxfire Charm, Storm Staff, Mithril Ingot, Star Crystal |
-| Crow Blade | 65 | 5,600 | 70 | 40 | 21,800 | 86–142 | Crow Mask, Crow Mantle, Blossom Blade, Ogre-Bone Longbow, Mithril Ingot, Star Crystal |
-| Phantom Swordsman | 67 | 6,000 | 84 | 50 | 24,200 | 88–148 | Phantom Helm, Jade Shield, Thunder Glaive, Warlord Plate, Mithril Ingot, Star Crystal |
-| Red Ogre | 69 | 7,600 | 116 | 46 | 29,500 | 92–156 | Blossom Robe, Warlord Plate, Ogre-Bone Longbow, Storm Staff, Thunder Glaive, Mithril Ingot, Star Crystal |
-| Ogre Warlord | 74 | 170,000 | 205 | 62 | 420,000 | 8,000–14,000 | See "Field bosses" |
-| Ember Imp | 71 | 6,000 | 74 | 42 | 30,000 | 94–158 | Cinder Blade, Ember Bow, Ember Ring, White Potion, Mithril Ingot, Star Crystal |
-| Salamander | 73 | 5,800 | 64 | 36 | 33,000 | 96–162 | Cinder Staff, Ember Hood, Salamander Charm, Magma Staff, Mithril Ingot, Star Crystal |
-| Obsidian Knight | 75 | 6,600 | 80 | 50 | 36,000 | 98–166 | Obsidian Helm, Obsidian Shield, Magma Lance, Obsidian Plate, Mithril Ingot, Star Crystal |
-| Cinder Wraith | 77 | 6,800 | 74 | 50 | 39,000 | 100–170 | Ashen Hood, Ashen Leathers, Cinder Robe, Obsidian Longbow, Mithril Ingot, Star Crystal |
-| Magma Golem | 79 | 8,600 | 124 | 52 | 44,000 | 104–176 | Obsidian Plate, Cinder Blade, Magma Lance, Magma Staff, Obsidian Longbow, Mithril Ingot, Star Crystal |
-| Cinder Colossus | 84 | 230,000 | 220 | 68 | 600,000 | 12,000–20,000 | See "Field bosses" |
-| Dune Stalker | 81 | 6,700 | 80 | 46 | 47,000 | 106–180 | Sun Blade, Sand Bow, Sand Ring, White Potion, Mithril Ingot, Star Crystal |
-| Dust Djinn | 83 | 6,500 | 58 | 40 | 51,000 | 108–184 | Djinn Staff, Djinn Hat, Scarab Charm, Sun Staff, Mithril Ingot, Star Crystal |
-| Tomb Warden | 85 | 7,400 | 74 | 56 | 56,000 | 110–188 | Warden's Helm, Sun Shield, Sun Spear, Warden Plate, Mithril Ingot, Star Crystal |
-| Desert Raider | 87 | 7,600 | 80 | 54 | 61,000 | 112–192 | Desert Hood, Desert Garb, Sun Robe, Sunbeam Longbow, Mithril Ingot, Star Crystal |
-| Sand Golem | 89 | 9,600 | 136 | 58 | 66,000 | 116–198 | Warden Plate, Sun Blade, Sun Spear, Sun Staff, Sunbeam Longbow, Mithril Ingot, Star Crystal |
-| Dune King | 94 | 330,000 | 245 | 76 | 1,200,000 | 16,000–26,000 | See "Field bosses" |
-| Void Bat | 91 | 7,400 | 76 | 52 | 71,000 | 118–202 | Star Blade, Moon Bow, Star Ring, White Potion, Mithril Ingot, Star Crystal |
-| Astral Seer | 93 | 7,200 | 76 | 46 | 77,000 | 120–206 | Seer's Staff, Seer's Hat, Night Charm, Astral Staff, Mithril Ingot, Star Crystal |
-| Star Knight | 95 | 8,200 | 86 | 64 | 83,000 | 122–210 | Star Helm, Star Shield, Void Lance, Star Plate, Mithril Ingot, Star Crystal |
-| Night Wisp | 97 | 8,400 | 78 | 58 | 90,000 | 124–214 | Night Hood, Night Leathers, Astral Robe, Starlight Longbow, Mithril Ingot, Star Crystal |
-| Crystal Golem | 99 | 10,600 | 150 | 64 | 97,000 | 128–220 | Star Plate, Star Blade, Void Lance, Astral Staff, Starlight Longbow, Mithril Ingot, Star Crystal |
-| Star Tyrant | 104 | 450,000 | 270 | 84 | 1,800,000 | 22,000–34,000 | See "Field bosses" |
+| Monster | Lv | HP | ATK | DEF | EXP | Notable drops |
+| --- | --- | --- | --- | --- | --- | --- |
+| Slime | 1 | 30 | 4 | 0 | 8 | Leather Cap, Pants, Boots, Copper Ring, Clover Charm |
+| Grass Snake | 4 | 85 | 9 | 2 | 32 | Leather Armour, Wooden Shield, Guard Shield, Ring of Vigor |
+| Hornet | 7 | 130 | 12 | 4 | 80 | Kettle Helm, Legion Armour, Bronze Sword, Iron Greaves, Iron Boots, Stinger Pendant, Iron Ingot |
+| Snapper Flower | 10 | 280 | 17 | 5 | 240 | Saber, Bronze Helm, Plate Armour, Recurve Bow, Gnarled Staff, Crystal Staff, Meadow Crown, Iron and Mithril Ingots |
+| Grub | 11 | 380 | 20 | 6 | 300 | Ranger Hood, Wizard Hat, Rapier, Iron and Mithril Ingots |
+| Night Bat | 12 | 400 | 23 | 7 | 330 | Ranger Hood, Ring of Vigor, Rapier, Iron and Mithril Ingots |
+| Rock Worm | 14 | 950 | 30 | 16 | 720 | Iron Greaves, Kite Shield, Horned Helm, Guard Tabard, Iron and Mithril Ingots |
+| Gazer | 16 | 800 | 34 | 10 | 760 | Sage Tabard, Wizard Hat, Ember Staff, Great Bow, Mithril Ingot, Star Crystal |
+| Ghost | 18 | 1,150 | 34 | 12 | 1,100 | Knight's Blade, Greathelm, Crusader Shield, Sage Tabard, Mithril Ingot, Star Crystal |
+| Pumpking | 22 | 12,000 | 58 | 20 | 16,000 | See "Field bosses" |
+| Goblin | 20 | 1,000 | 30 | 10 | 850 | Scimitar, Ring Staff, Scout Armour, Tusk Necklace, Mithril Ingot |
+| Orc Warrior | 23 | 1,400 | 42 | 20 | 1,300 | Barbarian Helm, Round Shield, Steel Greaves, Scimitar, Halberd, Iron and Mithril Ingots |
+| Orc Archer | 25 | 1,300 | 40 | 14 | 1,500 | Composite Bow, Crossbow, Ring Staff, Steel Sabatons, Ring of Might, Mithril Ingot |
+| Orc Skeleton | 27 | 1,700 | 48 | 24 | 1,800 | Katana, Spartan Shield, Dark Plate, Guardian Ring, Mithril Ingot, Star Crystal |
+| Orc Zombie | 29 | 2,100 | 52 | 20 | 2,200 | Starry Cloak, Diamond Staff, Viking Helm, Dark Plate, Mithril Ingot, Star Crystal |
+| Orc Warlord | 33 | 24,000 | 90 | 30 | 40,000 | See "Field bosses" |
+| Boarman | 31 | 2,100 | 46 | 22 | 2,500 | Armet, Wolfskin Vest, Long Spear, White Potion, Mithril Ingot |
+| Lizardman | 33 | 2,500 | 58 | 30 | 2,900 | Tower Shield, Long Spear, Serpent Staff, Golden Greaves, Trident, Mithril Ingot, Star Crystal |
+| Werewolf | 35 | 2,400 | 50 | 20 | 3,200 | Longbow, Wolfskin Vest, Golden Sabatons, Wolf Fang Necklace, Mithril Ingot, Star Crystal |
+| Troll | 37 | 3,100 | 76 | 24 | 4,300 | Close Helm, Golden Plate, Ring of the Wild, Flame Blade, Mithril Ingot, Star Crystal |
+| Vampire | 39 | 2,500 | 52 | 22 | 4,300 | Celestial Hat, Mystic Robe, Engrailed Shield, Flame Blade, Mithril Ingot, Star Crystal |
+| Minotaur King | 44 | 45,000 | 120 | 40 | 90,000 | See "Field bosses" |
+| Cave Bat (Orc Caves) | 28 | 1,500 | 34 | 14 | 2,300 | Cave Bow, Deepstone Ring, Orange Potion, Mithril Ingot, Star Crystal |
+| Cave Crawler (Orc Caves) | 30 | 2,100 | 50 | 30 | 2,800 | Orc Guard's Shield, Orange Potion, Mithril Ingot, Star Crystal |
+| Orc Miner (Orc Caves) | 31 | 2,300 | 44 | 24 | 3,000 | Cave Blade, Chieftain's Glaive, Iron Ingot, Mithril Ingot, Star Crystal |
+| Orc Shaman (Orc Caves) | 33 | 2,000 | 46 | 18 | 2,900 | Shaman's Staff, Deepstone Ring, White Potion, Mithril Ingot, Star Crystal |
+| Orc Guard (Orc Caves) | 35 | 3,200 | 48 | 32 | 3,900 | Orc Guard's Shield, Chieftain's Glaive, White Potion, Mithril Ingot, Star Crystal |
+| Orc Chieftain (Orc Caves) | 38 | 60,000 | 110 | 36 | 90,000 | See "Dungeons" |
+| Tunnel Bat (Hollow Burrows) | 14 | 700 | 15 | 8 | 560 | Orange Potion, Burrow Blade, Burrow Ring, Mithril Ingot, Star Crystal |
+| Burrow Worm (Hollow Burrows) | 16 | 1,250 | 24 | 18 | 820 | Orange Potion, Fungus Staff, Mithril Ingot, Star Crystal |
+| Mole Goblin (Hollow Burrows) | 17 | 900 | 21 | 12 | 860 | Orange Potion, Tunnel Bow, Mithril Ingot, Star Crystal |
+| Fungus Eye (Hollow Burrows) | 19 | 900 | 22 | 10 | 980 | Orange Potion, Burrow Blade, Burrow Ring, Mithril Ingot, Star Crystal |
+| Burrow Brute (Hollow Burrows) | 21 | 1,700 | 25 | 20 | 1,250 | Orange Potion, Fungus Staff, Mithril Ingot, Star Crystal |
+| Burrow Queen (Hollow Burrows) | 24 | 16,000 | 64 | 22 | 22,000 | See "Dungeons" |
+| Ice Bat (Frozen Crypt) | 46 | 3,000 | 42 | 26 | 7,000 | White Potion, Crypt Blade, Frozen Ring, Mithril Ingot, Star Crystal |
+| Frozen Knight (Frozen Crypt) | 48 | 3,800 | 58 | 34 | 7,800 | White Potion, Frost Glaive, Mithril Ingot, Star Crystal |
+| Crypt Wraith (Frozen Crypt) | 50 | 3,900 | 50 | 28 | 8,600 | White Potion, Ice Seer's Staff, Mithril Ingot, Star Crystal |
+| Ice Seer (Frozen Crypt) | 52 | 3,600 | 56 | 26 | 9,400 | White Potion, Crypt Bow, Frozen Ring, Mithril Ingot, Star Crystal |
+| Ice Golem (Frozen Crypt) | 53 | 5,600 | 92 | 40 | 10,400 | White Potion, Crypt Blade, Mithril Ingot, Star Crystal |
+| Crypt Lord (Frozen Crypt) | 57 | 90,000 | 165 | 50 | 200,000 | See "Dungeons" |
+| Lava Bat (Magma Depths) | 76 | 6,600 | 70 | 46 | 37,000 | Golden Potion, Molten Blade, Ring of the Depths, Mithril Ingot, Star Crystal |
+| Magma Crawler (Magma Depths) | 78 | 9,200 | 96 | 56 | 41,000 | Golden Potion, Drake Lance, Mithril Ingot, Star Crystal |
+| Flame Priest (Magma Depths) | 80 | 6,800 | 72 | 42 | 45,000 | Golden Potion, Flame Priest's Staff, Mithril Ingot, Star Crystal |
+| Molten Knight (Magma Depths) | 81 | 8,200 | 84 | 58 | 47,000 | Golden Potion, Magma Bow, Ring of the Depths, Mithril Ingot, Star Crystal |
+| Obsidian Golem (Magma Depths) | 83 | 10,800 | 140 | 62 | 54,000 | Golden Potion, Molten Blade, Mithril Ingot, Star Crystal |
+| Molten Drake (Magma Depths) | 87 | 280,000 | 250 | 78 | 800,000 | See "Dungeons" |
+| Goblin Scout (Goblin Warren) | 22 | 1,000 | 22 | 10 | 1,050 | Orange Potion, Warren Cutlass, Warren Ring, Mithril Ingot, Star Crystal |
+| Mud Worm (Goblin Warren) | 23 | 1,600 | 36 | 22 | 1,250 | Orange Potion, Goblin King's Pike, Mithril Ingot, Star Crystal |
+| Goblin Pikeman (Goblin Warren) | 24 | 1,400 | 28 | 18 | 1,300 | Orange Potion, Firecaller Staff, Mithril Ingot, Star Crystal |
+| Goblin Firecaller (Goblin Warren) | 26 | 1,250 | 32 | 12 | 1,450 | Orange Potion, Warren Shortbow, Warren Ring, Mithril Ingot, Star Crystal |
+| Hobgoblin (Goblin Warren) | 27 | 2,400 | 52 | 24 | 1,800 | Orange Potion, Warren Cutlass, Mithril Ingot, Star Crystal |
+| Goblin King (Goblin Warren) | 30 | 30,000 | 80 | 28 | 40,000 | See "Dungeons" |
+| Den Stalker (Moonfang Den) | 37 | 2,500 | 40 | 20 | 4,200 | White Potion, Moon Cleaver, Ring of the Full Moon, Mithril Ingot, Star Crystal |
+| Den Gnawer (Moonfang Den) | 38 | 3,200 | 60 | 30 | 4,600 | White Potion, Moonfang Glaive, Mithril Ingot, Star Crystal |
+| Den Raider (Moonfang Den) | 40 | 3,000 | 50 | 28 | 5,000 | White Potion, Moonlit Staff, Mithril Ingot, Star Crystal |
+| Moon Shaman (Moonfang Den) | 42 | 2,700 | 48 | 20 | 5,600 | White Potion, Den Hunter's Bow, Ring of the Full Moon, Mithril Ingot, Star Crystal |
+| Cave Troll (Moonfang Den) | 44 | 4,400 | 84 | 32 | 6,600 | White Potion, Moon Cleaver, Mithril Ingot, Star Crystal |
+| Moonfang Alpha (Moonfang Den) | 47 | 55,000 | 135 | 42 | 120,000 | See "Dungeons" |
+| Cellar Bat (Slime Cellar) | 6 | 110 | 8 | 2 | 55 | Red Potion, Cellar Cleaver, Jelly Ring, Iron Ingot, Star Crystal |
+| Blue Jelly (Slime Cellar) | 7 | 210 | 10 | 4 | 85 | Red Potion, Slime Staff, Iron Ingot, Star Crystal |
+| Cellar Viper (Slime Cellar) | 8 | 190 | 12 | 3 | 105 | Red Potion, Cellar Bow, Iron Ingot, Star Crystal |
+| Goblin Thief (Slime Cellar) | 10 | 240 | 13 | 4 | 170 | Red Potion, Cellar Cleaver, Jelly Ring, Iron Ingot, Star Crystal |
+| Great Slime (Slime Cellar) | 11 | 460 | 18 | 7 | 270 | Red Potion, Slime Staff, Iron Ingot, Star Crystal |
+| Slime King (Slime Cellar) | 14 | 5,000 | 34 | 10 | 5,000 | See "Dungeons" |
+| Shadow Bat (Shadow Vault) | 56 | 4,100 | 54 | 34 | 12,500 | White Potion, Vault Blade, Shadow Ring, Mithril Ingot, Star Crystal |
+| Bone Crawler (Shadow Vault) | 58 | 5,600 | 82 | 46 | 14,000 | White Potion, Shadow Scythe, Mithril Ingot, Star Crystal |
+| Vault Knight (Shadow Vault) | 59 | 5,200 | 66 | 44 | 15,000 | White Potion, Shadow Staff, Mithril Ingot, Star Crystal |
+| Shadow Priest (Shadow Vault) | 61 | 4,500 | 60 | 32 | 16,500 | White Potion, Vault Bow, Shadow Ring, Mithril Ingot, Star Crystal |
+| Bone Colossus (Shadow Vault) | 63 | 7,000 | 110 | 48 | 19,000 | White Potion, Vault Blade, Mithril Ingot, Star Crystal |
+| Shadow Count (Shadow Vault) | 67 | 130,000 | 190 | 58 | 300,000 | See "Dungeons" |
+| Blossom Wasp (Blossom Grotto) | 66 | 5,000 | 62 | 36 | 22,000 | White Potion, Jade Katana, Lotus Ring, Mithril Ingot, Star Crystal |
+| Root Crawler (Blossom Grotto) | 68 | 7,400 | 92 | 50 | 25,000 | White Potion, Jade Glaive, Mithril Ingot, Star Crystal |
+| Fox Guard (Blossom Grotto) | 69 | 6,400 | 74 | 48 | 26,500 | White Potion, Lantern Staff, Mithril Ingot, Star Crystal |
+| Lantern Ghost (Blossom Grotto) | 71 | 5,600 | 66 | 38 | 29,000 | White Potion, Blossom Longbow, Lotus Ring, Mithril Ingot, Star Crystal |
+| Stone Oni (Blossom Grotto) | 73 | 8,600 | 124 | 54 | 33,000 | White Potion, Jade Katana, Mithril Ingot, Star Crystal |
+| Jade Serpent (Blossom Grotto) | 77 | 200,000 | 205 | 66 | 500,000 | See "Dungeons" |
+| Tomb Scarab (Sunken Tomb) | 86 | 7,000 | 74 | 50 | 58,000 | Golden Potion, Pharaoh's Khopesh, Ring of the Sands, Mithril Ingot, Star Crystal |
+| Sand Worm (Sunken Tomb) | 88 | 10,000 | 104 | 60 | 63,000 | Golden Potion, Tomb Spear, Mithril Ingot, Star Crystal |
+| Tomb Mummy (Sunken Tomb) | 89 | 8,600 | 86 | 58 | 66,000 | Golden Potion, Jackal Staff, Mithril Ingot, Star Crystal |
+| Jackal Priest (Sunken Tomb) | 91 | 7,400 | 78 | 46 | 71,000 | Golden Potion, Tomb Bow, Ring of the Sands, Mithril Ingot, Star Crystal |
+| Sandstone Colossus (Sunken Tomb) | 93 | 11,400 | 148 | 64 | 78,000 | Golden Potion, Pharaoh's Khopesh, Mithril Ingot, Star Crystal |
+| Tomb Pharaoh (Sunken Tomb) | 97 | 320,000 | 260 | 80 | 1,400,000 | See "Dungeons" |
+| Rift Bat (Void Rift) | 94 | 7,800 | 78 | 56 | 80,000 | Golden Potion, Rift Blade, Ring of the Rift, Mithril Ingot, Star Crystal |
+| Void Worm (Void Rift) | 95 | 11,000 | 112 | 64 | 84,000 | Golden Potion, Void Scythe, Mithril Ingot, Star Crystal |
+| Rift Knight (Void Rift) | 97 | 9,000 | 90 | 66 | 90,000 | Golden Potion, Rift Staff, Mithril Ingot, Star Crystal |
+| Void Eye (Void Rift) | 98 | 8,000 | 82 | 52 | 93,000 | Golden Potion, Rift Bow, Ring of the Rift, Mithril Ingot, Star Crystal |
+| Void Golem (Void Rift) | 99 | 12,000 | 158 | 68 | 99,000 | Golden Potion, Rift Blade, Mithril Ingot, Star Crystal |
+| Void Wyrm (Void Rift) | 106 | 340,000 | 285 | 86 | 2,200,000 | See "Dungeons" |
+| Yeti | 41 | 2,900 | 50 | 26 | 5,200 | Snow Hood, Fur Cloak, Ice Sword, White Potion, Mithril Ingot, Star Crystal |
+| Ramhorn | 43 | 3,300 | 66 | 34 | 5,900 | Frost Shield, Frost Greaves, Frost Bow, Glacier Lance, Mithril Ingot, Star Crystal |
+| Frost Shaman | 45 | 2,600 | 52 | 24 | 6,200 | Moon Hat, Winter Robe, Winter Staff, Snowflake Pendant, Mithril Ingot, Star Crystal |
+| Frost Wight | 47 | 3,500 | 60 | 32 | 7,200 | Valkyrie Helm, Frost Plate, Frost Sabatons, Glacier Bow, Frost Ring, Mithril Ingot, Star Crystal |
+| Frost Drake | 49 | 4,200 | 84 | 30 | 8,600 | Glacier Lance, Aurora Staff, Frost Plate, Valkyrie Helm, Mithril Ingot, Star Crystal |
+| Frost Giant | 54 | 70,000 | 150 | 48 | 150,000 | See "Field bosses" |
+| Wraith | 51 | 4,300 | 58 | 28 | 9,900 | Shadow Hood, Shadow Cloak, Blood Bow, White Potion, Mithril Ingot, Star Crystal |
+| Gargoyle | 53 | 4,600 | 62 | 38 | 10,600 | Bascinet, Gilded Blade, Bone Charm, Ruin Shield, Mithril Ingot, Star Crystal |
+| Dark Knight | 55 | 5,400 | 72 | 44 | 12,700 | Dread Plate, Dark Lance, Ruin Shield, Ring of Souls, Mithril Ingot, Star Crystal |
+| Lich | 57 | 4,400 | 62 | 30 | 14,300 | Night Hat, Lich Robe, Bone Staff, Soul Staff, Mithril Ingot, Star Crystal |
+| Flesh Golem | 59 | 6,200 | 102 | 40 | 17,000 | Dread Plate, Royal Bow, Soul Staff, Dark Lance, Mithril Ingot, Star Crystal |
+| Fallen King | 64 | 110,000 | 180 | 56 | 260,000 | See "Field bosses" |
+| Moon Hare | 61 | 4,700 | 66 | 34 | 17,500 | Blossom Blade, Petal Bow, Moonstone Ring, White Potion, Mithril Ingot, Star Crystal |
+| Fox Spirit | 63 | 5,200 | 66 | 30 | 19,800 | Foxfire Staff, Blossom Hat, Foxfire Charm, Storm Staff, Mithril Ingot, Star Crystal |
+| Crow Blade | 65 | 5,600 | 70 | 40 | 21,800 | Crow Mask, Crow Mantle, Blossom Blade, Ogre-Bone Longbow, Mithril Ingot, Star Crystal |
+| Phantom Swordsman | 67 | 6,000 | 84 | 50 | 24,200 | Phantom Helm, Jade Shield, Thunder Glaive, Warlord Plate, Mithril Ingot, Star Crystal |
+| Red Ogre | 69 | 7,600 | 116 | 46 | 29,500 | Blossom Robe, Warlord Plate, Ogre-Bone Longbow, Storm Staff, Thunder Glaive, Mithril Ingot, Star Crystal |
+| Ogre Warlord | 74 | 170,000 | 205 | 62 | 420,000 | See "Field bosses" |
+| Ember Imp | 71 | 6,000 | 74 | 42 | 30,000 | Cinder Blade, Ember Bow, Ember Ring, White Potion, Mithril Ingot, Star Crystal |
+| Salamander | 73 | 5,800 | 64 | 36 | 33,000 | Cinder Staff, Ember Hood, Salamander Charm, Magma Staff, Mithril Ingot, Star Crystal |
+| Obsidian Knight | 75 | 6,600 | 80 | 50 | 36,000 | Obsidian Helm, Obsidian Shield, Magma Lance, Obsidian Plate, Mithril Ingot, Star Crystal |
+| Cinder Wraith | 77 | 6,800 | 74 | 50 | 39,000 | Ashen Hood, Ashen Leathers, Cinder Robe, Obsidian Longbow, Mithril Ingot, Star Crystal |
+| Magma Golem | 79 | 8,600 | 124 | 52 | 44,000 | Obsidian Plate, Cinder Blade, Magma Lance, Magma Staff, Obsidian Longbow, Mithril Ingot, Star Crystal |
+| Cinder Colossus | 84 | 230,000 | 220 | 68 | 600,000 | See "Field bosses" |
+| Dune Stalker | 81 | 6,700 | 80 | 46 | 47,000 | Sun Blade, Sand Bow, Sand Ring, White Potion, Mithril Ingot, Star Crystal |
+| Dust Djinn | 83 | 6,500 | 58 | 40 | 51,000 | Djinn Staff, Djinn Hat, Scarab Charm, Sun Staff, Mithril Ingot, Star Crystal |
+| Tomb Warden | 85 | 7,400 | 74 | 56 | 56,000 | Warden's Helm, Sun Shield, Sun Spear, Warden Plate, Mithril Ingot, Star Crystal |
+| Desert Raider | 87 | 7,600 | 80 | 54 | 61,000 | Desert Hood, Desert Garb, Sun Robe, Sunbeam Longbow, Mithril Ingot, Star Crystal |
+| Sand Golem | 89 | 9,600 | 136 | 58 | 66,000 | Warden Plate, Sun Blade, Sun Spear, Sun Staff, Sunbeam Longbow, Mithril Ingot, Star Crystal |
+| Dune King | 94 | 330,000 | 245 | 76 | 1,200,000 | See "Field bosses" |
+| Void Bat | 91 | 7,400 | 76 | 52 | 71,000 | Star Blade, Moon Bow, Star Ring, White Potion, Mithril Ingot, Star Crystal |
+| Astral Seer | 93 | 7,200 | 76 | 46 | 77,000 | Seer's Staff, Seer's Hat, Night Charm, Astral Staff, Mithril Ingot, Star Crystal |
+| Star Knight | 95 | 8,200 | 86 | 64 | 83,000 | Star Helm, Star Shield, Void Lance, Star Plate, Mithril Ingot, Star Crystal |
+| Night Wisp | 97 | 8,400 | 78 | 58 | 90,000 | Night Hood, Night Leathers, Astral Robe, Starlight Longbow, Mithril Ingot, Star Crystal |
+| Crystal Golem | 99 | 10,600 | 150 | 64 | 97,000 | Star Plate, Star Blade, Void Lance, Astral Staff, Starlight Longbow, Mithril Ingot, Star Crystal |
+| Star Tyrant | 104 | 450,000 | 270 | 84 | 1,800,000 | See "Field bosses" |
 
 Every monster also drops its own card (see Monster cards) and often potions.
 
@@ -1833,21 +1817,21 @@ Every monster also drops its own card (see Monster cards) and often potions.
 9. **Level 25–30:** Orc Archers up north, Orc Skeletons west of the inlet, and Orc Zombies far to the south. At 30, gather a party for the **Orc Warlord**.
 10. **Level 30–35:** Take the path north from the west road, past **Rook**, into the **Wildlands**, or walk into the portal in the Orc Woods and down into the **Orc Caves** (level 28–36), with the **Orc Chieftain** at the bottom. Read her rules first: other players can attack you up there. Boarmen roam past the west path; Lizardmen past the east path only fight back. Bram's **White Potions** heal 250 HP.
 11. **Level 35–40:** Werewolves in the north-west woods, Trolls on the highlands, Vampires on the high ground to the north-east. From 40, bring a party for the **Minotaur King**, and watch your back. Or go down into the **Moonfang Den** (Lv 37–45) through the portal in the north-west woods, just north of the Werewolves, where the **Moonfang Alpha** leads the pack.
-12. **Level 40–45:** Take the path east off the south road to **Edda**'s pier and sail to **Frostfell** (500 gold). Yetis jump you in the woods west of the pier; Ramhorns to the east only fight back. Then the Frost Shamans on the west shore: close in fast, they throw ice.
+12. **Level 40–45:** Take the path east off the south road to **Edda**'s pier and sail to **Frostfell** (500 Points). Yetis jump you in the woods west of the pier; Ramhorns to the east only fight back. Then the Frost Shamans on the west shore: close in fast, they throw ice.
 13. **Level 45–50:** Frost Wights on the icy highlands and Frost Drakes in the east. At 50, bring a party of four for the **Frost Giant** at the end of the path. **Bjorn** sails you home for free. If you'd rather nobody could attack you, go down into the **Frozen Crypt** (Lv 46–54) through the portal south of Frostfell's pier, with the **Crypt Lord** at the bottom.
 14. **Level 45–50:** Ask **Orin** about the **Trial of Mastery** at 45, and keep the Frostfell loot he asks for instead of selling it. At 50 he sends you to the **Isle of Trials**: beat your Shade (bring potions), then come back for your second job: **Lord Knight**, **Wizard** or **Hunter**. Spend your new points on the skills on keys 4–6.
-15. **Level 50–55:** Down the east road past the Pumpking to **Finn**'s boat, and over to **Ravenmoor** (800 gold). Wraiths in the woods by the pier dodge plain attacks: use your skills. Then the Gargoyles either side of the castle.
+15. **Level 50–55:** Down the east road past the Pumpking to **Finn**'s boat, and over to **Ravenmoor** (800 Points). Wraiths in the woods by the pier dodge plain attacks: use your skills. Then the Gargoyles either side of the castle.
 16. **Level 55–60:** Dark Knights below the castle gate, Liches in the east, Flesh Golems in the south. At 60, bring a party of four into the castle for the **Fallen King**. **Corvin** rows you home for free. Or go down into the **Shadow Vault** (Lv 56–64), through the portal in the middle of the moor, where the **Shadow Count** waits in his treasure hall.
-17. **Level 60–65:** Take the path east off the south road, straight on past Edda's pier, to **Marlow**'s ship on the meadow's east shore, and sail to **Petalfall** (1,200 gold). Moon Hares by the pier only fight back but dodge plain attacks: use your skills. Then the Fox Spirits in the north-west woods (close in fast, they throw fire) and the Crow Blades in the middle.
+17. **Level 60–65:** Take the path east off the south road, straight on past Edda's pier, to **Marlow**'s ship on the meadow's east shore, and sail to **Petalfall** (1,200 Points). Moon Hares by the pier only fight back but dodge plain attacks: use your skills. Then the Fox Spirits in the north-west woods (close in fast, they throw fire) and the Crow Blades in the middle.
 18. **Level 65–70:** Phantom Swordsmen in the north-east, Red Ogres in the south (they only fight back, but they hit very hard). At 70, bring a party of four up the road to the **Ogre Warlord**'s camp. **Willow** sails you home for free. Or go down into the **Blossom Grotto** (Lv 66–74), through the portal in the cherry woods, with the **Jade Serpent** at the bottom.
-19. **Level 70–75:** Back to the meadow's east shore, where **Dorian** sails from Marlow's pier to **Ashpeak** (1,500 gold). Ember Imps swarm the rock north of the pier; Salamanders spit fire from the south-west slopes (close in fast). Then the Obsidian Knights along the north.
+19. **Level 70–75:** Back to the meadow's east shore, where **Dorian** sails from Marlow's pier to **Ashpeak** (1,500 Points). Ember Imps swarm the rock north of the pier; Salamanders spit fire from the south-west slopes (close in fast). Then the Obsidian Knights along the north.
 20. **Level 75–80:** Cinder Wraiths in the east dodge plain attacks: use your skills. Magma Golems in the south only fight back, but they hit hardest of all. At 80, bring a party of four up the road to the **Cinder Colossus**'s crater. **Cassia** sails you home for free. At 75, ask **Orin** about your **third job** and keep the Ashpeak loot he asks for; at 80, beat your Shade on the Isle of Trials and become a **Paladin**, **Archmage** or **Ranger**. Or go down into the **Magma Depths** (Lv 76–84), through the portal north of the crater, where the **Molten Drake** waits.
-21. **Level 80–90:** Switch to Bram's **Golden Potions** (from level 70). **Soren** sails from the same pier to **Sunscar** (1,800 gold). Dune Stalkers in the dunes dodge plain attacks; Dust Djinn throw hot wind from the north-west; then the Tomb Wardens and the Desert Raiders' camp in the east. At 90, bring a party for the **Dune King** in his temple. From 86, try the **Sunken Tomb** (Lv 86–94) through the portal on the island's west side, with the **Tomb Pharaoh** on his throne at the bottom.
-22. **Level 90–100:** **Lyra** sails to **Starfall** (2,200 gold), where it's always night. Void Bats swarm the south-west, Astral Seers cast from the north-west, Star Knights guard the north, Night Wisps drift along the east shore, and Crystal Golems in the south-east hit hardest of all. At 100, the **Star Tyrant** waits at his altar south of the lake: take your strongest party. Or go down into the **Void Rift** (Lv 94–100) through the portal at the island's north end; the **Void Wyrm** at the bottom is the highest-level monster in the world.
+21. **Level 80–90:** Switch to Bram's **Golden Potions** (from level 70). **Soren** sails from the same pier to **Sunscar** (1,800 Points). Dune Stalkers in the dunes dodge plain attacks; Dust Djinn throw hot wind from the north-west; then the Tomb Wardens and the Desert Raiders' camp in the east. At 90, bring a party for the **Dune King** in his temple. From 86, try the **Sunken Tomb** (Lv 86–94) through the portal on the island's west side, with the **Tomb Pharaoh** on his throne at the bottom.
+22. **Level 90–100:** **Lyra** sails to **Starfall** (2,200 Points), where it's always night. Void Bats swarm the south-west, Astral Seers cast from the north-west, Star Knights guard the north, Night Wisps drift along the east shore, and Crystal Golems in the south-east hit hardest of all. At 100, the **Star Tyrant** waits at his altar south of the lake: take your strongest party. Or go down into the **Void Rift** (Lv 94–100) through the portal at the island's north end; the **Void Wyrm** at the bottom is the highest-level monster in the world.
 
 Along the way, open your titles (T) now and then: you'll have earned a few. And from the Orc Woods on, hunt in a party: the bosses are made for four. From level 20, find a guild to join (or found your own with Leopold), so there's always someone to hunt with, and on Wednesday and Saturday evenings, march with it over the long bridge to fight for Crownhold.
 
-Sell your monster loot to Bram whenever your bag fills up, and sit down (X) to heal faster between fights. Spare gear, ingots and cards are worth more to other players: open a shop in the Market Square, or look in theirs for what you need.
+Sit down (X) to heal faster between fights, and sell what you don't need to other players. Spare gear, ingots and cards are worth more to other players: open a shop in the Market Square, or look in theirs for what you need.
 
 ## 18. Coming next
 

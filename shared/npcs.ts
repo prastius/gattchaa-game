@@ -242,7 +242,7 @@ export const NPCS: NpcDef[] = [
     look: look({ body: "female", hair: "bun", hairColor: "black", skin: "bronze", top: "cardigan", topColor: "forest", bottom: "belleSkirt", bottomColor: "walnut", shoes: "sandals", shoesColor: "brown", hat: "kerchief", hatColor: "orange" }),
     ...at(187.5, 212.6),
     dir: Dir.Down,
-    greeting: "Welcome to the Market Square! Adventurers sell gear, ingots and monster cards here for gold, and collectors show their real Gattchaa cards. Pick a shop to browse it, or tell me what you're looking for.",
+    greeting: "Welcome to the Market Square! Adventurers sell gear, ingots and monster cards here for Gattchaa Points, and collectors show their real Gattchaa cards. Pick a shop to browse it, or tell me what you're looking for.",
     chatter: ["Fresh goods in the Market Square!", "Open your own shop right here in the square!", "Looking for Mithril? Ask me who's selling.", "Sell your spare loot to other adventurers!"],
   },
   {
@@ -346,9 +346,9 @@ export const NPCS: NpcDef[] = [
     ...at(242.5, 336.6),
     dir: Dir.Down,
     greeting:
-      "All aboard for Frostfell! It's an island of ice and snow across the sea, for adventurers of level 40 and up. Yetis, Ramhorns, Frost Shamans, Frost Wights and Frost Drakes live there, and the Frost Giant keeps a ring of stones on the highlands. The crossing costs 500 gold. The way back is free.",
+      "All aboard for Frostfell! It's an island of ice and snow across the sea, for adventurers of level 40 and up. Yetis, Ramhorns, Frost Shamans, Frost Wights and Frost Drakes live there, and the Frost Giant keeps a ring of stones on the highlands. The crossing costs 500 Points. The way back is free.",
     chatter: [
-      "Ferry to Frostfell! 500 gold!",
+      "Ferry to Frostfell! 500 Points!",
       "Wrap up warm. It's cold out there.",
       "Frostfell is for level 40 and up!",
       "The way back is always free.",
@@ -385,8 +385,8 @@ export const NPCS: NpcDef[] = [
     ...at(341.5, 186.6),
     dir: Dir.Right,
     greeting:
-      "Ravenmoor? Across the strait, under a sky that never gets light. It's for adventurers of level 50 and up: Wraiths, Gargoyles, Dark Knights, Liches and worse, and the Fallen King on his throne in the old castle. I'll row you over for 800 gold. Corvin brings you back for free.",
-    chatter: ["Boat to Ravenmoor! 800 gold!", "Ravenmoor is for level 50 and up!", "Strange lights over that island at night…", "Corvin rows you back for free."],
+      "Ravenmoor? Across the strait, under a sky that never gets light. It's for adventurers of level 50 and up: Wraiths, Gargoyles, Dark Knights, Liches and worse, and the Fallen King on his throne in the old castle. I'll row you over for 800 Points. Corvin brings you back for free.",
+    chatter: ["Boat to Ravenmoor! 800 Points!", "Ravenmoor is for level 50 and up!", "Strange lights over that island at night…", "Corvin rows you back for free."],
   },
   {
     // At the end of Ravenmoor's pier, on the island's west shore.
@@ -560,8 +560,8 @@ export const NPCS: NpcDef[] = [
     ...at(317.5, 283.6),
     dir: Dir.Right,
     greeting:
-      "Petalfall? Out across the south-east sea, where it's always spring and the cherry blossom never stops falling. Pretty, and deadly: it's for adventurers of level 60 and up. Moon Hares, Fox Spirits, Crow Blades, Phantom Swordsmen and Red Ogres live there, and the Ogre Warlord holds a war camp on the high ground. I'll sail you over for 1,200 gold. Willow brings you back for free.",
-    chatter: ["Ship to Petalfall! 1,200 gold!", "Petalfall is for level 60 and up!", "Go in a party. The Ogre Warlord is no joke.", "Willow sails you back for free.", "Level 70? Dorian sails to Ashpeak, from this same pier."],
+      "Petalfall? Out across the south-east sea, where it's always spring and the cherry blossom never stops falling. Pretty, and deadly: it's for adventurers of level 60 and up. Moon Hares, Fox Spirits, Crow Blades, Phantom Swordsmen and Red Ogres live there, and the Ogre Warlord holds a war camp on the high ground. I'll sail you over for 1,200 Points. Willow brings you back for free.",
+    chatter: ["Ship to Petalfall! 1,200 Points!", "Petalfall is for level 60 and up!", "Go in a party. The Ogre Warlord is no joke.", "Willow sails you back for free.", "Level 70? Dorian sails to Ashpeak, from this same pier."],
   },
   {
     // On the same pier as Marlow, on the meadow's east shore: the ship for Ashpeak.
@@ -573,8 +573,8 @@ export const NPCS: NpcDef[] = [
     ...at(313.5, 282.4),
     dir: Dir.Right,
     greeting:
-      "Ashpeak? A volcano, far out in the eastern sea, past Ravenmoor and Petalfall. The rock is bare and black, ash falls like snow, and it's for adventurers of level 70 and up. Ember Imps, Salamanders, Obsidian Knights, Cinder Wraiths and Magma Golems live there, and the Cinder Colossus sits in the crater at the top of the road. I'll sail you over for 1,500 gold. Cassia brings you back for free.",
-    chatter: ["Ship to Ashpeak! 1,500 gold!", "Ashpeak is for level 70 and up!", "Bring potions. Lots of potions.", "Take a party for the Cinder Colossus.", "Cassia sails you back for free."],
+      "Ashpeak? A volcano, far out in the eastern sea, past Ravenmoor and Petalfall. The rock is bare and black, ash falls like snow, and it's for adventurers of level 70 and up. Ember Imps, Salamanders, Obsidian Knights, Cinder Wraiths and Magma Golems live there, and the Cinder Colossus sits in the crater at the top of the road. I'll sail you over for 1,500 Points. Cassia brings you back for free.",
+    chatter: ["Ship to Ashpeak! 1,500 Points!", "Ashpeak is for level 70 and up!", "Bring potions. Lots of potions.", "Take a party for the Cinder Colossus.", "Cassia sails you back for free."],
   },
   {
     // On the same pier: the ship for Sunscar.
@@ -586,8 +586,8 @@ export const NPCS: NpcDef[] = [
     ...at(311.5, 282.4),
     dir: Dir.Right,
     greeting:
-      "Sunscar? An island of sand and old stone, north of Ashpeak, where the sun never lets up. It's for adventurers of level 80 and up. Dune Stalkers, Dust Djinn, Tomb Wardens, Desert Raiders and Sand Golems live there, and the Dune King sits on his throne in the sunken temple in the middle. I'll sail you over for 1,800 gold. Nadia brings you back for free.",
-    chatter: ["Ship to Sunscar! 1,800 gold!", "Sunscar is for level 80 and up!", "Bring water. And potions.", "The Dune King never leaves his temple.", "Nadia sails you back for free."],
+      "Sunscar? An island of sand and old stone, north of Ashpeak, where the sun never lets up. It's for adventurers of level 80 and up. Dune Stalkers, Dust Djinn, Tomb Wardens, Desert Raiders and Sand Golems live there, and the Dune King sits on his throne in the sunken temple in the middle. I'll sail you over for 1,800 Points. Nadia brings you back for free.",
+    chatter: ["Ship to Sunscar! 1,800 Points!", "Sunscar is for level 80 and up!", "Bring water. And potions.", "The Dune King never leaves his temple.", "Nadia sails you back for free."],
   },
   {
     // At the end of Sunscar's pier, on the island's west shore.
@@ -612,8 +612,8 @@ export const NPCS: NpcDef[] = [
     ...at(309.5, 283.6),
     dir: Dir.Right,
     greeting:
-      "Starfall? Far out in the south-eastern sea, past Ashpeak, there's an island where the night never ends and the stars hang close enough to touch. It's for the strongest adventurers: level 90 and up. Void Bats, Astral Seers, Star Knights, Night Wisps and Crystal Golems live there, and the Star Tyrant holds the altar by the lake. I'll sail you over for 2,200 gold. Celeste brings you back for free.",
-    chatter: ["Ship to Starfall! 2,200 gold!", "Starfall is for level 90 and up!", "It's always night on Starfall.", "Take a party for the Star Tyrant.", "Celeste sails you back for free."],
+      "Starfall? Far out in the south-eastern sea, past Ashpeak, there's an island where the night never ends and the stars hang close enough to touch. It's for the strongest adventurers: level 90 and up. Void Bats, Astral Seers, Star Knights, Night Wisps and Crystal Golems live there, and the Star Tyrant holds the altar by the lake. I'll sail you over for 2,200 Points. Celeste brings you back for free.",
+    chatter: ["Ship to Starfall! 2,200 Points!", "Starfall is for level 90 and up!", "It's always night on Starfall.", "Take a party for the Star Tyrant.", "Celeste sails you back for free."],
   },
   {
     // At the end of Starfall's pier, on the island's west shore.
@@ -684,12 +684,12 @@ export const NPCS: NpcDef[] = [
     ...at(196.5, 257.6),
     dir: Dir.Down,
     greeting:
-      "Potions, blades and good leather! Gear up before you head out, and bring me whatever the monsters drop. I pay fair. Wear your gear from your bag (I), and keep a few Red Potions handy (Q drinks one).",
+      "Potions, blades and good leather, for your Gattchaa Points! Gear up before you head out. I don't buy anything back: sell your spare loot to other adventurers in the Market Square. Wear your gear from your bag (I), and keep a few Red Potions handy (Q drinks one).",
     chatter: [
       "Red Potions! Don't leave town without them!",
-      "Got slime jelly? I'll buy it!",
+      "Spare loot? Sell it in the Market Square!",
       "A sharp blade and good boots. That's all you need.",
-      "Bring me what the monsters drop!",
+      "Prices in Gattchaa Points. Top up on Gattchaa Oripa!",
       "Every monster out there carries its own card. Find one, and your gear will never be the same!",
       "Want your gear stronger? Hilda the Blacksmith is just west of the gate.",
     ],
@@ -749,9 +749,9 @@ export const NPCS: NpcDef[] = [
     ...at(226.5, 183.6),
     dir: Dir.Down,
     greeting:
-      "A guild of your own? Reach level 20, bring 10,000 gold, and choose a name and an emblem. Your guild's name and emblem show over every member's head, you get your own chat (type /g), and guild mates never fight each other in the Battle Pit. The founder leads: they choose officers, and together they can invite up to 30 members. Every guild has a purse for its gold, and I keep the ranking of the top guilds.",
+      "A guild of your own? Reach level 20, bring 10,000 Points, and choose a name and an emblem. Your guild's name and emblem show over every member's head, you get your own chat (type /g), and guild mates never fight each other in the Battle Pit. The founder leads: they choose officers, and together they can invite up to 30 members. Every guild has a purse for its gold, and I keep the ranking of the top guilds.",
     chatter: [
-      "Found a guild! Level 20 and 10,000 gold.",
+      "Found a guild! Level 20 and 10,000 Points.",
       "A guild is for good: it's still there tomorrow.",
       "Guild mates never fight in the Battle Pit.",
       "Type /g to talk to your guild.",
@@ -768,7 +768,7 @@ export const NPCS: NpcDef[] = [
     ...at(13, 490.6),
     dir: Dir.Left,
     greeting:
-      "Welcome to the Battle Pit, the one place where players fight each other without a duel. In here, the gate hall, nobody fights. Down in the pit, anyone from level 20 can attack anyone, except their party and guild mates. Beaten, you lose nothing, no EXP and no gold, and you wake up by the Arena. Every win earns Glory (if you're signed in), to spend at Magnus the Arena Master. Beating the same player again only counts after 10 minutes. The week's best fighters go on my board.",
+      "Welcome to the Battle Pit, the one place where players fight each other without a duel. In here, the gate hall, nobody fights. Down in the pit, anyone from level 20 can attack anyone, except their party and guild mates. Beaten, you lose nothing, no EXP and no items, and you wake up by the Arena. Every win earns Glory (if you're signed in), to spend at Magnus the Arena Master. Beating the same player again only counts after 10 minutes. The week's best fighters go on my board.",
     chatter: [
       "Down there, anyone can attack you!",
       "Beaten in the pit? You lose nothing.",
@@ -795,7 +795,7 @@ export const NPCS: NpcDef[] = [
       "Duels in the ring count for the ranking!",
       "No potions in a duel. Skill wins!",
       "Nobody gets hurt for real here. Promise.",
-      "Glory buys things gold can't. Ask me!",
+      "Glory buys things Points can't. Ask me!",
       "The Battle Pit's through the red portal, by the wall.",
     ],
   },
@@ -875,7 +875,7 @@ export const NPCS: NpcDef[] = [
   ),
 ];
 
-/** The ferry: where each captain sails you, which way you face stepping off, the fare in gold, and the level the far shore is for. */
+/** The ferry: where each captain sails you, which way you face stepping off, the fare in Gattchaa Points, and the level the far shore is for. */
 export const FERRY: Record<string, { to: { x: number; y: number }; dir: number; fare: number; dest: string; lv?: number }> = {
   "ferry-meadow": { to: at(190.5, 399.6), dir: Dir.Down, fare: 500, dest: "Frostfell", lv: 40 },
   "ferry-frostfell": { to: at(242.5, 333.6), dir: Dir.Up, fare: 0, dest: "the South Meadow" },

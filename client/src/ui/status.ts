@@ -1,3 +1,4 @@
+import { pointsText } from "../../../shared/points";
 import { CLASSES, LEVEL_CAP, expToNext, isClassId } from "../../../shared/rpg";
 import type { StatsMessage } from "../../../shared/protocol";
 
@@ -18,7 +19,7 @@ export class StatusPanel {
   private mpText = $("mp-text");
   private expFill = $("exp-fill");
   private expText = $("exp-text");
-  private gold = $("gold");
+  private points = $("points");
   private note = $("status-note");
   private target = $("target");
   private targetName = $("target-name");
@@ -51,7 +52,7 @@ export class StatusPanel {
       this.expText.textContent = `${((s.exp / next) * 100).toFixed(1)}%`;
       this.expFill.parentElement!.title = `EXP ${s.exp.toLocaleString()} / ${next.toLocaleString()}`;
     }
-    this.gold.textContent = s.gold.toLocaleString();
+    this.points.textContent = s.balance === undefined ? "–" : pointsText(s.balance);
     this.note.hidden = s.saved;
   }
 

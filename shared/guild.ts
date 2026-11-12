@@ -1,8 +1,7 @@
 // Guilds, Ragnarok style: a name and an emblem everyone sees over your head,
 // a leader and officers who invite and run things, a member list that shows
 // who's online, a notice for everyone, and their own chat channel. Guild
-// mates never attack each other in the Battle Pit. Any member can give gold
-// to the guild's purse, which pays for its guardians, and the Registrar ranks
+// mates never attack each other in the Battle Pit. The Registrar ranks
 // every guild by what it has done in the guild wars.
 //
 // Unlike a party, a guild is kept: it belongs to signed-in players' accounts
@@ -12,9 +11,9 @@
 
 /** The most members in one guild. */
 export const GUILD_MAX = 30;
-/** Founding a guild: who may, and what it costs (Bram's best gear costs a few hundred; a +7 upgrade 1,200). */
+/** Founding a guild: who may, and what it costs in Gattchaa Points (see shared/points.ts). */
 export const GUILD_FOUND_LV = 20;
-export const GUILD_FOUND_GOLD = 10_000;
+export const GUILD_FOUND_POINTS = 10_000;
 /** An invite waits this long for an answer. */
 export const GUILD_INVITE_MS = 30_000;
 export const GUILD_NAME_MIN = 3;
@@ -22,9 +21,7 @@ export const GUILD_NAME_MAX = 16;
 /** The guild notice: one short message for every member, set by the leader or an officer. */
 export const GUILD_NOTICE_MAX = 140;
 
-/** The smallest gift to the purse: enough that nobody floods its history with pennies. */
-export const GUILD_GIFT_MIN = 100;
-/** How many lines of the purse's history are kept. */
+/** How many lines of the guild's history are kept. */
 export const GUILD_LOG_MAX = 10;
 
 /** Ranks, lowest first. Officers invite and remove members; only the leader appoints officers or hands over the guild. */
@@ -77,16 +74,14 @@ export interface GuildMember {
   online: boolean;
   /** When they were last in town (ms since 1970); 0 while online. */
   seen: number;
-  /** Gold they've given to the purse. */
-  given: number;
 }
 
-/** A line of the purse's history: gold in (a gift) is plus, gold out (a hire) is minus. */
+/** A line of the guild's history: a guardian hired, and the Points the member paid. */
 export interface GuildLogLine {
   at: number;
   who: string;
   what: string;
-  gold: number;
+  points: number;
 }
 
 /** server -> client: your guild (sent on joining, on every change, and when asked); `null` when you're not in one. */
@@ -98,9 +93,7 @@ export interface GuildMessage {
   /** Your own account id and rank, so the window knows what you may do. */
   me: number;
   rank: GuildRank;
-  /** Gold in the guild's purse. */
-  purse: number;
-  /** The purse's history, newest first. */
+  /** The guild's history, newest first. */
   log: GuildLogLine[];
   /** Sieges won (holding the castle when one ended), and crystals broken. */
   sieges: number;
@@ -169,11 +162,6 @@ export interface GuildLeadMessage {
 export interface GuildNoticeMessage {
   text: string;
 }
-/** A gift to the guild's purse. */
-export interface GuildGiveMessage {
-  gold: number;
-}
-
 /** Members in the order the window lists them. */
 export function sortMembers<T extends { rank: number; online: boolean; name: string }>(list: T[]): T[] {
   return [...list].sort((a, b) => b.rank - a.rank || Number(b.online) - Number(a.online) || a.name.localeCompare(b.name));

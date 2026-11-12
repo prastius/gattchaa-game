@@ -1,6 +1,6 @@
 # Gattchaa Town API: blueprint for gattchaaoripa.com
 
-This is what the Gattchaa Oripa (Laravel) project needs to build so Gattchaa Town can show live packs, rooms and big pulls, let players sign in with their Gattchaa account, and run player shops in the Market Square. The town never scrapes or browses the website: it reads a few small JSON endpoints and receives webhooks.
+This is what the Gattchaa Oripa (Laravel) project needs to build so Gattchaa Town can show live packs, rooms and big pulls, let players sign in with their Gattchaa account, pay with their **Gattchaa Points**, and run player shops in the Market Square. **The town never scrapes or browses the website, in development or in production**: everything it knows comes from the JSON endpoints below and the signed webhooks, and nothing else is fetched from gattchaaoripa.com.
 
 Players never call this API. Only the game server does: about **8 requests per minute** for packs and rooms however many people are in town, plus about one request per open player shop every 10 minutes. Unchanged responses are answered with `304 Not Modified`, which is nearly free.
 
@@ -11,11 +11,15 @@ Players never call this API. Only the game server does: about **8 requests per m
          GET /api/town/v1/live     │  │
    POST /api/town/v1/tickets/redeem│  │
    GET  /api/town/v1/users/{id}/listings
+   GET  /api/town/v1/users/{id}/points
+   POST /api/town/v1/points/charge|refund|transfer
                                    ▼  │
                                 Gattchaa Oripa (Laravel)
 ```
 
-Links the player clicks (product pages, daily login, a card in someone's shop…) open gattchaaoripa.com in a new tab, so login, payment and pulls stay on the real site. **The game never handles money**: a card in a player's shop is bought on its marketplace page.
+Links the player clicks (product pages, daily login, a card in someone's shop…) open gattchaaoripa.com in a new tab, so login, payment and pulls stay on the real site. A real card in a player's shop is bought on its marketplace page.
+
+**The game's only money is the player's Gattchaa Points.** The town has no currency of its own. Potions, the Blacksmith's fees, ferries, guilds, guardians and other players' shops all cost Points, which the game asks Laravel to move (section 3.5). The game never creates Points: monsters drop items, never money, and nothing in town buys anything back, so playing can't turn into real value. Points are bought and earned on gattchaaoripa.com only.
 
 ---
 
@@ -33,8 +37,9 @@ Links the player clicks (product pages, daily login, a card in someone's shop…
 | 8 | Sign-in: `GET /town/enter` page + `POST /api/town/v1/tickets/redeem` | 45 min |
 | 9 | Player shops: `GET /api/town/v1/users/{id}/listings` (a seller's marketplace listings) | 30 min |
 | 10 | Fire `listing.updated` when a listing is created, changed, sold or removed | 15 min |
+| 11 | Points: `GET users/{id}/points`, `POST points/charge`, `points/refund`, `points/transfer` (idempotent by `ref`) | 1–2 h |
 
-Items 1–7 light up the stalls, machines and Rooms tables. Items 8–10 turn on signing in and player shops; the town works without them (players are simply guests).
+Items 1–7 light up the stalls, machines and Rooms tables. Items 8–11 turn on signing in, player shops and paying with Points. **The town needs a Gattchaa account to play** (there are no guests, because the money is the player's Points), so the game is only open to players once items 8 and 11 are live.
 
 ---
 
@@ -198,7 +203,65 @@ A seller's **active** marketplace listings. They are what their player shop in t
 | `image_url` | a small image (about 256 px). It's shown in an `<img>` in the shop panel, so no CORS is needed |
 | `url` | the listing's page on the marketplace |
 
-Newest first, at most 60. An unknown user, or one with nothing listed: `{ "data": [] }`. A shop shows these next to whatever the player sells from their in-game bag (for in-game gold, which never buys a real card), so a player with no listings can still open one.
+Newest first, at most 60. An unknown user, or one with nothing listed: `{ "data": [] }`. A shop shows these next to whatever the player sells from their in-game bag (for Points, see 3.5), so a player with no listings can still open one.
+
+### 3.5 Gattchaa Points
+
+The game reads a player's balance and moves Points for purchases. All four endpoints use the API key like the others, and `user_id` is the same id `tickets/redeem` returns.
+
+**Rules for Laravel:**
+
+- **Every move has a `ref`** (a UUID the game makes). The same `ref` sent again must return the same answer and move nothing: the game retries when a request times out.
+- **Moves are atomic** (a database transaction, with the balance row locked) and logged in a ledger with the `ref`, the `reason` and the time, so support can see what happened.
+- **Never go below zero.** If there aren't enough Points, answer `409` with the current balance and move nothing.
+- **Refunds only undo the game's own charges:** `charge_ref` must be a successful charge for the same user, and the total refunded can't exceed it.
+- Amounts are whole Points, at least 1. The game never asks for more than 10,000,000 in one move.
+
+#### `GET /api/town/v1/users/{user_id}/points`
+
+```json
+{ "data": { "points": 25000 } }
+```
+
+`404` for an unknown user. The game asks when a player enters, after a payment or a sale, and when they open a shop window (at most every 10 seconds per player).
+
+#### `POST /api/town/v1/points/charge`
+
+The player pays for something in town.
+
+```json
+{ "user_id": "1001", "amount": 120, "reason": "Red Potion ×10", "ref": "9b2f6c1e-…" }
+```
+
+- `200 { "data": { "points": 24880 } }`: charged; the balance after it.
+- `409 { "message": "Not enough Points.", "data": { "points": 100 } }`: not charged.
+- `404` unknown user, `422` a bad amount or no `ref`.
+
+#### `POST /api/town/v1/points/refund`
+
+Gives back a charge the game couldn't deliver (the player's bag filled up, the guardian's post was taken meanwhile…).
+
+```json
+{ "user_id": "1001", "amount": 120, "reason": "Refund: Red Potion ×10", "ref": "9b2f6c1e-…-refund", "charge_ref": "9b2f6c1e-…" }
+```
+
+`200 { "data": { "points": 25000 } }`, or `422` if `charge_ref` isn't a charge that can be refunded.
+
+#### `POST /api/town/v1/points/transfer`
+
+A purchase in a player's shop: the buyer pays the seller directly.
+
+```json
+{ "from_user_id": "1002", "to_user_id": "1001", "amount": 400, "reason": "Market Square: Iron Ingot ×2 from Rina", "ref": "c41a…" }
+```
+
+- `200 { "data": { "from_points": 7600, "to_points": 25400 } }`
+- `409 { "message": "Not enough Points.", "data": { "from_points": 100 } }`
+- `404` either user unknown (or both the same).
+
+Whether Gattchaa takes a fee on player-to-player sales, and any limits on them (per day, per account age), are Laravel's decision: answer `409` or `422` and the game tells the player it didn't go through.
+
+**Without these endpoints** the game can't sell anything: in production every purchase says Points can't be reached right now, and nothing is charged.
 
 ---
 
@@ -669,10 +732,10 @@ curl -s -X POST -H "Authorization: Bearer $KEY" -H "Content-Type: application/js
 curl -s -H "Authorization: Bearer $KEY" https://gattchaaoripa.com/api/town/v1/users/<user id>/listings | head -c 400
 ```
 
-**Without Laravel**: this repo ships a mock that speaks exactly this contract: `npm run mock:gattchaa`. With `server/.env.development` pointing at it, the town fills with sample packs and rooms, and a signed "big hit" arrives every 40 s. Its `/town/enter` page lets you sign in as one of three pretend users (two sellers and a collector with nothing listed), and one seller's prices drop now and then (`listing.updated`). `scripts/mock-gattchaa.ts` is also a working reference for the signature code.
+**Without Laravel**: this repo ships a mock that speaks exactly this contract: `npm run mock:gattchaa`. With `server/.env.development` pointing at it, the town fills with sample packs and rooms, and a signed "big hit" arrives every 40 s. Its `/town/enter` page lets you sign in as one of three pretend users (two sellers and a collector with nothing listed; they start with 25,000, 8,000 and 500 Points), one seller's prices drop now and then (`listing.updated`), and it answers the Points endpoints (balances kept in memory until it restarts). `scripts/mock-gattchaa.ts` is also a working reference for the signature code.
 
 ---
 
 ## 8. Later
 
-With accounts linked, more is possible without changing the above. For example, `POST /api/town/v1/users/{id}/rewards` (API key) would let the game grant GP or cosmetics, for an event or a finished card album. Rewards should stay tied to the account (not tradeable), and all the rules about them stay on the Laravel side.
+With accounts linked, more is possible without changing the above. For example, `POST /api/town/v1/users/{id}/rewards` (API key) would let the game grant cosmetics, for an event or a finished card album. Rewards should stay tied to the account (not tradeable), and all the rules about them stay on the Laravel side. The game itself never grants Points.

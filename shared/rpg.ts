@@ -311,7 +311,6 @@ export interface MonsterDef {
   atk: number;
   def: number;
   exp: number;
-  gold: [number, number];
   /** Wandering speed in px/s (0 = rooted to the spot). */
   speed: number;
   /** Chasing speed; always slower than a player, so you can run away. */
@@ -354,20 +353,20 @@ export const BOSS_REACH = 300;
 
 export const MONSTERS: Record<MonsterId, MonsterDef> = {
   slime: {
-    id: "slime", name: "Slime", level: 1, hp: 30, atk: 4, def: 0, exp: 8, gold: [1, 3], speed: 38, chase: 70, aggro: 0, range: 36, attackMs: 2000, radius: 10, respawnMs: 12_000,
+    id: "slime", name: "Slime", level: 1, hp: 30, atk: 4, def: 0, exp: 8, speed: 38, chase: 70, aggro: 0, range: 36, attackMs: 2000, radius: 10, respawnMs: 12_000,
     drops: [["jelly", 0.7], ["redPotion", 0.05], ["leatherCap", 0.015], ["leatherPants", 0.015], ["leatherBoots", 0.01], ["copperRing", 0.003], ["cloverCharm", 0.003], ["slimeCard", 0.0008]],
   },
   snake: {
-    id: "snake", name: "Grass Snake", level: 4, hp: 85, atk: 9, def: 2, exp: 32, gold: [3, 7], speed: 45, chase: 80, aggro: 0, range: 40, attackMs: 1700, radius: 12, respawnMs: 15_000,
+    id: "snake", name: "Grass Snake", level: 4, hp: 85, atk: 9, def: 2, exp: 32, speed: 45, chase: 80, aggro: 0, range: 40, attackMs: 1700, radius: 12, respawnMs: 15_000,
     drops: [["scale", 0.6], ["redPotion", 0.06], ["leatherArmor", 0.012], ["leatherBoots", 0.015], ["woodShield", 0.012], ["guardShield", 0.004], ["vigorRing", 0.002], ["snakeCard", 0.0008]],
   },
   hornet: {
-    id: "hornet", name: "Hornet", level: 7, hp: 130, atk: 12, def: 4, exp: 80, gold: [6, 12], speed: 70, chase: 95, aggro: 120, range: 36, attackMs: 1400, radius: 8, respawnMs: 18_000,
+    id: "hornet", name: "Hornet", level: 7, hp: 130, atk: 12, def: 4, exp: 80, speed: 70, chase: 95, aggro: 120, range: 36, attackMs: 1400, radius: 8, respawnMs: 18_000,
     drops: [["honey", 0.55], ["orangePotion", 0.03], ["kettleHelm", 0.006], ["legionArmor", 0.005], ["bronzeSword", 0.005], ["ironGreaves", 0.006], ["ironBoots", 0.006], ["stingerPendant", 0.003], ["ironIngot", 0.02], ["hornetCard", 0.001]],
   },
   // Rooted, but it spits seeds at anyone who shoots it from afar.
   snapper: {
-    id: "snapper", name: "Snapper Flower", level: 10, hp: 280, atk: 17, def: 5, exp: 240, gold: [18, 30], speed: 0, chase: 0, aggro: 110, range: 190, attackMs: 1600, radius: 22, respawnMs: 30_000,
+    id: "snapper", name: "Snapper Flower", level: 10, hp: 280, atk: 17, def: 5, exp: 240, speed: 0, chase: 0, aggro: 110, range: 190, attackMs: 1600, radius: 22, respawnMs: 30_000,
     drops: [
       ["bloom", 0.6], ["orangePotion", 0.08], ["redPotion", 0.1], ["saber", 0.008], ["bronzeHelm", 0.008], ["guardShield", 0.01], ["plateArmor", 0.004],
       ["recurveBow", 0.006], ["gnarledStaff", 0.006], ["crystalStaff", 0.0015], ["meadowCrown", 0.0005], ["ironIngot", 0.04], ["mithril", 0.004], ["snapperCard", 0.0012],
@@ -376,31 +375,31 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
 
   // ---------------------------------------------------------------- Dusk Hollow (Lv 10–20), east of town
   grub: {
-    id: "grub", name: "Grub", level: 11, hp: 380, atk: 20, def: 6, exp: 300, gold: [8, 14], speed: 30, chase: 60, aggro: 0, range: 36, attackMs: 1600, radius: 10, respawnMs: 14_000,
+    id: "grub", name: "Grub", level: 11, hp: 380, atk: 20, def: 6, exp: 300, speed: 30, chase: 60, aggro: 0, range: 36, attackMs: 1600, radius: 10, respawnMs: 14_000,
     drops: [["silk", 0.65], ["redPotion", 0.06], ["orangePotion", 0.02], ["rangerHood", 0.006], ["wizardHat", 0.006], ["rapier", 0.003], ["ironIngot", 0.04], ["mithril", 0.015], ["grubCard", 0.001]],
   },
   bat: {
-    id: "bat", name: "Night Bat", level: 12, hp: 400, atk: 23, def: 7, exp: 330, gold: [10, 18], speed: 80, chase: 115, aggro: 120, range: 34, attackMs: 1200, radius: 10, respawnMs: 15_000,
+    id: "bat", name: "Night Bat", level: 12, hp: 400, atk: 23, def: 7, exp: 330, speed: 80, chase: 115, aggro: 120, range: 34, attackMs: 1200, radius: 10, respawnMs: 15_000,
     drops: [["batFang", 0.6], ["orangePotion", 0.04], ["rangerHood", 0.008], ["vigorRing", 0.005], ["rapier", 0.005], ["ironIngot", 0.04], ["mithril", 0.015], ["batCard", 0.001]],
   },
   // Slow and armoured: only fights back.
   rockworm: {
-    id: "rockworm", name: "Rock Worm", level: 14, hp: 950, atk: 30, def: 16, exp: 720, gold: [14, 24], speed: 22, chase: 55, aggro: 0, range: 42, attackMs: 1800, radius: 14, respawnMs: 18_000,
+    id: "rockworm", name: "Rock Worm", level: 14, hp: 950, atk: 30, def: 16, exp: 720, speed: 22, chase: 55, aggro: 0, range: 42, attackMs: 1800, radius: 14, respawnMs: 18_000,
     drops: [["rockShard", 0.6], ["orangePotion", 0.05], ["ironGreaves", 0.012], ["kiteShield", 0.007], ["hornedHelm", 0.006], ["guardTabard", 0.005], ["ironIngot", 0.06], ["mithril", 0.04], ["rockWormCard", 0.001]],
   },
   // Floats about and shoots a beam from afar.
   gazer: {
-    id: "gazer", name: "Gazer", level: 16, hp: 800, atk: 34, def: 10, exp: 760, gold: [18, 30], speed: 40, chase: 70, aggro: 150, range: 170, attackMs: 2000, radius: 12, respawnMs: 18_000,
+    id: "gazer", name: "Gazer", level: 16, hp: 800, atk: 34, def: 10, exp: 760, speed: 40, chase: 70, aggro: 150, range: 170, attackMs: 2000, radius: 12, respawnMs: 18_000,
     drops: [["gazerLens", 0.55], ["orangePotion", 0.06], ["sageTabard", 0.006], ["wizardHat", 0.008], ["emberStaff", 0.004], ["greatBow", 0.004], ["mithril", 0.025], ["starCrystal", 0.004], ["gazerCard", 0.001]],
   },
   // Hard to hit with plain attacks: skills always land.
   ghost: {
-    id: "ghost", name: "Ghost", level: 18, hp: 1150, atk: 34, def: 12, exp: 1100, gold: [24, 40], speed: 55, chase: 105, aggro: 90, range: 36, attackMs: 1400, radius: 12, respawnMs: 20_000, flee: 0.15,
+    id: "ghost", name: "Ghost", level: 18, hp: 1150, atk: 34, def: 12, exp: 1100, speed: 55, chase: 105, aggro: 90, range: 36, attackMs: 1400, radius: 12, respawnMs: 20_000, flee: 0.15,
     drops: [["ectoplasm", 0.55], ["orangePotion", 0.07], ["knightBlade", 0.005], ["greathelm", 0.004], ["crusaderShield", 0.004], ["sageTabard", 0.004], ["mithril", 0.03], ["starCrystal", 0.005], ["ghostCard", 0.001]],
   },
   // Dusk Hollow's boss, at the end of the east road. Breathes fire.
   pumpking: {
-    id: "pumpking", name: "Pumpking", level: 22, hp: 12_000, atk: 58, def: 20, exp: 16_000, gold: [400, 800], speed: 30, chase: 75, aggro: 150, range: BOSS_REACH, attackMs: 1800, radius: 24, respawnMs: 600_000,
+    id: "pumpking", name: "Pumpking", level: 22, hp: 12_000, atk: 58, def: 20, exp: 16_000, speed: 30, chase: 75, aggro: 150, range: BOSS_REACH, attackMs: 1800, radius: 24, respawnMs: 600_000,
     boss: true, regen: 0.005,
     slam: { radius: 90, power: 1.4, everyMs: 10_000 }, blast: { radius: 70, power: 1.2, everyMs: 12_000, reach: 380 },
     drops: [
@@ -412,12 +411,12 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   // ---------------------------------------------------------------- the Orc Woods (Lv 20–30), west of town
   // Quick little scouts in the grass north of the road: they jump anyone who comes close.
   goblin: {
-    id: "goblin", name: "Goblin", level: 20, hp: 1000, atk: 30, def: 10, exp: 850, gold: [20, 34], speed: 55, chase: 115, aggro: 70, range: 36, attackMs: 1300, radius: 11, respawnMs: 15_000,
+    id: "goblin", name: "Goblin", level: 20, hp: 1000, atk: 30, def: 10, exp: 850, speed: 55, chase: 115, aggro: 70, range: 36, attackMs: 1300, radius: 11, respawnMs: 15_000,
     drops: [["goblinCharm", 0.6], ["orangePotion", 0.06], ["scimitar", 0.004], ["ringStaff", 0.004], ["scoutArmor", 0.005], ["tuskNecklace", 0.003], ["mithril", 0.03], ["goblinCard", 0.001]],
   },
   // Big and tough, but only fights back.
   orcWarrior: {
-    id: "orcWarrior", name: "Orc Warrior", level: 23, hp: 1400, atk: 42, def: 20, exp: 1300, gold: [30, 50], speed: 40, chase: 85, aggro: 0, range: 40, attackMs: 1600, radius: 13, respawnMs: 18_000,
+    id: "orcWarrior", name: "Orc Warrior", level: 23, hp: 1400, atk: 42, def: 20, exp: 1300, speed: 40, chase: 85, aggro: 0, range: 40, attackMs: 1600, radius: 13, respawnMs: 18_000,
     drops: [
       ["orcTusk", 0.6], ["orangePotion", 0.07], ["barbarianHelm", 0.006], ["roundShield", 0.006], ["steelGreaves", 0.008], ["scimitar", 0.004], ["halberd", 0.003],
       ["ironIngot", 0.06], ["mithril", 0.04], ["orcWarriorCard", 0.001],
@@ -425,14 +424,14 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Shoots from afar, at anyone in sight.
   orcArcher: {
-    id: "orcArcher", name: "Orc Archer", level: 25, hp: 1300, atk: 40, def: 14, exp: 1500, gold: [32, 52], speed: 45, chase: 80, aggro: 140, range: 180, attackMs: 1900, radius: 12, respawnMs: 18_000,
+    id: "orcArcher", name: "Orc Archer", level: 25, hp: 1300, atk: 40, def: 14, exp: 1500, speed: 45, chase: 80, aggro: 140, range: 180, attackMs: 1900, radius: 12, respawnMs: 18_000,
     drops: [
       ["orcArrowhead", 0.55], ["orangePotion", 0.06], ["compositeBow", 0.005], ["crossbow", 0.0025], ["ringStaff", 0.004], ["steelSabatons", 0.007], ["mightRing", 0.003],
       ["mithril", 0.04], ["orcArcherCard", 0.001],
     ],
   },
   orcSkeleton: {
-    id: "orcSkeleton", name: "Orc Skeleton", level: 27, hp: 1700, atk: 48, def: 24, exp: 1800, gold: [34, 56], speed: 50, chase: 95, aggro: 90, range: 38, attackMs: 1500, radius: 12, respawnMs: 20_000,
+    id: "orcSkeleton", name: "Orc Skeleton", level: 27, hp: 1700, atk: 48, def: 24, exp: 1800, speed: 50, chase: 95, aggro: 90, range: 38, attackMs: 1500, radius: 12, respawnMs: 20_000,
     drops: [
       ["oldBone", 0.6], ["orangePotion", 0.07], ["katana", 0.003], ["spartanShield", 0.004], ["darkPlate", 0.004], ["guardianRing", 0.002],
       ["mithril", 0.04], ["starCrystal", 0.006], ["orcSkeletonCard", 0.001],
@@ -440,7 +439,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Slow, but hits like a falling tree.
   orcZombie: {
-    id: "orcZombie", name: "Orc Zombie", level: 29, hp: 2100, atk: 52, def: 20, exp: 2200, gold: [36, 60], speed: 22, chase: 55, aggro: 70, range: 38, attackMs: 2000, radius: 13, respawnMs: 20_000,
+    id: "orcZombie", name: "Orc Zombie", level: 29, hp: 2100, atk: 52, def: 20, exp: 2200, speed: 22, chase: 55, aggro: 70, range: 38, attackMs: 2000, radius: 13, respawnMs: 20_000,
     drops: [
       ["rottenBandage", 0.6], ["orangePotion", 0.08], ["starryCloak", 0.005], ["diamondStaff", 0.003], ["vikingHelm", 0.003], ["darkPlate", 0.004],
       ["mithril", 0.05], ["starCrystal", 0.008], ["orcZombieCard", 0.001],
@@ -448,7 +447,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // The Orc Woods' boss, in his camp where the west road ends.
   orcWarlord: {
-    id: "orcWarlord", name: "Orc Warlord", level: 33, hp: 24_000, atk: 90, def: 30, exp: 40_000, gold: [1000, 2000], speed: 35, chase: 80, aggro: 150, range: 48, attackMs: 1700, radius: 22, respawnMs: 900_000,
+    id: "orcWarlord", name: "Orc Warlord", level: 33, hp: 24_000, atk: 90, def: 30, exp: 40_000, speed: 35, chase: 80, aggro: 150, range: 48, attackMs: 1700, radius: 22, respawnMs: 900_000,
     boss: true, regen: 0.004,
     slam: { radius: 100, power: 1.5, everyMs: 9_000 }, blast: { radius: 75, power: 1.3, everyMs: 11_000, reach: 400 },
     drops: [
@@ -460,7 +459,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   // ---------------------------------------------------------------- the Wildlands (Lv 30–40), north of town
   // Boarmen roam the grass just past the border and charge anyone who comes near.
   boarman: {
-    id: "boarman", name: "Boarman", level: 31, hp: 2100, atk: 46, def: 22, exp: 2500, gold: [38, 62], speed: 50, chase: 110, aggro: 60, range: 38, attackMs: 1600, radius: 13, respawnMs: 18_000,
+    id: "boarman", name: "Boarman", level: 31, hp: 2100, atk: 46, def: 22, exp: 2500, speed: 50, chase: 110, aggro: 60, range: 38, attackMs: 1600, radius: 13, respawnMs: 18_000,
     drops: [
       ["boarHide", 0.6], ["whitePotion", 0.04], ["orangePotion", 0.06], ["armet", 0.005], ["wolfskinVest", 0.004], ["longSpear", 0.004],
       ["mithril", 0.05], ["boarmanCard", 0.001],
@@ -468,7 +467,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Scaly and stubborn: only fights back, but its spear reaches further than a sword.
   lizardman: {
-    id: "lizardman", name: "Lizardman", level: 33, hp: 2500, atk: 58, def: 30, exp: 2900, gold: [40, 66], speed: 40, chase: 85, aggro: 0, range: 48, attackMs: 1700, radius: 13, respawnMs: 20_000,
+    id: "lizardman", name: "Lizardman", level: 33, hp: 2500, atk: 58, def: 30, exp: 2900, speed: 40, chase: 85, aggro: 0, range: 48, attackMs: 1700, radius: 13, respawnMs: 20_000,
     drops: [
       ["lizardScale", 0.6], ["whitePotion", 0.05], ["towerShield", 0.005], ["longSpear", 0.005], ["serpentStaff", 0.004], ["goldGreaves", 0.004], ["trident", 0.002],
       ["mithril", 0.05], ["starCrystal", 0.006], ["lizardmanCard", 0.001],
@@ -476,7 +475,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Fast, and quick with its claws. Hunts anyone in the woods.
   werewolf: {
-    id: "werewolf", name: "Werewolf", level: 35, hp: 2400, atk: 50, def: 20, exp: 3200, gold: [42, 70], speed: 65, chase: 120, aggro: 60, range: 36, attackMs: 1300, radius: 13, respawnMs: 20_000,
+    id: "werewolf", name: "Werewolf", level: 35, hp: 2400, atk: 50, def: 20, exp: 3200, speed: 65, chase: 120, aggro: 60, range: 36, attackMs: 1300, radius: 13, respawnMs: 20_000,
     drops: [
       ["wolfPelt", 0.6], ["whitePotion", 0.05], ["longbow", 0.005], ["wolfskinVest", 0.004], ["goldSabatons", 0.004], ["wolfFang", 0.003],
       ["mithril", 0.05], ["starCrystal", 0.007], ["werewolfCard", 0.001],
@@ -484,7 +483,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Huge and slow. Leave it alone and it leaves you alone.
   troll: {
-    id: "troll", name: "Troll", level: 37, hp: 3100, atk: 76, def: 24, exp: 4300, gold: [46, 76], speed: 30, chase: 70, aggro: 0, range: 42, attackMs: 2000, radius: 16, respawnMs: 22_000,
+    id: "troll", name: "Troll", level: 37, hp: 3100, atk: 76, def: 24, exp: 4300, speed: 30, chase: 70, aggro: 0, range: 42, attackMs: 2000, radius: 16, respawnMs: 22_000,
     drops: [
       ["trollTooth", 0.6], ["whitePotion", 0.07], ["closeHelm", 0.004], ["goldPlate", 0.003], ["wildRing", 0.003], ["flameBlade", 0.002],
       ["mithril", 0.06], ["starCrystal", 0.008], ["trollCard", 0.001],
@@ -492,7 +491,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Casts dark bolts from afar at anyone it sees.
   vampire: {
-    id: "vampire", name: "Vampire", level: 39, hp: 2500, atk: 52, def: 22, exp: 4300, gold: [48, 80], speed: 45, chase: 90, aggro: 110, range: 170, attackMs: 2000, radius: 12, respawnMs: 22_000,
+    id: "vampire", name: "Vampire", level: 39, hp: 2500, atk: 52, def: 22, exp: 4300, speed: 45, chase: 90, aggro: 110, range: 170, attackMs: 2000, radius: 12, respawnMs: 22_000,
     drops: [
       ["bloodRuby", 0.55], ["whitePotion", 0.06], ["celestialHat", 0.005], ["mysticRobe", 0.004], ["engrailedShield", 0.003], ["flameBlade", 0.002],
       ["mithril", 0.05], ["starCrystal", 0.01], ["vampireCard", 0.001],
@@ -500,7 +499,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // The Wildlands' boss, in his lair on the highest ground.
   minotaurKing: {
-    id: "minotaurKing", name: "Minotaur King", level: 44, hp: 45_000, atk: 120, def: 40, exp: 90_000, gold: [2000, 4000], speed: 35, chase: 85, aggro: 150, range: 52, attackMs: 1800, radius: 24, respawnMs: 1_200_000,
+    id: "minotaurKing", name: "Minotaur King", level: 44, hp: 45_000, atk: 120, def: 40, exp: 90_000, speed: 35, chase: 85, aggro: 150, range: 52, attackMs: 1800, radius: 24, respawnMs: 1_200_000,
     boss: true, regen: 0.004,
     slam: { radius: 105, power: 1.5, everyMs: 9_000 }, blast: { radius: 75, power: 1.3, everyMs: 11_000, reach: 400 },
     drops: [
@@ -512,7 +511,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   // ---------------------------------------------------------------- Frostfell (Lv 40–50), the snowy island across the sea
   // Shaggy and short-tempered: they jump anyone who walks into their woods by the pier.
   yeti: {
-    id: "yeti", name: "Yeti", level: 41, hp: 2900, atk: 50, def: 26, exp: 5200, gold: [52, 86], speed: 50, chase: 110, aggro: 60, range: 38, attackMs: 1600, radius: 14, respawnMs: 20_000,
+    id: "yeti", name: "Yeti", level: 41, hp: 2900, atk: 50, def: 26, exp: 5200, speed: 50, chase: 110, aggro: 60, range: 38, attackMs: 1600, radius: 14, respawnMs: 20_000,
     drops: [
       ["yetiFur", 0.6], ["whitePotion", 0.06], ["snowHood", 0.005], ["furCloak", 0.004], ["iceSword", 0.004],
       ["mithril", 0.05], ["starCrystal", 0.008], ["yetiCard", 0.001],
@@ -520,7 +519,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Mountain beastmen with long spears: they only fight back.
   ramhorn: {
-    id: "ramhorn", name: "Ramhorn", level: 43, hp: 3300, atk: 66, def: 34, exp: 5900, gold: [54, 90], speed: 45, chase: 90, aggro: 0, range: 48, attackMs: 1700, radius: 13, respawnMs: 20_000,
+    id: "ramhorn", name: "Ramhorn", level: 43, hp: 3300, atk: 66, def: 34, exp: 5900, speed: 45, chase: 90, aggro: 0, range: 48, attackMs: 1700, radius: 13, respawnMs: 20_000,
     drops: [
       ["ramHorn", 0.6], ["whitePotion", 0.06], ["frostShield", 0.004], ["frostGreaves", 0.005], ["frostBow", 0.004], ["glacierLance", 0.002],
       ["mithril", 0.06], ["starCrystal", 0.008], ["ramhornCard", 0.001],
@@ -528,7 +527,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Throws shards of ice from afar at anyone it sees.
   frostShaman: {
-    id: "frostShaman", name: "Frost Shaman", level: 45, hp: 2600, atk: 52, def: 24, exp: 6200, gold: [56, 94], speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 22_000,
+    id: "frostShaman", name: "Frost Shaman", level: 45, hp: 2600, atk: 52, def: 24, exp: 6200, speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 22_000,
     drops: [
       ["frozenTear", 0.55], ["whitePotion", 0.06], ["moonHat", 0.005], ["winterRobe", 0.004], ["winterStaff", 0.004], ["snowflake", 0.003],
       ["mithril", 0.05], ["starCrystal", 0.01], ["frostShamanCard", 0.001],
@@ -536,7 +535,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Dead knights frozen in their armour, still on patrol. They charge anyone who comes near.
   frostWight: {
-    id: "frostWight", name: "Frost Wight", level: 47, hp: 3500, atk: 60, def: 32, exp: 7200, gold: [58, 98], speed: 50, chase: 100, aggro: 60, range: 38, attackMs: 1600, radius: 13, respawnMs: 22_000,
+    id: "frostWight", name: "Frost Wight", level: 47, hp: 3500, atk: 60, def: 32, exp: 7200, speed: 50, chase: 100, aggro: 60, range: 38, attackMs: 1600, radius: 13, respawnMs: 22_000,
     drops: [
       ["wightChain", 0.55], ["whitePotion", 0.07], ["valkyrieHelm", 0.003], ["frostPlate", 0.003], ["frostSabatons", 0.005], ["glacierBow", 0.002], ["frostRing", 0.003],
       ["mithril", 0.06], ["starCrystal", 0.012], ["frostWightCard", 0.001],
@@ -544,7 +543,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Big, slow and armoured in ice-blue scales. Leave it be and it leaves you be.
   frostDrake: {
-    id: "frostDrake", name: "Frost Drake", level: 49, hp: 4200, atk: 84, def: 30, exp: 8600, gold: [62, 104], speed: 40, chase: 80, aggro: 0, range: 44, attackMs: 1900, radius: 15, respawnMs: 24_000,
+    id: "frostDrake", name: "Frost Drake", level: 49, hp: 4200, atk: 84, def: 30, exp: 8600, speed: 40, chase: 80, aggro: 0, range: 44, attackMs: 1900, radius: 15, respawnMs: 24_000,
     drops: [
       ["drakeScale", 0.55], ["whitePotion", 0.08], ["glacierLance", 0.003], ["auroraStaff", 0.003], ["frostPlate", 0.003], ["valkyrieHelm", 0.003],
       ["mithril", 0.06], ["starCrystal", 0.014], ["frostDrakeCard", 0.001],
@@ -552,7 +551,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Frostfell's boss, in his ring of stones on the icy highlands. Throws ice at anyone out of reach.
   frostGiant: {
-    id: "frostGiant", name: "Frost Giant", level: 54, hp: 70_000, atk: 150, def: 48, exp: 150_000, gold: [3000, 6000], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 26, respawnMs: 1_500_000,
+    id: "frostGiant", name: "Frost Giant", level: 54, hp: 70_000, atk: 150, def: 48, exp: 150_000, speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 26, respawnMs: 1_500_000,
     boss: true, regen: 0.004,
     slam: { radius: 110, power: 1.6, everyMs: 9_000 }, blast: { radius: 80, power: 1.4, everyMs: 11_000, reach: 420 },
     drops: [
@@ -564,7 +563,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   // ---------------------------------------------------------------- Ravenmoor (Lv 50–60), the autumn island east of Dusk Hollow
   // Restless spirits in the woods by the pier: they drift at anyone who comes near. Hard to hit with plain attacks.
   wraith: {
-    id: "wraith", name: "Wraith", level: 51, hp: 4300, atk: 58, def: 28, exp: 9900, gold: [64, 108], speed: 55, chase: 105, aggro: 50, range: 36, attackMs: 1500, radius: 12, respawnMs: 22_000, flee: 0.15,
+    id: "wraith", name: "Wraith", level: 51, hp: 4300, atk: 58, def: 28, exp: 9900, speed: 55, chase: 105, aggro: 50, range: 36, attackMs: 1500, radius: 12, respawnMs: 22_000, flee: 0.15,
     drops: [
       ["wraithEssence", 0.55], ["whitePotion", 0.07], ["shadowHood", 0.005], ["shadowCloak", 0.004], ["bloodBow", 0.004],
       ["mithril", 0.06], ["starCrystal", 0.012], ["wraithCard", 0.001],
@@ -572,7 +571,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Stone that walks: they swoop down from the castle walls at anyone close.
   gargoyle: {
-    id: "gargoyle", name: "Gargoyle", level: 53, hp: 4600, atk: 62, def: 38, exp: 10_600, gold: [66, 112], speed: 60, chase: 115, aggro: 50, range: 38, attackMs: 1500, radius: 14, respawnMs: 22_000,
+    id: "gargoyle", name: "Gargoyle", level: 53, hp: 4600, atk: 62, def: 38, exp: 10_600, speed: 60, chase: 115, aggro: 50, range: 38, attackMs: 1500, radius: 14, respawnMs: 22_000,
     drops: [
       ["gargoyleShard", 0.55], ["whitePotion", 0.07], ["bascinet", 0.005], ["gildedBlade", 0.004], ["boneCharm", 0.003], ["ruinShield", 0.002],
       ["mithril", 0.06], ["starCrystal", 0.012], ["gargoyleCard", 0.001],
@@ -580,7 +579,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // The Fallen King's guard, still patrolling outside his walls. They charge anyone who comes near.
   darkKnight: {
-    id: "darkKnight", name: "Dark Knight", level: 55, hp: 5400, atk: 72, def: 44, exp: 12_700, gold: [70, 118], speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 13, respawnMs: 24_000,
+    id: "darkKnight", name: "Dark Knight", level: 55, hp: 5400, atk: 72, def: 44, exp: 12_700, speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 13, respawnMs: 24_000,
     drops: [
       ["rustedKey", 0.55], ["whitePotion", 0.08], ["dreadPlate", 0.003], ["darkLance", 0.002], ["ruinShield", 0.003], ["soulRing", 0.003],
       ["mithril", 0.07], ["starCrystal", 0.014], ["darkKnightCard", 0.001],
@@ -588,7 +587,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Casts dark bolts from afar at anyone it sees.
   lich: {
-    id: "lich", name: "Lich", level: 57, hp: 4400, atk: 62, def: 30, exp: 14_300, gold: [72, 122], speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 24_000,
+    id: "lich", name: "Lich", level: 57, hp: 4400, atk: 62, def: 30, exp: 14_300, speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 24_000,
     drops: [
       ["boneDust", 0.55], ["whitePotion", 0.07], ["nightHat", 0.005], ["lichRobe", 0.004], ["boneStaff", 0.004], ["soulStaff", 0.002],
       ["mithril", 0.06], ["starCrystal", 0.015], ["lichCard", 0.001],
@@ -596,7 +595,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Huge, slow and stitched together from worse things. Leave it alone and it leaves you alone.
   fleshGolem: {
-    id: "fleshGolem", name: "Flesh Golem", level: 59, hp: 6200, atk: 102, def: 40, exp: 17_000, gold: [76, 128], speed: 30, chase: 70, aggro: 0, range: 46, attackMs: 2100, radius: 18, respawnMs: 26_000,
+    id: "fleshGolem", name: "Flesh Golem", level: 59, hp: 6200, atk: 102, def: 40, exp: 17_000, speed: 30, chase: 70, aggro: 0, range: 46, attackMs: 2100, radius: 18, respawnMs: 26_000,
     drops: [
       ["golemHeart", 0.55], ["whitePotion", 0.09], ["dreadPlate", 0.003], ["royalBow", 0.003], ["soulStaff", 0.002], ["darkLance", 0.002],
       ["mithril", 0.07], ["starCrystal", 0.016], ["fleshGolemCard", 0.001],
@@ -604,7 +603,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Ravenmoor's boss, on his throne in the ruined castle. Casts dark bolts at anyone out of reach.
   fallenKing: {
-    id: "fallenKing", name: "Fallen King", level: 64, hp: 110_000, atk: 180, def: 56, exp: 260_000, gold: [5000, 9000], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 26, respawnMs: 1_800_000,
+    id: "fallenKing", name: "Fallen King", level: 64, hp: 110_000, atk: 180, def: 56, exp: 260_000, speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 26, respawnMs: 1_800_000,
     boss: true, regen: 0.004,
     slam: { radius: 110, power: 1.6, everyMs: 9_000 }, blast: { radius: 80, power: 1.4, everyMs: 11_000, reach: 420 },
     drops: [
@@ -616,7 +615,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   // ---------------------------------------------------------------- Petalfall (Lv 60–70), the spring island in the south-east sea
   // Quick white hares in the meadows by the pier. They only fight back, but they're hard to hit with plain attacks.
   moonHare: {
-    id: "moonHare", name: "Moon Hare", level: 61, hp: 4700, atk: 66, def: 34, exp: 17_500, gold: [80, 134], speed: 65, chase: 120, aggro: 0, range: 36, attackMs: 1300, radius: 11, respawnMs: 22_000, flee: 0.15,
+    id: "moonHare", name: "Moon Hare", level: 61, hp: 4700, atk: 66, def: 34, exp: 17_500, speed: 65, chase: 120, aggro: 0, range: 36, attackMs: 1300, radius: 11, respawnMs: 22_000, flee: 0.15,
     drops: [
       ["moonstone", 0.55], ["whitePotion", 0.08], ["blossomBlade", 0.004], ["petalBow", 0.004], ["moonRing", 0.002],
       ["mithril", 0.07], ["starCrystal", 0.016], ["moonHareCard", 0.001],
@@ -624,7 +623,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Throw foxfire from the woods in the north-west at anyone they see.
   foxSpirit: {
-    id: "foxSpirit", name: "Fox Spirit", level: 63, hp: 5200, atk: 66, def: 30, exp: 19_800, gold: [82, 138], speed: 45, chase: 90, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 24_000,
+    id: "foxSpirit", name: "Fox Spirit", level: 63, hp: 5200, atk: 66, def: 30, exp: 19_800, speed: 45, chase: 90, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 24_000,
     drops: [
       ["foxfireEmber", 0.55], ["whitePotion", 0.08], ["foxfireStaff", 0.004], ["blossomHat", 0.005], ["foxfireCharm", 0.003], ["stormStaff", 0.002],
       ["mithril", 0.07], ["starCrystal", 0.016], ["foxSpiritCard", 0.001],
@@ -632,7 +631,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Masked swordsmen on black wings, in the middle of the island. They come at anyone who comes near.
   crowBlade: {
-    id: "crowBlade", name: "Crow Blade", level: 65, hp: 5600, atk: 70, def: 40, exp: 21_800, gold: [86, 142], speed: 60, chase: 115, aggro: 50, range: 40, attackMs: 1500, radius: 13, respawnMs: 24_000,
+    id: "crowBlade", name: "Crow Blade", level: 65, hp: 5600, atk: 70, def: 40, exp: 21_800, speed: 60, chase: 115, aggro: 50, range: 40, attackMs: 1500, radius: 13, respawnMs: 24_000,
     drops: [
       ["smokeBomb", 0.55], ["whitePotion", 0.08], ["crowMask", 0.005], ["crowMantle", 0.004], ["blossomBlade", 0.003], ["boneBow", 0.002],
       ["mithril", 0.07], ["starCrystal", 0.017], ["crowBladeCard", 0.001],
@@ -640,7 +639,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // The bones of swordsmen who fell to the Ogre Warlord, still fighting in the north-east. Hard to cut through.
   phantom: {
-    id: "phantom", name: "Phantom Swordsman", level: 67, hp: 6000, atk: 84, def: 50, exp: 24_200, gold: [88, 148], speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 13, respawnMs: 24_000,
+    id: "phantom", name: "Phantom Swordsman", level: 67, hp: 6000, atk: 84, def: 50, exp: 24_200, speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 13, respawnMs: 24_000,
     drops: [
       ["fadedScroll", 0.55], ["whitePotion", 0.08], ["phantomHelm", 0.005], ["jadeShield", 0.003], ["thunderGlaive", 0.002], ["warlordPlate", 0.002],
       ["mithril", 0.08], ["starCrystal", 0.018], ["phantomCard", 0.001],
@@ -648,7 +647,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Huge, slow and red as fire, wandering the south. Leave them alone and they leave you alone; they hit very hard.
   redOgre: {
-    id: "redOgre", name: "Red Ogre", level: 69, hp: 7600, atk: 116, def: 46, exp: 29_500, gold: [92, 156], speed: 30, chase: 70, aggro: 0, range: 48, attackMs: 2100, radius: 18, respawnMs: 26_000,
+    id: "redOgre", name: "Red Ogre", level: 69, hp: 7600, atk: 116, def: 46, exp: 29_500, speed: 30, chase: 70, aggro: 0, range: 48, attackMs: 2100, radius: 18, respawnMs: 26_000,
     drops: [
       ["ogreBrew", 0.55], ["whitePotion", 0.1], ["blossomRobe", 0.004], ["warlordPlate", 0.003], ["boneBow", 0.003], ["stormStaff", 0.002], ["thunderGlaive", 0.002],
       ["mithril", 0.08], ["starCrystal", 0.018], ["redOgreCard", 0.001],
@@ -656,7 +655,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Petalfall's boss, in his war camp on the high ground. Throws fire at anyone out of reach.
   ogreWarlord: {
-    id: "ogreWarlord", name: "Ogre Warlord", level: 74, hp: 170_000, atk: 205, def: 62, exp: 420_000, gold: [8000, 14000], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 28, respawnMs: 1_800_000,
+    id: "ogreWarlord", name: "Ogre Warlord", level: 74, hp: 170_000, atk: 205, def: 62, exp: 420_000, speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 28, respawnMs: 1_800_000,
     boss: true, regen: 0.004,
     slam: { radius: 115, power: 1.6, everyMs: 8_500 }, blast: { radius: 85, power: 1.4, everyMs: 10_500, reach: 420 },
     drops: [
@@ -668,7 +667,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   // ---------------------------------------------------------------- Ashpeak (Lv 70–80), the volcanic island far out in the eastern sea
   // Little red imps with bat wings, all over the rock by the pier. They swarm anyone who comes near.
   emberImp: {
-    id: "emberImp", name: "Ember Imp", level: 71, hp: 6000, atk: 74, def: 42, exp: 30_000, gold: [94, 158], speed: 70, chase: 125, aggro: 40, range: 36, attackMs: 1300, radius: 11, respawnMs: 22_000,
+    id: "emberImp", name: "Ember Imp", level: 71, hp: 6000, atk: 74, def: 42, exp: 30_000, speed: 70, chase: 125, aggro: 40, range: 36, attackMs: 1300, radius: 11, respawnMs: 22_000,
     drops: [
       ["impHorn", 0.55], ["whitePotion", 0.08], ["cinderBlade", 0.004], ["emberBow", 0.004], ["emberRing", 0.002],
       ["mithril", 0.08], ["starCrystal", 0.018], ["emberImpCard", 0.001],
@@ -676,7 +675,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Fire lizards on the south-west slopes: they spit fire from afar at anyone they see.
   salamander: {
-    id: "salamander", name: "Salamander", level: 73, hp: 5800, atk: 64, def: 36, exp: 33_000, gold: [96, 162], speed: 45, chase: 90, aggro: 100, range: 170, attackMs: 2200, radius: 13, respawnMs: 24_000,
+    id: "salamander", name: "Salamander", level: 73, hp: 5800, atk: 64, def: 36, exp: 33_000, speed: 45, chase: 90, aggro: 100, range: 170, attackMs: 2200, radius: 13, respawnMs: 24_000,
     drops: [
       ["salamanderScale", 0.55], ["whitePotion", 0.08], ["cinderStaff", 0.004], ["emberHood", 0.005], ["salamanderCharm", 0.003], ["magmaStaff", 0.002],
       ["mithril", 0.08], ["starCrystal", 0.019], ["salamanderCard", 0.001],
@@ -684,7 +683,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Knights in black glass armour, on guard along the north of the island. They charge anyone who comes near.
   obsidianKnight: {
-    id: "obsidianKnight", name: "Obsidian Knight", level: 75, hp: 6600, atk: 80, def: 50, exp: 36_000, gold: [98, 166], speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 13, respawnMs: 24_000,
+    id: "obsidianKnight", name: "Obsidian Knight", level: 75, hp: 6600, atk: 80, def: 50, exp: 36_000, speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 13, respawnMs: 24_000,
     drops: [
       ["obsidianShard", 0.55], ["whitePotion", 0.08], ["obsidianHelm", 0.005], ["obsidianShield", 0.003], ["magmaLance", 0.002], ["obsidianPlate", 0.002],
       ["mithril", 0.09], ["starCrystal", 0.02], ["obsidianKnightCard", 0.001],
@@ -692,7 +691,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Smoke with a face, drifting over the hot rock in the east. Hard to hit with plain attacks.
   cinderWraith: {
-    id: "cinderWraith", name: "Cinder Wraith", level: 77, hp: 6800, atk: 74, def: 50, exp: 39_000, gold: [100, 170], speed: 55, chase: 105, aggro: 50, range: 36, attackMs: 1500, radius: 12, respawnMs: 24_000, flee: 0.15,
+    id: "cinderWraith", name: "Cinder Wraith", level: 77, hp: 6800, atk: 74, def: 50, exp: 39_000, speed: 55, chase: 105, aggro: 50, range: 36, attackMs: 1500, radius: 12, respawnMs: 24_000, flee: 0.15,
     drops: [
       ["cinderVeil", 0.55], ["whitePotion", 0.08], ["ashenHood", 0.005], ["ashenLeathers", 0.004], ["cinderRobe", 0.004], ["obsidianBow", 0.002],
       ["mithril", 0.09], ["starCrystal", 0.02], ["cinderWraithCard", 0.001],
@@ -700,7 +699,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Walking lumps of cooling lava in the south. Leave them alone and they leave you alone; they hit harder than anything else here.
   magmaGolem: {
-    id: "magmaGolem", name: "Magma Golem", level: 79, hp: 8600, atk: 124, def: 52, exp: 44_000, gold: [104, 176], speed: 30, chase: 70, aggro: 0, range: 48, attackMs: 2100, radius: 18, respawnMs: 26_000,
+    id: "magmaGolem", name: "Magma Golem", level: 79, hp: 8600, atk: 124, def: 52, exp: 44_000, speed: 30, chase: 70, aggro: 0, range: 48, attackMs: 2100, radius: 18, respawnMs: 26_000,
     drops: [
       ["magmaCore", 0.55], ["whitePotion", 0.1], ["obsidianPlate", 0.003], ["cinderBlade", 0.003], ["magmaLance", 0.002], ["magmaStaff", 0.002], ["obsidianBow", 0.002],
       ["mithril", 0.09], ["starCrystal", 0.02], ["magmaGolemCard", 0.001],
@@ -708,7 +707,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Ashpeak's boss, in the crater at the top of the road. Throws fire at anyone out of reach.
   cinderColossus: {
-    id: "cinderColossus", name: "Cinder Colossus", level: 84, hp: 230_000, atk: 220, def: 68, exp: 600_000, gold: [12_000, 20_000], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 30, respawnMs: 1_800_000,
+    id: "cinderColossus", name: "Cinder Colossus", level: 84, hp: 230_000, atk: 220, def: 68, exp: 600_000, speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 30, respawnMs: 1_800_000,
     boss: true, regen: 0.004,
     slam: { radius: 120, power: 1.7, everyMs: 8_500 }, blast: { radius: 85, power: 1.5, everyMs: 10_500, reach: 440 },
     drops: [
@@ -720,42 +719,42 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   // ---------------------------------------------------------------- the Hollow Burrows (Lv 14–22), a dungeon
   // Purple bats in the first cavern. They swoop at anyone who comes near, and they're quick to dodge.
   tunnelBat: {
-    id: "tunnelBat", name: "Tunnel Bat", level: 14, hp: 700, atk: 15, def: 8, exp: 560, gold: [16, 26], speed: 70, chase: 115, aggro: 45, range: 36, attackMs: 1300, radius: 10, respawnMs: 15_000, flee: 0.1,
+    id: "tunnelBat", name: "Tunnel Bat", level: 14, hp: 700, atk: 15, def: 8, exp: 560, speed: 70, chase: 115, aggro: 45, range: 36, attackMs: 1300, radius: 10, respawnMs: 15_000, flee: 0.1,
     drops: [
       ["tunnelWing", 0.55], ["orangePotion", 0.06], ["burrowBlade", 0.004], ["burrowRing", 0.001], ["mithril", 0.04], ["starCrystal", 0.004], ["tunnelBatCard", 0.001],
     ],
   },
   // Fat worms in the dug-out cavern below. They only fight back, and their hides are thick.
   burrowWorm: {
-    id: "burrowWorm", name: "Burrow Worm", level: 16, hp: 1_250, atk: 24, def: 18, exp: 820, gold: [18, 30], speed: 30, chase: 70, aggro: 0, range: 40, attackMs: 1900, radius: 15, respawnMs: 16_000,
+    id: "burrowWorm", name: "Burrow Worm", level: 16, hp: 1_250, atk: 24, def: 18, exp: 820, speed: 30, chase: 70, aggro: 0, range: 40, attackMs: 1900, radius: 15, respawnMs: 16_000,
     drops: [
       ["wormHide", 0.55], ["orangePotion", 0.06], ["fungusStaff", 0.004], ["mithril", 0.04], ["starCrystal", 0.004], ["burrowWormCard", 0.001],
     ],
   },
   // Goblins who dig for the Burrow Queen. They go for anyone who comes near.
   moleGoblin: {
-    id: "moleGoblin", name: "Mole Goblin", level: 17, hp: 900, atk: 21, def: 12, exp: 860, gold: [20, 32], speed: 45, chase: 95, aggro: 40, range: 38, attackMs: 1500, radius: 11, respawnMs: 16_000,
+    id: "moleGoblin", name: "Mole Goblin", level: 17, hp: 900, atk: 21, def: 12, exp: 860, speed: 45, chase: 95, aggro: 40, range: 38, attackMs: 1500, radius: 11, respawnMs: 16_000,
     drops: [
       ["goblinShovel", 0.55], ["orangePotion", 0.06], ["tunnelBow", 0.004], ["mithril", 0.04], ["starCrystal", 0.004], ["moleGoblinCard", 0.001],
     ],
   },
   // Eyes on stalks, grown out of the second floor's mould. They stare beams at anyone they see.
   fungusEye: {
-    id: "fungusEye", name: "Fungus Eye", level: 19, hp: 900, atk: 22, def: 10, exp: 980, gold: [22, 36], speed: 40, chase: 80, aggro: 100, range: 160, attackMs: 2100, radius: 12, respawnMs: 18_000,
+    id: "fungusEye", name: "Fungus Eye", level: 19, hp: 900, atk: 22, def: 10, exp: 980, speed: 40, chase: 80, aggro: 100, range: 160, attackMs: 2100, radius: 12, respawnMs: 18_000,
     drops: [
       ["fungusSpores", 0.55], ["orangePotion", 0.06], ["burrowBlade", 0.004], ["burrowRing", 0.001], ["mithril", 0.04], ["starCrystal", 0.004], ["fungusEyeCard", 0.001],
     ],
   },
   // Big goblins in the Queen's hall. Tough, and they charge anyone who comes near.
   burrowBrute: {
-    id: "burrowBrute", name: "Burrow Brute", level: 21, hp: 1_700, atk: 25, def: 20, exp: 1_250, gold: [26, 42], speed: 40, chase: 90, aggro: 40, range: 42, attackMs: 1700, radius: 14, respawnMs: 18_000,
+    id: "burrowBrute", name: "Burrow Brute", level: 21, hp: 1_700, atk: 25, def: 20, exp: 1_250, speed: 40, chase: 90, aggro: 40, range: 42, attackMs: 1700, radius: 14, respawnMs: 18_000,
     drops: [
       ["bruteTooth", 0.55], ["orangePotion", 0.06], ["fungusStaff", 0.004], ["mithril", 0.04], ["starCrystal", 0.004], ["burrowBruteCard", 0.001],
     ],
   },
   // The Hollow Burrows' boss: a vast worm in the deepest hall, queen of everything that digs.
   burrowQueen: {
-    id: "burrowQueen", name: "Burrow Queen", level: 24, hp: 16_000, atk: 64, def: 22, exp: 22_000, gold: [500, 900], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 32, respawnMs: 1_200_000,
+    id: "burrowQueen", name: "Burrow Queen", level: 24, hp: 16_000, atk: 64, def: 22, exp: 22_000, speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 32, respawnMs: 1_200_000,
     boss: true, regen: 0.004,
     slam: { radius: 90, power: 1.4, everyMs: 10_000 }, blast: { radius: 70, power: 1.2, everyMs: 12_000, reach: 380 },
     drops: [
@@ -766,42 +765,42 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   // ---------------------------------------------------------------- the Frozen Crypt (Lv 46–54), a dungeon
   // Pale bats in the first hall, cold to the touch. They swoop at anyone who comes near.
   iceBat: {
-    id: "iceBat", name: "Ice Bat", level: 46, hp: 3_000, atk: 42, def: 26, exp: 7_000, gold: [56, 92], speed: 70, chase: 120, aggro: 60, range: 36, attackMs: 1300, radius: 10, respawnMs: 20_000, flee: 0.1,
+    id: "iceBat", name: "Ice Bat", level: 46, hp: 3_000, atk: 42, def: 26, exp: 7_000, speed: 70, chase: 120, aggro: 60, range: 36, attackMs: 1300, radius: 10, respawnMs: 20_000, flee: 0.1,
     drops: [
       ["frostWing", 0.55], ["whitePotion", 0.06], ["cryptBlade", 0.004], ["cryptRing", 0.001], ["mithril", 0.07], ["starCrystal", 0.013], ["iceBatCard", 0.001],
     ],
   },
   // Knights frozen in their armour long ago, still on guard. They charge anyone who comes near.
   frozenKnight: {
-    id: "frozenKnight", name: "Frozen Knight", level: 48, hp: 3_800, atk: 58, def: 34, exp: 7_800, gold: [58, 98], speed: 45, chase: 95, aggro: 50, range: 42, attackMs: 1600, radius: 13, respawnMs: 22_000,
+    id: "frozenKnight", name: "Frozen Knight", level: 48, hp: 3_800, atk: 58, def: 34, exp: 7_800, speed: 45, chase: 95, aggro: 50, range: 42, attackMs: 1600, radius: 13, respawnMs: 22_000,
     drops: [
       ["frozenCrest", 0.55], ["whitePotion", 0.06], ["frostGlaive", 0.004], ["mithril", 0.07], ["starCrystal", 0.013], ["frozenKnightCard", 0.001],
     ],
   },
   // Cold spirits drifting through the second floor. Hard to hit with plain attacks.
   cryptWraith: {
-    id: "cryptWraith", name: "Crypt Wraith", level: 50, hp: 3_900, atk: 50, def: 28, exp: 8_600, gold: [60, 102], speed: 55, chase: 105, aggro: 50, range: 36, attackMs: 1500, radius: 12, respawnMs: 22_000, flee: 0.15,
+    id: "cryptWraith", name: "Crypt Wraith", level: 50, hp: 3_900, atk: 50, def: 28, exp: 8_600, speed: 55, chase: 105, aggro: 50, range: 36, attackMs: 1500, radius: 12, respawnMs: 22_000, flee: 0.15,
     drops: [
       ["wraithFrost", 0.55], ["whitePotion", 0.06], ["seerStaffIce", 0.004], ["mithril", 0.07], ["starCrystal", 0.013], ["cryptWraithCard", 0.001],
     ],
   },
   // Robed skeletons that throw shards of ice from afar at anyone they see.
   iceSeer: {
-    id: "iceSeer", name: "Ice Seer", level: 52, hp: 3_600, atk: 56, def: 26, exp: 9_400, gold: [62, 106], speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 22_000,
+    id: "iceSeer", name: "Ice Seer", level: 52, hp: 3_600, atk: 56, def: 26, exp: 9_400, speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 22_000,
     drops: [
       ["seerShard", 0.55], ["whitePotion", 0.06], ["cryptBow", 0.004], ["cryptRing", 0.001], ["mithril", 0.07], ["starCrystal", 0.013], ["iceSeerCard", 0.001],
     ],
   },
   // Walking blocks of ice. Leave them alone and they leave you alone; they hit very hard.
   iceGolem: {
-    id: "iceGolem", name: "Ice Golem", level: 53, hp: 5_600, atk: 92, def: 40, exp: 10_400, gold: [66, 110], speed: 30, chase: 70, aggro: 0, range: 46, attackMs: 2100, radius: 18, respawnMs: 24_000,
+    id: "iceGolem", name: "Ice Golem", level: 53, hp: 5_600, atk: 92, def: 40, exp: 10_400, speed: 30, chase: 70, aggro: 0, range: 46, attackMs: 2100, radius: 18, respawnMs: 24_000,
     drops: [
       ["golemIce", 0.55], ["whitePotion", 0.06], ["cryptBlade", 0.004], ["mithril", 0.07], ["starCrystal", 0.013], ["iceGolemCard", 0.001],
     ],
   },
   // The Frozen Crypt's boss: a frozen king of old, on his throne at the bottom. Throws ice at anyone out of reach.
   cryptLord: {
-    id: "cryptLord", name: "Crypt Lord", level: 57, hp: 90_000, atk: 165, def: 50, exp: 200_000, gold: [4_000, 7_000], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 24, respawnMs: 1_500_000,
+    id: "cryptLord", name: "Crypt Lord", level: 57, hp: 90_000, atk: 165, def: 50, exp: 200_000, speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 24, respawnMs: 1_500_000,
     boss: true, regen: 0.004,
     slam: { radius: 110, power: 1.6, everyMs: 9_000 }, blast: { radius: 80, power: 1.4, everyMs: 11_000, reach: 420 },
     drops: [
@@ -812,42 +811,42 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   // ---------------------------------------------------------------- the Magma Depths (Lv 76–84), a dungeon
   // Red-hot bats in the first cavern. They swoop at anyone who comes near.
   lavaBat: {
-    id: "lavaBat", name: "Lava Bat", level: 76, hp: 6_600, atk: 70, def: 46, exp: 37_000, gold: [100, 168], speed: 70, chase: 125, aggro: 50, range: 36, attackMs: 1300, radius: 11, respawnMs: 22_000, flee: 0.1,
+    id: "lavaBat", name: "Lava Bat", level: 76, hp: 6_600, atk: 70, def: 46, exp: 37_000, speed: 70, chase: 125, aggro: 50, range: 36, attackMs: 1300, radius: 11, respawnMs: 22_000, flee: 0.1,
     drops: [
       ["lavaWing", 0.55], ["goldenPotion", 0.06], ["moltenBlade", 0.004], ["depthsRing", 0.001], ["mithril", 0.09], ["starCrystal", 0.02], ["lavaBatCard", 0.001],
     ],
   },
   // Armoured worms that swim through lava. They only fight back, and they hit hard.
   magmaCrawler: {
-    id: "magmaCrawler", name: "Magma Crawler", level: 78, hp: 9_200, atk: 96, def: 56, exp: 41_000, gold: [102, 172], speed: 30, chase: 70, aggro: 0, range: 44, attackMs: 1900, radius: 16, respawnMs: 24_000,
+    id: "magmaCrawler", name: "Magma Crawler", level: 78, hp: 9_200, atk: 96, def: 56, exp: 41_000, speed: 30, chase: 70, aggro: 0, range: 44, attackMs: 1900, radius: 16, respawnMs: 24_000,
     drops: [
       ["crawlerPlate", 0.55], ["goldenPotion", 0.06], ["drakeLance", 0.004], ["mithril", 0.09], ["starCrystal", 0.02], ["magmaCrawlerCard", 0.001],
     ],
   },
   // Robed skeletons who worship the Molten Drake. They throw fire from afar at anyone they see.
   flamePriest: {
-    id: "flamePriest", name: "Flame Priest", level: 80, hp: 6_800, atk: 72, def: 42, exp: 45_000, gold: [104, 176], speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 24_000,
+    id: "flamePriest", name: "Flame Priest", level: 80, hp: 6_800, atk: 72, def: 42, exp: 45_000, speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 24_000,
     drops: [
       ["priestCinder", 0.55], ["goldenPotion", 0.06], ["flameStaff", 0.004], ["mithril", 0.09], ["starCrystal", 0.02], ["flamePriestCard", 0.001],
     ],
   },
   // Knights in armour that never cooled. They charge anyone who comes near.
   moltenKnight: {
-    id: "moltenKnight", name: "Molten Knight", level: 81, hp: 8_200, atk: 84, def: 58, exp: 47_000, gold: [106, 180], speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 13, respawnMs: 24_000,
+    id: "moltenKnight", name: "Molten Knight", level: 81, hp: 8_200, atk: 84, def: 58, exp: 47_000, speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 13, respawnMs: 24_000,
     drops: [
       ["moltenCrest", 0.55], ["goldenPotion", 0.06], ["magmaBow", 0.004], ["depthsRing", 0.001], ["mithril", 0.09], ["starCrystal", 0.02], ["moltenKnightCard", 0.001],
     ],
   },
   // Black glass giants in the deepest hall. Leave them alone and they leave you alone; they hit very hard.
   obsidianGolem: {
-    id: "obsidianGolem", name: "Obsidian Golem", level: 83, hp: 10_800, atk: 140, def: 62, exp: 54_000, gold: [110, 186], speed: 30, chase: 70, aggro: 0, range: 48, attackMs: 2100, radius: 18, respawnMs: 26_000,
+    id: "obsidianGolem", name: "Obsidian Golem", level: 83, hp: 10_800, atk: 140, def: 62, exp: 54_000, speed: 30, chase: 70, aggro: 0, range: 48, attackMs: 2100, radius: 18, respawnMs: 26_000,
     drops: [
       ["obsidianCore", 0.55], ["goldenPotion", 0.06], ["moltenBlade", 0.004], ["mithril", 0.09], ["starCrystal", 0.02], ["obsidianGolemCard", 0.001],
     ],
   },
   // The Magma Depths' boss: a drake of living fire, coiled in the deepest chamber. Breathes fire at anyone out of reach.
   moltenDrake: {
-    id: "moltenDrake", name: "Molten Drake", level: 87, hp: 280_000, atk: 250, def: 78, exp: 800_000, gold: [14_000, 24_000], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 30, respawnMs: 1_800_000,
+    id: "moltenDrake", name: "Molten Drake", level: 87, hp: 280_000, atk: 250, def: 78, exp: 800_000, speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 30, respawnMs: 1_800_000,
     boss: true, regen: 0.004,
     slam: { radius: 120, power: 1.7, everyMs: 8_500 }, blast: { radius: 90, power: 1.5, everyMs: 10_500, reach: 440 },
     drops: [
@@ -858,42 +857,42 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   // ---------------------------------------------------------------- the Slime Cellar (Lv 6–12), a dungeon
   // Small brown bats in the first cellar. They flap at anyone who comes near.
   cellarBat: {
-    id: "cellarBat", name: "Cellar Bat", level: 6, hp: 110, atk: 8, def: 2, exp: 55, gold: [4, 8], speed: 70, chase: 110, aggro: 40, range: 34, attackMs: 1300, radius: 10, respawnMs: 12_000, flee: 0.08,
+    id: "cellarBat", name: "Cellar Bat", level: 6, hp: 110, atk: 8, def: 2, exp: 55, speed: 70, chase: 110, aggro: 40, range: 34, attackMs: 1300, radius: 10, respawnMs: 12_000, flee: 0.08,
     drops: [
       ["dustyWing", 0.55], ["redPotion", 0.06], ["cellarCleaver", 0.004], ["jellyRing", 0.001], ["ironIngot", 0.05], ["starCrystal", 0.001], ["cellarBatCard", 0.001],
     ],
   },
   // Wobbly blue slimes in the wine cellar. They only fight back.
   blueJelly: {
-    id: "blueJelly", name: "Blue Jelly", level: 7, hp: 210, atk: 10, def: 4, exp: 85, gold: [5, 10], speed: 30, chase: 70, aggro: 0, range: 36, attackMs: 1900, radius: 12, respawnMs: 14_000,
+    id: "blueJelly", name: "Blue Jelly", level: 7, hp: 210, atk: 10, def: 4, exp: 85, speed: 30, chase: 70, aggro: 0, range: 36, attackMs: 1900, radius: 12, respawnMs: 14_000,
     drops: [
       ["jellyBlob", 0.55], ["redPotion", 0.06], ["slimeStaff", 0.004], ["ironIngot", 0.05], ["starCrystal", 0.001], ["blueJellyCard", 0.001],
     ],
   },
   // Dark snakes coiled among the barrels. They bite anyone who comes near.
   cellarViper: {
-    id: "cellarViper", name: "Cellar Viper", level: 8, hp: 190, atk: 12, def: 3, exp: 105, gold: [6, 12], speed: 45, chase: 95, aggro: 40, range: 38, attackMs: 1500, radius: 11, respawnMs: 14_000,
+    id: "cellarViper", name: "Cellar Viper", level: 8, hp: 190, atk: 12, def: 3, exp: 105, speed: 45, chase: 95, aggro: 40, range: 38, attackMs: 1500, radius: 11, respawnMs: 14_000,
     drops: [
       ["viperSkin", 0.55], ["redPotion", 0.06], ["cellarBow", 0.004], ["ironIngot", 0.05], ["starCrystal", 0.001], ["cellarViperCard", 0.001],
     ],
   },
   // Goblins raiding the cellar for the Slime King. They shoot little bolts at anyone they see.
   goblinThief: {
-    id: "goblinThief", name: "Goblin Thief", level: 10, hp: 240, atk: 13, def: 4, exp: 170, gold: [8, 15], speed: 40, chase: 85, aggro: 90, range: 150, attackMs: 2100, radius: 12, respawnMs: 15_000,
+    id: "goblinThief", name: "Goblin Thief", level: 10, hp: 240, atk: 13, def: 4, exp: 170, speed: 40, chase: 85, aggro: 90, range: 150, attackMs: 2100, radius: 12, respawnMs: 15_000,
     drops: [
       ["stolenSpoon", 0.55], ["redPotion", 0.06], ["cellarCleaver", 0.004], ["jellyRing", 0.001], ["ironIngot", 0.05], ["starCrystal", 0.001], ["goblinThiefCard", 0.001],
     ],
   },
   // Big green slimes in the King's cellar. Leave them alone and they leave you alone; they hit hard for their size.
   greatSlime: {
-    id: "greatSlime", name: "Great Slime", level: 11, hp: 460, atk: 18, def: 7, exp: 270, gold: [10, 18], speed: 30, chase: 70, aggro: 0, range: 40, attackMs: 2000, radius: 15, respawnMs: 16_000,
+    id: "greatSlime", name: "Great Slime", level: 11, hp: 460, atk: 18, def: 7, exp: 270, speed: 30, chase: 70, aggro: 0, range: 40, attackMs: 2000, radius: 15, respawnMs: 16_000,
     drops: [
       ["slimeCore", 0.55], ["redPotion", 0.06], ["slimeStaff", 0.004], ["ironIngot", 0.05], ["starCrystal", 0.001], ["greatSlimeCard", 0.001],
     ],
   },
   // The Slime Cellar's boss: a slime as big as a cart, the oldest and greediest in the cellar. Spits slime at anyone out of reach.
   slimeKing: {
-    id: "slimeKing", name: "Slime King", level: 14, hp: 5_000, atk: 34, def: 10, exp: 5_000, gold: [120, 240], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 30, respawnMs: 900_000,
+    id: "slimeKing", name: "Slime King", level: 14, hp: 5_000, atk: 34, def: 10, exp: 5_000, speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 30, respawnMs: 900_000,
     boss: true, regen: 0.004,
     slam: { radius: 70, power: 1.3, everyMs: 11_000 }, blast: { radius: 60, power: 1.1, everyMs: 13_000, reach: 320 },
     drops: [
@@ -904,42 +903,42 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   // ---------------------------------------------------------------- the Shadow Vault (Lv 56–64), a dungeon
   // Black bats in the first hall, hard to see in the dark. They swoop at anyone who comes near.
   shadowBat: {
-    id: "shadowBat", name: "Shadow Bat", level: 56, hp: 4_100, atk: 54, def: 34, exp: 12_500, gold: [68, 114], speed: 70, chase: 120, aggro: 50, range: 36, attackMs: 1300, radius: 10, respawnMs: 20_000, flee: 0.1,
+    id: "shadowBat", name: "Shadow Bat", level: 56, hp: 4_100, atk: 54, def: 34, exp: 12_500, speed: 70, chase: 120, aggro: 50, range: 36, attackMs: 1300, radius: 10, respawnMs: 20_000, flee: 0.1,
     drops: [
       ["shadowWing", 0.55], ["whitePotion", 0.06], ["vaultBlade", 0.004], ["shadowRing", 0.001], ["mithril", 0.08], ["starCrystal", 0.015], ["shadowBatCard", 0.001],
     ],
   },
   // Pale worms that live in the vault's old bones. They only fight back, and they hit hard.
   boneCrawler: {
-    id: "boneCrawler", name: "Bone Crawler", level: 58, hp: 5_600, atk: 82, def: 46, exp: 14_000, gold: [70, 118], speed: 30, chase: 70, aggro: 0, range: 44, attackMs: 1900, radius: 16, respawnMs: 22_000,
+    id: "boneCrawler", name: "Bone Crawler", level: 58, hp: 5_600, atk: 82, def: 46, exp: 14_000, speed: 30, chase: 70, aggro: 0, range: 44, attackMs: 1900, radius: 16, respawnMs: 22_000,
     drops: [
       ["boneShard", 0.55], ["whitePotion", 0.06], ["shadowScythe", 0.004], ["mithril", 0.08], ["starCrystal", 0.015], ["boneCrawlerCard", 0.001],
     ],
   },
   // Dead knights still guarding the Count's treasure. They charge anyone who comes near.
   vaultKnight: {
-    id: "vaultKnight", name: "Vault Knight", level: 59, hp: 5_200, atk: 66, def: 44, exp: 15_000, gold: [72, 120], speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 13, respawnMs: 22_000,
+    id: "vaultKnight", name: "Vault Knight", level: 59, hp: 5_200, atk: 66, def: 44, exp: 15_000, speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 13, respawnMs: 22_000,
     drops: [
       ["vaultCrest", 0.55], ["whitePotion", 0.06], ["shadowStaff", 0.004], ["mithril", 0.08], ["starCrystal", 0.015], ["vaultKnightCard", 0.001],
     ],
   },
   // Pale priests of the Shadow Count. They throw dark bolts from afar at anyone they see.
   shadowPriest: {
-    id: "shadowPriest", name: "Shadow Priest", level: 61, hp: 4_500, atk: 60, def: 32, exp: 16_500, gold: [74, 124], speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 22_000,
+    id: "shadowPriest", name: "Shadow Priest", level: 61, hp: 4_500, atk: 60, def: 32, exp: 16_500, speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 22_000,
     drops: [
       ["darkRosary", 0.55], ["whitePotion", 0.06], ["vaultBow", 0.004], ["shadowRing", 0.001], ["mithril", 0.08], ["starCrystal", 0.015], ["shadowPriestCard", 0.001],
     ],
   },
   // Giants stitched together from a hundred skeletons. Leave them alone and they leave you alone; they hit very hard.
   boneColossus: {
-    id: "boneColossus", name: "Bone Colossus", level: 63, hp: 7_000, atk: 110, def: 48, exp: 19_000, gold: [78, 130], speed: 30, chase: 70, aggro: 0, range: 48, attackMs: 2100, radius: 18, respawnMs: 24_000,
+    id: "boneColossus", name: "Bone Colossus", level: 63, hp: 7_000, atk: 110, def: 48, exp: 19_000, speed: 30, chase: 70, aggro: 0, range: 48, attackMs: 2100, radius: 18, respawnMs: 24_000,
     drops: [
       ["colossusBone", 0.55], ["whitePotion", 0.06], ["vaultBlade", 0.004], ["mithril", 0.08], ["starCrystal", 0.015], ["boneColossusCard", 0.001],
     ],
   },
   // The Shadow Vault's boss: the Count who built the vault, a vampire in his treasure hall. Throws dark bolts at anyone out of reach.
   shadowCount: {
-    id: "shadowCount", name: "Shadow Count", level: 67, hp: 130_000, atk: 190, def: 58, exp: 300_000, gold: [5_500, 9_500], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 26, respawnMs: 1_500_000,
+    id: "shadowCount", name: "Shadow Count", level: 67, hp: 130_000, atk: 190, def: 58, exp: 300_000, speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 26, respawnMs: 1_500_000,
     boss: true, regen: 0.004,
     slam: { radius: 110, power: 1.6, everyMs: 9_000 }, blast: { radius: 80, power: 1.4, everyMs: 11_000, reach: 420 },
     drops: [
@@ -950,42 +949,42 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   // ---------------------------------------------------------------- the Blossom Grotto (Lv 66–74), a dungeon
   // Pink wasps as big as cats, nesting in the first cave. They sting anyone who comes near.
   blossomWasp: {
-    id: "blossomWasp", name: "Blossom Wasp", level: 66, hp: 5_000, atk: 62, def: 36, exp: 22_000, gold: [86, 144], speed: 75, chase: 120, aggro: 50, range: 36, attackMs: 1300, radius: 10, respawnMs: 20_000, flee: 0.12,
+    id: "blossomWasp", name: "Blossom Wasp", level: 66, hp: 5_000, atk: 62, def: 36, exp: 22_000, speed: 75, chase: 120, aggro: 50, range: 36, attackMs: 1300, radius: 10, respawnMs: 20_000, flee: 0.12,
     drops: [
       ["blossomStinger", 0.55], ["whitePotion", 0.06], ["jadeKatana", 0.004], ["lotusRing", 0.001], ["mithril", 0.085], ["starCrystal", 0.017], ["blossomWaspCard", 0.001],
     ],
   },
   // Mossy worms that tunnel through the cherry roots. They only fight back, and they hit hard.
   rootCrawler: {
-    id: "rootCrawler", name: "Root Crawler", level: 68, hp: 7_400, atk: 92, def: 50, exp: 25_000, gold: [88, 148], speed: 30, chase: 70, aggro: 0, range: 44, attackMs: 1900, radius: 16, respawnMs: 22_000,
+    id: "rootCrawler", name: "Root Crawler", level: 68, hp: 7_400, atk: 92, def: 50, exp: 25_000, speed: 30, chase: 70, aggro: 0, range: 44, attackMs: 1900, radius: 16, respawnMs: 22_000,
     drops: [
       ["twistedRoot", 0.55], ["whitePotion", 0.06], ["jadeGlaive", 0.004], ["mithril", 0.085], ["starCrystal", 0.017], ["rootCrawlerCard", 0.001],
     ],
   },
   // Fox spirits in armour who guard the Jade Serpent's spring. They charge anyone who comes near.
   foxGuard: {
-    id: "foxGuard", name: "Fox Guard", level: 69, hp: 6_400, atk: 74, def: 48, exp: 26_500, gold: [90, 150], speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 13, respawnMs: 22_000,
+    id: "foxGuard", name: "Fox Guard", level: 69, hp: 6_400, atk: 74, def: 48, exp: 26_500, speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 13, respawnMs: 22_000,
     drops: [
       ["foxMask", 0.55], ["whitePotion", 0.06], ["lanternStaff", 0.004], ["mithril", 0.085], ["starCrystal", 0.017], ["foxGuardCard", 0.001],
     ],
   },
   // Spirits that glow like paper lanterns. They throw fire from afar at anyone they see.
   lanternGhost: {
-    id: "lanternGhost", name: "Lantern Ghost", level: 71, hp: 5_600, atk: 66, def: 38, exp: 29_000, gold: [92, 154], speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 22_000,
+    id: "lanternGhost", name: "Lantern Ghost", level: 71, hp: 5_600, atk: 66, def: 38, exp: 29_000, speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 22_000,
     drops: [
       ["paperLantern", 0.55], ["whitePotion", 0.06], ["blossomBow", 0.004], ["lotusRing", 0.001], ["mithril", 0.085], ["starCrystal", 0.017], ["lanternGhostCard", 0.001],
     ],
   },
   // Horned giants of grey stone, asleep on their feet. Leave them alone and they leave you alone; they hit very hard.
   stoneOni: {
-    id: "stoneOni", name: "Stone Oni", level: 73, hp: 8_600, atk: 124, def: 54, exp: 33_000, gold: [96, 160], speed: 30, chase: 70, aggro: 0, range: 48, attackMs: 2100, radius: 18, respawnMs: 24_000,
+    id: "stoneOni", name: "Stone Oni", level: 73, hp: 8_600, atk: 124, def: 54, exp: 33_000, speed: 30, chase: 70, aggro: 0, range: 48, attackMs: 2100, radius: 18, respawnMs: 24_000,
     drops: [
       ["oniHorn", 0.55], ["whitePotion", 0.06], ["jadeKatana", 0.004], ["mithril", 0.085], ["starCrystal", 0.017], ["stoneOniCard", 0.001],
     ],
   },
   // The Blossom Grotto's boss: a winged serpent of green jade, coiled round the spring at the bottom. Breathes light at anyone out of reach.
   jadeSerpent: {
-    id: "jadeSerpent", name: "Jade Serpent", level: 77, hp: 200_000, atk: 205, def: 66, exp: 500_000, gold: [9_000, 16_000], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 30, respawnMs: 1_800_000,
+    id: "jadeSerpent", name: "Jade Serpent", level: 77, hp: 200_000, atk: 205, def: 66, exp: 500_000, speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 30, respawnMs: 1_800_000,
     boss: true, regen: 0.004,
     slam: { radius: 115, power: 1.6, everyMs: 8_800 }, blast: { radius: 85, power: 1.45, everyMs: 10_800, reach: 430 },
     drops: [
@@ -996,42 +995,42 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   // ---------------------------------------------------------------- the Sunken Tomb (Lv 86–94), a dungeon
   // Blue-gold beetles that swarm the first hall. They bite anyone who comes near.
   tombScarab: {
-    id: "tombScarab", name: "Tomb Scarab", level: 86, hp: 7_000, atk: 74, def: 50, exp: 58_000, gold: [110, 190], speed: 75, chase: 125, aggro: 50, range: 36, attackMs: 1300, radius: 10, respawnMs: 22_000, flee: 0.1,
+    id: "tombScarab", name: "Tomb Scarab", level: 86, hp: 7_000, atk: 74, def: 50, exp: 58_000, speed: 75, chase: 125, aggro: 50, range: 36, attackMs: 1300, radius: 10, respawnMs: 22_000, flee: 0.1,
     drops: [
       ["scarabShell", 0.55], ["goldenPotion", 0.06], ["khopesh", 0.004], ["sandsRing", 0.001], ["mithril", 0.095], ["starCrystal", 0.022], ["tombScarabCard", 0.001],
     ],
   },
   // Huge worms that swim through the tomb's sand. They only fight back, and they hit hard.
   sandWorm: {
-    id: "sandWorm", name: "Sand Worm", level: 88, hp: 10_000, atk: 104, def: 60, exp: 63_000, gold: [112, 194], speed: 30, chase: 70, aggro: 0, range: 46, attackMs: 1900, radius: 16, respawnMs: 24_000,
+    id: "sandWorm", name: "Sand Worm", level: 88, hp: 10_000, atk: 104, def: 60, exp: 63_000, speed: 30, chase: 70, aggro: 0, range: 46, attackMs: 1900, radius: 16, respawnMs: 24_000,
     drops: [
       ["sandwormTooth", 0.55], ["goldenPotion", 0.06], ["tombSpear", 0.004], ["mithril", 0.095], ["starCrystal", 0.022], ["sandWormCard", 0.001],
     ],
   },
   // The Pharaoh's servants, wrapped and walking. They shuffle after anyone who comes near.
   tombMummy: {
-    id: "tombMummy", name: "Tomb Mummy", level: 89, hp: 8_600, atk: 86, def: 58, exp: 66_000, gold: [114, 196], speed: 40, chase: 90, aggro: 50, range: 42, attackMs: 1700, radius: 13, respawnMs: 24_000,
+    id: "tombMummy", name: "Tomb Mummy", level: 89, hp: 8_600, atk: 86, def: 58, exp: 66_000, speed: 40, chase: 90, aggro: 50, range: 42, attackMs: 1700, radius: 13, respawnMs: 24_000,
     drops: [
       ["mummyWrap", 0.55], ["goldenPotion", 0.06], ["jackalStaff", 0.004], ["mithril", 0.095], ["starCrystal", 0.022], ["tombMummyCard", 0.001],
     ],
   },
   // Jackal-headed priests of the tomb. They throw golden bolts from afar at anyone they see.
   jackalPriest: {
-    id: "jackalPriest", name: "Jackal Priest", level: 91, hp: 7_400, atk: 78, def: 46, exp: 71_000, gold: [116, 200], speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 24_000,
+    id: "jackalPriest", name: "Jackal Priest", level: 91, hp: 7_400, atk: 78, def: 46, exp: 71_000, speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 24_000,
     drops: [
       ["jackalIdol", 0.55], ["goldenPotion", 0.06], ["tombBow", 0.004], ["sandsRing", 0.001], ["mithril", 0.095], ["starCrystal", 0.022], ["jackalPriestCard", 0.001],
     ],
   },
   // Statues of the Pharaoh's guard that walk. Leave them alone and they leave you alone; they hit very hard.
   sandstoneColossus: {
-    id: "sandstoneColossus", name: "Sandstone Colossus", level: 93, hp: 11_400, atk: 148, def: 64, exp: 78_000, gold: [120, 206], speed: 30, chase: 70, aggro: 0, range: 48, attackMs: 2100, radius: 18, respawnMs: 26_000,
+    id: "sandstoneColossus", name: "Sandstone Colossus", level: 93, hp: 11_400, atk: 148, def: 64, exp: 78_000, speed: 30, chase: 70, aggro: 0, range: 48, attackMs: 2100, radius: 18, respawnMs: 26_000,
     drops: [
       ["sandstoneEye", 0.55], ["goldenPotion", 0.06], ["khopesh", 0.004], ["mithril", 0.095], ["starCrystal", 0.022], ["sandstoneColossusCard", 0.001],
     ],
   },
   // The Sunken Tomb's boss: a king who would not stay dead, on his golden throne at the bottom. Throws fire at anyone out of reach.
   tombPharaoh: {
-    id: "tombPharaoh", name: "Tomb Pharaoh", level: 97, hp: 320_000, atk: 260, def: 80, exp: 1_400_000, gold: [18_000, 30_000], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 28, respawnMs: 1_800_000,
+    id: "tombPharaoh", name: "Tomb Pharaoh", level: 97, hp: 320_000, atk: 260, def: 80, exp: 1_400_000, speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 28, respawnMs: 1_800_000,
     boss: true, regen: 0.004,
     slam: { radius: 120, power: 1.7, everyMs: 8_500 }, blast: { radius: 90, power: 1.5, everyMs: 10_500, reach: 440 },
     drops: [
@@ -1042,42 +1041,42 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   // ---------------------------------------------------------------- the Void Rift (Lv 94–100), a dungeon
   // Bats from beyond the stars, with violet light in their wings. They swoop at anyone who comes near.
   riftBat: {
-    id: "riftBat", name: "Rift Bat", level: 94, hp: 7_800, atk: 78, def: 56, exp: 80_000, gold: [122, 210], speed: 70, chase: 125, aggro: 50, range: 36, attackMs: 1300, radius: 11, respawnMs: 22_000, flee: 0.1,
+    id: "riftBat", name: "Rift Bat", level: 94, hp: 7_800, atk: 78, def: 56, exp: 80_000, speed: 70, chase: 125, aggro: 50, range: 36, attackMs: 1300, radius: 11, respawnMs: 22_000, flee: 0.1,
     drops: [
       ["riftWing", 0.55], ["goldenPotion", 0.06], ["riftBlade", 0.004], ["riftRing", 0.001], ["mithril", 0.1], ["starCrystal", 0.025], ["riftBatCard", 0.001],
     ],
   },
   // Worms of living darkness. They only fight back, and they hit hard.
   voidWorm: {
-    id: "voidWorm", name: "Void Worm", level: 95, hp: 11_000, atk: 112, def: 64, exp: 84_000, gold: [124, 212], speed: 30, chase: 70, aggro: 0, range: 46, attackMs: 1900, radius: 16, respawnMs: 24_000,
+    id: "voidWorm", name: "Void Worm", level: 95, hp: 11_000, atk: 112, def: 64, exp: 84_000, speed: 30, chase: 70, aggro: 0, range: 46, attackMs: 1900, radius: 16, respawnMs: 24_000,
     drops: [
       ["voidOoze", 0.55], ["goldenPotion", 0.06], ["voidScythe", 0.004], ["mithril", 0.1], ["starCrystal", 0.025], ["voidWormCard", 0.001],
     ],
   },
   // Knights who stepped through the rift and never came back. They charge anyone who comes near.
   riftKnight: {
-    id: "riftKnight", name: "Rift Knight", level: 97, hp: 9_000, atk: 90, def: 66, exp: 90_000, gold: [126, 216], speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 13, respawnMs: 24_000,
+    id: "riftKnight", name: "Rift Knight", level: 97, hp: 9_000, atk: 90, def: 66, exp: 90_000, speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 13, respawnMs: 24_000,
     drops: [
       ["riftCrest", 0.55], ["goldenPotion", 0.06], ["riftStaff", 0.004], ["mithril", 0.1], ["starCrystal", 0.025], ["riftKnightCard", 0.001],
     ],
   },
   // Great violet eyes floating in the dark. They stare beams from afar at anyone they see.
   voidEye: {
-    id: "voidEye", name: "Void Eye", level: 98, hp: 8_000, atk: 82, def: 52, exp: 93_000, gold: [128, 218], speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 24_000,
+    id: "voidEye", name: "Void Eye", level: 98, hp: 8_000, atk: 82, def: 52, exp: 93_000, speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 24_000,
     drops: [
       ["voidLens", 0.55], ["goldenPotion", 0.06], ["riftBow", 0.004], ["riftRing", 0.001], ["mithril", 0.1], ["starCrystal", 0.025], ["voidEyeCard", 0.001],
     ],
   },
   // Golems of black star-stone. Leave them alone and they leave you alone; they hit very hard.
   voidGolem: {
-    id: "voidGolem", name: "Void Golem", level: 99, hp: 12_000, atk: 158, def: 68, exp: 99_000, gold: [130, 222], speed: 30, chase: 70, aggro: 0, range: 48, attackMs: 2100, radius: 18, respawnMs: 26_000,
+    id: "voidGolem", name: "Void Golem", level: 99, hp: 12_000, atk: 158, def: 68, exp: 99_000, speed: 30, chase: 70, aggro: 0, range: 48, attackMs: 2100, radius: 18, respawnMs: 26_000,
     drops: [
       ["voidCore", 0.55], ["goldenPotion", 0.06], ["riftBlade", 0.004], ["mithril", 0.1], ["starCrystal", 0.025], ["voidGolemCard", 0.001],
     ],
   },
   // The Void Rift's boss: a dragon of darkness that crawled out of the rift. Throws violet bolts at anyone out of reach.
   voidWyrm: {
-    id: "voidWyrm", name: "Void Wyrm", level: 106, hp: 340_000, atk: 285, def: 86, exp: 2_200_000, gold: [26_000, 40_000], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 32, respawnMs: 2_100_000,
+    id: "voidWyrm", name: "Void Wyrm", level: 106, hp: 340_000, atk: 285, def: 86, exp: 2_200_000, speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 32, respawnMs: 2_100_000,
     boss: true, regen: 0.004,
     slam: { radius: 125, power: 1.75, everyMs: 8_200 }, blast: { radius: 95, power: 1.55, everyMs: 10_200, reach: 450 },
     drops: [
@@ -1088,42 +1087,42 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   // ---------------------------------------------------------------- the Goblin Warren (Lv 22–28), a dungeon
   // Quick goblins on lookout in the first tunnels. They dart at anyone who comes near.
   goblinScout: {
-    id: "goblinScout", name: "Goblin Scout", level: 22, hp: 1_000, atk: 22, def: 10, exp: 1_050, gold: [28, 46], speed: 70, chase: 115, aggro: 45, range: 36, attackMs: 1300, radius: 10, respawnMs: 15_000, flee: 0.1,
+    id: "goblinScout", name: "Goblin Scout", level: 22, hp: 1_000, atk: 22, def: 10, exp: 1_050, speed: 70, chase: 115, aggro: 45, range: 36, attackMs: 1300, radius: 10, respawnMs: 15_000, flee: 0.1,
     drops: [
       ["scoutWhistle", 0.55], ["orangePotion", 0.06], ["warrenCutlass", 0.004], ["warrenRing", 0.001], ["mithril", 0.05], ["starCrystal", 0.006], ["goblinScoutCard", 0.001],
     ],
   },
   // Fat brown worms the goblins keep for digging. They only fight back, and their hides are thick.
   mudWorm: {
-    id: "mudWorm", name: "Mud Worm", level: 23, hp: 1_600, atk: 36, def: 22, exp: 1_250, gold: [30, 48], speed: 30, chase: 70, aggro: 0, range: 40, attackMs: 1900, radius: 15, respawnMs: 16_000,
+    id: "mudWorm", name: "Mud Worm", level: 23, hp: 1_600, atk: 36, def: 22, exp: 1_250, speed: 30, chase: 70, aggro: 0, range: 40, attackMs: 1900, radius: 15, respawnMs: 16_000,
     drops: [
       ["mudClump", 0.55], ["orangePotion", 0.06], ["goblinPike", 0.004], ["mithril", 0.05], ["starCrystal", 0.006], ["mudWormCard", 0.001],
     ],
   },
   // Goblins with long pikes, guarding the dig. They charge anyone who comes near.
   goblinPikeman: {
-    id: "goblinPikeman", name: "Goblin Pikeman", level: 24, hp: 1_400, atk: 28, def: 18, exp: 1_300, gold: [32, 52], speed: 45, chase: 95, aggro: 45, range: 42, attackMs: 1600, radius: 12, respawnMs: 16_000,
+    id: "goblinPikeman", name: "Goblin Pikeman", level: 24, hp: 1_400, atk: 28, def: 18, exp: 1_300, speed: 45, chase: 95, aggro: 45, range: 42, attackMs: 1600, radius: 12, respawnMs: 16_000,
     drops: [
       ["brokenPike", 0.55], ["orangePotion", 0.06], ["firecallerStaff", 0.004], ["mithril", 0.05], ["starCrystal", 0.006], ["goblinPikemanCard", 0.001],
     ],
   },
   // Goblin shamans who throw fire from afar at anyone they see.
   goblinFirecaller: {
-    id: "goblinFirecaller", name: "Goblin Firecaller", level: 26, hp: 1_250, atk: 32, def: 12, exp: 1_450, gold: [34, 56], speed: 40, chase: 85, aggro: 100, range: 160, attackMs: 2100, radius: 12, respawnMs: 17_000,
+    id: "goblinFirecaller", name: "Goblin Firecaller", level: 26, hp: 1_250, atk: 32, def: 12, exp: 1_450, speed: 40, chase: 85, aggro: 100, range: 160, attackMs: 2100, radius: 12, respawnMs: 17_000,
     drops: [
       ["goblinTinder", 0.55], ["orangePotion", 0.06], ["warrenBow", 0.004], ["warrenRing", 0.001], ["mithril", 0.05], ["starCrystal", 0.006], ["goblinFirecallerCard", 0.001],
     ],
   },
   // Big goblins who guard the King's hall. Leave them alone and they leave you alone; they hit hard.
   hobgoblin: {
-    id: "hobgoblin", name: "Hobgoblin", level: 27, hp: 2_400, atk: 52, def: 24, exp: 1_800, gold: [36, 60], speed: 30, chase: 70, aggro: 0, range: 44, attackMs: 2000, radius: 16, respawnMs: 18_000,
+    id: "hobgoblin", name: "Hobgoblin", level: 27, hp: 2_400, atk: 52, def: 24, exp: 1_800, speed: 30, chase: 70, aggro: 0, range: 44, attackMs: 2000, radius: 16, respawnMs: 18_000,
     drops: [
       ["hobgoblinTusk", 0.55], ["orangePotion", 0.06], ["warrenCutlass", 0.004], ["mithril", 0.05], ["starCrystal", 0.006], ["hobgoblinCard", 0.001],
     ],
   },
   // The Goblin Warren's boss: a fat goblin on a throne of stolen junk, crown and all. Throws fire at anyone out of reach.
   goblinKing: {
-    id: "goblinKing", name: "Goblin King", level: 30, hp: 30_000, atk: 80, def: 28, exp: 40_000, gold: [800, 1_500], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 26, respawnMs: 1_200_000,
+    id: "goblinKing", name: "Goblin King", level: 30, hp: 30_000, atk: 80, def: 28, exp: 40_000, speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 26, respawnMs: 1_200_000,
     boss: true, regen: 0.004,
     slam: { radius: 95, power: 1.45, everyMs: 10_000 }, blast: { radius: 70, power: 1.25, everyMs: 12_000, reach: 390 },
     drops: [
@@ -1134,42 +1133,42 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   // ---------------------------------------------------------------- the Moonfang Den (Lv 37–45), a dungeon
   // Black werewolves that hunt in the first caves. They pounce on anyone who comes near.
   denStalker: {
-    id: "denStalker", name: "Den Stalker", level: 37, hp: 2_500, atk: 40, def: 20, exp: 4_200, gold: [46, 76], speed: 70, chase: 120, aggro: 55, range: 36, attackMs: 1300, radius: 11, respawnMs: 18_000, flee: 0.1,
+    id: "denStalker", name: "Den Stalker", level: 37, hp: 2_500, atk: 40, def: 20, exp: 4_200, speed: 70, chase: 120, aggro: 55, range: 36, attackMs: 1300, radius: 11, respawnMs: 18_000, flee: 0.1,
     drops: [
       ["greyPelt", 0.55], ["whitePotion", 0.06], ["moonCleaver", 0.004], ["fullMoonRing", 0.001], ["mithril", 0.06], ["starCrystal", 0.01], ["denStalkerCard", 0.001],
     ],
   },
   // Grey worms that gnaw the bones the pack leaves. They only fight back, and they bite hard.
   denGnawer: {
-    id: "denGnawer", name: "Den Gnawer", level: 38, hp: 3_200, atk: 60, def: 30, exp: 4_600, gold: [48, 80], speed: 30, chase: 70, aggro: 0, range: 42, attackMs: 1900, radius: 15, respawnMs: 20_000,
+    id: "denGnawer", name: "Den Gnawer", level: 38, hp: 3_200, atk: 60, def: 30, exp: 4_600, speed: 30, chase: 70, aggro: 0, range: 42, attackMs: 1900, radius: 15, respawnMs: 20_000,
     drops: [
       ["gnawedBone", 0.55], ["whitePotion", 0.06], ["moonfangGlaive", 0.004], ["mithril", 0.06], ["starCrystal", 0.01], ["denGnawerCard", 0.001],
     ],
   },
   // Werewolves in stolen armour, back from raiding the Wildlands. They charge anyone who comes near.
   denRaider: {
-    id: "denRaider", name: "Den Raider", level: 40, hp: 3_000, atk: 50, def: 28, exp: 5_000, gold: [50, 84], speed: 45, chase: 95, aggro: 50, range: 42, attackMs: 1600, radius: 13, respawnMs: 20_000,
+    id: "denRaider", name: "Den Raider", level: 40, hp: 3_000, atk: 50, def: 28, exp: 5_000, speed: 45, chase: 95, aggro: 50, range: 42, attackMs: 1600, radius: 13, respawnMs: 20_000,
     drops: [
       ["raiderTotem", 0.55], ["whitePotion", 0.06], ["moonlitStaff", 0.004], ["mithril", 0.06], ["starCrystal", 0.01], ["denRaiderCard", 0.001],
     ],
   },
   // White-furred werewolves who pray to the moon. They throw moonlight from afar at anyone they see.
   moonShaman: {
-    id: "moonShaman", name: "Moon Shaman", level: 42, hp: 2_700, atk: 48, def: 20, exp: 5_600, gold: [52, 86], speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 20_000,
+    id: "moonShaman", name: "Moon Shaman", level: 42, hp: 2_700, atk: 48, def: 20, exp: 5_600, speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 20_000,
     drops: [
       ["moonShard", 0.55], ["whitePotion", 0.06], ["denBow", 0.004], ["fullMoonRing", 0.001], ["mithril", 0.06], ["starCrystal", 0.01], ["moonShamanCard", 0.001],
     ],
   },
   // Grey trolls the pack keeps as guards. Leave them alone and they leave you alone; they hit very hard.
   caveTroll: {
-    id: "caveTroll", name: "Cave Troll", level: 44, hp: 4_400, atk: 84, def: 32, exp: 6_600, gold: [56, 92], speed: 30, chase: 70, aggro: 0, range: 46, attackMs: 2100, radius: 18, respawnMs: 22_000,
+    id: "caveTroll", name: "Cave Troll", level: 44, hp: 4_400, atk: 84, def: 32, exp: 6_600, speed: 30, chase: 70, aggro: 0, range: 46, attackMs: 2100, radius: 18, respawnMs: 22_000,
     drops: [
       ["trollHide", 0.55], ["whitePotion", 0.06], ["moonCleaver", 0.004], ["mithril", 0.06], ["starCrystal", 0.01], ["caveTrollCard", 0.001],
     ],
   },
   // The Moonfang Den's boss: the great white werewolf who leads the pack, in the deepest cave. Throws moonlight at anyone out of reach.
   moonfang: {
-    id: "moonfang", name: "Moonfang Alpha", level: 47, hp: 55_000, atk: 135, def: 42, exp: 120_000, gold: [2_500, 4_500], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 28, respawnMs: 1_200_000,
+    id: "moonfang", name: "Moonfang Alpha", level: 47, hp: 55_000, atk: 135, def: 42, exp: 120_000, speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 28, respawnMs: 1_200_000,
     boss: true, regen: 0.004,
     slam: { radius: 100, power: 1.5, everyMs: 9_500 }, blast: { radius: 75, power: 1.3, everyMs: 11_500, reach: 400 },
     drops: [
@@ -1180,7 +1179,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   // ---------------------------------------------------------------- the Orc Caves (Lv 28–36), a dungeon under the Orc Woods
   // Big grey bats in the first cavern. They swoop at anyone who comes near, and they're quick to dodge.
   caveBat: {
-    id: "caveBat", name: "Cave Bat", level: 28, hp: 1500, atk: 34, def: 14, exp: 2300, gold: [34, 56], speed: 70, chase: 115, aggro: 60, range: 36, attackMs: 1300, radius: 10, respawnMs: 16_000, flee: 0.1,
+    id: "caveBat", name: "Cave Bat", level: 28, hp: 1500, atk: 34, def: 14, exp: 2300, speed: 70, chase: 115, aggro: 60, range: 36, attackMs: 1300, radius: 10, respawnMs: 16_000, flee: 0.1,
     drops: [
       ["batWing", 0.55], ["orangePotion", 0.06], ["caveBow", 0.004], ["deepRing", 0.001],
       ["mithril", 0.05], ["starCrystal", 0.006], ["caveBatCard", 0.001],
@@ -1188,7 +1187,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Armoured worms that burrow through the first floor's rock. They only fight back, and their shells are hard.
   caveCrawler: {
-    id: "caveCrawler", name: "Cave Crawler", level: 30, hp: 2100, atk: 50, def: 30, exp: 2800, gold: [36, 60], speed: 30, chase: 70, aggro: 0, range: 40, attackMs: 1900, radius: 15, respawnMs: 18_000,
+    id: "caveCrawler", name: "Cave Crawler", level: 30, hp: 2100, atk: 50, def: 30, exp: 2800, speed: 30, chase: 70, aggro: 0, range: 40, attackMs: 1900, radius: 15, respawnMs: 18_000,
     drops: [
       ["crawlerShell", 0.55], ["orangePotion", 0.06], ["orcGuardShield", 0.003],
       ["mithril", 0.07], ["starCrystal", 0.007], ["caveCrawlerCard", 0.001],
@@ -1196,7 +1195,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Orcs digging for the Chieftain in the miners' cavern. They go for anyone who comes near.
   orcMiner: {
-    id: "orcMiner", name: "Orc Miner", level: 31, hp: 2300, atk: 44, def: 24, exp: 3000, gold: [40, 66], speed: 45, chase: 95, aggro: 50, range: 40, attackMs: 1600, radius: 13, respawnMs: 18_000,
+    id: "orcMiner", name: "Orc Miner", level: 31, hp: 2300, atk: 44, def: 24, exp: 3000, speed: 45, chase: 95, aggro: 50, range: 40, attackMs: 1600, radius: 13, respawnMs: 18_000,
     drops: [
       ["minersLamp", 0.55], ["orangePotion", 0.06], ["caveBlade", 0.004], ["chieftainsGlaive", 0.001],
       ["ironIngot", 0.08], ["mithril", 0.06], ["starCrystal", 0.007], ["orcMinerCard", 0.001],
@@ -1204,7 +1203,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // The Chieftain's fire-priests in the second floor's first hall. They throw fire from afar at anyone they see.
   orcShaman: {
-    id: "orcShaman", name: "Orc Shaman", level: 33, hp: 2000, atk: 46, def: 18, exp: 2900, gold: [42, 70], speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 20_000,
+    id: "orcShaman", name: "Orc Shaman", level: 33, hp: 2000, atk: 46, def: 18, exp: 2900, speed: 40, chase: 85, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 20_000,
     drops: [
       ["shamanBeads", 0.55], ["whitePotion", 0.05], ["shamanStaff", 0.004], ["deepRing", 0.001],
       ["mithril", 0.06], ["starCrystal", 0.008], ["orcShamanCard", 0.001],
@@ -1212,7 +1211,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // The Chieftain's own guard, in iron, in the hall before his chamber. They charge anyone who comes near.
   orcGuard: {
-    id: "orcGuard", name: "Orc Guard", level: 35, hp: 3200, atk: 48, def: 32, exp: 3900, gold: [46, 76], speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 14, respawnMs: 20_000,
+    id: "orcGuard", name: "Orc Guard", level: 35, hp: 3200, atk: 48, def: 32, exp: 3900, speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 14, respawnMs: 20_000,
     drops: [
       ["guardBadge", 0.55], ["whitePotion", 0.06], ["orcGuardShield", 0.004], ["chieftainsGlaive", 0.002],
       ["mithril", 0.07], ["starCrystal", 0.009], ["orcGuardCard", 0.001],
@@ -1220,7 +1219,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // The Orc Caves' boss, on his throne in the deepest chamber. Every orc in the woods answers to him.
   orcChieftain: {
-    id: "orcChieftain", name: "Orc Chieftain", level: 38, hp: 60_000, atk: 110, def: 36, exp: 90_000, gold: [2500, 4500], speed: 35, chase: 85, aggro: 150, range: 48, attackMs: 1700, radius: 24, respawnMs: 1_200_000,
+    id: "orcChieftain", name: "Orc Chieftain", level: 38, hp: 60_000, atk: 110, def: 36, exp: 90_000, speed: 35, chase: 85, aggro: 150, range: 48, attackMs: 1700, radius: 24, respawnMs: 1_200_000,
     boss: true, regen: 0.004,
     slam: { radius: 105, power: 1.5, everyMs: 9_000 }, blast: { radius: 75, power: 1.3, everyMs: 11_000, reach: 400 },
     drops: [
@@ -1232,7 +1231,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   // ---------------------------------------------------------------- Sunscar (Lv 80–90), the desert island north of Ashpeak
   // Sand-coloured lizards in the dunes south-west of the pier. They only fight back, but they're hard to hit with plain attacks.
   duneStalker: {
-    id: "duneStalker", name: "Dune Stalker", level: 81, hp: 6700, atk: 80, def: 46, exp: 47_000, gold: [106, 180], speed: 65, chase: 120, aggro: 0, range: 36, attackMs: 1300, radius: 12, respawnMs: 22_000, flee: 0.15,
+    id: "duneStalker", name: "Dune Stalker", level: 81, hp: 6700, atk: 80, def: 46, exp: 47_000, speed: 65, chase: 120, aggro: 0, range: 36, attackMs: 1300, radius: 12, respawnMs: 22_000, flee: 0.15,
     drops: [
       ["duneFang", 0.55], ["whitePotion", 0.08], ["sunBlade", 0.004], ["sandBow", 0.004], ["sandRing", 0.002],
       ["mithril", 0.09], ["starCrystal", 0.02], ["duneStalkerCard", 0.001],
@@ -1240,7 +1239,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Spirits of hot wind in the north-west. They hurl searing bolts from afar at anyone they see.
   dustDjinn: {
-    id: "dustDjinn", name: "Dust Djinn", level: 83, hp: 6500, atk: 58, def: 40, exp: 51_000, gold: [108, 184], speed: 50, chase: 95, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 24_000,
+    id: "dustDjinn", name: "Dust Djinn", level: 83, hp: 6500, atk: 58, def: 40, exp: 51_000, speed: 50, chase: 95, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 24_000,
     drops: [
       ["djinnDust", 0.55], ["whitePotion", 0.08], ["djinnStaff", 0.004], ["djinnHat", 0.005], ["scarabCharm", 0.003], ["sunStaff", 0.002],
       ["mithril", 0.09], ["starCrystal", 0.02], ["dustDjinnCard", 0.001],
@@ -1248,7 +1247,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // The bones of the Dune King's guard, still standing watch north of his temple. They charge anyone who comes near.
   tombWarden: {
-    id: "tombWarden", name: "Tomb Warden", level: 85, hp: 7400, atk: 74, def: 56, exp: 56_000, gold: [110, 188], speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 13, respawnMs: 24_000,
+    id: "tombWarden", name: "Tomb Warden", level: 85, hp: 7400, atk: 74, def: 56, exp: 56_000, speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 13, respawnMs: 24_000,
     drops: [
       ["tombRelic", 0.55], ["whitePotion", 0.08], ["wardenHelm", 0.005], ["sunShield", 0.003], ["sunSpear", 0.002], ["wardenPlate", 0.002],
       ["mithril", 0.1], ["starCrystal", 0.021], ["tombWardenCard", 0.001],
@@ -1256,7 +1255,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Raiders in sand-coloured hoods, camped in the east. Quick, and they attack anyone who comes near.
   desertRaider: {
-    id: "desertRaider", name: "Desert Raider", level: 87, hp: 7600, atk: 80, def: 54, exp: 61_000, gold: [112, 192], speed: 60, chase: 115, aggro: 50, range: 40, attackMs: 1500, radius: 13, respawnMs: 24_000,
+    id: "desertRaider", name: "Desert Raider", level: 87, hp: 7600, atk: 80, def: 54, exp: 61_000, speed: 60, chase: 115, aggro: 50, range: 40, attackMs: 1500, radius: 13, respawnMs: 24_000,
     drops: [
       ["raiderCoin", 0.55], ["whitePotion", 0.08], ["desertHood", 0.005], ["desertGarb", 0.004], ["sunRobe", 0.004], ["sunBow", 0.002],
       ["mithril", 0.1], ["starCrystal", 0.021], ["desertRaiderCard", 0.001],
@@ -1264,7 +1263,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Great slow heaps of living sand in the south. Leave them alone and they leave you alone; they hit harder than anything else here.
   sandGolem: {
-    id: "sandGolem", name: "Sand Golem", level: 89, hp: 9600, atk: 136, def: 58, exp: 66_000, gold: [116, 198], speed: 30, chase: 70, aggro: 0, range: 48, attackMs: 2100, radius: 18, respawnMs: 26_000,
+    id: "sandGolem", name: "Sand Golem", level: 89, hp: 9600, atk: 136, def: 58, exp: 66_000, speed: 30, chase: 70, aggro: 0, range: 48, attackMs: 2100, radius: 18, respawnMs: 26_000,
     drops: [
       ["golemSand", 0.55], ["whitePotion", 0.1], ["wardenPlate", 0.003], ["sunBlade", 0.003], ["sunSpear", 0.002], ["sunStaff", 0.002], ["sunBow", 0.002],
       ["mithril", 0.1], ["starCrystal", 0.021], ["sandGolemCard", 0.001],
@@ -1272,7 +1271,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Sunscar's boss, on his throne in the sunken temple. Throws fire at anyone out of reach.
   duneKing: {
-    id: "duneKing", name: "Dune King", level: 94, hp: 330_000, atk: 245, def: 76, exp: 1_200_000, gold: [16_000, 26_000], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 28, respawnMs: 1_800_000,
+    id: "duneKing", name: "Dune King", level: 94, hp: 330_000, atk: 245, def: 76, exp: 1_200_000, speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 28, respawnMs: 1_800_000,
     boss: true, regen: 0.004,
     slam: { radius: 120, power: 1.7, everyMs: 8_000 }, blast: { radius: 90, power: 1.5, everyMs: 10_000, reach: 440 },
     drops: [
@@ -1284,7 +1283,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   // ---------------------------------------------------------------- Starfall (Lv 90–100), the island of endless night south of Ashpeak
   // Bats with wings like the night sky, all over the south-west of the island. They swarm anyone who comes near.
   voidBat: {
-    id: "voidBat", name: "Void Bat", level: 91, hp: 7400, atk: 76, def: 52, exp: 71_000, gold: [118, 202], speed: 70, chase: 125, aggro: 40, range: 36, attackMs: 1300, radius: 11, respawnMs: 22_000,
+    id: "voidBat", name: "Void Bat", level: 91, hp: 7400, atk: 76, def: 52, exp: 71_000, speed: 70, chase: 125, aggro: 40, range: 36, attackMs: 1300, radius: 11, respawnMs: 22_000,
     drops: [
       ["voidWing", 0.55], ["whitePotion", 0.08], ["starBlade", 0.004], ["moonBow", 0.004], ["starRing", 0.002],
       ["mithril", 0.1], ["starCrystal", 0.022], ["voidBatCard", 0.001],
@@ -1292,7 +1291,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Hooded stargazers in the north-west. They cast starlight from afar at anyone they see.
   astralSeer: {
-    id: "astralSeer", name: "Astral Seer", level: 93, hp: 7200, atk: 76, def: 46, exp: 77_000, gold: [120, 206], speed: 45, chase: 90, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 24_000,
+    id: "astralSeer", name: "Astral Seer", level: 93, hp: 7200, atk: 76, def: 46, exp: 77_000, speed: 45, chase: 90, aggro: 100, range: 170, attackMs: 2200, radius: 12, respawnMs: 24_000,
     drops: [
       ["seerEye", 0.55], ["whitePotion", 0.08], ["seerStaff", 0.004], ["seerHat", 0.005], ["nightCharm", 0.003], ["astralStaff", 0.002],
       ["mithril", 0.1], ["starCrystal", 0.022], ["astralSeerCard", 0.001],
@@ -1300,7 +1299,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Knights in armour that shines like starlight, guarding the north of the island. They charge anyone who comes near.
   starKnight: {
-    id: "starKnight", name: "Star Knight", level: 95, hp: 8200, atk: 86, def: 64, exp: 83_000, gold: [122, 210], speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 13, respawnMs: 24_000,
+    id: "starKnight", name: "Star Knight", level: 95, hp: 8200, atk: 86, def: 64, exp: 83_000, speed: 45, chase: 95, aggro: 50, range: 44, attackMs: 1700, radius: 13, respawnMs: 24_000,
     drops: [
       ["starShard", 0.55], ["whitePotion", 0.08], ["starHelm", 0.005], ["starShield", 0.003], ["voidLance", 0.002], ["starPlate", 0.002],
       ["mithril", 0.11], ["starCrystal", 0.023], ["starKnightCard", 0.001],
@@ -1308,7 +1307,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Cold blue lights drifting along the east shore. Hard to hit with plain attacks.
   nightWisp: {
-    id: "nightWisp", name: "Night Wisp", level: 97, hp: 8400, atk: 78, def: 58, exp: 90_000, gold: [124, 214], speed: 55, chase: 105, aggro: 50, range: 36, attackMs: 1500, radius: 12, respawnMs: 24_000, flee: 0.15,
+    id: "nightWisp", name: "Night Wisp", level: 97, hp: 8400, atk: 78, def: 58, exp: 90_000, speed: 55, chase: 105, aggro: 50, range: 36, attackMs: 1500, radius: 12, respawnMs: 24_000, flee: 0.15,
     drops: [
       ["wispLight", 0.55], ["whitePotion", 0.08], ["nightHood", 0.005], ["nightLeathers", 0.004], ["astralRobe", 0.004], ["starBow", 0.002],
       ["mithril", 0.11], ["starCrystal", 0.023], ["nightWispCard", 0.001],
@@ -1316,7 +1315,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Walking crystal in the south, glowing pale blue. Leave them alone and they leave you alone; they hit harder than anything else here.
   crystalGolem: {
-    id: "crystalGolem", name: "Crystal Golem", level: 99, hp: 10_600, atk: 150, def: 64, exp: 97_000, gold: [128, 220], speed: 30, chase: 70, aggro: 0, range: 48, attackMs: 2100, radius: 18, respawnMs: 26_000,
+    id: "crystalGolem", name: "Crystal Golem", level: 99, hp: 10_600, atk: 150, def: 64, exp: 97_000, speed: 30, chase: 70, aggro: 0, range: 48, attackMs: 2100, radius: 18, respawnMs: 26_000,
     drops: [
       ["crystalHeart", 0.55], ["whitePotion", 0.1], ["starPlate", 0.003], ["starBlade", 0.003], ["voidLance", 0.002], ["astralStaff", 0.002], ["starBow", 0.002],
       ["mithril", 0.11], ["starCrystal", 0.023], ["crystalGolemCard", 0.001],
@@ -1324,7 +1323,7 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   },
   // Starfall's boss, at the altar south of the lake. Casts starlight at anyone out of reach.
   starTyrant: {
-    id: "starTyrant", name: "Star Tyrant", level: 104, hp: 450_000, atk: 270, def: 84, exp: 1_800_000, gold: [22_000, 34_000], speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 30, respawnMs: 1_800_000,
+    id: "starTyrant", name: "Star Tyrant", level: 104, hp: 450_000, atk: 270, def: 84, exp: 1_800_000, speed: 35, chase: 85, aggro: 150, range: BOSS_REACH, attackMs: 2000, radius: 30, respawnMs: 1_800_000,
     boss: true, regen: 0.004,
     slam: { radius: 125, power: 1.8, everyMs: 8_000 }, blast: { radius: 90, power: 1.6, everyMs: 10_000, reach: 460 },
     drops: [
@@ -1338,19 +1337,19 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   // only guild members can strike it, only during a siege. Breaking it takes the castle; it's whole
   // again moments later. Level 0: nobody misses it.
   crystal: {
-    id: "crystal", name: "Crownhold Crystal", level: 0, hp: 60_000, atk: 0, def: 50, exp: 0, gold: [0, 0], speed: 0, chase: 0, aggro: 0, range: 0, attackMs: 60_000, radius: 20, respawnMs: 10_000,
+    id: "crystal", name: "Crownhold Crystal", level: 0, hp: 60_000, atk: 0, def: 50, exp: 0, speed: 0, chase: 0, aggro: 0, range: 0, attackMs: 60_000, radius: 20, respawnMs: 10_000,
     boss: true, regen: 0.002,
     drops: [],
   },
   // Guardians the castle's guild hires (GUARDIAN_POSTS in shared/siege.ts). They stand at their posts all week,
   // and during a siege attack any other guild's members inside the walls. No EXP and no loot: this is war.
   castleKnight: {
-    id: "castleKnight", name: "Castle Knight", level: 68, hp: 20_000, atk: 215, def: 80, exp: 0, gold: [0, 0], speed: 50, chase: 110, aggro: 150, range: 44, attackMs: 1400, radius: 14, respawnMs: 0,
+    id: "castleKnight", name: "Castle Knight", level: 68, hp: 20_000, atk: 215, def: 80, exp: 0, speed: 50, chase: 110, aggro: 150, range: 44, attackMs: 1400, radius: 14, respawnMs: 0,
     regen: 0.01,
     drops: [],
   },
   castleArcher: {
-    id: "castleArcher", name: "Castle Archer", level: 68, hp: 12_000, atk: 165, def: 50, exp: 0, gold: [0, 0], speed: 35, chase: 70, aggro: 210, range: 190, attackMs: 1800, radius: 12, respawnMs: 0,
+    id: "castleArcher", name: "Castle Archer", level: 68, hp: 12_000, atk: 165, def: 50, exp: 0, speed: 35, chase: 70, aggro: 210, range: 190, attackMs: 1800, radius: 12, respawnMs: 0,
     regen: 0.01,
     drops: [],
   },
@@ -1359,33 +1358,33 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   // Shades: what a Knight, Mage or Archer could become. Each is raised for one player, fights only them,
   // and leaves nothing behind: beating it is the way to a second job. They never heal while the trial is on.
   shadeLordKnight: {
-    id: "shadeLordKnight", name: "Shade of a Lord Knight", level: 52, hp: 22_000, atk: 110, def: 40, exp: 0, gold: [0, 0], speed: 55, chase: 110, aggro: 600, range: 44, attackMs: 1500, radius: 14, respawnMs: 0,
+    id: "shadeLordKnight", name: "Shade of a Lord Knight", level: 52, hp: 22_000, atk: 110, def: 40, exp: 0, speed: 55, chase: 110, aggro: 600, range: 44, attackMs: 1500, radius: 14, respawnMs: 0,
     regen: 0,
     drops: [],
   },
   shadeWizard: {
-    id: "shadeWizard", name: "Shade of a Wizard", level: 52, hp: 32_000, atk: 115, def: 26, exp: 0, gold: [0, 0], speed: 45, chase: 90, aggro: 600, range: 170, attackMs: 2000, radius: 12, respawnMs: 0,
+    id: "shadeWizard", name: "Shade of a Wizard", level: 52, hp: 32_000, atk: 115, def: 26, exp: 0, speed: 45, chase: 90, aggro: 600, range: 170, attackMs: 2000, radius: 12, respawnMs: 0,
     regen: 0,
     drops: [],
   },
   // The third-job Shades, for level-80 second jobs.
   shadePaladin: {
-    id: "shadePaladin", name: "Shade of a Paladin", level: 82, hp: 58_000, atk: 200, def: 70, exp: 0, gold: [0, 0], speed: 55, chase: 110, aggro: 600, range: 44, attackMs: 1500, radius: 14, respawnMs: 0,
+    id: "shadePaladin", name: "Shade of a Paladin", level: 82, hp: 58_000, atk: 200, def: 70, exp: 0, speed: 55, chase: 110, aggro: 600, range: 44, attackMs: 1500, radius: 14, respawnMs: 0,
     regen: 0,
     drops: [],
   },
   shadeArchmage: {
-    id: "shadeArchmage", name: "Shade of an Archmage", level: 82, hp: 85_000, atk: 190, def: 50, exp: 0, gold: [0, 0], speed: 45, chase: 90, aggro: 600, range: 170, attackMs: 2000, radius: 12, respawnMs: 0,
+    id: "shadeArchmage", name: "Shade of an Archmage", level: 82, hp: 85_000, atk: 190, def: 50, exp: 0, speed: 45, chase: 90, aggro: 600, range: 170, attackMs: 2000, radius: 12, respawnMs: 0,
     regen: 0,
     drops: [],
   },
   shadeRanger: {
-    id: "shadeRanger", name: "Shade of a Ranger", level: 82, hp: 62_000, atk: 170, def: 60, exp: 0, gold: [0, 0], speed: 55, chase: 105, aggro: 600, range: 190, attackMs: 1700, radius: 12, respawnMs: 0,
+    id: "shadeRanger", name: "Shade of a Ranger", level: 82, hp: 62_000, atk: 170, def: 60, exp: 0, speed: 55, chase: 105, aggro: 600, range: 190, attackMs: 1700, radius: 12, respawnMs: 0,
     regen: 0,
     drops: [],
   },
   shadeHunter: {
-    id: "shadeHunter", name: "Shade of a Hunter", level: 52, hp: 22_000, atk: 92, def: 32, exp: 0, gold: [0, 0], speed: 55, chase: 105, aggro: 600, range: 190, attackMs: 1700, radius: 12, respawnMs: 0,
+    id: "shadeHunter", name: "Shade of a Hunter", level: 52, hp: 22_000, atk: 92, def: 32, exp: 0, speed: 55, chase: 105, aggro: 600, range: 190, attackMs: 1700, radius: 12, respawnMs: 0,
     regen: 0,
     drops: [],
   },

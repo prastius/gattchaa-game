@@ -20,7 +20,6 @@ import {
   type JoinOptions,
   type LookMessage,
   type NpcBuyMessage,
-  type NpcSellMessage,
   type PickupMessage,
   type StatsMessage,
   type UnequipMessage,
@@ -40,7 +39,6 @@ import type {
   GuildAskEvent,
   GuildBoard,
   GuildFoundMessage,
-  GuildGiveMessage,
   GuildInviteMessage,
   GuildKickMessage,
   GuildLeadMessage,
@@ -235,12 +233,9 @@ export class Net {
     this.room.send("npc:buy", { npc, item, n } satisfies NpcBuyMessage);
   }
 
-  sell(npc: string, slot: number, n: number) {
-    this.room.send("npc:sell", { npc, slot, n } satisfies NpcSellMessage);
-  }
-
-  sellLoot(npc: string) {
-    this.room.send("npc:sell", { npc, loot: true } satisfies NpcSellMessage);
+  /** Asks the server to check your Gattchaa Points again (they can change on the site). */
+  refreshPoints() {
+    this.room.send("points:refresh", {});
   }
 
   /** Asks the Job Master for a job. */
@@ -329,10 +324,6 @@ export class Net {
   }
 
   /** Gives gold to your guild's purse. */
-  giveGuild(gold: number) {
-    this.room.send("guild:give", { gold } satisfies GuildGiveMessage);
-  }
-
   /** Asks the Guild Registrar for the ranking. */
   guildBoard(npc: string) {
     this.room.send("guild:board", { npc });

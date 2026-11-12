@@ -1,4 +1,6 @@
-import { Room, type Client } from "colyseus";
+import { Room, ServerError, type Client } from "colyseus";
+import { makeWallet, type Wallet } from "../points";
+import { pointsLabel, pointsText } from "../../../shared/points";
 import { StateView } from "@colyseus/schema";
 import { PLAYER_SPEED, World } from "../../../shared/world";
 import { normalizeLook } from "../../../shared/appearance";
@@ -28,7 +30,6 @@ import {
   type LookMessage,
   type MoveMessage,
   type NpcBuyMessage,
-  type NpcSellMessage,
   type PickupMessage,
   type SitMessage,
   type TargetMessage,
@@ -48,7 +49,6 @@ import {
   SHOP_AWAY_HOURS,
   SHOP_ID_RE,
   SHOP_WARES,
-  goldText,
   inShopZone,
   isPrice,
   sanitizeShopTitle,
@@ -72,12 +72,11 @@ import { CASTLE_CAMP, PIT_MOUTH, TILE } from "../../../shared/town";
 import { CRYSTAL, campSpot, type TributeResult } from "../../../shared/siege";
 import { isTrial, type TrialKeeperMessage, type TrialMessage } from "../../../shared/trial";
 import {
-  GUILD_FOUND_GOLD,
+  GUILD_FOUND_POINTS,
   isGuildRank,
   type GuildAnswerMessage,
   type GuildBoard,
   type GuildFoundMessage,
-  type GuildGiveMessage,
   type GuildInviteMessage,
   type GuildKickMessage,
   type GuildLeadMessage,
@@ -187,6 +186,12 @@ export class WorldRoom extends Room<{ state: WorldState }> {
   private shopOwners = new Map<string, Account>();
   /** One town session per account (account id -> session id); a second window takes over. */
   private sessionOf = new Map<number, string>();
+  /** Gattchaa Points (see server/src/points.ts). */
+  private wallet!: Wallet;
+  /** Sessions with a payment in progress: one at a time each. */
+  private paying = new Set<string>();
+  /** When each session last asked Gattchaa for its balance. */
+  private balanceAt = new Map<string, number>();
   /** "winner>loser" account ids, and when a ranked win between them last earned Glory. */
   private duelGloryAt = new Map<string, number>();
   private lastRecount = Date.now();
@@ -272,9 +277,6 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     "guild:notice": (client: Client, msg: GuildNoticeMessage) => {
       if (this.itemOk(client) && typeof msg?.text === "string") this.guilds.setNotice(client.sessionId, msg.text);
     },
-    "guild:give": (client: Client, msg: GuildGiveMessage) => {
-      if (this.itemOk(client)) this.guilds.give(client.sessionId, msg?.gold);
-    },
     "guild:board": (client: Client, msg: { npc?: string }) => {
       if (!this.itemOk(client) || !this.npcNear(client, msg?.npc, "guild")) return;
       client.send("guild:board", db.guildBoard(10, this.meta.get(client.sessionId)?.account?.id) satisfies GuildBoard);
@@ -287,8 +289,8 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     },
     "castle:hire": (client: Client, msg: { npc?: string; post?: number }) => {
       if (!this.itemOk(client) || !this.npcNear(client, msg?.npc, "castle") || !Number.isInteger(msg?.post)) return;
-      this.siege.hire(client.sessionId, msg.post!);
-      client.send("castle:guards", this.siege.guards(client.sessionId));
+      // The Herald's list, once the Points have gone through (or not).
+      void this.siege.hire(client.sessionId, msg.post!).then(() => client.send("castle:guards", this.siege.guards(client.sessionId)));
     },
     "castle:tribute": (client: Client, msg: { npc?: string }) => {
       if (this.itemOk(client) && this.npcNear(client, msg?.npc, "castle")) client.send("castle:tribute", this.siege.tribute(client.sessionId) satisfies TributeResult);
@@ -324,7 +326,8 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     "smith:upgrade": (client: Client, msg: UpgradeMessage) => {
       if (!this.itemOk(client) || !this.npcNear(client, msg?.npc, "smith")) return;
       const at = this.bagSlot(msg.bag) ? { bag: msg.bag } : isSlot(msg.gear) ? { gear: msg.gear } : undefined;
-      if (at) this.combat.upgrade(client.sessionId, at);
+      const quote = at && this.combat.upgradeQuote(client.sessionId, at);
+      if (at && quote) void this.pay(client.sessionId, quote.points, `Blacksmith: upgrade to +${quote.to}`, () => this.combat.upgrade(client.sessionId, at, quote.to));
     },
     job: (client: Client, msg: JobMessage) => {
       if (this.itemOk(client) && this.npcNear(client, msg?.npc, "jobs") && isClassId(msg.cls)) this.combat.changeJob(client.sessionId, msg.cls);
@@ -343,7 +346,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       this.combat.useSkill(client.sessionId, msg.id, typeof msg.t === "string" ? msg.t.slice(0, 16) : undefined);
     },
     "npc:buy": (client: Client, msg: NpcBuyMessage) => this.handleBuy(client, msg),
-    "npc:sell": (client: Client, msg: NpcSellMessage) => this.handleSell(client, msg),
+    "points:refresh": (client: Client) => void this.refreshBalance(client.sessionId),
     "shop:open": (client: Client, msg: ShopOpenMessage) => {
       this.handleShopOpen(client, msg).catch((err) => {
         console.error("[shops] open failed:", err);
@@ -355,6 +358,8 @@ export class WorldRoom extends Room<{ state: WorldState }> {
   };
 
   onCreate() {
+    this.wallet = makeWallet();
+    console.log(`[points] wallet: ${this.wallet.kind}`);
     this.clock.setInterval(() => this.updateViews(), VIEW_UPDATE_MS);
 
     this.brain = new NpcBrain(world, feed, this.now, (msg: NpcSay) => this.broadcast("npc:say", msg));
@@ -369,8 +374,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       news: (text) => this.system(text),
       sessionOf: (accountId) => this.sessionOf.get(accountId),
       accountOf: (id) => this.meta.get(id)?.account?.id,
-      pay: (id, gold, what) => this.combat.spend(id, gold, what),
-      gave: (id, gold) => this.combat.gaveToGuild(id, gold),
+      pay: (id, points, reason, deliver) => this.pay(id, points, reason, deliver),
     });
     this.drops = new Drops(this.state.drops, world, (drop) => {
       for (const client of this.clients) if (client.view?.has(drop)) client.view.remove(drop);
@@ -457,7 +461,8 @@ export class WorldRoom extends Room<{ state: WorldState }> {
         if (client) this.teleport(client, x, y, Dir.Right);
       },
       accountOf: (id) => this.meta.get(id)?.account?.id,
-      purseChanged: (guild) => this.guilds.sendAll(guild),
+      guildChanged: (guild) => this.guilds.sendAll(guild),
+      pay: (id, points, reason, deliver) => this.pay(id, points, reason, deliver),
     });
     this.clock.setInterval(() => {
       this.brain.tick(NPC_TICK_MS);
@@ -499,10 +504,15 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     this.stopListings?.();
   }
 
-  /** Signed-in players bring a session token. Guests are welcome too (always truthy), they just can't own anything. */
+  /**
+   * Players sign in with their Gattchaa Oripa account: the game's money is their Gattchaa Points,
+   * so there are no guests. (A test server can let them in with ALLOW_GUESTS=1, never in production.)
+   */
   onAuth(_client: Client, options: JoinOptions): AuthData {
     const token = typeof options?.token === "string" ? options.token : "";
     const account = token ? db.accountForToken(token) : undefined;
+    const guests = process.env.ALLOW_GUESTS === "1" && process.env.NODE_ENV !== "production";
+    if (!account && !guests) throw new ServerError(401, token ? "SIGN_IN_EXPIRED" : "SIGN_IN_REQUIRED");
     return { account, expired: token !== "" && !account };
   }
 
@@ -565,6 +575,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     this.queuePresence("joined", player.name);
     // What your shop sold while you were away (after the history, so it isn't buried).
     if (account) this.deliver(account.id);
+    void this.refreshBalance(client.sessionId, true);
   }
 
   async onDrop(client: Client) {
@@ -581,6 +592,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
   onLeave(client: Client) {
     // First, while the session still owns its account (progress is saved under it).
     this.combat.leave(client.sessionId);
+    this.balanceAt.delete(client.sessionId);
     this.trials.leave(client.sessionId);
     this.parties.leave(client.sessionId, "gone");
     this.guilds.exit(client.sessionId);
@@ -689,9 +701,15 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     if (!this.itemOk(client) || this.meta.get(client.sessionId)?.shop) return;
     const npc = this.npcNear(client, msg?.npc, "ferry");
     const trip = npc && FERRY[npc.id];
-    if (!trip || !this.combat.payFare(client.sessionId, trip.fare)) return;
-    this.teleport(client, trip.to.x, trip.to.y, trip.dir);
-    this.notice(client.sessionId, `You sail across the sea to ${trip.dest}.`);
+    if (!trip || !this.combat.canSail(client.sessionId)) return;
+    const sail = () => {
+      if (!this.clients.getById(client.sessionId) || !this.combat.canSail(client.sessionId)) return false;
+      this.teleport(client, trip.to.x, trip.to.y, trip.dir);
+      this.notice(client.sessionId, `You sail across the sea to ${trip.dest}.`);
+      return true;
+    };
+    if (trip.fare <= 0) sail();
+    else void this.pay(client.sessionId, trip.fare, `Ferry to ${trip.dest}`, sail);
   }
 
   /** Moves a player somewhere else entirely (doors, the ferry, back to town); the client fades across. */
@@ -820,13 +838,55 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     const stock = this.merchant(client, msg?.npc) ? OUTFITTER_STOCK : this.npcNear(client, msg?.npc, "smith") ? SMITH_STOCK : undefined;
     const id = msg?.item;
     if (!stock || !isItemId(id) || !stock.includes(id)) return;
-    this.combat.buy(client.sessionId, id, Number(msg.n));
+    const price = ITEMS[id].price ?? 0;
+    const n = Math.min(MAX_STACK, Math.max(1, Math.floor(Number(msg.n)) || 1));
+    if (price <= 0 || !this.combat.canTake(client.sessionId, id, n)) return;
+    void this.pay(client.sessionId, price * n, `${ITEMS[id].name} ×${n}`, () => this.combat.give(client.sessionId, id, n));
   }
 
-  private handleSell(client: Client, msg: NpcSellMessage) {
-    if (!this.itemOk(client) || !this.merchant(client, msg?.npc)) return;
-    if ("loot" in msg) this.combat.sell(client.sessionId, -1, 0);
-    else if (this.bagSlot(msg.slot)) this.combat.sell(client.sessionId, msg.slot, Number.isInteger(msg.n) && msg.n > 0 ? msg.n : 1);
+  // ---------------------------------------------------------------- Gattchaa Points
+
+  /**
+   * Charges `points` of a player's Gattchaa Points for `reason`, then hands over what they paid
+   * for (`deliver`, which checks again that it still can). If it can't, the Points go back.
+   * One payment at a time per player, so a double click never pays twice.
+   */
+  private async pay(id: string, points: number, reason: string, deliver: () => boolean): Promise<boolean> {
+    const account = this.meta.get(id)?.account;
+    if (this.paying.has(id)) {
+      this.notice(id, "One moment: your last payment is still going through.");
+      return false;
+    }
+    this.paying.add(id);
+    try {
+      const charged = await this.wallet.charge(account, id, points, reason);
+      if (charged.points !== undefined) this.combat.setBalance(id, charged.points);
+      if (!charged.ok) {
+        if (charged.why === "short") {
+          const have = charged.points;
+          this.notice(id, `That costs ${pointsLabel(points)}${have !== undefined ? `, and you have ${pointsText(have)}` : ""}. Get more Points on Gattchaa Oripa.`);
+        } else this.notice(id, "Gattchaa Points can't be reached right now, so nothing was charged. Please try again in a moment.");
+        return false;
+      }
+      if (this.meta.has(id) && deliver()) return true;
+      await this.wallet.refund(account, id, charged, `Refund: ${reason}`);
+      if (this.meta.has(id)) {
+        this.notice(id, `That couldn't go through, so your ${pointsLabel(points)} went back to you.`);
+        void this.refreshBalance(id, true);
+      }
+      return false;
+    } finally {
+      this.paying.delete(id);
+    }
+  }
+
+  /** Asks Gattchaa for a player's balance (at most every 10 s unless `now`), and shows it on their sheet. */
+  private async refreshBalance(id: string, now = false) {
+    const at = this.balanceAt.get(id) ?? 0;
+    if (!now && Date.now() - at < 10_000) return;
+    this.balanceAt.set(id, Date.now());
+    const points = await this.wallet.balance(this.meta.get(id)?.account, id);
+    if (this.meta.has(id)) this.combat.setBalance(id, points);
   }
 
   private queueFx(id: string, ev: FxEvent) {
@@ -926,7 +986,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     const meta = this.meta.get(client.sessionId);
     const members = this.guilds.members(client.sessionId);
     if (!meta) return;
-    if (!members.length) return client.send("chat", this.makeMessage("", "System", `You're not in a guild. Leopold, by the fountain plaza, founds one for ${GUILD_FOUND_GOLD.toLocaleString("en-US")} gold.`, true));
+    if (!members.length) return client.send("chat", this.makeMessage("", "System", `You're not in a guild. Leopold, by the fountain plaza, founds one for ${pointsLabel(GUILD_FOUND_POINTS)}.`, true));
     const now = Date.now();
     if (meta.lastChatAt + CHAT_COOLDOWN_MS > now) return;
     meta.lastChatAt = now;
@@ -961,7 +1021,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
 
   /**
    * Opens a shop right where the player stands. It sells the things they
-   * picked from their bag, for gold, and shows the cards they've listed on the
+   * picked from their bag, for Gattchaa Points, and shows the cards they've listed on the
    * Gattchaa marketplace; it needs at least one of the two. Everything is
    * checked again after waiting for Gattchaa, since the town may have moved on.
    */
@@ -1055,11 +1115,11 @@ export class WorldRoom extends Room<{ state: WorldState }> {
   }
 
   /**
-   * Buys from a player's shop, for gold. The buyer has to be in the Market
+   * Buys from a player's shop, for Gattchaa Points. The buyer has to be in the Market
    * Square. The seller is paid by mail: straight away if they're here, or as
    * soon as they're back.
    */
-  private handleShopBuy(client: Client, msg: ShopBuyMessage) {
+  private async handleShopBuy(client: Client, msg: ShopBuyMessage) {
     const id = client.sessionId;
     const meta = this.meta.get(id);
     const player = this.state.players.get(id);
@@ -1069,22 +1129,57 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     const owner = this.shopOwners.get(shopId);
     if (!shop || !owner) return this.notice(id, "This shop has just closed.");
     if (!Number.isInteger(msg.ware) || !isItemId(msg.item) || !isPrice(msg.price)) return;
-    if (meta.account?.id === owner.id) return this.notice(id, "That's your own shop!");
+    const buyer = meta.account;
+    if (!buyer) return this.notice(id, "Sign in with Gattchaa to buy: you pay with your Gattchaa Points.");
+    if (buyer.id === owner.id) return this.notice(id, "That's your own shop!");
     if (!inShopZone(meta.x, meta.y)) return this.notice(id, "Come to the Market Square to buy.");
     const ware = parseWares(db.shop(shopId)?.wares)[msg.ware];
     if (!ware || ware.item.id !== msg.item || ware.price !== msg.price) return this.notice(id, "That's no longer for sale. Have another look.");
     if (ware.item.n <= 0) return this.notice(id, "Sold out!");
     const n = Math.min(ware.item.n, Number.isInteger(msg.n) && msg.n > 0 ? msg.n : 1);
-    if (!this.combat.canBuy(id, { ...ware.item, n }, ware.price * n)) return;
-    const sale = db.buyWare(shopId, msg.ware, n, { item: msg.item, price: msg.price }, player.name);
+    if (!this.combat.canBuy(id, { ...ware.item, n })) return;
+    if (this.paying.has(id)) return this.notice(id, "One moment: your last payment is still going through.");
+    // Taken out of the shop first, so nobody else can buy it while the Points move.
+    const sale = db.takeWare(shopId, msg.ware, n, { item: msg.item, price: msg.price });
     if (typeof sale === "string") return this.notice(id, sale);
-    this.combat.bought(id, sale.item, sale.gold);
-    this.notice(id, `You bought ${stackText(itemName(sale.item), sale.item.n)} from ${shop.name} for ${goldText(sale.gold)} gold.`);
-    shop.items = waresLeft(sale.wares);
-    shop.rev = (shop.rev + 1) % 65536;
+    const what = stackText(itemName(sale.item), sale.item.n);
+    this.paying.add(id);
+    let paid;
+    try {
+      paid = await this.wallet.transfer(buyer, { id: sale.seller, gattchaaId: sale.sellerGattchaaId }, sale.points, `Market Square: ${what} from ${shop.name}`);
+    } finally {
+      this.paying.delete(id);
+    }
+    if (paid.points !== undefined && this.meta.has(id)) this.combat.setBalance(id, paid.points);
+    if (!paid.ok) {
+      const wares = db.restock(shopId, msg.ware, sale.item.n);
+      const live = this.state.shops.get(shopId);
+      if (wares && live) {
+        live.items = waresLeft(wares);
+        live.rev = (live.rev + 1) % 65536;
+      }
+      return this.notice(
+        id,
+        paid.why === "short"
+          ? `That costs ${pointsLabel(sale.points)}${paid.points !== undefined ? `, and you have ${pointsText(paid.points)}` : ""}. Get more Points on Gattchaa Oripa.`
+          : "Gattchaa Points can't be reached right now, so nothing was bought. Please try again in a moment.",
+      );
+    }
+    // Paid: the item is theirs (in the mail if their bag filled up meanwhile, or they left).
+    if (!this.meta.has(id) || !this.combat.bought(id, sale.item)) {
+      db.mailItem(buyer.id, sale.item);
+      if (this.meta.has(id)) this.deliver(buyer.id);
+    }
+    if (this.meta.has(id)) this.notice(id, `You bought ${what} from ${shop.name} for ${pointsLabel(sale.points)}.`);
+    db.saleNews(sale.seller, sale.points, `${player.name} bought ${what}`);
+    const live = this.state.shops.get(shopId);
+    if (live) {
+      live.items = waresLeft(sale.wares);
+      live.rev = (live.rev + 1) % 65536;
+    }
     this.deliver(sale.seller);
     // Sold out, with no Gattchaa cards to show either: the shop closes, Ragnarok style.
-    if (shop.items === 0 && shop.cards === 0) {
+    if (live && live.items === 0 && live.cards === 0) {
       const seller = this.sessionOf.get(sale.seller);
       this.closeShop(shopId);
       if (seller) this.notice(seller, "🎉 Your shop sold out, so it has closed.");
@@ -1092,8 +1187,8 @@ export class WorldRoom extends Room<{ state: WorldState }> {
   }
 
   /**
-   * Hands an account its mail if they're in this room: gold from their shop's
-   * sales, and whatever it didn't sell. A full bag leaves items waiting.
+   * Hands an account its mail if they're in this room: news of their shop's sales (the Points
+   * are already in their Gattchaa account), and things waiting for them. A full bag leaves items waiting.
    */
   private deliver(accountId: number) {
     const id = this.sessionOf.get(accountId);
@@ -1103,21 +1198,23 @@ export class WorldRoom extends Room<{ state: WorldState }> {
     let back = 0;
     let waiting = 0;
     db.deliverMail(accountId, (m) => {
-      if (!this.combat.receive(id, m)) {
+      if (m.item && !this.combat.receive(id, m.item)) {
         waiting++;
         return false;
       }
-      if (m.gold > 0) sales.push(m);
+      if (m.points > 0) sales.push(m);
       if (m.item) back++;
       return true;
     });
     if (sales.length || back) this.combat.flush(id);
-    const gold = sales.reduce((sum, m) => sum + m.gold, 0);
-    if (sales.length === 1) this.notice(id, `💰 ${sales[0].note} for ${goldText(gold)} gold.`);
-    else if (sales.length > 1) this.notice(id, `💰 Your shop made ${sales.length} sales, for ${goldText(gold)} gold in all.`);
-    if (back) this.notice(id, `📦 ${back === 1 ? "One thing" : `${back} things`} your shop didn't sell ${back === 1 ? "is" : "are"} back in your bag.`);
+    const earned = sales.reduce((sum, m) => sum + m.points, 0);
+    if (earned) this.combat.sold(id, earned);
+    if (sales.length === 1) this.notice(id, `💰 ${sales[0].note} for ${pointsLabel(earned)}, paid into your Gattchaa account.`);
+    else if (sales.length > 1) this.notice(id, `💰 Your shop made ${sales.length} sales, for ${pointsLabel(earned)} in all, paid into your Gattchaa account.`);
+    if (sales.length) void this.refreshBalance(id, true);
+    if (back) this.notice(id, `📦 ${back === 1 ? "One thing" : `${back} things`} waiting for you ${back === 1 ? "is" : "are"} in your bag now.`);
     if (waiting && waiting !== meta.mailWaiting) {
-      this.notice(id, `📦 Your bag is full: ${waiting === 1 ? "one thing" : `${waiting} things`} from your shop ${waiting === 1 ? "is" : "are"} waiting. Make room and ${waiting === 1 ? "it comes" : "they come"} to you.`);
+      this.notice(id, `📦 Your bag is full: ${waiting === 1 ? "one thing" : `${waiting} things`} ${waiting === 1 ? "is" : "are"} waiting for you. Make room and ${waiting === 1 ? "it comes" : "they come"} to you.`);
     }
     meta.mailWaiting = waiting;
   }
@@ -1242,9 +1339,11 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       this.combat.cheatItem(client.sessionId, arg, Number.isFinite(count) ? count : 1, up);
       return reply(`Test command: added ${up ? `+${up} ` : ""}${ITEMS[arg].name}.`);
     }
-    if (name === "gold" && Number.isFinite(n)) {
-      this.combat.cheatGold(client.sessionId, n);
-      return reply(`Test command: you now have ${Math.max(0, Math.floor(n))} gold.`);
+    if (name === "points" && Number.isFinite(n)) {
+      if (!this.wallet.set) return reply("Test command: Points come from Gattchaa on this server.");
+      this.wallet.set(this.meta.get(client.sessionId)?.account, client.sessionId, n);
+      void this.refreshBalance(client.sessionId, true);
+      return reply(`Test command: you now have ${pointsLabel(Math.max(0, Math.floor(n)))} (test wallet).`);
     }
     if (name === "title" && isTitleId(arg)) {
       this.combat.grantTitle(client.sessionId, arg);
@@ -1259,7 +1358,7 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       return reply(`Test command: job set to ${CLASSES[arg].name} (jobs need level 10).`);
     }
     reply(
-      `Test commands: /level <1-${LEVEL_CAP}>, /item <id> [count or +upgrade], /gold <amount>, /siege <on|off|auto>, /tp <x> <y>, /job <novice|knight|mage|archer|lordKnight|wizard|hunter>, /trial <0-3>, /title <id>. Item ids: ${Object.keys(ITEMS).join(", ")}. Title ids: ${Object.keys(TITLES).join(", ")}`,
+      `Test commands: /level <1-${LEVEL_CAP}>, /item <id> [count or +upgrade], /points <amount>, /siege <on|off|auto>, /tp <x> <y>, /job <novice|knight|mage|archer|lordKnight|wizard|hunter>, /trial <0-3>, /title <id>. Item ids: ${Object.keys(ITEMS).join(", ")}. Title ids: ${Object.keys(TITLES).join(", ")}`,
     );
   }
 
