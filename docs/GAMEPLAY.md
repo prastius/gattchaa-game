@@ -4,7 +4,7 @@ Gattchaa Town is a small online world for card collectors, built around the Gatt
 
 The game has three parts:
 
-1. **Hanging out.** The town is a meeting place. Chat, sit by the fountain, found or join a guild, visit the Gattchaa staff, and run your own shop in the Market Square: trade gear, ingots and monster cards for gold, and show off your real cards.
+1. **Hanging out.** The town is a meeting place. Chat, sit by the fountain, found or join a guild, visit the Gattchaa staff, and run your own shop in the Market Square: trade gear, ingots and monster cards for Gattchaa Points, and show off your real cards.
 2. **Adventure.** Outside the walls, monsters wait in fields sorted by level. Level up, choose a job, find gear and monster cards, and upgrade your equipment.
 3. **Player vs player.** Challenge anyone to a duel, climb the ranking in the Arena, fight anyone (and be fought) in the Battle Pit by the Arena, earning Glory for every win, or fight with your guild for Crownhold, the guild castle, twice a week.
 
